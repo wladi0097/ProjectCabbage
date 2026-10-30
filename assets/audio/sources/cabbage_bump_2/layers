@@ -1,0 +1,2 @@
+length 0.35 0.12 -10 highpass=f=220:p=2,lowpass=f=7000
+1_thud.wav -0.02 0

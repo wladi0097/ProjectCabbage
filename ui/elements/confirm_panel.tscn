@@ -1,0 +1,44 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/elements/confirm_panel.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://d25xio4rl6oik" path="res://ui/elements/button_with_sound.tscn" id="2_button"]
+
+[node name="ConfirmPanel" type="PanelContainer" unique_id=1995870213]
+custom_minimum_size = Vector2(640, 0)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"DialogPanel"
+script = ExtResource("1_script")
+
+[node name="Stack" type="VBoxContainer" parent="." unique_id=312606617]
+layout_mode = 2
+theme_type_variation = &"GroupStack"
+
+[node name="Message" type="Label" parent="Stack" unique_id=1655424580]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"StrongLabel"
+autowrap_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="Stack" unique_id=1470209398]
+layout_mode = 2
+alignment = 2
+
+[node name="Cancel" parent="Stack/Buttons" unique_id=1225431904 instance=ExtResource("2_button") groups=["default_focus"]]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 2
+text = "menu.cancel"
+
+[node name="Confirm" parent="Stack/Buttons" unique_id=1929000435 instance=ExtResource("2_button")]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+
+[connection signal="clicked" from="Stack/Buttons/Cancel" to="." method="_on_cancel_clicked"]
+[connection signal="clicked" from="Stack/Buttons/Confirm" to="." method="_on_confirm_clicked"]

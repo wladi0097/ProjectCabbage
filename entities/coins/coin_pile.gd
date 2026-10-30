@@ -1,0 +1,257 @@
+class_name CoinPile
+extends MultiMeshInstance3D
+## Every loose coin, drawn as one MultiMesh. Coins are animated, not simulated: they arc in,
+## bounce once and land on a height grid, sliding off any pile that gets too steep, so heaps
+## grow like real ones. Sweeping an empty hand over them sends them into the deposit.
+
+signal thrown(origin: Vector3, count: int)
+signal bounced(position: Vector3)
+signal landed(position: Vector3)
+signal collected(position: Vector3)
+signal deposited(position: Vector3)
+
+enum State { FLYING, SETTLING, RESTING, HOMING }
+
+const MAX_COINS := 4096
+const CELL := 0.054
+const THICKNESS := 0.014
+## Coins of height difference a pile holds before a landing coin slides down the side.
+const MAX_STEP := 2
+const GRAVITY := 9.8
+const SETTLE_TIME := 0.12
+const HOME_TIME := 0.5
+const HOME_STAGGER := 0.03
+## How high the homing curve climbs above the start and above the hopper.
+const HOME_LIFT := 0.3
+## Seconds a thrown coin rises from below the sill to the gap.
+const TOSS_TIME := 0.14
+const THROW_STAGGER := 0.05
+const PICKUP_RADIUS := 0.1
+const NEIGHBOURS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
+		Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
+
+@export var desk_height := 0.76
+@export var deposit: Node3D
+## Thrown-in coins land anywhere in here (the top half of the mat).
+@export var landing_area := AABB(Vector3(-0.3, 0.76, -0.55), Vector3(2.0, 0.0, 0.75))
+## Seconds from the gap to the first touch: short keeps the arc flat enough for the gap.
+@export var throw_time := Vector2(0.28, 0.36)
+## (y, z) where tossed coins come through the window gap. They start out of sight below the
+## sill (anything else outside shows through the glass), are tossed up to here, then fly in.
+@export var gap_entry := Vector2(0.92, -0.95)
+
+
+class Coin:
+	var state := State.FLYING
+	var xf := Transform3D()
+	var velocity := Vector3.ZERO
+	var spin := Vector3.ZERO
+	var has_bounced := false
+	var from := Transform3D()
+	var to := Transform3D()
+	var t := 0.0
+	var delay := 0.0
+	var toss := 0.0  # seconds left rising from below the sill to the gap
+	var inbound := Vector3.ZERO  # velocity from the gap onto the mat
+
+
+# ponytail: Array of RefCounted coins, rewritten in full each moving frame; switch to packed
+# arrays if a profile shows the coin loop above ~1 ms.
+var _coins: Array[Coin] = []
+var _stacks := {}  # Vector2i -> Array[Coin], bottom first
+var _buffer := PackedFloat32Array()
+
+
+func _ready() -> void:
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.instance_count = MAX_COINS
+	multimesh.visible_instance_count = 0
+	_buffer.resize(MAX_COINS * 12)
+	custom_aabb = AABB(Vector3(-4, -1, -4), Vector3(8, 4, 8))
+
+
+## Throws `count` coins in from `origin` (out of sight below the sill): up to the gap, then in.
+func throw_in(origin: Vector3, count: int) -> void:
+	thrown.emit(origin, count)
+	for i in count:
+		if _coins.size() >= MAX_COINS:
+			_deposit_now()
+			continue
+		var coin := Coin.new()
+		coin.xf = Transform3D(Basis(Quaternion.from_euler(Vector3(randf(), randf(), randf()) * TAU)), origin)
+		var target := landing_area.position + Vector3(randf(), 0.0, randf()) * landing_area.size
+		var gap := Vector3(origin.x, gap_entry.x, gap_entry.y)
+		coin.inbound = ballistic(gap, target, randf_range(throw_time.x, throw_time.y))
+		coin.velocity = ballistic(origin, gap, TOSS_TIME)
+		coin.toss = TOSS_TIME
+		coin.spin = Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)).normalized() * randf_range(10, 20)
+		coin.delay = i * THROW_STAGGER
+		_coins.append(coin)
+
+
+func _process(delta: float) -> void:
+	if Hand.held == null:
+		_sweep(Hand.point_on_height(desk_height))
+	var moving := false
+	for i in range(_coins.size() - 1, -1, -1):
+		var coin := _coins[i]
+		match coin.state:
+			State.FLYING:
+				_fly(coin, delta)
+			State.SETTLING:
+				coin.t = minf(coin.t + delta / SETTLE_TIME, 1.0)
+				coin.xf = coin.from.interpolate_with(coin.to, ease(coin.t, 0.4))
+				if coin.t >= 1.0:
+					coin.state = State.RESTING
+			State.HOMING:
+				if _home(coin, delta):
+					_coins.remove_at(i)
+					SaveManager.save.coins += 1
+					deposited.emit(coin.xf.origin)
+			State.RESTING:
+				continue
+		moving = true
+	if moving or multimesh.visible_instance_count != _coins.size():
+		_upload()
+
+
+func _fly(coin: Coin, delta: float) -> void:
+	if coin.delay > 0.0:
+		coin.delay -= delta
+		return
+	coin.velocity.y -= GRAVITY * delta
+	coin.xf.origin += coin.velocity * delta
+	coin.xf.basis = Basis(Quaternion(coin.spin.normalized(), coin.spin.length() * delta)) * coin.xf.basis
+	if coin.toss > 0.0:
+		coin.toss -= delta
+		if coin.toss <= 0.0:
+			coin.velocity = coin.inbound
+		return
+	var cell := cell_of(coin.xf.origin)
+	var floor_y := _top(cell) + THICKNESS * 0.5
+	if coin.xf.origin.y > floor_y or coin.velocity.y > 0.0:
+		return
+	coin.xf.origin.y = floor_y
+	if not coin.has_bounced and coin.velocity.y < -1.0:
+		coin.has_bounced = true
+		coin.velocity = Vector3(coin.velocity.x * 0.5, -coin.velocity.y * 0.3, coin.velocity.z * 0.5)
+		coin.spin *= 0.5
+		bounced.emit(coin.xf.origin)
+		return
+	_land(coin, cell)
+
+
+func _land(coin: Coin, cell: Vector2i) -> void:
+	cell = settle_cell(_stacks, cell, MAX_STEP)
+	var stack: Array = _stacks.get_or_add(cell, [])
+	stack.append(coin)
+	var centre := cell_centre(cell) + Vector2(randf_range(-0.3, 0.3), randf_range(-0.3, 0.3)) * CELL
+	var tilt := Basis(Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized(), randf_range(0, 0.12))
+	coin.from = coin.xf
+	coin.to = Transform3D(tilt * Basis(Vector3.UP, randf() * TAU),
+			Vector3(centre.x, desk_height + (stack.size() - 0.5) * THICKNESS, centre.y))
+	coin.state = State.SETTLING
+	coin.t = 0.0
+	landed.emit(coin.to.origin)
+
+
+## Coins under the empty hand fly off to the deposit, nearest first.
+func _sweep(point: Vector3) -> void:
+	var reach := ceili(PICKUP_RADIUS / CELL)
+	var centre := cell_of(point)
+	var order := 0
+	for dx in range(-reach, reach + 1):
+		for dz in range(-reach, reach + 1):
+			var cell := centre + Vector2i(dx, dz)
+			if not _stacks.has(cell) or cell_centre(cell).distance_to(Vector2(point.x, point.z)) > PICKUP_RADIUS:
+				continue
+			for coin: Coin in _stacks[cell]:
+				coin.state = State.HOMING
+				coin.from = coin.xf
+				coin.t = 0.0
+				coin.delay = order * HOME_STAGGER
+				order += 1
+				collected.emit(coin.xf.origin)
+			_stacks.erase(cell)
+
+
+## Up, over the hopper, then straight down into its mouth, accelerating. True when it arrives.
+func _home(coin: Coin, delta: float) -> bool:
+	if coin.delay > 0.0:
+		coin.delay -= delta
+		return false
+	coin.t = minf(coin.t + delta / HOME_TIME, 1.0)
+	var target := deposit.global_position if deposit != null else coin.from.origin
+	coin.xf.origin = home_point(coin.from.origin, target, coin.t * coin.t)
+	# Spins in flight and shrinks only once it is inside the funnel.
+	coin.xf.basis = (Basis(Vector3.RIGHT, delta * 18.0) * coin.xf.basis).orthonormalized() \
+			.scaled(Vector3.ONE * (1.0 - smoothstep(0.88, 1.0, coin.t)))
+	return coin.t >= 1.0
+
+
+## Cubic curve whose last handle sits straight above the target, so it ends dropping vertically.
+static func home_point(start: Vector3, target: Vector3, k: float) -> Vector3:
+	var a := start + Vector3.UP * HOME_LIFT
+	var b := target + Vector3.UP * HOME_LIFT
+	var p := start.lerp(a, k).lerp(a.lerp(b, k), k)
+	var q := a.lerp(b, k).lerp(b.lerp(target, k), k)
+	return p.lerp(q, k)
+
+
+static func ballistic(from: Vector3, to: Vector3, time: float) -> Vector3:
+	return (to - from) / time + 0.5 * Vector3.UP * GRAVITY * time
+
+
+func _deposit_now() -> void:
+	SaveManager.save.coins += 1
+	deposited.emit(deposit.global_position if deposit != null else global_position)
+
+
+func _top(cell: Vector2i) -> float:
+	return desk_height + _stacks.get(cell, []).size() * THICKNESS
+
+
+func _upload() -> void:
+	for i in _coins.size():
+		var xf := _coins[i].xf
+		if _coins[i].state == State.FLYING and _coins[i].delay > 0.0:
+			xf = Transform3D(Basis.from_scale(Vector3.ZERO), xf.origin)
+		var o := i * 12
+		_buffer[o] = xf.basis.x.x
+		_buffer[o + 1] = xf.basis.y.x
+		_buffer[o + 2] = xf.basis.z.x
+		_buffer[o + 3] = xf.origin.x
+		_buffer[o + 4] = xf.basis.x.y
+		_buffer[o + 5] = xf.basis.y.y
+		_buffer[o + 6] = xf.basis.z.y
+		_buffer[o + 7] = xf.origin.y
+		_buffer[o + 8] = xf.basis.x.z
+		_buffer[o + 9] = xf.basis.y.z
+		_buffer[o + 10] = xf.basis.z.z
+		_buffer[o + 11] = xf.origin.z
+	multimesh.buffer = _buffer
+	multimesh.visible_instance_count = _coins.size()
+
+
+static func cell_of(point: Vector3) -> Vector2i:
+	return Vector2i(floori(point.x / CELL), floori(point.z / CELL))
+
+
+static func cell_centre(cell: Vector2i) -> Vector2:
+	return (Vector2(cell) + Vector2(0.5, 0.5)) * CELL
+
+
+## Sandpile rule: a coin rolls to the lowest neighbour while that one is more than
+## max_step coins lower, so piles keep a slope instead of growing into towers.
+static func settle_cell(stacks: Dictionary, cell: Vector2i, max_step: int) -> Vector2i:
+	for _i in 64:
+		var lowest := cell
+		var neighbours := NEIGHBOURS.duplicate()
+		neighbours.shuffle()
+		for offset: Vector2i in neighbours:
+			if stacks.get(cell + offset, []).size() < stacks.get(lowest, []).size():
+				lowest = cell + offset
+		if stacks.get(cell, []).size() - stacks.get(lowest, []).size() <= max_step:
+			return cell
+		cell = lowest
+	return cell

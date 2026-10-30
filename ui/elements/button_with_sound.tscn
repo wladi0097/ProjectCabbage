@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://d25xio4rl6oik"]
+
+[ext_resource type="Script" uid="uid://b77voeb6kwja4" path="res://ui/elements/button_with_sound.gd" id="1_script"]
+[ext_resource type="AudioStream" uid="uid://c6dci7apysw4" path="res://assets/audio/ui/keyboard_spacebar.wav" id="2_hover"]
+[ext_resource type="AudioStream" uid="uid://bbtc8slom47tj" path="res://assets/audio/ui/keyboard_keystroke.wav" id="3_click"]
+
+[node name="ButtonWithSound" type="Button" unique_id=1157173990]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_default_cursor_shape = 2
+text = "REPLACE ME"
+script = ExtResource("1_script")
+
+[node name="HoverAudio" type="AudioStreamPlayer" parent="." unique_id=1972453012]
+stream = ExtResource("2_hover")
+volume_db = -25.0
+bus = &"SFX"
+
+[node name="ClickAudio" type="AudioStreamPlayer" parent="." unique_id=652996758]
+stream = ExtResource("3_click")
+volume_db = -10.0
+bus = &"SFX"
+
+[connection signal="button_down" from="." to="." method="_on_button_down"]
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]

@@ -1,0 +1,584 @@
+[gd_scene format=3 uid="uid://cqgwr1jwvwaev"]
+
+[ext_resource type="Script" path="res://ui/sub/settings_ui.gd" id="2_script"]
+[ext_resource type="PackedScene" path="res://ui/elements/button_with_sound.tscn" id="3_back_button"]
+[ext_resource type="AudioStream" uid="uid://c6dci7apysw4" path="res://assets/audio/ui/keyboard_spacebar.wav" id="5_spacebar"]
+[ext_resource type="AudioStream" uid="uid://db17yv7eqs3m6" path="res://assets/audio/ui/single_chord.wav" id="7_chord"]
+[ext_resource type="AudioStream" uid="uid://bbtc8slom47tj" path="res://assets/audio/ui/keyboard_keystroke.wav" id="9_keystroke"]
+[ext_resource type="PackedScene" path="res://ui/elements/confirm_panel.tscn" id="14_confirm"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/dotted_rule.svg" id="15_dotted"]
+
+[node name="SettingsUi" type="Control" unique_id=112779336]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_script")
+
+[node name="Page" type="PanelContainer" parent="." unique_id=1402286311]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 240.0
+offset_top = 90.0
+offset_right = -240.0
+offset_bottom = -90.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ContentPage"
+
+[node name="Layout" type="VBoxContainer" parent="Page" unique_id=1873019553]
+layout_mode = 2
+theme_type_variation = &"GroupStack"
+
+[node name="Header" type="HBoxContainer" parent="Page/Layout" unique_id=617254930]
+layout_mode = 2
+
+[node name="Left" type="HBoxContainer" parent="Page/Layout/Header" unique_id=617254931]
+layout_mode = 2
+
+[node name="BackButton" parent="Page/Layout/Header/Left" unique_id=193311540 instance=ExtResource("3_back_button")]
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 1
+theme_type_variation = &"PrimaryButton"
+text = "settings.save"
+
+[node name="FormHeader" type="Label" parent="Page/Layout/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"FormLabel"
+text = "settings.formHeader"
+horizontal_alignment = 2
+
+[node name="Title" type="Label" parent="Page/Layout" unique_id=1514053905]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "settings"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="Tabs" type="VBoxContainer" parent="Page/Layout" unique_id=1845203117]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TabBar" type="TabBar" parent="Page/Layout/Tabs" unique_id=260892140]
+layout_mode = 2
+size_flags_horizontal = 3
+unique_name_in_owner = true
+focus_mode = 0
+tab_alignment = 1
+current_tab = 0
+tab_count = 3
+tab_0/title = "settings.gameplay"
+tab_1/title = "settings.audio"
+tab_2/title = "settings.video"
+
+[node name="Rule" type="TextureRect" parent="Page/Layout/Tabs"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+texture = ExtResource("15_dotted")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Pages" type="Control" parent="Page/Layout" unique_id=1654682058]
+layout_mode = 2
+size_flags_vertical = 3
+unique_name_in_owner = true
+
+[node name="Gameplay" type="ScrollContainer" parent="Page/Layout/Pages" unique_id=837386768]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+follow_focus = true
+
+[node name="List" type="VBoxContainer" parent="Page/Layout/Pages/Gameplay" unique_id=1783306273]
+custom_minimum_size = Vector2(1000, 500)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="LanguageRow" type="HBoxContainer" parent="Page/Layout/Pages/Gameplay/List" unique_id=327879332]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Gameplay/List/LanguageRow" unique_id=387256266]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.language"
+
+[node name="Language" type="OptionButton" parent="Page/Layout/Pages/Gameplay/List/LanguageRow" unique_id=870929305]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ResetRow" type="HBoxContainer" parent="Page/Layout/Pages/Gameplay/List"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Gameplay/List/ResetRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.resetProgress"
+
+[node name="ResetProgress" parent="Page/Layout/Pages/Gameplay/List/ResetRow" instance=ExtResource("3_back_button")]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"DangerButton"
+text = "settings.resetProgress.button"
+
+[node name="Audio" type="ScrollContainer" parent="Page/Layout/Pages" unique_id=1668088200]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+follow_focus = true
+
+[node name="List" type="VBoxContainer" parent="Page/Layout/Pages/Audio" unique_id=654242148]
+custom_minimum_size = Vector2(1000, 500)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 40
+
+[node name="MuteOnFocusExitRow" type="HBoxContainer" parent="Page/Layout/Pages/Audio/List" unique_id=352831365]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Audio/List/MuteOnFocusExitRow" unique_id=2065093684]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.muteOnFocus"
+
+[node name="MuteOnFocusExit" type="CheckBox" parent="Page/Layout/Pages/Audio/List/MuteOnFocusExitRow" unique_id=651624166]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MasterRow" type="HBoxContainer" parent="Page/Layout/Pages/Audio/List" unique_id=2041748523]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Audio/List/MasterRow" unique_id=1160854948]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.master"
+
+[node name="Controls" type="VBoxContainer" parent="Page/Layout/Pages/Audio/List/MasterRow" unique_id=195810348]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="MuteMaster" type="CheckButton" parent="Page/Layout/Pages/Audio/List/MasterRow/Controls" unique_id=146645489]
+unique_name_in_owner = true
+layout_mode = 2
+text = "settings.mute"
+
+[node name="MasterVolume" type="HSlider" parent="Page/Layout/Pages/Audio/List/MasterRow/Controls" unique_id=748480640]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 2.0
+step = 0.1
+scrollable = false
+
+[node name="MasterAudioTest" type="AudioStreamPlayer" parent="Page/Layout/Pages/Audio/List/MasterRow" unique_id=1352925351]
+unique_name_in_owner = true
+stream = ExtResource("5_spacebar")
+volume_db = -10.0
+
+[node name="MusicRow" type="HBoxContainer" parent="Page/Layout/Pages/Audio/List" unique_id=100821807]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Audio/List/MusicRow" unique_id=1807989244]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.music"
+
+[node name="Controls" type="VBoxContainer" parent="Page/Layout/Pages/Audio/List/MusicRow" unique_id=1808936502]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="MuteMusic" type="CheckButton" parent="Page/Layout/Pages/Audio/List/MusicRow/Controls" unique_id=1875521879]
+unique_name_in_owner = true
+layout_mode = 2
+text = "settings.mute"
+
+[node name="MusicVolume" type="HSlider" parent="Page/Layout/Pages/Audio/List/MusicRow/Controls" unique_id=144033787]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 2.0
+step = 0.1
+scrollable = false
+
+[node name="MusicAudioTest" type="AudioStreamPlayer" parent="Page/Layout/Pages/Audio/List/MusicRow" unique_id=960775273]
+unique_name_in_owner = true
+stream = ExtResource("7_chord")
+volume_db = 2.0
+bus = &"Music"
+
+[node name="SfxRow" type="HBoxContainer" parent="Page/Layout/Pages/Audio/List" unique_id=586189516]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Audio/List/SfxRow" unique_id=490496559]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.sfx"
+
+[node name="Controls" type="VBoxContainer" parent="Page/Layout/Pages/Audio/List/SfxRow" unique_id=853588262]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="MuteSfx" type="CheckButton" parent="Page/Layout/Pages/Audio/List/SfxRow/Controls" unique_id=78403967]
+unique_name_in_owner = true
+layout_mode = 2
+text = "settings.mute"
+
+[node name="SfxVolume" type="HSlider" parent="Page/Layout/Pages/Audio/List/SfxRow/Controls" unique_id=527429070]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 2.0
+step = 0.1
+scrollable = false
+
+[node name="SfxAudioTest" type="AudioStreamPlayer" parent="Page/Layout/Pages/Audio/List/SfxRow" unique_id=1885484428]
+unique_name_in_owner = true
+stream = ExtResource("5_spacebar")
+volume_db = -10.0
+bus = &"SFX"
+
+[node name="Video" type="ScrollContainer" parent="Page/Layout/Pages" unique_id=1470106713]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+follow_focus = true
+
+[node name="List" type="VBoxContainer" parent="Page/Layout/Pages/Video" unique_id=1552611176]
+custom_minimum_size = Vector2(1000, 500)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="MonitorRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=682086096]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/MonitorRow" unique_id=97874336]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.screen"
+
+[node name="Monitor" type="OptionButton" parent="Page/Layout/Pages/Video/List/MonitorRow" unique_id=738774824]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 1
+popup/item_0/text = "settings.screen.auto"
+popup/item_0/id = 0
+
+[node name="ScreenModeRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=1690832933]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/ScreenModeRow" unique_id=1571541999]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.screenMode"
+
+[node name="ScreenMode" type="OptionButton" parent="Page/Layout/Pages/Video/List/ScreenModeRow" unique_id=535264330]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 3
+popup/item_0/text = "settings.screenMode.fullscreen"
+popup/item_0/id = 0
+popup/item_1/text = "settings.screenMode.window"
+popup/item_1/id = 1
+popup/item_2/text = "settings.screenMode.borderless"
+popup/item_2/id = 2
+
+[node name="ResolutionRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=1008797090]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/ResolutionRow" unique_id=348085905]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.resolution"
+
+[node name="Resolution" type="OptionButton" parent="Page/Layout/Pages/Video/List/ResolutionRow" unique_id=519102717]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 10
+popup/item_0/text = "1280 x 720"
+popup/item_0/id = 0
+popup/item_1/text = "1366 x 768"
+popup/item_1/id = 1
+popup/item_2/text = "1440 x 900"
+popup/item_2/id = 2
+popup/item_3/text = "1600 x 900"
+popup/item_3/id = 3
+popup/item_4/text = "1920 x 1080"
+popup/item_4/id = 4
+popup/item_5/text = "2560 x 1440"
+popup/item_5/id = 5
+popup/item_6/text = "2560 x 1080"
+popup/item_6/id = 6
+popup/item_7/text = "2560 x 1600"
+popup/item_7/id = 7
+popup/item_8/text = "3440 x 1440"
+popup/item_8/id = 8
+popup/item_9/text = "3840 x 2160"
+popup/item_9/id = 9
+
+[node name="VsyncRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=1131141575]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/VsyncRow" unique_id=1397340089]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.vsync"
+
+[node name="Vsync" type="CheckBox" parent="Page/Layout/Pages/Video/List/VsyncRow" unique_id=569121754]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DisplaySeparator" type="HSeparator" parent="Page/Layout/Pages/Video/List" unique_id=533705773]
+layout_mode = 2
+
+[node name="UiScaleRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=619853178]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/UiScaleRow" unique_id=1469724734]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.uiScale"
+
+[node name="UiScale" type="HSlider" parent="Page/Layout/Pages/Video/List/UiScaleRow" unique_id=914108469]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.8
+max_value = 1.2
+step = 0.1
+value = 1.0
+scrollable = false
+tick_count = 5
+ticks_on_borders = true
+
+[node name="ScaleSeparator" type="HSeparator" parent="Page/Layout/Pages/Video/List" unique_id=1678776183]
+layout_mode = 2
+
+[node name="ScalingQualityRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=740316792]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/ScalingQualityRow" unique_id=1047266052]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.quality"
+
+[node name="ScalingQuality" type="OptionButton" parent="Page/Layout/Pages/Video/List/ScalingQualityRow" unique_id=1486430211]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 7
+popup/item_0/text = "settings.fidelityFX.disabled"
+popup/item_0/id = 0
+popup/item_1/text = "settings.fidelityFX.ultraQuality"
+popup/item_1/id = 1
+popup/item_2/text = "settings.fidelityFX.quality"
+popup/item_2/id = 2
+popup/item_3/text = "settings.fidelityFX.balanced"
+popup/item_3/id = 3
+popup/item_4/text = "settings.fidelityFX.performance"
+popup/item_4/id = 4
+popup/item_5/text = "settings.fidelityFX.low"
+popup/item_5/id = 5
+popup/item_6/text = "settings.fidelityFX.potato"
+popup/item_6/id = 6
+
+[node name="ShadowQualityRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=741203988]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/ShadowQualityRow" unique_id=1902551736]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.shadows"
+
+[node name="ShadowQuality" type="OptionButton" parent="Page/Layout/Pages/Video/List/ShadowQualityRow" unique_id=1290455818]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 2
+item_count = 3
+popup/item_0/text = "settings.shadows.low"
+popup/item_0/id = 0
+popup/item_1/text = "settings.shadows.medium"
+popup/item_1/id = 1
+popup/item_2/text = "settings.shadows.high"
+popup/item_2/id = 2
+
+[node name="MaxFpsRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=2042591496]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/MaxFpsRow" unique_id=1620269376]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.maxFps"
+
+[node name="MaxFps" type="OptionButton" parent="Page/Layout/Pages/Video/List/MaxFpsRow" unique_id=1141003345]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 1
+item_count = 6
+popup/item_0/text = "30"
+popup/item_0/id = 0
+popup/item_1/text = "60"
+popup/item_1/id = 1
+popup/item_2/text = "120"
+popup/item_2/id = 2
+popup/item_3/text = "144"
+popup/item_3/id = 3
+popup/item_4/text = "240"
+popup/item_4/id = 4
+popup/item_5/text = "∞"
+popup/item_5/id = 5
+
+[node name="UseFidelityFxRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=868146913]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/UseFidelityFxRow" unique_id=952135072]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.fidelityFX"
+
+[node name="UseFidelityFx" type="CheckBox" parent="Page/Layout/Pages/Video/List/UseFidelityFxRow" unique_id=157438918]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EffectsSeparator" type="HSeparator" parent="Page/Layout/Pages/Video/List" unique_id=1327840199]
+layout_mode = 2
+
+[node name="AllowCameraShakeRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=144722383]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/AllowCameraShakeRow" unique_id=1895304580]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.cameraShake"
+
+[node name="AllowCameraShake" type="CheckBox" parent="Page/Layout/Pages/Video/List/AllowCameraShakeRow" unique_id=1715441159]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BrightnessRow" type="HBoxContainer" parent="Page/Layout/Pages/Video/List" unique_id=1047661386]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Video/List/BrightnessRow" unique_id=1693876810]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.brightness"
+
+[node name="Brightness" type="HSlider" parent="Page/Layout/Pages/Video/List/BrightnessRow" unique_id=746920059]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.5
+max_value = 1.5
+step = 0.1
+value = 1.0
+scrollable = false
+
+[node name="FooterRule" type="HSeparator" parent="Page/Layout"]
+layout_mode = 2
+
+[node name="FormNote" type="Label" parent="Page/Layout"]
+layout_mode = 2
+theme_type_variation = &"NoteLabel"
+text = "settings.formNote"
+autowrap_mode = 3
+
+[node name="HoverSound" type="AudioStreamPlayer" parent="." unique_id=990835887]
+stream = ExtResource("5_spacebar")
+volume_db = -25.0
+pitch_scale = 2.0
+max_polyphony = 5
+bus = &"SFX"
+
+[node name="ClickSound" type="AudioStreamPlayer" parent="." unique_id=876636754]
+stream = ExtResource("9_keystroke")
+volume_db = -15.0
+bus = &"SFX"
+
+[node name="ResetConfirm" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.17, 0.19, 0.15, 0.72)
+
+[node name="Panel" parent="ResetConfirm" instance=ExtResource("14_confirm")]
+layout_mode = 1
+message = "settings.resetProgress.confirm"
+confirm_text = "settings.resetProgress.button"
+
+[connection signal="clicked" from="Page/Layout/Header/Left/BackButton" to="." method="_on_back_button_clicked"]
+[connection signal="tab_changed" from="Page/Layout/Tabs/TabBar" to="." method="_on_tab_bar_tab_changed"]
+[connection signal="tab_clicked" from="Page/Layout/Tabs/TabBar" to="." method="_on_tab_bar_tab_clicked"]
+[connection signal="tab_hovered" from="Page/Layout/Tabs/TabBar" to="." method="_on_tab_bar_tab_hovered"]
+[connection signal="item_selected" from="Page/Layout/Pages/Gameplay/List/LanguageRow/Language" to="." method="_on_language_item_selected"]
+[connection signal="toggled" from="Page/Layout/Pages/Audio/List/MuteOnFocusExitRow/MuteOnFocusExit" to="." method="_on_mute_on_focus_exit_toggled"]
+[connection signal="toggled" from="Page/Layout/Pages/Audio/List/MasterRow/Controls/MuteMaster" to="." method="_on_mute_master_toggled"]
+[connection signal="value_changed" from="Page/Layout/Pages/Audio/List/MasterRow/Controls/MasterVolume" to="." method="_on_master_volume_value_changed"]
+[connection signal="toggled" from="Page/Layout/Pages/Audio/List/MusicRow/Controls/MuteMusic" to="." method="_on_mute_music_toggled"]
+[connection signal="value_changed" from="Page/Layout/Pages/Audio/List/MusicRow/Controls/MusicVolume" to="." method="_on_music_volume_value_changed"]
+[connection signal="toggled" from="Page/Layout/Pages/Audio/List/SfxRow/Controls/MuteSfx" to="." method="_on_mute_sfx_toggled"]
+[connection signal="value_changed" from="Page/Layout/Pages/Audio/List/SfxRow/Controls/SfxVolume" to="." method="_on_sfx_volume_value_changed"]
+[connection signal="item_selected" from="Page/Layout/Pages/Video/List/MonitorRow/Monitor" to="." method="_on_monitor_item_selected"]
+[connection signal="item_selected" from="Page/Layout/Pages/Video/List/ScreenModeRow/ScreenMode" to="." method="_on_screen_mode_item_selected"]
+[connection signal="item_selected" from="Page/Layout/Pages/Video/List/ResolutionRow/Resolution" to="." method="_on_resolution_item_selected"]
+[connection signal="toggled" from="Page/Layout/Pages/Video/List/VsyncRow/Vsync" to="." method="_on_vsync_toggled"]
+[connection signal="drag_ended" from="Page/Layout/Pages/Video/List/UiScaleRow/UiScale" to="." method="_on_ui_scale_drag_ended"]
+[connection signal="drag_started" from="Page/Layout/Pages/Video/List/UiScaleRow/UiScale" to="." method="_on_ui_scale_drag_started"]
+[connection signal="value_changed" from="Page/Layout/Pages/Video/List/UiScaleRow/UiScale" to="." method="_on_ui_scale_value_changed"]
+[connection signal="item_selected" from="Page/Layout/Pages/Video/List/ScalingQualityRow/ScalingQuality" to="." method="_on_scaling_quality_item_selected"]
+[connection signal="item_selected" from="Page/Layout/Pages/Video/List/ShadowQualityRow/ShadowQuality" to="." method="_on_shadow_quality_item_selected"]
+[connection signal="item_selected" from="Page/Layout/Pages/Video/List/MaxFpsRow/MaxFps" to="." method="_on_max_fps_item_selected"]
+[connection signal="toggled" from="Page/Layout/Pages/Video/List/UseFidelityFxRow/UseFidelityFx" to="." method="_on_use_fidelity_fx_toggled"]
+[connection signal="toggled" from="Page/Layout/Pages/Video/List/AllowCameraShakeRow/AllowCameraShake" to="." method="_on_allow_camera_shake_toggled"]
+[connection signal="value_changed" from="Page/Layout/Pages/Video/List/BrightnessRow/Brightness" to="." method="_on_brightness_value_changed"]
+[connection signal="clicked" from="Page/Layout/Pages/Gameplay/List/ResetRow/ResetProgress" to="ResetConfirm" method="show"]
+[connection signal="cancelled" from="ResetConfirm/Panel" to="ResetConfirm" method="hide"]
+[connection signal="confirmed" from="ResetConfirm/Panel" to="." method="_on_reset_confirmed"]

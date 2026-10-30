@@ -1,0 +1,299 @@
+[gd_scene format=3 uid="uid://h53ionn2r7hc"]
+
+[ext_resource type="PackedScene" uid="uid://c7raiju65nxjs" path="res://assets/meshes/Room/room.blend" id="2_room"]
+[ext_resource type="PackedScene" uid="uid://bbkuq0405na6u" path="res://assets/meshes/Table/table.blend" id="3_table"]
+[ext_resource type="Shader" uid="uid://wbb2tb6mvdn6" path="res://assets/shaders/vignette.gdshader" id="4_vignette"]
+[ext_resource type="PackedScene" path="res://worlds/components/map_specific_settings.tscn" id="5_graphics"]
+[ext_resource type="PackedScene" path="res://ui/in_game_menu.tscn" id="6_menu"]
+[ext_resource type="Script" uid="uid://brq014m2hdk17" path="res://worlds/components/framed_camera.gd" id="7_camera"]
+[ext_resource type="Script" uid="uid://jhil3msg3xry" path="res://worlds/components/cabbage_feeder.gd" id="8_feeder"]
+[ext_resource type="Script" uid="uid://bo05e4qffeath" path="res://worlds/components/sale_window.gd" id="9_sale"]
+[ext_resource type="Script" uid="uid://deyits3c2dfyk" path="res://entities/coins/coin_pile.gd" id="10_coins"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/coin.res" id="11_coin"]
+[ext_resource type="PackedScene" path="res://entities/tally_machine/tally_machine.tscn" id="12_tally"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="13_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_1.wav" id="sfx_cabbage_suck_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_2.wav" id="sfx_cabbage_suck_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_3.wav" id="sfx_cabbage_suck_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_bounce_1.wav" id="sfx_coin_bounce_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_bounce_2.wav" id="sfx_coin_bounce_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_bounce_3.wav" id="sfx_coin_bounce_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_land_1.wav" id="sfx_coin_land_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_land_2.wav" id="sfx_coin_land_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_collect_1.wav" id="sfx_coin_collect_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_collect_2.wav" id="sfx_coin_collect_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_collect_3.wav" id="sfx_coin_collect_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_1.wav" id="sfx_coin_deposit_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_2.wav" id="sfx_coin_deposit_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_3.wav" id="sfx_coin_deposit_3"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_cabbage_suck"]
+random_pitch = 1.08
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_cabbage_suck_1")
+stream_1/stream = ExtResource("sfx_cabbage_suck_2")
+stream_2/stream = ExtResource("sfx_cabbage_suck_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_coin_bounce"]
+random_pitch = 1.12
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_coin_bounce_1")
+stream_1/stream = ExtResource("sfx_coin_bounce_2")
+stream_2/stream = ExtResource("sfx_coin_bounce_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_coin_land"]
+random_pitch = 1.15
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_coin_land_1")
+stream_1/stream = ExtResource("sfx_coin_land_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_coin_collect"]
+random_pitch = 1.12
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_coin_collect_1")
+stream_1/stream = ExtResource("sfx_coin_collect_2")
+stream_2/stream = ExtResource("sfx_coin_collect_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_coin_deposit"]
+random_pitch = 1.1
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_coin_deposit_1")
+stream_1/stream = ExtResource("sfx_coin_deposit_2")
+stream_2/stream = ExtResource("sfx_coin_deposit_3")
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
+sky_top_color = Color(0.45, 0.58, 0.75, 1)
+sky_horizon_color = Color(0.75, 0.72, 0.68, 1)
+ground_bottom_color = Color(0.2, 0.18, 0.16, 1)
+ground_horizon_color = Color(0.75, 0.72, 0.68, 1)
+
+[sub_resource type="Sky" id="Sky_res"]
+sky_material = SubResource("Sky_mat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 1
+background_color = Color(0.02, 0.018, 0.016, 1)
+sky = SubResource("Sky_res")
+ambient_light_source = 2
+ambient_light_color = Color(0.45, 0.5, 0.52, 1)
+ambient_light_energy = 0.18
+tonemap_mode = 4
+ssao_enabled = true
+ssao_radius = 0.6
+ssao_intensity = 2.5
+glow_enabled = true
+glow_intensity = 0.6
+glow_bloom = 0.05
+adjustment_enabled = true
+adjustment_contrast = 1.08
+
+[sub_resource type="BoxShape3D" id="TableTop"]
+size = Vector3(6.4, 0.07, 2)
+
+[sub_resource type="BoxShape3D" id="Sill"]
+size = Vector3(2.5, 0.05, 0.11)
+
+[sub_resource type="WorldBoundaryShape3D" id="LeftBar"]
+plane = Plane(1, 0, 0, -0.564)
+
+[sub_resource type="WorldBoundaryShape3D" id="ScreenBottom"]
+plane = Plane(0, 0, -1, -1.22)
+
+[sub_resource type="WorldBoundaryShape3D" id="ScreenRight"]
+plane = Plane(-0.9627, 0, -0.2705, -1.7832)
+
+[sub_resource type="WorldBoundaryShape3D" id="Ceiling"]
+plane = Plane(0, -1, 0, -2.2)
+
+[sub_resource type="WorldBoundaryShape3D" id="Street"]
+plane = Plane(0, 1, 0, 0.5)
+
+[sub_resource type="BoxShape3D" id="WallBesideGapLeft"]
+size = Vector3(0.13, 1.2, 0.25)
+
+[sub_resource type="BoxShape3D" id="WallBesideGapRight"]
+size = Vector3(0.6, 1.2, 0.25)
+
+[sub_resource type="BoxShape3D" id="WallAboveGap"]
+size = Vector3(3.2, 1.2, 0.25)
+
+[sub_resource type="BoxShape3D" id="SaleZone"]
+size = Vector3(2.12, 0.3, 0.58)
+
+[sub_resource type="MultiMesh" id="CoinMulti"]
+transform_format = 1
+mesh = ExtResource("11_coin")
+
+[sub_resource type="ShaderMaterial" id="VignetteMat"]
+shader = ExtResource("4_vignette")
+shader_parameter/strength = 0.65
+shader_parameter/inner = 0.35
+shader_parameter/outer = 0.95
+
+[node name="MainStoryWorld" type="Node3D" unique_id=2116223719]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1627211471]
+environment = SubResource("Env")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=2121367651]
+transform = Transform3D(1, 0, 0, 0, 0.4826, 0.8758, 0, -0.8758, 0.4826, 0.25, 3.2, 1.6)
+current = true
+fov = 40.0
+script = ExtResource("7_camera")
+
+[node name="DeskLamp" type="SpotLight3D" parent="." unique_id=770407077]
+transform = Transform3D(0.3250938, 0.67987686, -0.657329, 0, 0.6950848, 0.71892774, 0.94568175, -0.23371896, 0.22596776, -1.7, 2.5, 0.7)
+light_color = Color(1, 0.86, 0.68, 1)
+light_energy = 9.0
+light_size = 0.25
+shadow_enabled = true
+spot_attenuation = 0.7
+spot_angle = 52.0
+spot_angle_attenuation = 1.6
+
+[node name="WindowLight" type="OmniLight3D" parent="." unique_id=1139595868]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 1.3, -0.55)
+light_color = Color(0.62, 0.72, 0.95, 1)
+light_energy = 0.9
+omni_range = 2.6
+omni_attenuation = 1.5
+
+[node name="StreetLight" type="SpotLight3D" parent="." unique_id=1398478792]
+transform = Transform3D(1, 0, 0, 0, 0.1644, 0.9864, 0, -0.9864, 0.1644, 0.7, 2.4, -1.2)
+light_color = Color(0.7, 0.78, 0.9, 1)
+light_energy = 3.0
+shadow_enabled = true
+spot_range = 3.5
+spot_angle = 25.0
+spot_angle_attenuation = 1.5
+
+[node name="Room" parent="." unique_id=389734174 instance=ExtResource("2_room")]
+
+[node name="Table" parent="." unique_id=882185683 instance=ExtResource("3_table")]
+
+[node name="TableCollision" type="StaticBody3D" parent="." unique_id=1998073329]
+
+[node name="Shape" type="CollisionShape3D" parent="TableCollision" unique_id=460601409]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.725, 0.25)
+shape = SubResource("TableTop")
+
+[node name="SillShape" type="CollisionShape3D" parent="TableCollision" unique_id=658020833]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 0.725, -0.805)
+shape = SubResource("Sill")
+
+[node name="PlayArea" type="StaticBody3D" parent="." unique_id=1569513127]
+collision_layer = 2
+
+[node name="LeftBar" type="CollisionShape3D" parent="PlayArea" unique_id=1661331667]
+shape = SubResource("LeftBar")
+
+[node name="ScreenBottom" type="CollisionShape3D" parent="PlayArea" unique_id=1467714196]
+shape = SubResource("ScreenBottom")
+
+[node name="ScreenRight" type="CollisionShape3D" parent="PlayArea" unique_id=1546678641]
+shape = SubResource("ScreenRight")
+
+[node name="Ceiling" type="CollisionShape3D" parent="PlayArea" unique_id=1816343892]
+shape = SubResource("Ceiling")
+
+[node name="Street" type="CollisionShape3D" parent="PlayArea" unique_id=536886927]
+shape = SubResource("Street")
+
+[node name="WallBesideGapLeft" type="CollisionShape3D" parent="PlayArea" unique_id=2145634905]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.535, 1.35, -0.925)
+shape = SubResource("WallBesideGapLeft")
+
+[node name="WallBesideGapRight" type="CollisionShape3D" parent="PlayArea" unique_id=1715537954]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.17, 1.35, -0.925)
+shape = SubResource("WallBesideGapRight")
+
+[node name="WallAboveGap" type="CollisionShape3D" parent="PlayArea" unique_id=1183691272]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 1.67, -0.925)
+shape = SubResource("WallAboveGap")
+
+[node name="CabbageFeeder" type="Node3D" parent="." unique_id=1541387618]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 0.9, 1.3)
+script = ExtResource("8_feeder")
+
+[node name="SaleWindow" type="Area3D" parent="." unique_id=1285898375 node_paths=PackedStringArray("coins")]
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+script = ExtResource("9_sale")
+coins = NodePath("../Coins")
+
+[node name="Zone" type="CollisionShape3D" parent="SaleWindow" unique_id=1834349578]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 0.92, -1.01)
+shape = SubResource("SaleZone")
+
+[node name="Coins" type="MultiMeshInstance3D" parent="." unique_id=1083958965 node_paths=PackedStringArray("deposit")]
+multimesh = SubResource("CoinMulti")
+script = ExtResource("10_coins")
+deposit = NodePath("../TallyMachine/Intake")
+
+[node name="TallyMachine" parent="." instance=ExtResource("12_tally")]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, -1.14, 0.76, -0.67)
+
+[node name="Suck" type="AudioStreamPlayer3D" parent="SaleWindow"]
+stream = SubResource("Rand_cabbage_suck")
+bus = &"SFX"
+min_interval = 0.05
+script = ExtResource("13_cue")
+
+[node name="Bounce" type="AudioStreamPlayer3D" parent="Coins"]
+stream = SubResource("Rand_coin_bounce")
+bus = &"SFX"
+max_polyphony = 3
+min_interval = 0.035
+script = ExtResource("13_cue")
+
+[node name="Land" type="AudioStreamPlayer3D" parent="Coins"]
+stream = SubResource("Rand_coin_land")
+bus = &"SFX"
+max_polyphony = 3
+min_interval = 0.045
+volume_db = -4.0
+script = ExtResource("13_cue")
+
+[node name="Collect" type="AudioStreamPlayer3D" parent="Coins"]
+stream = SubResource("Rand_coin_collect")
+bus = &"SFX"
+max_polyphony = 3
+min_interval = 0.05
+volume_db = -6.0
+script = ExtResource("13_cue")
+
+[node name="Deposit" type="AudioStreamPlayer3D" parent="Coins"]
+stream = SubResource("Rand_coin_deposit")
+bus = &"SFX"
+max_polyphony = 3
+min_interval = 0.05
+script = ExtResource("13_cue")
+
+[node name="Overlay" type="CanvasLayer" parent="." unique_id=1259288364]
+
+[node name="Vignette" type="ColorRect" parent="Overlay" unique_id=1217616638]
+material = SubResource("VignetteMat")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MapSpecificSettings" parent="." unique_id=1221488417 instance=ExtResource("5_graphics")]
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=913145905]
+layer = 2
+
+[node name="InGameMenu" parent="UI" unique_id=520305776 instance=ExtResource("6_menu")]
+
+[connection signal="bounced" from="Coins" to="Coins/Bounce" method="cue"]
+[connection signal="landed" from="Coins" to="Coins/Land" method="cue"]
+[connection signal="collected" from="Coins" to="Coins/Collect" method="cue"]
+[connection signal="deposited" from="Coins" to="Coins/Deposit" method="cue"]

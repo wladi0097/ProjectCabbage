@@ -1,0 +1,291 @@
+---
+name: godotAssetCreate
+description: Design and build an original 3D asset for Project Cabbage from scratch (a prop like the cabbage, coin jar or crate, a stall fixture like the chalkboard or chute, a diorama building or machine). Covers ideas and Blender mockups for sign-off, the scripted .blend with shared materials, one skinned mesh for moving parts, Godot import, materials, scene and script, screenshots in Godot and a mandatory independent art review. Use /godotAssetImport for outside assets and /godotSoundCreate for its sounds.
+argument-hint: "[what to make, e.g. 'the coin jar that fills as you sell']"
+---
+
+# Godot asset create
+
+Make the thing the user describes so it fits Project Cabbage's table scene, stays
+cheap enough to show many copies at once, and is checked in Godot before
+handover. Every asset is built by a Python script in headless Blender, so a
+review round only changes numbers.
+
+The first assets built this way go in a "Worked examples" list at the end of
+this file, with their scripts under `examples/`. Copy from them instead of
+starting blank. When the user corrects a rule here, fix this skill in the same
+turn.
+
+Input: $ARGUMENTS
+
+## 1. Ideas before anything else
+
+- Read the request, then `research/index.md`, the GDD
+  (`research/cabbage-incremental-gdd.md`) and `research/gameplan.md` for
+  where the asset appears, what it does and which phase it belongs to.
+- Offer 2–3 options per part (shape, how it moves or reacts, where it sits),
+  recommend one, and ask which. Don't build before the user picks.
+- Then **mockups**: quick headless renders (`preview.py`) beside the 1.85 m
+  scale capsule, with every state shown (empty/full, closed/open,
+  idle/working). Send them with `SendUserFile` and iterate. The user can only
+  judge colour on a **textured** mockup, so texture from the second round on.
+- Ask once whether the asset needs a texture of its own. Otherwise reuse one
+  (§4).
+
+## 2. Style: does it belong in this game?
+
+From the user's decisions (2026-10-30) and the GDD. Update this section as
+the user decides more:
+
+- **One fixed scene: a table seen from above at an angle,** like
+  `research/camera-reference.webp` (layout in `research/layout-sketch.png`):
+  a window to the street along the top (no customers; just a glimpse of street and crates),
+  interactables down the left, the cabbage pile in the rest. The camera
+  never moves, so every asset must read **from above at that angle and at
+  that distance**. Judge the silhouette and the top face first.
+- **Shapes like the reference, mood like the capsule.** Chunky, slightly
+  exaggerated, readable stylized forms and lots of physical objects, coins and
+  particles flying, as in the reference. But the mood is **dark, dystopian
+  corporate** like `research/capsule idea.png`: cold, desaturated grey-sage,
+  bureaucratic mid-century office (think Severance, Brazil, Papers Please).
+  The user rejected a first pass for looking like "a small cute house in the
+  suburbs": no red brick, no painted cottage windows, no rustic market table.
+  **The fresh green cabbage is the one saturated thing on screen.**
+- **Later phases arrive on the table** as new panels, machines and models
+  (maps, screens, a little rocket). They must fit beside the earlier props
+  and leave room for the cabbage pile.
+- **Analog vs. digital.** Everything the player owns is hand-made and
+  physical: wood, chalk, burlap, clay, tin, worn paint. Everything from the
+  supply chain is a glowing screen or ticker. Keep the two clearly apart.
+  Screens slowly replacing hand tools is a deliberate tone lever.
+- **Dark from the start, darker later.** The GDD's "cozy, then quietly
+  sinister" arc now starts already cold and corporate; later phases get more
+  clinical and oppressive. Never cartoon-scary.
+- **Corporate satire.** The language around the humble stall is corporate
+  (invoices, "units", tickers, notices on the desk).
+
+What to avoid on first passes: detail that disappears from the camera's
+distance, thin parts that vanish from above, uniform flat grey, glass or
+screens that glow flat white (keep emission low and saturated), details
+nobody asked for.
+Metal near lettering or numbers (bezels, plates, hoppers) stays matte,
+roughness 0.6 or more: the desk lamp glares glossy metal out and the user
+could not read the tally machine's digits (2026-10-30).
+
+## 3. Scale, origin, orientation
+
+| Thing | Rule |
+| --- | --- |
+| Person (scale ref) | ~1.85 m |
+| Cabbage | 0.18 m mesh, shown at 1.5× (~0.27 m) in MainStoryWorld; many on screen, keep it cheap (§5) |
+| Table | top at y 0.75, x −3.2…+3.2, z −0.75…+1.25; left section x < −0.6, mat x −0.45…+1.85, z −0.6…+1.1, top 0.76 |
+| Back wall | inner face z −0.80, outer −1.05; window opening x −0.55…+1.95, y 0.75…1.90, over the mat. Sill top flush at 0.75; lower sash raised, open gap y 0.75…1.07. Street at y 0.5 (ground floor, just below the sill), plain empty crates just outside at z ≈ −1.4 |
+| Game camera | (0.25, 3.2, 1.6) looking at (0.25, 0.75, 0.25), vertical FOV 40° |
+| Front | Blender −Y = Godot +Z. The camera looks at the table from the front-top; props face it |
+| Origin, free-standing | floor centre |
+| Origin, on a wall | back centre |
+| Origin, thrown/rolled prop (the cabbage) | its centre of mass, so physics and spin look right |
+| Origin, moving parts | each bone's head at the part's pivot |
+
+## 4. Materials: reuse first
+
+Every surface is a draw call, so a new material needs a reason. Keep the list
+below current: every shared material gets a row when it is made.
+
+| Material | Use |
+| --- | --- |
+| `table_wood.tres` | dark grey-brown desk wood (ambientCG Wood060, stylized), `uv1_scale` 0.6 |
+| `table_steel` (embedded in `table.blend`) | dark brushed steel: desk edge band, divider, legs. Extract to a `.tres` when a second asset needs it |
+| `table_mat.tres` | the cabbage mat: dark grey-green leather blotter, generated texture, UV 0–1 over the mat |
+| `cabbage.tres` | the cabbage: one generated atlas, one tint row per variant, cheap backlight, low specular (0.2), faint rim. No clearcoat: the user found it "way too shiny" |
+| `room_wall.tres` | grey-sage painted concrete blocks, generated, `uv1_scale` 0.41667 |
+| `room_window.tres`, `room_blinds.tres` | flat dark steel / flat grey, no textures |
+| `room_street.tres` | wet concrete paving outside, generated, `uv1_scale` 0.41667 |
+| `hand.tres` | the player's 3D glove: generated `hand_fabric` weave (`hand_tex.py`), triplanar `uv1_scale` 25 (the remeshed glove has no UVs), tinted by the mesh's `Col` vertex colours (grey glove, charcoal suit, white shirt edge) |
+| `room_crates.tres` | weathered grey slat crates, "UNITS LOT 07" stencil, cabbage-green lumps; one generated atlas |
+| `coin.tres` | worn brass coin, generated (`coin_tex.py`): the face fills the UV square (top projection), stamp = serif "1" in a dot ring. Metallic from ORM blue |
+| `machine_paint.tres`, `machine_metal.tres` | tiling greyscale enamel / brushed metal (`machine_tex.py`), `uv1_scale` 4, **tinted by vertex colour** (`vertex_color_use_as_albedo`): one surface serves enamel + bakelite, one serves chrome + brass. Reuse for later machines |
+| `machine_dial.tres` | the tally machine atlas: odometer digits 0-9 along v in u 0-0.11, black drum sides, brass "UNITS RECEIVED" plate in u 0.5-1, v 0.8-1 |
+
+- Shared materials live in `assets/materials/<name>.tres`, textures in
+  `assets/textures/<name>/<name>_albedo|normal|orm.png` (ORM = AO,
+  roughness, metal). ambientCG or Poly Haven 1K is the default source; see
+  /godotAssetImport §6 for the `.import` settings.
+- **Store colour textures as greyscale and tint them.** One texture, many
+  colours. A shader `vec3` tint is linear; a StandardMaterial `albedo_color`
+  is sRGB.
+- Small coloured parts share one **trim sheet** (one texture with rows of
+  paint, metal, wood, chalk and so on) instead of each getting a material.
+  Add a row rather than a material.
+- State (a jar's fill, a lamp's glow, a phase's desaturation) goes through
+  **instance uniforms**, so one material serves every copy. Two materials on
+  one mesh that each declare an instance uniform share slot 0 and overwrite
+  each other; give the second one `instance_index(1)`.
+
+## 5. Performance
+
+Desktop PC, Forward+. The cost to watch is **many copies** (an incremental
+game multiplies everything) and the table filling up every phase. These are
+starting values; tighten them when a profile says so.
+
+| Budget | Repeated prop (cabbage, coin, crate) | Hero piece (stall, chalkboard, rocket) |
+| --- | --- | --- |
+| Surfaces (draw calls) | 1–2 | ≤ 4, moving parts included |
+| Triangles | ≤ 1.5k | ≤ 15k |
+| Collision | one primitive, or none | a few boxes, never trimesh |
+| Lights | none, glow is emission | at most one, only if the scene needs it |
+
+- **More than ~20 copies → `MultiMeshInstance3D`**, not separate nodes. A
+  physics-thrown cabbage is a node only while it flies, then it goes back
+  into a MultiMesh or is freed.
+- **Moving parts are one skinned mesh**: one root bone per part, rigid
+  weights, posed from script (§7). Separate objects multiply draws.
+- Let Godot generate LODs. Set `visibility_range_end` on small props that the
+  camera never sees up close.
+- Particles: one-shot `CPUParticles3D` or `GPUParticles3D`, ~24 quads, only
+  while emitting.
+- Measure with `Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME` in a probe.
+
+## 6. Build in Blender (headless)
+
+Blender 5.2: `"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"`.
+Never touch the user's open Blender session.
+
+Write `<asset>_geo.py` in the scratchpad (it defines materials, geometry,
+`ASSET`, `FRAME` and optionally `STATES`), then:
+
+```bash
+cat .claude/skills/godotAssetCreate/blender_lib.py <scratch>/<asset>_geo.py .claude/skills/godotAssetCreate/preview.py > <scratch>/build.py
+"/c/Program Files/Blender Foundation/Blender 5.2/blender.exe" -b --factory-startup -P "$(cygpath -am <scratch>/build.py)" -- "$(cygpath -am assets/meshes/<Category>/<snake_name>.blend)" "$(cygpath -am <scratch>/shots)"
+```
+
+Add `SAVE=1` in front to save the `.blend`. `TEX=<dir>/` overrides the
+texture folder.
+
+- Always pass **absolute** paths (`cygpath -am`); relative ones land in `C:\`.
+- `blender_lib.py` helpers: `material`, `emissive`, `textured`, `box`/`boxed`/
+  `part_box` (bevelled boxes), `lathe`/`lathed`/`spin` (lathe profiles; `spin`
+  stands upright), `tube`/`rod` (swept tubes), `merge`, `finish`, `boolean`,
+  `absorb`, `rig`, `at`.
+- `finish()` marks edges sharper than 35° as sharp, adds a WeightedNormal
+  modifier, and box-projects UVs at 1 unit = 1 m.
+- `preview.py` sets up a neutral backdrop, warm key and cool fill light, and
+  the scale capsule. It shoots `<ASSET>_rest.png` plus one png per `STATES`
+  entry (each a function that poses the armature's bones; bone-local Y is
+  world Z for upright bones), and prints `TRIS`. Preview objects end in
+  `-noimp` and are removed before saving.
+- Save to `assets/meshes/<Category>/<snake_name>.blend` (Category:
+  `Props`, `Stall`, `Buildings`, `Machines`, … in PascalCase; create it if
+  missing). Delete only the `<your file>.blend1` your own save just created,
+  never a glob: other `.blend1` files are the user's backups.
+- Write `<name>.blend.import` before the first import: map every material
+  slot to its `.tres` in `_subresources` (as in /godotAssetImport §8). Once a
+  first `.blend.import` exists, copy it and drop the `uid=`, `path=` and
+  `dest_files=` lines.
+
+**UV traps (each cost a review round in the last project):**
+- A mesh pulled in with `absorb()` brings its own `UVMap`. `finish()` reuses
+  it; if you create UVs elsewhere, use `layers.uv.get("UVMap") or new`, or
+  the projected UVs land on `UVMap.001` and every texture turns flat.
+- A second UV map (decals, labels) must not be wired into a Blender
+  material's base colour, or Godot's glTF import swaps UV1 and UV2 on that
+  surface. Keep the preview material on the first map, with
+  `uv_layers["UVMap"]` active and `active_render`.
+- Lathe open shapes (a jar, a bowl) as a closed profile. An open one gets its
+  normals flipped by `recalc_face_normals` and Godot culls it.
+- Vertex colours reach Godot only if the Blender material reads the colour
+  attribute and it is the render colour, **and** the `.blend.import` has
+  `blender/meshes/vertex_colors=0` (the enum is Material, Active, None: the
+  `2` copied from the cabbage's import means None). `1` (Active) works too
+  (tally machine).
+- `merge()` overwrites every face's material index. For a part that carries
+  several materials (a drum with dial + caps), `bmesh.ops.transform` it and
+  hand it to `rig()` directly.
+- Check what arrived, never assume: run `probe_import_tree.gd` (§7).
+
+## 7. Godot
+
+Godot: `C:\Users\wladi\Desktop\Godot_v4.7.2-stable_win64.exe`.
+
+**Import.** If the editor is open, ask the user to focus it once (it imports
+on focus) and to close any scene tab you will edit. Never run `--import`
+beside an open editor. An open editor also **saves its in-memory copy of a
+`.tres` over your edit**: after the user touches the editor, re-read every
+material you changed. With the editor closed:
+
+```powershell
+Start-Process -FilePath 'C:\Users\wladi\Desktop\Godot_v4.7.2-stable_win64.exe' -ArgumentList '--headless','--path','C:\Users\wladi\Desktop\ProjectCabbage','--import' -WorkingDirectory 'C:\Users\wladi\Desktop\ProjectCabbage' -Wait -PassThru -NoNewWindow
+```
+
+Then print what arrived:
+
+```powershell
+& 'C:\Users\wladi\Desktop\Godot_v4.7.2-stable_win64.exe' --headless --path 'C:\Users\wladi\Desktop\ProjectCabbage' -s 'C:/Users/wladi/Desktop/ProjectCabbage/.claude/skills/godotAssetCreate/probe_import_tree.gd' -- res://assets/meshes/<Category>/<name>.blend
+```
+
+(Tested 2026-10-30.) A Blender armature arrives as
+`<root>/Armature/Skeleton3D/<Mesh>`, with identity bone rests at the pivots.
+A bone named like its mesh gets renamed (`Lid` → `Lid_2`), so give bones
+their own names (`LidHinge`).
+
+**Scene.** `entities/<name>/<name>.tscn` for things the player or the
+simulation acts on, `worlds/components/<name>.tscn` for table and window dressing.
+Root node of the right type, the imported model as a `Model` child, collision
+only if physics needs it. Check the folder for a similar scene first and
+match it.
+
+**Script.** Keep the logic in `static func`s (progress → pose, value → look)
+so it can be tested without a scene. The node only adapts. It **snaps** to
+the current state in `_ready` (a loaded save stays silent) and animates only
+on change. Pose root bones like this:
+
+```gdscript
+skeleton.set_bone_pose_position(i, rest.origin + shift)
+skeleton.set_bone_pose_rotation(i, Quaternion(axis, angle) * rest.basis.get_rotation_quaternion())
+```
+
+Sound slots stay as exports with null streams. /godotSoundCreate fills them.
+
+**Tests.** Once the project has a test setup in `tests/`, add tests for the
+static functions (each state's pose, cue order). Until then, say in the
+report that there are none.
+
+## 8. Look at it, then have it judged
+
+1. A **probe scene** in the scratchpad (`extends SceneTree`, run with `-s`,
+   needs a window, so say so): instance the asset in a plain lit scene (sun
+   with shadows, sky, SSAO), drive every state through its API, and shoot
+   each state plus mid-animation at the distances its phase shows it from
+   from the fixed game camera (and one close-up). Print the draw calls.
+2. Make a contact sheet (`contact_sheet.py`; the system Python has PIL, in Git
+   Bash call it as `powershell -NoProfile -Command "python ..."`) and look at
+   every shot yourself.
+3. **Independent review, every time:** spawn a fresh agent that has seen no
+   code. Give it the style of §2, what the asset is and does, and the
+   screenshot paths. Ask: does it look good and read at gameplay distance;
+   does it match the reference (chunky, stylized, readable from above?); do the
+   states read instantly; a ranked list of improvements, cheap ones marked.
+   Apply what is cheap and right, re-shoot, and report what was deferred.
+4. Kill only the Godot and Blender processes you started.
+
+## 9. Hand over
+
+- Add new shared materials to §4, and the asset to "Worked examples" below
+  with its build script copied to `examples/`.
+- Report: files built, API and exports, triangles and draw calls, materials
+  reused vs new, sound slots, where the screenshots are, and the review
+  verdict with what was applied or deferred.
+
+## Worked examples
+
+First vibe check (2026-10-30), scripts in `examples/`: `table_geo.py` + `table_preview.py` + `table_wood_pack.py` / `table_mat_pack.py` (desk + mat), `cabbage_geo.py` + `cabbage_tex.py` + `cabbage_preview.py`, `room_geo.py` + `room_tex.py`. The first pass (rustic table, brick room, street) was rejected as "cute suburban house"; signed off by the user: `research/shots/vibe_check_1.png`.
+
+Hand cursor (2026-10-30): `hand_geo.py` + `hand_save.py`, a cartoon clerk's glove in cold grey (3 fingers + thumb, puffy palm, flared cuff, white shirt edge, short rounded sleeve stub). Blocked out from a palm ball and finger capsules, fused by a voxel remesh (+ smooth, decimate) into one seamless skin, weighted by script per finger chain (`chain_weights`: a vertex follows only its own finger, blended across each knuckle; the rest is Palm) to chained finger bones, which point +Z for identity rests. Heat weights (`ARMATURE_AUTO`) bled between fingers and dragged the palm: don't use them for hands. Stubby fingers can't curl a 265 deg fist without folding into a lump: keep a fist around 175 deg; rigid Sleeve bone that runs right up to the back of the hand (no wrist or glove cuff showing) and stays flatter than the hand's dome, or it hides the glove from the camera; vertex colours, one surface. Keep ~3 voxels of gap between fingers or the remesh webs them; poses live in `entities/hand/hand_model.gd`. User feedback: a boxy realistic hand was "too big and too blocky"; a steep sleeve shows its end cap as a black disc to the camera, so keep it a short stub. No stitch lines on the back: the user found them too Mickey Mouse.
+
+Stage 1 (2026-10-30): `coin_geo.py` + `coin_tex.py` (lathed coin, top-projected stamp UVs, mesh extracted to `coin.res` via `save_to_file` for the MultiMesh); `tally_machine_geo.py` + `machine_tex.py` (boolean window recess, nine seam-split drum bones, vertex-coloured trim surfaces, atlas UVs written after `rig()`). The first machine (adding machine with keys and crank) was rejected: too low poly, untextured, and keys/crank looked operable. The first coin stamp (cabbage-leaf curves) read as anatomy: keep emblems blunt (numerals, seals). In the world the tally machine is shown at 1.3× so the drums read from the game camera.
+
+The previous project's examples (industrial machines, doors, skinned rigs,
+trim-sheet mapping, decal UV2) are in
+`C:\Users\wladi\Desktop\UnitedExpedition\.claude\skills\godotAssetCreate\examples\`.
+Read them for technique only: their style, materials and paths don't apply
+here.

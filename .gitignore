@@ -1,0 +1,23 @@
+# Godot 4+ specific ignores
+.godot/
+.import/
+export.cfg
+.mono/
+data_*/
+dist/
+*.vs
+*.tmp
+*blend1
+*.DS_Store
+.env
+tools/
+research/
+.vscode
+worlds/lightbakes/*
+redist/shader_cache/
+addons/**/~*
+reports/*
+!reports/.gdignore
+
+# Addon demo/sample scenes - vendor content, not ours
+addons/*/demo/

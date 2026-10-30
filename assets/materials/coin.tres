@@ -1,0 +1,20 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/coin/coin_albedo.png" id="1_albedo"]
+[ext_resource type="Texture2D" path="res://assets/textures/coin/coin_normal.png" id="2_normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/coin/coin_orm.png" id="3_packed"]
+
+[resource]
+
+albedo_texture = ExtResource("1_albedo")
+metallic = 1.0
+metallic_texture = ExtResource("3_packed")
+metallic_texture_channel = 2
+roughness_texture = ExtResource("3_packed")
+roughness_texture_channel = 1
+normal_enabled = true
+normal_texture = ExtResource("2_normal")
+ao_enabled = true
+ao_texture = ExtResource("3_packed")
+ao_texture_channel = 0
+uv1_scale = Vector3(1, 1, 1)

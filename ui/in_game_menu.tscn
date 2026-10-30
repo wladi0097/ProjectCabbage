@@ -1,0 +1,109 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/in_game_menu.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://ui/elements/button_with_sound.tscn" id="2_button"]
+[ext_resource type="PackedScene" path="res://ui/elements/confirm_panel.tscn" id="3_confirm"]
+[ext_resource type="PackedScene" path="res://ui/sub/settings_ui.tscn" id="4_settings"]
+[ext_resource type="PackedScene" path="res://ui/elements/version_label.tscn" id="5_version"]
+
+[node name="InGameMenu" type="Control" groups=["blocks_hand"]]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Scrim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.17, 0.19, 0.15, 0.72)
+
+[node name="Page" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card" type="PanelContainer" parent="Page"]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+theme_type_variation = &"MenuCard"
+
+[node name="Nav" type="VBoxContainer" parent="Page/Card"]
+layout_mode = 2
+theme_type_variation = &"ListStack"
+
+[node name="FormHeader" type="Label" parent="Page/Card/Nav"]
+layout_mode = 2
+theme_type_variation = &"FormLabel"
+text = "menu.formHeader"
+
+[node name="HeaderRule" type="HSeparator" parent="Page/Card/Nav"]
+layout_mode = 2
+
+[node name="Continue" parent="Page/Card/Nav" instance=ExtResource("2_button")]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"NavButton"
+text = "menu.continue"
+
+[node name="Settings" parent="Page/Card/Nav" instance=ExtResource("2_button")]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"NavButton"
+text = "settings"
+
+[node name="Quit" parent="Page/Card/Nav" instance=ExtResource("2_button")]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"NavButton"
+text = "menu.quit"
+
+[node name="FooterRule" type="HSeparator" parent="Page/Card/Nav"]
+layout_mode = 2
+
+[node name="SessionNote" type="Label" parent="Page/Card/Nav"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_type_variation = &"NoteLabel"
+text = "menu.sessionNote"
+autowrap_mode = 3
+
+[node name="SettingsUi" parent="." instance=ExtResource("4_settings")]
+visible = false
+layout_mode = 1
+
+[node name="VersionLabel" parent="." instance=ExtResource("5_version")]
+layout_mode = 1
+
+[node name="QuitConfirm" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.17, 0.19, 0.15, 0.72)
+
+[node name="Panel" parent="QuitConfirm" instance=ExtResource("3_confirm")]
+layout_mode = 1
+message = "menu.quitConfirm"
+confirm_text = "menu.quit"
+
+[connection signal="clicked" from="Page/Card/Nav/Continue" to="." method="_on_continue_clicked"]
+[connection signal="clicked" from="Page/Card/Nav/Settings" to="." method="_on_settings_clicked"]
+[connection signal="clicked" from="Page/Card/Nav/Quit" to="QuitConfirm" method="show"]
+[connection signal="exited" from="SettingsUi" to="Page" method="show"]
+[connection signal="cancelled" from="QuitConfirm/Panel" to="QuitConfirm" method="hide"]
+[connection signal="confirmed" from="QuitConfirm/Panel" to="." method="_on_quit_confirmed"]
