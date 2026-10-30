@@ -96,16 +96,18 @@ below current: every shared material gets a row when it is made.
 | --- | --- |
 | `table_wood.tres` | dark grey-brown desk wood (ambientCG Wood060, stylized), `uv1_scale` 0.6 |
 | `table_steel` (embedded in `table.blend`) | dark brushed steel: desk edge band, divider, legs. Extract to a `.tres` when a second asset needs it |
-| `table_mat.tres` | the cabbage mat: dark grey-green leather blotter, generated texture, UV 0–1 over the mat |
+| `table_mat.tres` | the cabbage mat: dark grey-green leather blotter, generated texture (`table_mat_pack.py`), UV 0–1 over the mat. Noise regenerated 2026-10-30 with the pebble grain 2× coarser and fainter and the mottle 4× larger: the finer noise was "too noticeable" |
 | `cabbage.tres` | the cabbage: one generated atlas, one tint row per variant, cheap backlight, low specular (0.2), faint rim. No clearcoat: the user found it "way too shiny" |
 | `room_wall.tres` | grey-sage painted concrete blocks, generated, `uv1_scale` 0.41667 |
 | `room_window.tres`, `room_blinds.tres` | flat dark steel / flat grey, no textures |
 | `room_street.tres` | wet concrete paving outside, generated, `uv1_scale` 0.41667 |
 | `hand.tres` | the player's 3D glove: generated `hand_fabric` weave (`hand_tex.py`), triplanar `uv1_scale` 25 (the remeshed glove has no UVs), tinted by the mesh's `Col` vertex colours (grey glove, charcoal suit, white shirt edge) |
 | `room_crates.tres` | weathered grey slat crates, "UNITS LOT 07" stencil, cabbage-green lumps; one generated atlas |
+| `price_slate.tres` | dark chalk slate with faint eraser haze, generated (`examples/slate_tex.py`), `uv1_offset` 0.5 so the face sits mid-tile |
 | `coin.tres` | worn brass coin, generated (`coin_tex.py`): the face fills the UV square (top projection), stamp = serif "1" in a dot ring. Metallic from ORM blue |
 | `machine_paint.tres`, `machine_metal.tres` | tiling greyscale enamel / brushed metal (`machine_tex.py`), `uv1_scale` 4, **tinted by vertex colour** (`vertex_color_use_as_albedo`): one surface serves enamel + bakelite, one serves chrome + brass. Reuse for later machines |
 | `machine_dial.tres` | the tally machine atlas: odometer digits 0-9 along v in u 0-0.11, black drum sides, brass "UNITS RECEIVED" plate in u 0.5-1, v 0.8-1 |
+| `ramp_steel.tres` | brushed sheet steel for big flat parts (the supply chute, its dock): own tiling texture (`ramp_steel_tex.py`, faint streaks along U, soft grime), `uv1_scale` 2, tint 0.68. The shared `machine_metal` grain looked speckled at that size, an untextured steel was rejected as "no texture", and a first brushed pass with strong streaks read as wood planks |
 
 - Shared materials live in `assets/materials/<name>.tres`, textures in
   `assets/textures/<name>/<name>_albedo|normal|orm.png` (ORM = AO,
@@ -228,6 +230,8 @@ Then print what arrived:
 A bone named like its mesh gets renamed (`Lid` → `Lid_2`), so give bones
 their own names (`LidHinge`).
 
+**Hand-written transforms in a `.tscn` list the basis by rows**: `Transform3D(xx, yx, zx, xy, yy, zy, xz, yz, zz, ox, oy, oz)` is wrong, write row 0 = (X.x, Y.x, Z.x) etc. Writing columns transposes the rotation (labels, colliders and sprites came out sideways once). Print the rows from the build script when a collider must match a Blender part (`supply_ramp_geo.py` does).
+
 **Scene.** `entities/<name>/<name>.tscn` for things the player or the
 simulation acts on, `worlds/components/<name>.tscn` for table and window dressing.
 Root node of the right type, the imported model as a `Model` child, collision
@@ -283,6 +287,27 @@ First vibe check (2026-10-30), scripts in `examples/`: `table_geo.py` + `table_p
 Hand cursor (2026-10-30): `hand_geo.py` + `hand_save.py`, a cartoon clerk's glove in cold grey (3 fingers + thumb, puffy palm, flared cuff, white shirt edge, short rounded sleeve stub). Blocked out from a palm ball and finger capsules, fused by a voxel remesh (+ smooth, decimate) into one seamless skin, weighted by script per finger chain (`chain_weights`: a vertex follows only its own finger, blended across each knuckle; the rest is Palm) to chained finger bones, which point +Z for identity rests. Heat weights (`ARMATURE_AUTO`) bled between fingers and dragged the palm: don't use them for hands. Stubby fingers can't curl a 265 deg fist without folding into a lump: keep a fist around 175 deg; rigid Sleeve bone that runs right up to the back of the hand (no wrist or glove cuff showing) and stays flatter than the hand's dome, or it hides the glove from the camera; vertex colours, one surface. Keep ~3 voxels of gap between fingers or the remesh webs them; poses live in `entities/hand/hand_model.gd`. User feedback: a boxy realistic hand was "too big and too blocky"; a steep sleeve shows its end cap as a black disc to the camera, so keep it a short stub. No stitch lines on the back: the user found them too Mickey Mouse.
 
 Stage 1 (2026-10-30): `coin_geo.py` + `coin_tex.py` (lathed coin, top-projected stamp UVs, mesh extracted to `coin.res` via `save_to_file` for the MultiMesh); `tally_machine_geo.py` + `machine_tex.py` (boolean window recess, nine seam-split drum bones, vertex-coloured trim surfaces, atlas UVs written after `rig()`). The first machine (adding machine with keys and crank) was rejected: too low poly, untextured, and keys/crank looked operable. The first coin stamp (cabbage-leaf curves) read as anatomy: keep emblems blunt (numerals, seals). In the world the tally machine is shown at 1.3× so the drums read from the game camera.
+
+Stage 1 restock (2026-10-30):
+- **`supply_ramp_geo.py`:**
+  - a tapered sheet-steel chute in its own frame `CH`, built from `hull()` slabs: wide at the lip so cabbages spread out, narrow at the top so they come down in a line;
+  - the wall ends are closed over the bent lip;
+  - a drum bar hangs under the front edge, and its drums turn about the wall direction (printed as `DRUM_AXIS`);
+  - a dock plate is braced to the legs;
+  - the script prints the Godot collider transform.
+- **`supply_console_geo.py`:** a slanted terminal with a boolean CRT recess and a `Plunger` bone. The price, sparkline and icon are Godot overlays.
+- **`ramp_steel_tex.py`:** the chute steel.
+
+User corrections:
+- **One connected unit.** The counter, console and chute must read as one connected unit.
+  - A free-standing counter box and a shelf were rejected.
+  - A green box on the wall was rejected ("just the bar with the numbers").
+  - A steel strip between the wall and the numbers was rejected.
+  - The counter became just the drum bar, hung right under the chute's front edge, with full tally-size drums: at 3/4 size the digits were unreadable from the game camera. The chute was raised 7 cm to make room.
+- **Layout.** BUY sits in the bottom-right corner below the chute, and the button carries an icon, not text.
+- **Variable names.** Never name a variable `OUT` in a geo script: it overwrites `blender_lib.py`'s output path and the save fails.
+
+Stage 1 price slate (2026-10-30): **`price_slate_geo.py`** + **`slate_tex.py`**. A static (unrigged) desk slate tilted 61° back, so its face looks straight at the game camera; a wire kickstand behind and a chalk tray in front. The script prints the face centre, normal and up in Godot space for the Label3D and collider transforms. The chalk text is a Label3D (Oswald, off-white, semi-transparent). The slate texture is not tileable: a face whose box-projected UVs straddle 0 shows four quadrant seams, so the material shifts it with `uv1_offset` 0.5. User corrections: at 1.3× it was too big (now 1×, front-left beside the mat), and a drag-to-scrub control was replaced by clickable chalk `<` `>` labels that brighten and grow on hover; the art review asked for a darker frame (it read near-white under the desk lamp) and a cooler face.
 
 The previous project's examples (industrial machines, doors, skinned rigs,
 trim-sheet mapping, decal UV2) are in

@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" path="res://assets/textures/coin/coin_orm.png" id="3_packed"]
 
 [resource]
+vertex_color_use_as_albedo = true
 
 albedo_texture = ExtResource("1_albedo")
 metallic = 1.0

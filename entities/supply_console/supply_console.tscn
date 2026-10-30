@@ -1,0 +1,144 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/supply_console/supply_console.gd" id="1_console"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/pack_crate.svg" id="4_icon"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Machines/supply_console.blend" id="5_model"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_console_drop"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_press_1.wav" id="sfx_console_press_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_press_2.wav" id="sfx_console_press_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_denied_1.wav" id="sfx_console_denied_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_denied_2.wav" id="sfx_console_denied_2"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_thud_console_drop"]
+random_pitch = 1.03
+random_volume_offset_db = 1.5
+streams_count = 1
+stream_0/stream = ExtResource("sfx_console_drop")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_press_console_press"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_console_press_1")
+stream_1/stream = ExtResource("sfx_console_press_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_denied_console_denied"]
+random_pitch = 1.04
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_console_denied_1")
+stream_1/stream = ExtResource("sfx_console_denied_2")
+
+[sub_resource type="BoxShape3D" id="BodyShape"]
+size = Vector3(0.41, 0.08, 0.23)
+
+[sub_resource type="StandardMaterial3D" id="Amber"]
+shading_mode = 0
+albedo_color = Color(1, 0.62, 0.18, 1)
+
+[sub_resource type="CylinderShape3D" id="ButtonShape"]
+height = 0.08
+radius = 0.058
+
+[sub_resource type="StandardMaterial3D" id="DustMat"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.55, 0.53, 0.5, 0.5)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+
+[sub_resource type="QuadMesh" id="DustQuad"]
+material = SubResource("DustMat")
+size = Vector2(0.03, 0.03)
+
+[sub_resource type="Gradient" id="DustFade"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[node name="SupplyConsole" type="Node3D"]
+script = ExtResource("1_console")
+
+[node name="Model" parent="." instance=ExtResource("5_model")]
+
+[node name="IconMount" type="BoneAttachment3D" parent="Model/Armature/Skeleton3D"]
+bone_name = "Plunger"
+
+[node name="Icon" type="Sprite3D" parent="Model/Armature/Skeleton3D/IconMount"]
+transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, 0, 0.0342, 0.0103)
+pixel_size = 0.00055
+modulate = Color(0.16, 0.16, 0.15, 1)
+texture = ExtResource("4_icon")
+
+[node name="Body" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+
+[node name="Shape" type="CollisionShape3D" parent="Body"]
+shape = SubResource("BodyShape")
+
+[node name="Price" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, -0.002, 0.1088, -0.0197)
+pixel_size = 0.0007
+modulate = Color(1, 0.62, 0.18, 1)
+shaded = false
+text = "$6"
+font_size = 64
+outline_size = 0
+horizontal_alignment = 0
+
+[node name="Sparkline" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, -0.002, 0.0887, 0.0473)
+material_override = SubResource("Amber")
+
+[node name="Button" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.958, -0.287, 0, 0.287, 0.958, -0.115, 0.1194, 0.0043)
+
+[node name="Shape" type="CollisionShape3D" parent="Button"]
+shape = SubResource("ButtonShape")
+
+[node name="Interactable" type="Node" parent="Button"]
+script = ExtResource("2_interactable")
+pressable = true
+
+[node name="Dust" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 40
+lifetime = 1.4
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("DustQuad")
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.01
+emission_ring_radius = 0.24
+emission_ring_inner_radius = 0.18
+direction = Vector3(1, 0.2, 0)
+spread = 180.0
+flatness = 0.8
+gravity = Vector3(0, 0.05, 0)
+initial_velocity_min = 0.2
+initial_velocity_max = 0.5
+damping_min = 0.6
+damping_max = 1.0
+scale_amount_min = 0.6
+scale_amount_max = 1.6
+color_ramp = SubResource("DustFade")
+
+[node name="Thud" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_thud_console_drop")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="Press" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_press_console_press")
+bus = &"SFX"
+script = ExtResource("3_cue")
+min_interval = 0.08
+
+[node name="Denied" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_denied_console_denied")
+bus = &"SFX"
+script = ExtResource("3_cue")
+min_interval = 0.15

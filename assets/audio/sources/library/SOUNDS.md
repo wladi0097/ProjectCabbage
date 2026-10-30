@@ -92,3 +92,69 @@ Every ElevenLabs take generated for Project Cabbage, picked or not. One section 
 | `cabbage_out_crate_2.wav` | (above) | 0.60 s | -17 dB | — | — |
 | `cabbage_out_crate_3.wav` | (above) | 0.60 s | -17 dB | — | cabbage_suck_2 |
 | `cabbage_out_crate_4.wav` | (above) | 0.60 s | -17 dB | — | cabbage_suck_1 |
+
+### console_drop
+> A heavy enamel steel desk terminal dropped onto a steel shelf, single solid metallic clunk thud with a brief rattle, close-mic, dry
+
+| `console_drop_1.wav` | 0.5 s prompt | 1.00 s | 0 dB | — | — |
+| `console_drop_2.wav` | 0.5 s prompt | 1.00 s | 0 dB | — | console_drop |
+| `console_drop_3.wav` | 0.5 s prompt | 1.00 s | -7 dB | — | — |
+| `console_drop_4.wav` | 0.5 s prompt | 1.00 s | -11 dB | — | — |
+
+### console_press
+> A big chunky bakelite push button pressed down on an old office terminal, single solid mechanical clack, close-mic, dry
+
+| `console_press_1.wav` | 0.5 s prompt | 0.48 s | -2 dB | — | — |
+| `console_press_2.wav` | 0.5 s prompt | 0.48 s | -0 dB | — | console_press_2 |
+| `console_press_3.wav` | 0.5 s prompt | 0.48 s | -2 dB | — | — |
+| `console_press_4.wav` | 0.5 s prompt | 0.48 s | -0 dB | — | console_press_1 |
+
+### console_denied
+> An old office terminal refusing a request, one short low dull electric buzzer, brief, close-mic, dry
+
+| `console_denied_1.wav` | 0.5 s prompt | 0.60 s | -10 dB | — | — |
+| `console_denied_2.wav` | 0.5 s prompt | 0.60 s | -2 dB | — | console_denied_1 |
+| `console_denied_3.wav` | 0.5 s prompt | 0.60 s | -0 dB | — | console_denied_2 |
+| `console_denied_4.wav` | 0.5 s prompt | 0.60 s | -2 dB | — | — |
+
+### price_tick
+> A small amber CRT display refreshing to a new number, a tiny soft electronic blip with a faint relay click, close-mic, dry
+
+| `price_tick_1.wav` | 0.5 s prompt | 0.48 s | -1 dB | — | — |
+| `price_tick_2.wav` | 0.5 s prompt | 0.48 s | 0 dB | — | — |
+| `price_tick_3.wav` | 0.5 s prompt | 0.48 s | -0 dB | — | — |
+| `price_tick_4.wav` | 0.5 s prompt | 0.48 s | -33 dB | — | — |
+| `price_tick_5.wav` | 0.5 s prompt | 0.48 s | -35 dB | — | — |
+| `price_tick_6.wav` | 0.5 s prompt | 0.48 s | -22 dB | — | — |
+| `price_tick_7.wav` | 0.5 s prompt | 0.48 s | -7 dB | — | — |
+| `price_tick_8.wav` | 0.5 s prompt | 0.48 s | -0 dB | — | — |
+
+### price_tick_beep
+> A single tiny soft electronic beep from an old office terminal, one short muted blip then silence, close-mic, dry
+
+| `price_tick_beep_1.wav` | 0.5 s prompt | 0.48 s | -33 dB | — | — |
+| `price_tick_beep_2.wav` | 0.5 s prompt | 0.48 s | -35 dB | — | — |
+| `price_tick_beep_3.wav` | 0.5 s prompt | 0.48 s | -22 dB | — | — |
+| `price_tick_beep_4.wav` | 0.5 s prompt | 0.48 s | -7 dB | — | — (price_tick removed: the user wanted the console price update silent) |
+
+### cabbage_roll
+> A fresh cabbage rolling quickly down a sheet steel chute, short hollow metallic rumble, no impact, close-mic, dry
+
+| `cabbage_roll_1.wav` | 0.5 s prompt | 0.60 s | -4 dB | — | — |
+| `cabbage_roll_2.wav` | 0.5 s prompt | 0.60 s | -0 dB | — | cabbage_roll_1 |
+| `cabbage_roll_3.wav` | 0.5 s prompt | 0.60 s | -5 dB | — | cabbage_roll_2 |
+| `cabbage_roll_4.wav` | 0.5 s prompt | 0.60 s | -2 dB | — | cabbage_roll_3 |
+
+### chalk_tap
+Prompt: "A single quick stroke of chalk on a small slate board, short dry scratch with a tiny tap, close-mic, dry"
+| `chalk_tap_take_1.wav` | chalk stroke | 0.48 s | -14 dB | 0.18 s | chalk_tap_1 |
+| `chalk_tap_take_2.wav` | chalk stroke | 0.48 s | -26 dB | 0.01 s | — (near-silent) |
+| `chalk_tap_take_3.wav` | chalk stroke | 0.48 s | -7 dB | 0.33 s | chalk_tap_2 |
+| `chalk_tap_take_4.wav` | chalk stroke | 0.48 s | -18 dB | 0.21 s | — |
+
+### cabbage_refused
+Prompt: "A heavy cabbage tossed hard back in through an open window from outside, a short airy leafy whoosh, no impact, small room"
+| `cabbage_refused_take_1.wav` | toss whoosh | 0.68 s | -0 dB | 0.11 s | cabbage_refused_1 |
+| `cabbage_refused_take_2.wav` | toss whoosh | 0.68 s | -3 dB | 0.01 s | — |
+| `cabbage_refused_take_3.wav` | toss whoosh | 0.68 s | -2 dB | 0.08 s | cabbage_refused_2 |
+| `cabbage_refused_take_4.wav` | toss whoosh | 0.68 s | -0 dB | 0.13 s | cabbage_refused_3 |

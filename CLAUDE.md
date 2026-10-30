@@ -21,6 +21,10 @@ Every agent follows this for art, sound, UI and writing:
 - Delete an item in the same turn the work finishes. Never leave done items, logs or history in it.
 - Add an item only when the user mentions it or accepts a suggestion. Don't add your own ideas, deferred review points or "nice to have" items unasked; mention them in the reply instead.
 
+## Numbers
+
+`research/numbers.md` lists every number the save tracks, with its meaning and ideas for future use (not how it is calculated). Add a row in the same turn a new number enters `ressources/save/save_game.gd`.
+
 ## Skills
 
 - `/godotAssetCreate`: build an original 3D asset with scripted Blender, then check it in Godot.

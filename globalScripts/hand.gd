@@ -1,8 +1,8 @@
 extends Node
 ## The player's hand: finds the Interactable under the mouse, grabs it on press, lets go on
 ## release, and drives the 3D hand that replaces the OS cursor (pointing, open over
-## something, closed on what it holds). Over UI, or while a menu in the "blocks_hand" group is
-## open, the OS cursor comes back and the hand lets go of the mouse.
+## something, closed on what it holds). Over UI, while a menu in the "blocks_hand" group is
+## open, or while the window is unfocused, the OS cursor comes back and the hand lets go of the mouse.
 
 const MODEL := preload("res://entities/hand/hand_model.tscn")
 const RAY_LENGTH := 20.0
@@ -18,11 +18,21 @@ const WALL_Z := -0.76
 ## pinned against a wall keeps the mouse with it.
 const LEAD_SLACK := 0.08
 const LEAD_PER_SPEED := 0.07
+## Fingertip height over a hovered button (m, low..high) and the tapping speed (rad/s);
+## pressed, the tip sinks this far into it.
+const TAP_LIFT := Vector2(0.005, 0.03)
+const TAP_SPEED := 9.0
+const PRESS_LIFT := -0.006
+## The fingertip touches a button this far toward the player from the hovered spot, so the
+## glove trails off below it on screen instead of covering it.
+const TIP_BACK := 0.04
 
 var hovered: Interactable
 var held: Interactable
 
 var _model: HandModel
+## Where the mouse ray last hit the hovered thing; frozen while it is held.
+var _point := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -36,10 +46,13 @@ func _physics_process(_delta: float) -> void:
 		_release()
 	if held == null:
 		_set_hovered(_pick())
+		if hovered != null and hovered.catchable and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			held = hovered
+			held.grabbed.emit()
 
 
 func _process(delta: float) -> void:
-	var in_game := get_viewport().get_camera_3d() != null and get_viewport().gui_get_hovered_control() == null 			and not get_tree().get_nodes_in_group(&"blocks_hand").any(func(n: Node) -> bool:
+	var in_game := get_window().has_focus() and get_viewport().get_camera_3d() != null 			and get_viewport().gui_get_hovered_control() == null and not get_tree().get_nodes_in_group(&"blocks_hand").any(func(n: Node) -> bool:
 				return n is CanvasItem and (n as CanvasItem).is_visible_in_tree())
 	_model.visible = in_game
 	var mode := Input.MOUSE_MODE_HIDDEN if in_game else Input.MOUSE_MODE_VISIBLE
@@ -47,9 +60,15 @@ func _process(delta: float) -> void:
 		Input.mouse_mode = mode
 	if not in_game:
 		return
-	_model.pose = HandModel.pose_for(held != null, hovered != null)
+	var touching := held if is_instance_valid(held) else hovered
+	var pressing := is_instance_valid(touching) and touching.pressable
+	_model.pose = HandModel.pose_for(held != null, hovered != null, pressing)
 	var body := held.get_parent() as Node3D if is_instance_valid(held) else null
-	if body != null:
+	if pressing:
+		# Only the fingertip goes onto a button, tapping while it hovers, so the hand doesn't cover it.
+		var lift := tap_lift(Time.get_ticks_msec() / 1000.0, held != null)
+		_model.move_to(_point + Vector3(0.0, lift, TIP_BACK), delta)
+	elif body != null:
 		var speed := (body as RigidBody3D).linear_velocity.length() if body is RigidBody3D else 0.0
 		var mouse := point_on_height(body.global_position.y)
 		_warp_to(mouse, rein(body.global_position, mouse, LEAD_SLACK + speed * LEAD_PER_SPEED))
@@ -78,6 +97,12 @@ func point_on_height(height: float) -> Vector3:
 	var hit: Variant = Plane(Vector3.UP, height).intersects_ray(
 			camera.project_ray_origin(mouse), camera.project_ray_normal(mouse))
 	return hit if hit != null else Vector3(0.0, height, 0.0)
+
+
+## How high the fingertip floats over a button: tapping between TAP_LIFT.x and .y while
+## hovering, pressed in (below the surface) while held.
+static func tap_lift(time: float, pressed: bool) -> float:
+	return PRESS_LIFT if pressed else lerpf(TAP_LIFT.x, TAP_LIFT.y, 0.5 + 0.5 * cos(time * TAP_SPEED))
 
 
 ## `point` pulled back to within `limit` of `anchor` on the horizontal plane.
@@ -109,6 +134,7 @@ func _pick() -> Interactable:
 	var query := PhysicsRayQueryParameters3D.create(from,
 			from + camera.project_ray_normal(mouse) * RAY_LENGTH, ~PLAY_AREA_LAYER)
 	var hit := camera.get_world_3d().direct_space_state.intersect_ray(query)
+	_point = hit.get("position", _point)
 	return Interactable.of(hit.get("collider"))
 
 

@@ -10,6 +10,9 @@ func _ready() -> void:
 	_check(HandModel.pose_for(false, false) == P.POINT, "idle should point")
 	_check(HandModel.pose_for(false, true) == P.OPEN, "hover should open")
 	_check(HandModel.pose_for(true, true) == P.GRAB and HandModel.pose_for(true, false) == P.GRAB, "holding should grab")
+	_check(HandModel.pose_for(false, true, true) == P.POINT and HandModel.pose_for(true, true, true) == P.POINT, "buttons should be pointed at")
+	_check(Hand.tap_lift(0.0, false) > Hand.tap_lift(PI / Hand.TAP_SPEED, false), "the fingertip should tap up and down")
+	_check(Hand.tap_lift(0.0, true) < 0.0, "a held button should be pressed in")
 
 	# A negative curl bends a finger (pointing -Z) down; spread turns it toward the thumb (-X).
 	var tip := HandModel.segment_rotation(0, 1, -90, 0) * Vector3.FORWARD

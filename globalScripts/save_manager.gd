@@ -3,6 +3,9 @@ extends Node
 const SETTINGS_PATH := "user://settings.tres"
 const SAVE_PATH := "user://savegame.tres"
 
+## The game is about to quit: last chance to put anything into the save before it is written.
+signal closing
+
 var settings: SettingsResource
 var save: SaveGame
 var seconds_away := 0
@@ -37,11 +40,11 @@ func write_settings() -> void:
 func load_save() -> void:
 	if FileAccess.file_exists(SAVE_PATH):
 		save = SafeResourceLoader.load(SAVE_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as SaveGame
+	seconds_away = away_seconds(save.last_played, int(Time.get_unix_time_from_system())) if save != null else 0
+	_played_since_msec = Time.get_ticks_msec()
 	if save == null:
 		save = _new_save()
-	seconds_away = away_seconds(save.last_played, int(Time.get_unix_time_from_system()))
-	_played_since_msec = Time.get_ticks_msec()
-	write_save()
+		write_save()
 
 
 func write_save() -> void:
@@ -82,6 +85,7 @@ static func master_bus_muted(focused: bool, mute_on_focus_exit: bool,
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		closing.emit()
 		write_save()
 		write_settings()
 		get_tree().quit()

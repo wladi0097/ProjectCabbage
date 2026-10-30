@@ -1,41 +1,69 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" format=3 uid="uid://djdj2djcoasv1"]
 
-[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="f_oswald"]
-[ext_resource type="FontFile" path="res://assets/fonts/NunitoSans.ttf" id="f_sans"]
-[ext_resource type="FontFile" path="res://assets/fonts/NotoSansJP.ttf" id="f_jp"]
-[ext_resource type="FontFile" path="res://assets/fonts/NotoSansKR.ttf" id="f_kr"]
-[ext_resource type="FontFile" path="res://assets/fonts/NotoSansSC.ttf" id="f_sc"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/paper.png" id="i_paper"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/checkbox_off.svg" id="i_box_off"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/checkbox_on.svg" id="i_box_on"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/toggle_off.svg" id="i_tog_off"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/toggle_on.svg" id="i_tog_on"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/slider_grabber.svg" id="i_grab"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/option_arrow.svg" id="i_arrow"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/radio_on.svg" id="i_radio_on"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/radio_off.svg" id="i_radio_off"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/dotted_box.svg" id="i_dbox"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/dotted_box_hover.svg" id="i_dbox_hover"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/dotted_underline.svg" id="i_dline"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/dotted_rule.svg" id="i_drule"]
+[ext_resource type="FontFile" uid="uid://bbgygyl5r28dn" path="res://assets/fonts/NotoSansJP.ttf" id="f_jp"]
+[ext_resource type="FontFile" uid="uid://cgsodsybxd6el" path="res://assets/fonts/NotoSansKR.ttf" id="f_kr"]
+[ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="f_oswald"]
+[ext_resource type="FontFile" uid="uid://bd1csfbq5wifs" path="res://assets/fonts/NunitoSans.ttf" id="f_sans"]
+[ext_resource type="FontFile" uid="uid://b3c4yklgner77" path="res://assets/fonts/NotoSansSC.ttf" id="f_sc"]
+[ext_resource type="Texture2D" uid="uid://oyvroc4fmmw1" path="res://assets/sprites/ui/option_arrow.svg" id="i_arrow"]
+[ext_resource type="Texture2D" uid="uid://depr6sgbvqh13" path="res://assets/sprites/ui/checkbox_off.svg" id="i_box_off"]
+[ext_resource type="Texture2D" uid="uid://bbs6uiia4b4wo" path="res://assets/sprites/ui/checkbox_on.svg" id="i_box_on"]
+[ext_resource type="Texture2D" uid="uid://ceq4gaq1r3kxd" path="res://assets/sprites/ui/dotted_box.svg" id="i_dbox"]
+[ext_resource type="Texture2D" uid="uid://du1j7j2yoonjv" path="res://assets/sprites/ui/dotted_box_hover.svg" id="i_dbox_hover"]
+[ext_resource type="Texture2D" uid="uid://cny6jh33e4vsw" path="res://assets/sprites/ui/dotted_underline.svg" id="i_dline"]
+[ext_resource type="Texture2D" uid="uid://bedeqwtg31ek7" path="res://assets/sprites/ui/dotted_rule.svg" id="i_drule"]
+[ext_resource type="Texture2D" uid="uid://col4b8w6oyy1d" path="res://assets/sprites/ui/slider_grabber.svg" id="i_grab"]
+[ext_resource type="Texture2D" uid="uid://5r8onpseu1jx" path="res://assets/sprites/ui/paper.png" id="i_paper"]
+[ext_resource type="Texture2D" uid="uid://c0r84gm4d1l7v" path="res://assets/sprites/ui/radio_off.svg" id="i_radio_off"]
+[ext_resource type="Texture2D" uid="uid://bg57oesm0aw7i" path="res://assets/sprites/ui/radio_on.svg" id="i_radio_on"]
+[ext_resource type="Texture2D" uid="uid://gcs50lay3iix" path="res://assets/sprites/ui/toggle_off.svg" id="i_tog_off"]
+[ext_resource type="Texture2D" uid="uid://hw1otieuv787" path="res://assets/sprites/ui/toggle_on.svg" id="i_tog_on"]
 
-[sub_resource type="FontVariation" id="F_jp_500"]
-base_font = ExtResource("f_jp")
-variation_opentype = {
-2003265652: 500
-}
+[sub_resource type="StyleBoxTexture" id="prim"]
+content_margin_left = 22.0
+content_margin_top = 7.0
+content_margin_right = 22.0
+content_margin_bottom = 7.0
+texture = ExtResource("i_dbox")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
 
-[sub_resource type="FontVariation" id="F_kr_500"]
-base_font = ExtResource("f_kr")
-variation_opentype = {
-2003265652: 500
-}
+[sub_resource type="StyleBoxFlat" id="none"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+draw_center = false
 
-[sub_resource type="FontVariation" id="F_sc_500"]
-base_font = ExtResource("f_sc")
-variation_opentype = {
-2003265652: 500
-}
+[sub_resource type="StyleBoxTexture" id="prim_hover"]
+content_margin_left = 22.0
+content_margin_top = 7.0
+content_margin_right = 22.0
+content_margin_bottom = 7.0
+texture = ExtResource("i_dbox_hover")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="card"]
+content_margin_left = 48.0
+content_margin_top = 36.0
+content_margin_right = 60.0
+content_margin_bottom = 48.0
+texture = ExtResource("i_paper")
+texture_margin_left = 24.0
+texture_margin_top = 24.0
+texture_margin_right = 24.0
+texture_margin_bottom = 24.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
 
 [sub_resource type="FontVariation" id="F_jp_700"]
 base_font = ExtResource("f_jp")
@@ -55,18 +83,29 @@ variation_opentype = {
 2003265652: 700
 }
 
-[sub_resource type="FontVariation" id="F_body"]
-fallbacks = Array[Font]([SubResource("F_jp_500"), SubResource("F_kr_500"), SubResource("F_sc_500")])
-base_font = ExtResource("f_sans")
-variation_opentype = {
-2003265652: 450
-}
-
 [sub_resource type="FontVariation" id="F_title"]
 fallbacks = Array[Font]([SubResource("F_jp_700"), SubResource("F_kr_700"), SubResource("F_sc_700")])
 base_font = ExtResource("f_oswald")
 variation_opentype = {
 2003265652: 600
+}
+
+[sub_resource type="FontVariation" id="F_jp_500"]
+base_font = ExtResource("f_jp")
+variation_opentype = {
+2003265652: 500
+}
+
+[sub_resource type="FontVariation" id="F_kr_500"]
+base_font = ExtResource("f_kr")
+variation_opentype = {
+2003265652: 500
+}
+
+[sub_resource type="FontVariation" id="F_sc_500"]
+base_font = ExtResource("f_sc")
+variation_opentype = {
+2003265652: 500
 }
 
 [sub_resource type="FontVariation" id="F_label"]
@@ -77,68 +116,24 @@ variation_opentype = {
 }
 spacing_glyph = 1
 
-[sub_resource type="StyleBoxTexture" id="card"]
-content_margin_left = 48.0
-content_margin_top = 36.0
-content_margin_right = 60.0
-content_margin_bottom = 48.0
-texture = ExtResource("i_paper")
-texture_margin_left = 24.0
-texture_margin_top = 24.0
-texture_margin_right = 24.0
-texture_margin_bottom = 24.0
+[sub_resource type="StyleBoxTexture" id="sep"]
+content_margin_top = 2.0
+texture = ExtResource("i_drule")
 axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
 
-[sub_resource type="StyleBoxFlat" id="field"]
-content_margin_left = 12.0
-content_margin_top = 6.0
-content_margin_right = 12.0
-content_margin_bottom = 6.0
-bg_color = Color(0.925, 0.906, 0.847, 1.0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.137, 0.145, 0.122, 1.0)
+[sub_resource type="StyleBoxFlat" id="fill"]
+content_margin_left = 0.0
+content_margin_top = 2.0
+content_margin_right = 0.0
+content_margin_bottom = 2.0
+bg_color = Color(0.31, 0.541, 0.169, 1)
 
-[sub_resource type="StyleBoxFlat" id="field_hover"]
-content_margin_left = 12.0
-content_margin_top = 6.0
-content_margin_right = 12.0
-content_margin_bottom = 6.0
-bg_color = Color(0.863, 0.902, 0.784, 1.0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.310, 0.541, 0.169, 1.0)
-
-[sub_resource type="StyleBoxTexture" id="prim"]
-content_margin_left = 22.0
-content_margin_top = 7.0
-content_margin_right = 22.0
-content_margin_bottom = 7.0
-texture = ExtResource("i_dbox")
-texture_margin_left = 4.0
-texture_margin_top = 4.0
-texture_margin_right = 4.0
-texture_margin_bottom = 4.0
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-
-[sub_resource type="StyleBoxTexture" id="prim_hover"]
-content_margin_left = 22.0
-content_margin_top = 7.0
-content_margin_right = 22.0
-content_margin_bottom = 7.0
-texture = ExtResource("i_dbox_hover")
-texture_margin_left = 4.0
-texture_margin_top = 4.0
-texture_margin_right = 4.0
-texture_margin_bottom = 4.0
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
+[sub_resource type="StyleBoxFlat" id="track"]
+content_margin_left = 0.0
+content_margin_top = 2.0
+content_margin_right = 0.0
+content_margin_bottom = 2.0
+bg_color = Color(0.698, 0.686, 0.627, 1)
 
 [sub_resource type="StyleBoxEmpty" id="nav"]
 content_margin_top = 4.0
@@ -153,221 +148,226 @@ expand_margin_bottom = -7.0
 axis_stretch_horizontal = 1
 draw_center = false
 
-[sub_resource type="StyleBoxFlat" id="tab"]
-content_margin_left = 24.0
+[sub_resource type="StyleBoxFlat" id="field"]
+content_margin_left = 12.0
 content_margin_top = 6.0
-content_margin_right = 24.0
+content_margin_right = 12.0
 content_margin_bottom = 6.0
-bg_color = Color(0.867, 0.843, 0.773, 1.0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_color = Color(0.137, 0.145, 0.122, 1.0)
-
-[sub_resource type="StyleBoxFlat" id="tab_hover"]
-content_margin_left = 24.0
-content_margin_top = 6.0
-content_margin_right = 24.0
-content_margin_bottom = 6.0
-bg_color = Color(0.925, 0.906, 0.847, 1.0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_color = Color(0.137, 0.145, 0.122, 1.0)
-
-[sub_resource type="StyleBoxFlat" id="tab_on"]
-content_margin_left = 24.0
-content_margin_top = 6.0
-content_margin_right = 24.0
-content_margin_bottom = 6.0
-bg_color = Color(0.925, 0.906, 0.847, 1.0)
-border_width_left = 2
-border_width_top = 4
-border_width_right = 2
-border_color = Color(0.310, 0.541, 0.169, 1.0)
-
-[sub_resource type="StyleBoxFlat" id="track"]
-content_margin_left = 0.0
-content_margin_top = 2.0
-content_margin_right = 0.0
-content_margin_bottom = 2.0
-bg_color = Color(0.698, 0.686, 0.627, 1.0)
-
-[sub_resource type="StyleBoxFlat" id="fill"]
-content_margin_left = 0.0
-content_margin_top = 2.0
-content_margin_right = 0.0
-content_margin_bottom = 2.0
-bg_color = Color(0.310, 0.541, 0.169, 1.0)
-
-[sub_resource type="StyleBoxFlat" id="popup"]
-content_margin_left = 6.0
-content_margin_top = 6.0
-content_margin_right = 6.0
-content_margin_bottom = 6.0
-bg_color = Color(0.925, 0.906, 0.847, 1.0)
+bg_color = Color(0.925, 0.906, 0.847, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.137, 0.145, 0.122, 1.0)
-shadow_color = Color(0.000, 0.000, 0.000, 0.2)
-shadow_size = 8
-shadow_offset = Vector2(0, 3)
+border_color = Color(0.137, 0.145, 0.122, 1)
+
+[sub_resource type="StyleBoxFlat" id="field_hover"]
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+bg_color = Color(0.863, 0.902, 0.784, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.31, 0.541, 0.169, 1)
 
 [sub_resource type="StyleBoxFlat" id="popup_hover"]
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(0.863, 0.902, 0.784, 1.0)
+bg_color = Color(0.863, 0.902, 0.784, 1)
+
+[sub_resource type="StyleBoxFlat" id="popup"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.925, 0.906, 0.847, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.137, 0.145, 0.122, 1)
+shadow_color = Color(0, 0, 0, 0.2)
+shadow_size = 8
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="tab_hover"]
+content_margin_left = 24.0
+content_margin_top = 6.0
+content_margin_right = 24.0
+content_margin_bottom = 6.0
+bg_color = Color(0.925, 0.906, 0.847, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_color = Color(0.137, 0.145, 0.122, 1)
+
+[sub_resource type="StyleBoxFlat" id="tab_on"]
+content_margin_left = 24.0
+content_margin_top = 6.0
+content_margin_right = 24.0
+content_margin_bottom = 6.0
+bg_color = Color(0.925, 0.906, 0.847, 1)
+border_width_left = 2
+border_width_top = 4
+border_width_right = 2
+border_color = Color(0.31, 0.541, 0.169, 1)
+
+[sub_resource type="StyleBoxFlat" id="tab"]
+content_margin_left = 24.0
+content_margin_top = 6.0
+content_margin_right = 24.0
+content_margin_bottom = 6.0
+bg_color = Color(0.867, 0.843, 0.773, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_color = Color(0.137, 0.145, 0.122, 1)
 
 [sub_resource type="StyleBoxFlat" id="grabber"]
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(0.698, 0.686, 0.627, 1.0)
+bg_color = Color(0.698, 0.686, 0.627, 1)
 
-[sub_resource type="StyleBoxFlat" id="none"]
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-draw_center = false
-
-[sub_resource type="StyleBoxTexture" id="sep"]
-content_margin_top = 2.0
-texture = ExtResource("i_drule")
-axis_stretch_horizontal = 1
+[sub_resource type="FontVariation" id="F_body"]
+fallbacks = Array[Font]([SubResource("F_jp_500"), SubResource("F_kr_500"), SubResource("F_sc_500")])
+base_font = ExtResource("f_sans")
+variation_opentype = {
+2003265652: 450
+}
 
 [resource]
 default_font = SubResource("F_body")
 default_font_size = 21
-Button/colors/font_color = Color(0.137, 0.145, 0.122, 1.0)
-Button/colors/font_focus_color = Color(0.137, 0.145, 0.122, 1.0)
-Button/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1.0)
-Button/colors/font_hover_pressed_color = Color(0.137, 0.145, 0.122, 1.0)
-Button/colors/font_pressed_color = Color(0.137, 0.145, 0.122, 1.0)
-Button/styles/normal = SubResource("prim")
-Button/styles/hover = SubResource("prim_hover")
-Button/styles/pressed = SubResource("prim_hover")
-Button/styles/hover_pressed = SubResource("prim_hover")
+Button/colors/font_color = Color(0.137, 0.145, 0.122, 1)
+Button/colors/font_focus_color = Color(0.137, 0.145, 0.122, 1)
+Button/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1)
+Button/colors/font_hover_pressed_color = Color(0.137, 0.145, 0.122, 1)
+Button/colors/font_pressed_color = Color(0.137, 0.145, 0.122, 1)
 Button/styles/disabled = SubResource("prim")
 Button/styles/focus = SubResource("none")
+Button/styles/hover = SubResource("prim_hover")
+Button/styles/hover_pressed = SubResource("prim_hover")
+Button/styles/normal = SubResource("prim")
+Button/styles/pressed = SubResource("prim_hover")
 CheckBox/icons/checked = ExtResource("i_box_on")
 CheckBox/icons/unchecked = ExtResource("i_box_off")
-CheckBox/styles/normal = SubResource("none")
-CheckBox/styles/hover = SubResource("none")
-CheckBox/styles/pressed = SubResource("none")
-CheckBox/styles/hover_pressed = SubResource("none")
 CheckBox/styles/disabled = SubResource("none")
 CheckBox/styles/focus = SubResource("none")
+CheckBox/styles/hover = SubResource("none")
+CheckBox/styles/hover_pressed = SubResource("none")
+CheckBox/styles/normal = SubResource("none")
+CheckBox/styles/pressed = SubResource("none")
 CheckButton/icons/checked = ExtResource("i_tog_on")
-CheckButton/icons/unchecked = ExtResource("i_tog_off")
 CheckButton/icons/checked_mirrored = ExtResource("i_tog_on")
+CheckButton/icons/unchecked = ExtResource("i_tog_off")
 CheckButton/icons/unchecked_mirrored = ExtResource("i_tog_off")
-CheckButton/styles/normal = SubResource("none")
-CheckButton/styles/hover = SubResource("none")
-CheckButton/styles/pressed = SubResource("none")
-CheckButton/styles/hover_pressed = SubResource("none")
 CheckButton/styles/disabled = SubResource("none")
 CheckButton/styles/focus = SubResource("none")
+CheckButton/styles/hover = SubResource("none")
+CheckButton/styles/hover_pressed = SubResource("none")
+CheckButton/styles/normal = SubResource("none")
+CheckButton/styles/pressed = SubResource("none")
 ContentPage/base_type = &"PanelContainer"
 ContentPage/styles/panel = SubResource("card")
+DangerButton/base_type = &"Button"
+DangerButton/colors/font_color = Color(0.137, 0.145, 0.122, 1)
+DangerButton/colors/font_focus_color = Color(0.137, 0.145, 0.122, 1)
+DangerButton/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1)
+DangerButton/colors/font_hover_pressed_color = Color(0.137, 0.145, 0.122, 1)
+DangerButton/colors/font_pressed_color = Color(0.137, 0.145, 0.122, 1)
+DangerButton/fonts/font = SubResource("F_title")
+DangerButton/styles/hover = SubResource("prim_hover")
+DangerButton/styles/hover_pressed = SubResource("prim_hover")
+DangerButton/styles/normal = SubResource("prim")
+DangerButton/styles/pressed = SubResource("prim_hover")
 DialogPanel/base_type = &"PanelContainer"
 DialogPanel/styles/panel = SubResource("card")
-MenuCard/base_type = &"PanelContainer"
-MenuCard/styles/panel = SubResource("card")
-PrimaryButton/base_type = &"Button"
-PrimaryButton/fonts/font = SubResource("F_title")
-PrimaryButton/colors/font_color = Color(0.137, 0.145, 0.122, 1.0)
-PrimaryButton/colors/font_focus_color = Color(0.137, 0.145, 0.122, 1.0)
-PrimaryButton/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1.0)
-PrimaryButton/colors/font_hover_pressed_color = Color(0.137, 0.145, 0.122, 1.0)
-PrimaryButton/colors/font_pressed_color = Color(0.137, 0.145, 0.122, 1.0)
-PrimaryButton/styles/normal = SubResource("prim")
-PrimaryButton/styles/hover = SubResource("prim_hover")
-PrimaryButton/styles/pressed = SubResource("prim")
-PrimaryButton/styles/hover_pressed = SubResource("prim")
-DangerButton/base_type = &"Button"
-DangerButton/fonts/font = SubResource("F_title")
-DangerButton/colors/font_color = Color(0.137, 0.145, 0.122, 1.0)
-DangerButton/colors/font_focus_color = Color(0.137, 0.145, 0.122, 1.0)
-DangerButton/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1.0)
-DangerButton/colors/font_hover_pressed_color = Color(0.137, 0.145, 0.122, 1.0)
-DangerButton/colors/font_pressed_color = Color(0.137, 0.145, 0.122, 1.0)
-DangerButton/styles/normal = SubResource("prim")
-DangerButton/styles/hover = SubResource("prim_hover")
-DangerButton/styles/pressed = SubResource("prim_hover")
-DangerButton/styles/hover_pressed = SubResource("prim_hover")
-NavButton/base_type = &"Button"
-NavButton/font_sizes/font_size = 34
-NavButton/fonts/font = SubResource("F_title")
-NavButton/constants/align_to_largest_stylebox = 1
-NavButton/colors/font_color = Color(0.137, 0.145, 0.122, 1.0)
-NavButton/colors/font_focus_color = Color(0.137, 0.145, 0.122, 1.0)
-NavButton/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1.0)
-NavButton/colors/font_hover_pressed_color = Color(0.137, 0.145, 0.122, 1.0)
-NavButton/colors/font_pressed_color = Color(0.137, 0.145, 0.122, 1.0)
-NavButton/styles/normal = SubResource("nav")
-NavButton/styles/hover = SubResource("nav_hover")
-NavButton/styles/pressed = SubResource("nav_hover")
-NavButton/styles/hover_pressed = SubResource("nav_hover")
-NavButton/styles/disabled = SubResource("nav")
-NavButton/styles/focus = SubResource("none")
+FormLabel/base_type = &"Label"
+FormLabel/colors/font_color = Color(0.306, 0.322, 0.275, 1)
+FormLabel/font_sizes/font_size = 15
+FormLabel/fonts/font = SubResource("F_label")
 GroupStack/base_type = &"VBoxContainer"
 GroupStack/constants/separation = 22
 HBoxContainer/constants/separation = 16
-VBoxContainer/constants/separation = 10
-ListStack/base_type = &"VBoxContainer"
-ListStack/constants/separation = 2
 HSeparator/constants/separation = 22
 HSeparator/styles/separator = SubResource("sep")
 HSlider/icons/grabber = ExtResource("i_grab")
 HSlider/icons/grabber_highlight = ExtResource("i_grab")
-HSlider/styles/slider = SubResource("track")
 HSlider/styles/grabber_area = SubResource("fill")
 HSlider/styles/grabber_area_highlight = SubResource("fill")
+HSlider/styles/slider = SubResource("track")
 HintLabel/base_type = &"Label"
 HintLabel/colors/font_color = Color(0.925, 0.906, 0.847, 0.55)
 HintLabel/font_sizes/font_size = 16
-Label/colors/font_color = Color(0.137, 0.145, 0.122, 1.0)
+Label/colors/font_color = Color(0.137, 0.145, 0.122, 1)
+ListStack/base_type = &"VBoxContainer"
+ListStack/constants/separation = 2
+MenuCard/base_type = &"PanelContainer"
+MenuCard/styles/panel = SubResource("card")
+NavButton/base_type = &"Button"
+NavButton/colors/font_color = Color(0.137, 0.145, 0.122, 1)
+NavButton/colors/font_focus_color = Color(0.137, 0.145, 0.122, 1)
+NavButton/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1)
+NavButton/colors/font_hover_pressed_color = Color(0.137, 0.145, 0.122, 1)
+NavButton/colors/font_pressed_color = Color(0.137, 0.145, 0.122, 1)
+NavButton/constants/align_to_largest_stylebox = 1
+NavButton/font_sizes/font_size = 34
+NavButton/fonts/font = SubResource("F_title")
+NavButton/styles/disabled = SubResource("nav")
+NavButton/styles/focus = SubResource("none")
+NavButton/styles/hover = SubResource("nav_hover")
+NavButton/styles/hover_pressed = SubResource("nav_hover")
+NavButton/styles/normal = SubResource("nav")
+NavButton/styles/pressed = SubResource("nav_hover")
+NoteLabel/base_type = &"Label"
+NoteLabel/colors/font_color = Color(0.486, 0.502, 0.439, 1)
+NoteLabel/font_sizes/font_size = 15
 OptionButton/icons/arrow = ExtResource("i_arrow")
-OptionButton/styles/normal = SubResource("field")
-OptionButton/styles/hover = SubResource("field_hover")
-OptionButton/styles/pressed = SubResource("field_hover")
-OptionButton/styles/hover_pressed = SubResource("field_hover")
 OptionButton/styles/disabled = SubResource("field")
-PopupMenu/colors/font_color = Color(0.137, 0.145, 0.122, 1.0)
-PopupMenu/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1.0)
+OptionButton/styles/hover = SubResource("field_hover")
+OptionButton/styles/hover_pressed = SubResource("field_hover")
+OptionButton/styles/normal = SubResource("field")
+OptionButton/styles/pressed = SubResource("field_hover")
+PopupMenu/colors/font_color = Color(0.137, 0.145, 0.122, 1)
+PopupMenu/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1)
 PopupMenu/font_sizes/font_size = 20
 PopupMenu/icons/radio_checked = ExtResource("i_radio_on")
 PopupMenu/icons/radio_unchecked = ExtResource("i_radio_off")
-FormLabel/base_type = &"Label"
-FormLabel/colors/font_color = Color(0.306, 0.322, 0.275, 1.0)
-FormLabel/font_sizes/font_size = 15
-FormLabel/fonts/font = SubResource("F_label")
-NoteLabel/base_type = &"Label"
-NoteLabel/colors/font_color = Color(0.486, 0.502, 0.439, 1.0)
-NoteLabel/font_sizes/font_size = 15
-PopupMenu/styles/panel = SubResource("popup")
 PopupMenu/styles/hover = SubResource("popup_hover")
+PopupMenu/styles/panel = SubResource("popup")
+PrimaryButton/base_type = &"Button"
+PrimaryButton/colors/font_color = Color(0.137, 0.145, 0.122, 1)
+PrimaryButton/colors/font_focus_color = Color(0.137, 0.145, 0.122, 1)
+PrimaryButton/colors/font_hover_color = Color(0.137, 0.145, 0.122, 1)
+PrimaryButton/colors/font_hover_pressed_color = Color(0.137, 0.145, 0.122, 1)
+PrimaryButton/colors/font_pressed_color = Color(0.137, 0.145, 0.122, 1)
+PrimaryButton/fonts/font = SubResource("F_title")
+PrimaryButton/styles/hover = SubResource("prim_hover")
+PrimaryButton/styles/hover_pressed = SubResource("prim")
+PrimaryButton/styles/normal = SubResource("prim")
+PrimaryButton/styles/pressed = SubResource("prim")
 StrongLabel/base_type = &"Label"
 StrongLabel/fonts/font = SubResource("F_title")
+TabBar/colors/font_hovered_color = Color(0.137, 0.145, 0.122, 1)
+TabBar/colors/font_selected_color = Color(0.137, 0.145, 0.122, 1)
+TabBar/colors/font_unselected_color = Color(0.486, 0.502, 0.439, 1)
 TabBar/constants/h_separation = -2
-TabBar/colors/font_selected_color = Color(0.137, 0.145, 0.122, 1.0)
-TabBar/colors/font_hovered_color = Color(0.137, 0.145, 0.122, 1.0)
-TabBar/colors/font_unselected_color = Color(0.486, 0.502, 0.439, 1.0)
 TabBar/font_sizes/font_size = 22
 TabBar/fonts/font = SubResource("F_title")
+TabBar/styles/tab_focus = SubResource("none")
+TabBar/styles/tab_hovered = SubResource("tab_hover")
+TabBar/styles/tab_selected = SubResource("tab_on")
+TabBar/styles/tab_unselected = SubResource("tab")
 TitleLabel/base_type = &"Label"
 TitleLabel/font_sizes/font_size = 40
 TitleLabel/fonts/font = SubResource("F_title")
-TabBar/styles/tab_selected = SubResource("tab_on")
-TabBar/styles/tab_hovered = SubResource("tab_hover")
-TabBar/styles/tab_unselected = SubResource("tab")
-TabBar/styles/tab_focus = SubResource("none")
+VBoxContainer/constants/separation = 10
 VScrollBar/styles/grabber = SubResource("grabber")
 VScrollBar/styles/grabber_highlight = SubResource("grabber")
 VScrollBar/styles/grabber_pressed = SubResource("grabber")

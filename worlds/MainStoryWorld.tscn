@@ -9,62 +9,37 @@
 [ext_resource type="Script" uid="uid://jhil3msg3xry" path="res://worlds/components/cabbage_feeder.gd" id="8_feeder"]
 [ext_resource type="Script" uid="uid://bo05e4qffeath" path="res://worlds/components/sale_window.gd" id="9_sale"]
 [ext_resource type="Script" uid="uid://deyits3c2dfyk" path="res://entities/coins/coin_pile.gd" id="10_coins"]
-[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/coin.res" id="11_coin"]
+[ext_resource type="ArrayMesh" uid="uid://pn3kbh0uv508" path="res://assets/meshes/Props/coin.res" id="11_coin"]
 [ext_resource type="PackedScene" path="res://entities/tally_machine/tally_machine.tscn" id="12_tally"]
-[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="13_cue"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_1.wav" id="sfx_cabbage_suck_1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_2.wav" id="sfx_cabbage_suck_2"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_3.wav" id="sfx_cabbage_suck_3"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_bounce_1.wav" id="sfx_coin_bounce_1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_bounce_2.wav" id="sfx_coin_bounce_2"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_bounce_3.wav" id="sfx_coin_bounce_3"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_land_1.wav" id="sfx_coin_land_1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_land_2.wav" id="sfx_coin_land_2"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_collect_1.wav" id="sfx_coin_collect_1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_collect_2.wav" id="sfx_coin_collect_2"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_collect_3.wav" id="sfx_coin_collect_3"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_1.wav" id="sfx_coin_deposit_1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_2.wav" id="sfx_coin_deposit_2"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_3.wav" id="sfx_coin_deposit_3"]
-
-[sub_resource type="AudioStreamRandomizer" id="Rand_cabbage_suck"]
-random_pitch = 1.08
-random_volume_offset_db = 1.5
-streams_count = 3
-stream_0/stream = ExtResource("sfx_cabbage_suck_1")
-stream_1/stream = ExtResource("sfx_cabbage_suck_2")
-stream_2/stream = ExtResource("sfx_cabbage_suck_3")
-
-[sub_resource type="AudioStreamRandomizer" id="Rand_coin_bounce"]
-random_pitch = 1.12
-random_volume_offset_db = 1.5
-streams_count = 3
-stream_0/stream = ExtResource("sfx_coin_bounce_1")
-stream_1/stream = ExtResource("sfx_coin_bounce_2")
-stream_2/stream = ExtResource("sfx_coin_bounce_3")
-
-[sub_resource type="AudioStreamRandomizer" id="Rand_coin_land"]
-random_pitch = 1.15
-random_volume_offset_db = 1.5
-streams_count = 2
-stream_0/stream = ExtResource("sfx_coin_land_1")
-stream_1/stream = ExtResource("sfx_coin_land_2")
-
-[sub_resource type="AudioStreamRandomizer" id="Rand_coin_collect"]
-random_pitch = 1.12
-random_volume_offset_db = 1.5
-streams_count = 3
-stream_0/stream = ExtResource("sfx_coin_collect_1")
-stream_1/stream = ExtResource("sfx_coin_collect_2")
-stream_2/stream = ExtResource("sfx_coin_collect_3")
-
-[sub_resource type="AudioStreamRandomizer" id="Rand_coin_deposit"]
-random_pitch = 1.1
-random_volume_offset_db = 1.5
-streams_count = 3
-stream_0/stream = ExtResource("sfx_coin_deposit_1")
-stream_1/stream = ExtResource("sfx_coin_deposit_2")
-stream_2/stream = ExtResource("sfx_coin_deposit_3")
+[ext_resource type="Script" uid="uid://s7bovuudwem5" path="res://entities/components/sound_cue.gd" id="13_cue"]
+[ext_resource type="PackedScene" path="res://entities/supply_console/supply_console.tscn" id="14_console"]
+[ext_resource type="PackedScene" path="res://worlds/components/dust_motes.tscn" id="15_dust"]
+[ext_resource type="PackedScene" uid="uid://cuwukr2skaw73" path="res://assets/meshes/Machines/supply_ramp.blend" id="16_ramp"]
+[ext_resource type="PackedScene" path="res://entities/price_slate/price_slate.tscn" id="17_slate"]
+[ext_resource type="Script" path="res://worlds/components/debug_keys.gd" id="18_debug"]
+[ext_resource type="AudioStream" uid="uid://bvegj1jwuv651" path="res://assets/audio/effects/cabbage_refused_1.wav" id="sfx_cabbage_refused_1"]
+[ext_resource type="AudioStream" uid="uid://ccccks88k3uru" path="res://assets/audio/effects/cabbage_refused_2.wav" id="sfx_cabbage_refused_2"]
+[ext_resource type="AudioStream" uid="uid://eixral3a7hwg" path="res://assets/audio/effects/cabbage_refused_3.wav" id="sfx_cabbage_refused_3"]
+[ext_resource type="AudioStream" uid="uid://ddh0se6i6mr73" path="res://assets/audio/effects/cabbage_roll_1.wav" id="sfx_cabbage_roll_1"]
+[ext_resource type="AudioStream" uid="uid://kd55yx57t4n6" path="res://assets/audio/effects/cabbage_roll_2.wav" id="sfx_cabbage_roll_2"]
+[ext_resource type="AudioStream" uid="uid://ckxk87o70aaxt" path="res://assets/audio/effects/cabbage_roll_3.wav" id="sfx_cabbage_roll_3"]
+[ext_resource type="AudioStream" uid="uid://cd5ulkcqshe7j" path="res://assets/audio/effects/cabbage_suck_1.wav" id="sfx_cabbage_suck_1"]
+[ext_resource type="AudioStream" uid="uid://cch0kgs5v7tkg" path="res://assets/audio/effects/cabbage_suck_2.wav" id="sfx_cabbage_suck_2"]
+[ext_resource type="AudioStream" uid="uid://du5qwsswtrtxk" path="res://assets/audio/effects/cabbage_suck_3.wav" id="sfx_cabbage_suck_3"]
+[ext_resource type="AudioStream" uid="uid://gu4kl3uwuafk" path="res://assets/audio/effects/coin_bounce_1.wav" id="sfx_coin_bounce_1"]
+[ext_resource type="AudioStream" uid="uid://b7t3m07sw4wie" path="res://assets/audio/effects/coin_bounce_2.wav" id="sfx_coin_bounce_2"]
+[ext_resource type="AudioStream" uid="uid://c85xconlmxcgt" path="res://assets/audio/effects/coin_bounce_3.wav" id="sfx_coin_bounce_3"]
+[ext_resource type="AudioStream" uid="uid://d3hs7sqaqr0di" path="res://assets/audio/effects/coin_collect_1.wav" id="sfx_coin_collect_1"]
+[ext_resource type="AudioStream" uid="uid://cvwl1xmxhbw3o" path="res://assets/audio/effects/coin_collect_2.wav" id="sfx_coin_collect_2"]
+[ext_resource type="AudioStream" uid="uid://dyn35rr2e0aiy" path="res://assets/audio/effects/coin_collect_3.wav" id="sfx_coin_collect_3"]
+[ext_resource type="AudioStream" uid="uid://bxe3gjijfkysf" path="res://assets/audio/effects/coin_deposit_1.wav" id="sfx_coin_deposit_1"]
+[ext_resource type="AudioStream" uid="uid://c7oewpivfqmbt" path="res://assets/audio/effects/coin_deposit_2.wav" id="sfx_coin_deposit_2"]
+[ext_resource type="AudioStream" uid="uid://cwa0pheh5fb70" path="res://assets/audio/effects/coin_deposit_3.wav" id="sfx_coin_deposit_3"]
+[ext_resource type="AudioStream" uid="uid://c1k1glyx6wyap" path="res://assets/audio/effects/coin_land_1.wav" id="sfx_coin_land_1"]
+[ext_resource type="AudioStream" uid="uid://cmixmtnt1wv5u" path="res://assets/audio/effects/coin_land_2.wav" id="sfx_coin_land_2"]
+[ext_resource type="AudioStream" uid="uid://dc4ljvl6l0dq2" path="res://assets/audio/effects/tally_tick_1.wav" id="sfx_tally_tick_1"]
+[ext_resource type="AudioStream" uid="uid://bbbo22sd4tyyy" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tally_tick_2"]
+[ext_resource type="AudioStream" uid="uid://bgi2p7dr0c3b" path="res://assets/audio/effects/tally_tick_3.wav" id="sfx_tally_tick_3"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.45, 0.58, 0.75, 1)
@@ -122,12 +97,78 @@ size = Vector3(0.6, 1.2, 0.25)
 [sub_resource type="BoxShape3D" id="WallAboveGap"]
 size = Vector3(3.2, 1.2, 0.25)
 
+[sub_resource type="BoxShape3D" id="RampShape"]
+size = Vector3(1, 0.03, 0.42)
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_roll_cabbage_roll"]
+random_pitch = 1.1
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_cabbage_roll_1")
+stream_1/stream = ExtResource("sfx_cabbage_roll_2")
+stream_2/stream = ExtResource("sfx_cabbage_roll_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_tick_tally_tick"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_tally_tick_1")
+stream_1/stream = ExtResource("sfx_tally_tick_2")
+stream_2/stream = ExtResource("sfx_tally_tick_3")
+
 [sub_resource type="BoxShape3D" id="SaleZone"]
 size = Vector3(2.12, 0.3, 0.58)
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_cabbage_suck"]
+random_pitch = 1.08
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_cabbage_suck_1")
+stream_1/stream = ExtResource("sfx_cabbage_suck_2")
+stream_2/stream = ExtResource("sfx_cabbage_suck_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_cabbage_refused"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_cabbage_refused_1")
+stream_1/stream = ExtResource("sfx_cabbage_refused_2")
+stream_2/stream = ExtResource("sfx_cabbage_refused_3")
 
 [sub_resource type="MultiMesh" id="CoinMulti"]
 transform_format = 1
 mesh = ExtResource("11_coin")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_coin_bounce"]
+random_pitch = 1.12
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_coin_bounce_1")
+stream_1/stream = ExtResource("sfx_coin_bounce_2")
+stream_2/stream = ExtResource("sfx_coin_bounce_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_coin_land"]
+random_pitch = 1.15
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_coin_land_1")
+stream_1/stream = ExtResource("sfx_coin_land_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_coin_collect"]
+random_pitch = 1.12
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_coin_collect_1")
+stream_1/stream = ExtResource("sfx_coin_collect_2")
+stream_2/stream = ExtResource("sfx_coin_collect_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_coin_deposit"]
+random_pitch = 1.1
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_coin_deposit_1")
+stream_1/stream = ExtResource("sfx_coin_deposit_2")
+stream_2/stream = ExtResource("sfx_coin_deposit_3")
 
 [sub_resource type="ShaderMaterial" id="VignetteMat"]
 shader = ExtResource("4_vignette")
@@ -217,8 +258,42 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 1.67, -0.925)
 shape = SubResource("WallAboveGap")
 
 [node name="CabbageFeeder" type="Node3D" parent="." unique_id=1541387618]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 0.9, 1.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 1, 0.4)
 script = ExtResource("8_feeder")
+
+[node name="Model" parent="CabbageFeeder" unique_id=1967204359 instance=ExtResource("16_ramp")]
+
+[node name="Ramp" type="StaticBody3D" parent="CabbageFeeder" unique_id=810543868]
+transform = Transform3D(0.8955, -0.4064, -0.1815, 0.4133, 0.9106, 0, 0.1653, -0.075, 0.9834, 0.5087, 0.0701, 0.0939)
+
+[node name="Shape" type="CollisionShape3D" parent="CabbageFeeder/Ramp" unique_id=1398705185]
+shape = SubResource("RampShape")
+
+[node name="Roll" type="AudioStreamPlayer3D" parent="CabbageFeeder" unique_id=93159622]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.15, 0.12)
+stream = SubResource("Rand_roll_cabbage_roll")
+max_polyphony = 2
+bus = &"SFX"
+script = ExtResource("13_cue")
+min_interval = 0.1
+
+[node name="Tick" type="AudioStreamPlayer3D" parent="CabbageFeeder" unique_id=961218643]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.286, -0.068, 0.333)
+stream = SubResource("Rand_tick_tally_tick")
+pitch_scale = 0.75
+max_polyphony = 2
+bus = &"SFX"
+script = ExtResource("13_cue")
+min_interval = 0.03
+
+[node name="SupplyConsole" parent="." unique_id=895053093 node_paths=PackedStringArray("coins") instance=ExtResource("14_console")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.772, 1)
+coins = NodePath("../Coins")
+
+[node name="DustMotes" parent="." unique_id=1402536112 instance=ExtResource("15_dust")]
+
+[node name="PriceSlate" parent="." unique_id=1047906906 instance=ExtResource("17_slate")]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, -0.8, 0.75, -0.38161275)
 
 [node name="SaleWindow" type="Area3D" parent="." unique_id=1285898375 node_paths=PackedStringArray("coins")]
 collision_layer = 0
@@ -231,49 +306,50 @@ coins = NodePath("../Coins")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 0.92, -1.01)
 shape = SubResource("SaleZone")
 
+[node name="Suck" type="AudioStreamPlayer3D" parent="SaleWindow" unique_id=203316276]
+stream = SubResource("Rand_cabbage_suck")
+bus = &"SFX"
+script = ExtResource("13_cue")
+
+[node name="Refuse" type="AudioStreamPlayer3D" parent="SaleWindow" unique_id=1054297661]
+stream = SubResource("Rand_cabbage_refused")
+bus = &"SFX"
+script = ExtResource("13_cue")
+min_interval = 0.1
+
 [node name="Coins" type="MultiMeshInstance3D" parent="." unique_id=1083958965 node_paths=PackedStringArray("deposit")]
 multimesh = SubResource("CoinMulti")
 script = ExtResource("10_coins")
 deposit = NodePath("../TallyMachine/Intake")
 
-[node name="TallyMachine" parent="." instance=ExtResource("12_tally")]
-transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, -1.14, 0.76, -0.67)
-
-[node name="Suck" type="AudioStreamPlayer3D" parent="SaleWindow"]
-stream = SubResource("Rand_cabbage_suck")
-bus = &"SFX"
-min_interval = 0.05
-script = ExtResource("13_cue")
-
-[node name="Bounce" type="AudioStreamPlayer3D" parent="Coins"]
+[node name="Bounce" type="AudioStreamPlayer3D" parent="Coins" unique_id=1514279270]
 stream = SubResource("Rand_coin_bounce")
-bus = &"SFX"
 max_polyphony = 3
-min_interval = 0.035
+bus = &"SFX"
 script = ExtResource("13_cue")
 
-[node name="Land" type="AudioStreamPlayer3D" parent="Coins"]
+[node name="Land" type="AudioStreamPlayer3D" parent="Coins" unique_id=1765195357]
 stream = SubResource("Rand_coin_land")
-bus = &"SFX"
-max_polyphony = 3
-min_interval = 0.045
 volume_db = -4.0
+max_polyphony = 3
+bus = &"SFX"
 script = ExtResource("13_cue")
 
-[node name="Collect" type="AudioStreamPlayer3D" parent="Coins"]
+[node name="Collect" type="AudioStreamPlayer3D" parent="Coins" unique_id=767670609]
 stream = SubResource("Rand_coin_collect")
-bus = &"SFX"
-max_polyphony = 3
-min_interval = 0.05
 volume_db = -6.0
+max_polyphony = 3
+bus = &"SFX"
 script = ExtResource("13_cue")
 
-[node name="Deposit" type="AudioStreamPlayer3D" parent="Coins"]
+[node name="Deposit" type="AudioStreamPlayer3D" parent="Coins" unique_id=2122116395]
 stream = SubResource("Rand_coin_deposit")
-bus = &"SFX"
 max_polyphony = 3
-min_interval = 0.05
+bus = &"SFX"
 script = ExtResource("13_cue")
+
+[node name="TallyMachine" parent="." unique_id=1271739406 instance=ExtResource("12_tally")]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, -1.14, 0.76, -0.67)
 
 [node name="Overlay" type="CanvasLayer" parent="." unique_id=1259288364]
 
@@ -293,7 +369,12 @@ layer = 2
 
 [node name="InGameMenu" parent="UI" unique_id=520305776 instance=ExtResource("6_menu")]
 
+[node name="DebugKeys" type="Node" parent="."]
+script = ExtResource("18_debug")
+
 [connection signal="bounced" from="Coins" to="Coins/Bounce" method="cue"]
-[connection signal="landed" from="Coins" to="Coins/Land" method="cue"]
 [connection signal="collected" from="Coins" to="Coins/Collect" method="cue"]
 [connection signal="deposited" from="Coins" to="Coins/Deposit" method="cue"]
+[connection signal="landed" from="Coins" to="Coins/Land" method="cue"]
+
+[connection signal="refused" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]

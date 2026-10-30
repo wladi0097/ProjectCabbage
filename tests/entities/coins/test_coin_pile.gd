@@ -6,16 +6,18 @@ var _failed := false
 
 
 func _ready() -> void:
-	# Coins dropped on one spot spread into a mound: no cell ever towers over a neighbour.
+	# One payout's coins stack on their spot, at most MAX_STACK high, then spill right beside it.
 	var stacks := {}
-	for i in 300:
-		var cell := CoinPile.settle_cell(stacks, Vector2i.ZERO, CoinPile.MAX_STEP)
+	for i in 25:
+		var cell := CoinPile.stack_cell(stacks, Vector2i.ZERO, CoinPile.MAX_STACK)
 		stacks.get_or_add(cell, []).append(i)
+	_check(stacks[Vector2i.ZERO].size() == CoinPile.MAX_STACK, "the aimed stack should fill first")
 	for cell: Vector2i in stacks:
-		for offset in CoinPile.NEIGHBOURS:
-			_check(stacks[cell].size() - stacks.get(cell + offset, []).size() <= CoinPile.MAX_STEP + 1,
-					"pile too steep at %s" % cell)
-	_check(stacks[Vector2i.ZERO].size() > 3, "the drop point should hold the peak")
+		_check(stacks[cell].size() <= CoinPile.MAX_STACK, "stack too tall at %s" % cell)
+		_check(maxi(absi(cell.x), absi(cell.y)) <= 1, "overflow should land right beside the stack: %s" % cell)
+	# A payout is silver for the change, then gold for every full 10 (on top).
+	_check(CoinPile.coin_values(23) == [1, 1, 1, 10, 10], "coin_values(23) = %s" % [CoinPile.coin_values(23)])
+	_check(CoinPile.coin_values(4) == [1, 1, 1, 1], "coin_values(4) = %s" % [CoinPile.coin_values(4)])
 
 	# A toss lands where it aims.
 	var g := Vector3.DOWN * 9.8

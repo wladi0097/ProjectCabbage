@@ -1,0 +1,52 @@
+[gd_scene format=3]
+
+[sub_resource type="Curve" id="FadeCurve"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.2, 1), 0.0, 0.0, 0, 0, Vector2(0.8, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="FadeInOut"]
+curve = SubResource("FadeCurve")
+
+[sub_resource type="ParticleProcessMaterial" id="Drift"]
+emission_shape = 3
+emission_box_extents = Vector3(2.1, 0.7, 1.05)
+direction = Vector3(0.3, 0.2, 0)
+spread = 180.0
+initial_velocity_min = 0.005
+initial_velocity_max = 0.025
+gravity = Vector3(0, -0.002, 0)
+scale_min = 0.5
+scale_max = 1.1
+turbulence_enabled = true
+turbulence_noise_strength = 0.4
+turbulence_noise_scale = 3.0
+turbulence_noise_speed_random = 0.1
+turbulence_influence_min = 0.01
+turbulence_influence_max = 0.03
+alpha_curve = SubResource("FadeInOut")
+
+[sub_resource type="StandardMaterial3D" id="Mote"]
+transparency = 1
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.82, 0.8, 0.74, 0.34)
+roughness = 1.0
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="MoteQuad"]
+material = SubResource("Mote")
+size = Vector2(0.0045, 0.0045)
+
+[node name="DustMotes" type="GPUParticles3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.5, 0.25)
+cast_shadow = 0
+amount = 260
+lifetime = 18.0
+preprocess = 18.0
+randomness = 0.5
+visibility_aabb = AABB(-2.4, -1, -1.4, 4.8, 2, 2.8)
+process_material = SubResource("Drift")
+draw_pass_1 = SubResource("MoteQuad")

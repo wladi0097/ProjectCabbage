@@ -9,6 +9,12 @@ signal grabbed
 signal released
 
 @export var enabled := true
+## A button to press rather than a thing to pick up: the hand points at it, tapping its finger,
+## and presses in while held.
+@export var pressable := false
+## While true, the hand also grabs it by sweeping into it with the button already held (catching
+## something in the air), not only by pressing over it.
+var catchable := false
 
 
 func _ready() -> void:

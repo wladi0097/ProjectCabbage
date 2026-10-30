@@ -79,8 +79,9 @@ func move_to(target: Vector3, delta: float) -> void:
 	global_position = target - basis * _anchor
 
 
-static func pose_for(holding: bool, hovering: bool) -> Pose:
-	return Pose.GRAB if holding else Pose.OPEN if hovering else Pose.POINT
+## Buttons (`pressing`) are pointed at and pressed with the index, never grabbed.
+static func pose_for(holding: bool, hovering: bool, pressing := false) -> Pose:
+	return Pose.POINT if pressing else Pose.GRAB if holding else Pose.OPEN if hovering else Pose.POINT
 
 
 ## Lean as Euler angles: moving forward tips the fingers down, sideways rolls the hand

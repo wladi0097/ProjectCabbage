@@ -70,9 +70,9 @@ rivet = np.clip(1 - np.hypot(ax - 0.034, ay - 0.034) / 0.0045, 0, 1)
 stitch *= 1 - (capd > -0.004)                # stitches stop under the caps
 
 # Albedo
-grain = noise(1.2) * 0.5 + noise(4) * 0.5     # leather pebble
-mottle = noise(60)
-field = np.array(FIELD, np.float32) * (1 + 0.05 * grain[..., None] + 0.06 * mottle[..., None])
+grain = noise(2.5) * 0.5 + noise(8) * 0.5     # leather pebble (user: finer noise was too noticeable)
+mottle = noise(240)
+field = np.array(FIELD, np.float32) * (1 + 0.035 * grain[..., None] + 0.05 * mottle[..., None])
 # a soft worn patch in the middle where the cabbages get handled
 wear = np.exp(-(((X - W * 0.55) / (W * 0.33)) ** 2 + ((Y - H * 0.5) / (H * 0.35)) ** 2))
 field *= (1 + 0.07 * wear)[..., None]

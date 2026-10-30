@@ -1,8 +1,9 @@
 class_name CoinPile
 extends MultiMeshInstance3D
 ## Every loose coin, drawn as one MultiMesh. Coins are animated, not simulated: they arc in,
-## bounce once and land on a height grid, sliding off any pile that gets too steep, so heaps
-## grow like real ones. Sweeping an empty hand over them sends them into the deposit.
+## bounce once and land on a height grid. One payout comes as gold (GOLD_VALUE each) and silver
+## (1 each) coins that all aim at one spot and stack there, at most MAX_STACK high; extra coins
+## start a stack right beside it. Sweeping an empty hand over them sends them into the deposit.
 
 signal thrown(origin: Vector3, count: int)
 signal bounced(position: Vector3)
@@ -15,8 +16,14 @@ enum State { FLYING, SETTLING, RESTING, HOMING }
 const MAX_COINS := 4096
 const CELL := 0.054
 const THICKNESS := 0.014
-## Coins of height difference a pile holds before a landing coin slides down the side.
-const MAX_STEP := 2
+const MAX_STACK := 10
+const GOLD_VALUE := 10
+const SILVER := Color(0.8, 0.82, 0.86)
+const GOLD := Color(1.0, 0.72, 0.32)
+## How far (in cells) a payout's coins scatter around its spot, and sit off a stack's centre.
+const AIM_JITTER := 0.25
+const STACK_JITTER := 0.12
+const FLOATS := 16  # per instance: 12 transform + 4 colour
 const GRAVITY := 9.8
 const SETTLE_TIME := 0.12
 const HOME_TIME := 0.5
@@ -27,8 +34,6 @@ const HOME_LIFT := 0.3
 const TOSS_TIME := 0.14
 const THROW_STAGGER := 0.05
 const PICKUP_RADIUS := 0.1
-const NEIGHBOURS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
-		Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
 
 @export var desk_height := 0.76
 @export var deposit: Node3D
@@ -53,6 +58,8 @@ class Coin:
 	var delay := 0.0
 	var toss := 0.0  # seconds left rising from below the sill to the gap
 	var inbound := Vector3.ZERO  # velocity from the gap onto the mat
+	var value := 1
+	var cell := Vector2i.ZERO  # the payout's stack
 
 
 # ponytail: Array of RefCounted coins, rewritten in full each moving frame; switch to packed
@@ -64,22 +71,38 @@ var _buffer := PackedFloat32Array()
 
 func _ready() -> void:
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.use_colors = true
 	multimesh.instance_count = MAX_COINS
 	multimesh.visible_instance_count = 0
-	_buffer.resize(MAX_COINS * 12)
+	_buffer.resize(MAX_COINS * FLOATS)
 	custom_aabb = AABB(Vector3(-4, -1, -4), Vector3(8, 4, 8))
+	# Coins still flying or lying on the mat are banked when the game quits, not lost.
+	SaveManager.closing.connect(func() -> void: SaveManager.save.coins += pending_value())
 
 
-## Throws `count` coins in from `origin` (out of sight below the sill): up to the gap, then in.
-func throw_in(origin: Vector3, count: int) -> void:
-	thrown.emit(origin, count)
-	for i in count:
+## The value of every coin not banked yet (in the air, on the mat, on its way to the deposit).
+func pending_value() -> int:
+	var total := 0
+	for coin in _coins:
+		total += coin.value
+	return total
+
+
+## Throws `amount` worth of coins in from `origin` (out of sight below the sill): up to the gap,
+## then in, all onto one spot.
+func throw_in(origin: Vector3, amount: int) -> void:
+	var values := coin_values(amount)
+	thrown.emit(origin, values.size())
+	var spot := landing_area.position + Vector3(randf(), 0.0, randf()) * landing_area.size
+	for i in values.size():
 		if _coins.size() >= MAX_COINS:
-			_deposit_now()
+			_deposit_now(values[i])
 			continue
 		var coin := Coin.new()
+		coin.value = values[i]
+		coin.cell = cell_of(spot)
 		coin.xf = Transform3D(Basis(Quaternion.from_euler(Vector3(randf(), randf(), randf()) * TAU)), origin)
-		var target := landing_area.position + Vector3(randf(), 0.0, randf()) * landing_area.size
+		var target := spot + Vector3(randf_range(-1, 1), 0.0, randf_range(-1, 1)) * AIM_JITTER * CELL
 		var gap := Vector3(origin.x, gap_entry.x, gap_entry.y)
 		coin.inbound = ballistic(gap, target, randf_range(throw_time.x, throw_time.y))
 		coin.velocity = ballistic(origin, gap, TOSS_TIME)
@@ -106,7 +129,7 @@ func _process(delta: float) -> void:
 			State.HOMING:
 				if _home(coin, delta):
 					_coins.remove_at(i)
-					SaveManager.save.coins += 1
+					SaveManager.save.coins += coin.value
 					deposited.emit(coin.xf.origin)
 			State.RESTING:
 				continue
@@ -127,25 +150,26 @@ func _fly(coin: Coin, delta: float) -> void:
 		if coin.toss <= 0.0:
 			coin.velocity = coin.inbound
 		return
-	var cell := cell_of(coin.xf.origin)
-	var floor_y := _top(cell) + THICKNESS * 0.5
+	if _stacks.get(coin.cell, []).size() >= MAX_STACK:
+		coin.cell = stack_cell(_stacks, coin.cell, MAX_STACK)
+	var floor_y := _top(coin.cell) + THICKNESS * 0.5
 	if coin.xf.origin.y > floor_y or coin.velocity.y > 0.0:
 		return
 	coin.xf.origin.y = floor_y
 	if not coin.has_bounced and coin.velocity.y < -1.0:
 		coin.has_bounced = true
-		coin.velocity = Vector3(coin.velocity.x * 0.5, -coin.velocity.y * 0.3, coin.velocity.z * 0.5)
+		coin.velocity = Vector3(coin.velocity.x * 0.15, -coin.velocity.y * 0.3, coin.velocity.z * 0.15)
 		coin.spin *= 0.5
 		bounced.emit(coin.xf.origin)
 		return
-	_land(coin, cell)
+	_land(coin)
 
 
-func _land(coin: Coin, cell: Vector2i) -> void:
-	cell = settle_cell(_stacks, cell, MAX_STEP)
+func _land(coin: Coin) -> void:
+	var cell := stack_cell(_stacks, coin.cell, MAX_STACK)
 	var stack: Array = _stacks.get_or_add(cell, [])
 	stack.append(coin)
-	var centre := cell_centre(cell) + Vector2(randf_range(-0.3, 0.3), randf_range(-0.3, 0.3)) * CELL
+	var centre := cell_centre(cell) + Vector2(randf_range(-1, 1), randf_range(-1, 1)) * STACK_JITTER * CELL
 	var tilt := Basis(Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized(), randf_range(0, 0.12))
 	coin.from = coin.xf
 	coin.to = Transform3D(tilt * Basis(Vector3.UP, randf() * TAU),
@@ -202,8 +226,8 @@ static func ballistic(from: Vector3, to: Vector3, time: float) -> Vector3:
 	return (to - from) / time + 0.5 * Vector3.UP * GRAVITY * time
 
 
-func _deposit_now() -> void:
-	SaveManager.save.coins += 1
+func _deposit_now(value: int) -> void:
+	SaveManager.save.coins += value
 	deposited.emit(deposit.global_position if deposit != null else global_position)
 
 
@@ -216,7 +240,7 @@ func _upload() -> void:
 		var xf := _coins[i].xf
 		if _coins[i].state == State.FLYING and _coins[i].delay > 0.0:
 			xf = Transform3D(Basis.from_scale(Vector3.ZERO), xf.origin)
-		var o := i * 12
+		var o := i * FLOATS
 		_buffer[o] = xf.basis.x.x
 		_buffer[o + 1] = xf.basis.y.x
 		_buffer[o + 2] = xf.basis.z.x
@@ -229,6 +253,11 @@ func _upload() -> void:
 		_buffer[o + 9] = xf.basis.y.z
 		_buffer[o + 10] = xf.basis.z.z
 		_buffer[o + 11] = xf.origin.z
+		var colour := GOLD if _coins[i].value >= GOLD_VALUE else SILVER
+		_buffer[o + 12] = colour.r
+		_buffer[o + 13] = colour.g
+		_buffer[o + 14] = colour.b
+		_buffer[o + 15] = 1.0
 	multimesh.buffer = _buffer
 	multimesh.visible_instance_count = _coins.size()
 
@@ -241,17 +270,28 @@ static func cell_centre(cell: Vector2i) -> Vector2:
 	return (Vector2(cell) + Vector2(0.5, 0.5)) * CELL
 
 
-## Sandpile rule: a coin rolls to the lowest neighbour while that one is more than
-## max_step coins lower, so piles keep a slope instead of growing into towers.
-static func settle_cell(stacks: Dictionary, cell: Vector2i, max_step: int) -> Vector2i:
-	for _i in 64:
-		var lowest := cell
-		var neighbours := NEIGHBOURS.duplicate()
-		neighbours.shuffle()
-		for offset: Vector2i in neighbours:
-			if stacks.get(cell + offset, []).size() < stacks.get(lowest, []).size():
-				lowest = cell + offset
-		if stacks.get(cell, []).size() - stacks.get(lowest, []).size() <= max_step:
-			return cell
-		cell = lowest
+## Silver for the change, then a gold coin for every full GOLD_VALUE of `amount`: thrown in this
+## order, the gold ends up on top of the stack where the camera sees it.
+static func coin_values(amount: int) -> Array[int]:
+	var out: Array[int] = []
+	for i in amount % GOLD_VALUE:
+		out.append(1)
+	@warning_ignore("integer_division")
+	for i in amount / GOLD_VALUE:
+		out.append(GOLD_VALUE)
+	return out
+
+
+## Where a coin aimed at `cell` lands: on that stack while it is under `max_height`, else on the
+## nearest stack around it with room (a random one of those, so overflow looks loose).
+static func stack_cell(stacks: Dictionary, cell: Vector2i, max_height: int) -> Vector2i:
+	for ring in 8:
+		var free: Array[Vector2i] = []
+		for dx in range(-ring, ring + 1):
+			for dz in range(-ring, ring + 1):
+				var near := cell + Vector2i(dx, dz)
+				if maxi(absi(dx), absi(dz)) == ring and stacks.get(near, []).size() < max_height:
+					free.append(near)
+		if not free.is_empty():
+			return free.pick_random()
 	return cell

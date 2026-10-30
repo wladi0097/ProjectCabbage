@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/worlds/components/test_cabbage_feeder.gd" id="1"]
+
+[node name="TestCabbageFeeder" type="Node"]
+script = ExtResource("1")

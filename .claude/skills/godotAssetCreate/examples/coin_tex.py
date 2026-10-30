@@ -33,7 +33,8 @@ Image.fromarray(((n * 0.5 + 0.5) * 255).astype(np.uint8)).save(OUT + "/coin_norm
 rng = np.random.default_rng(3)
 grain = np.array(Image.fromarray((rng.random((32, 32)) * 255).astype(np.uint8)).resize((N, N), Image.BICUBIC)) / 255.0
 wear = np.clip(h * 0.9 + grain * 0.1, 0, 1)
-brass_dark = np.array([0.22, 0.15, 0.05]); brass = np.array([0.66, 0.49, 0.2]); brass_hi = np.array([0.9, 0.74, 0.42])
+# Neutral greys: the coin's metal colour (silver or gold) is a per-instance tint in Godot.
+brass_dark = np.array([0.24, 0.24, 0.24]); brass = np.array([0.7, 0.7, 0.7]); brass_hi = np.array([0.97, 0.97, 0.97])
 t = wear[..., None]
 alb = np.where(t < 0.5, brass_dark + (brass - brass_dark) * (t / 0.5), brass + (brass_hi - brass) * ((t - 0.5) / 0.5))
 Image.fromarray((np.clip(alb, 0, 1) * 255).astype(np.uint8)).save(OUT + "/coin_albedo.png")
