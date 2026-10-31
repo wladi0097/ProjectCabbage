@@ -11,13 +11,14 @@ extends Node3D
 const DROP_HEIGHT := 1.6
 const DROP_TIME := 0.45
 const MIN_PRICE := 1
-const MAX_PRICE := 20
+## The highest price the slate takes is MAX_PRICE times the save's marketing (see max_price).
+const MAX_PRICE := 12
 const BASE_REF_PRICE := 3.0
 const MOOD_RANGE := Vector2(0.75, 1.25)
 const MOOD_STEP := 0.1
 const MOOD_PERIOD := 60.0
-## Sets how fast sales fall above the full-sale price: at 1.25, a price a third over it sells 70%.
-const ELASTICITY := 1.25
+## Sets how fast sales fall above the full-sale price: at 2, a price a third over it sells 56%.
+const ELASTICITY := 2.0
 ## Held on an arrow: the first repeat comes after HOLD_DELAY, then one every HOLD_REPEAT.
 const HOLD_DELAY := 0.4
 const HOLD_REPEAT := 0.12
@@ -38,6 +39,11 @@ const NEEDLE_STOPS := Vector2(-0.02, 1.02)
 ## Below this (speed and distance to the acceptance) the needle is at rest and isn't re-posed.
 const NEEDLE_REST := 0.001
 const GAUGE_DROP := 0.6
+## The pricing consultant's tap lights its arrow this long.
+const NUDGE_LIGHT := 0.15
+
+## The player pressed an arrow (the pricing consultant backs off for a while).
+signal player_rewrote
 
 var _step := 0
 var _wait := 0.0
@@ -156,11 +162,25 @@ func _press(step: int) -> void:
 	_step = step
 	_wait = HOLD_DELAY
 	_rewrite(step)
+	player_rewrote.emit()
+
+
+## The pricing consultant taps arrow `step` (-1 down, 1 up): it lights briefly and the price moves.
+func nudge(step: int) -> void:
+	var label: Label3D = ($Down if step < 0 else $Up).get_node("Label")
+	_light(label, true)
+	get_tree().create_timer(NUDGE_LIGHT).timeout.connect(_light.bind(label, false))
+	_rewrite(step)
+
+
+## Where arrow `step` sits (world), for the consultant's finger.
+func arrow_at(step: int) -> Vector3:
+	return ($Down if step < 0 else $Up).global_position
 
 
 func _rewrite(step: int) -> void:
 	var save := SaveManager.save
-	var price := clampi(save.sale_price + step, MIN_PRICE, MAX_PRICE)
+	var price := clampi(save.sale_price + step, MIN_PRICE, max_price(save.marketing))
 	if price == save.sale_price:
 		return
 	save.sale_price = price
@@ -185,6 +205,11 @@ static func wiggle_at(time: float) -> float:
 ## The chance a cabbage flicked out at `price` is bought, when `ref` is the full-sale price.
 static func demand(price: int, ref: float) -> float:
 	return minf(1.0, pow(ref / price, ELASTICITY))
+
+
+## The slate's top price: it grows with marketing, so the best price never hits the ceiling.
+static func max_price(marketing: float) -> int:
+	return roundi(MAX_PRICE * marketing)
 
 
 static func ref_price(marketing: float, mood: float) -> float:

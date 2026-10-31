@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/golden_lamp/golden_lamp.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Props/desk_lamp.blend" id="2_model"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/lamp_on.wav" id="3_on"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/lamp_off.wav" id="4_off"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tray_drop.wav" id="5_thud"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="6_font"]
+
+[node name="GoldenLamp" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Glow" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.2, 0.04)
+visible = false
+light_color = Color(1, 0.74, 0.3, 1)
+light_energy = 0.0
+omni_range = 1.6
+omni_attenuation = 1.2
+
+[node name="Tag" type="Label3D" parent="."]
+transform = Transform3D(0.7143, 0, 0, 0, 0.7143, 0, 0, 0, 0.7143, -0.12, 0.08, 0.16)
+visible = false
+pixel_size = 0.0014
+billboard = 1
+no_depth_test = true
+render_priority = 2
+outline_render_priority = 1
+modulate = Color(1, 0.78, 0.29, 1)
+outline_modulate = Color(0.08, 0.07, 0.05, 0.9)
+text = "×5"
+font = ExtResource("6_font")
+font_size = 64
+outline_size = 16
+
+[node name="On" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("3_on")
+bus = &"SFX"
+
+[node name="Off" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("4_off")
+bus = &"SFX"
+
+[node name="Thud" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("5_thud")
+volume_db = -4.0
+bus = &"SFX"

@@ -1,0 +1,54 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/manager/manager.gd" id="1_script"]
+[ext_resource type="Script" path="res://entities/manager/manager_bubble.gd" id="2_bubble"]
+[ext_resource type="Texture2D" path="res://assets/textures/manager/manager_shadow.png" id="3_shadow"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/manager_knock_1.wav" id="sfx_knock_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/manager_knock_2.wav" id="sfx_knock_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/manager_knock_3.wav" id="sfx_knock_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tick"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_stamp_1.wav" id="sfx_stamp"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_knock"]
+random_pitch = 1.05
+streams_count = 3
+stream_0/stream = ExtResource("sfx_knock_1")
+stream_1/stream = ExtResource("sfx_knock_2")
+stream_2/stream = ExtResource("sfx_knock_3")
+
+[node name="Manager" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Shadow" type="Decal" parent="."]
+visible = false
+size = Vector3(0.9, 1.0, 1.4)
+texture_albedo = ExtResource("3_shadow")
+modulate = Color(1, 1, 1, 0)
+upper_fade = 0.05
+lower_fade = 0.05
+
+[node name="Bubble" type="CanvasLayer" parent="."]
+
+[node name="Speech" type="Control" parent="Bubble"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_bubble")
+
+[node name="Knock" type="AudioStreamPlayer" parent="."]
+stream = SubResource("Rand_knock")
+bus = &"SFX"
+
+[node name="Tick" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("sfx_tick")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="Stamp" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("sfx_stamp")
+volume_db = -4.0
+bus = &"SFX"

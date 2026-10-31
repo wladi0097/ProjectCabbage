@@ -18,6 +18,7 @@ const CELL := 0.054
 const THICKNESS := 0.014
 const MAX_STACK := 10
 const GOLD_VALUE := 10
+const MAX_THROW := 30
 const SILVER := Color(0.8, 0.82, 0.86)
 const GOLD := Color(1.0, 0.72, 0.32)
 ## How far (in cells) a payout's coins scatter around its spot, and sit off a stack's centre.
@@ -61,6 +62,7 @@ class Coin:
 	var inbound := Vector3.ZERO  # velocity from the gap onto the mat
 	var value := 1
 	var cell := Vector2i.ZERO  # the payout's stack
+	var gone := false  # taken by a vacuum, dropped from _coins at the end of vacuum_at
 
 
 # ponytail: Array of RefCounted coins, rewritten in full each moving frame; switch to packed
@@ -68,6 +70,10 @@ class Coin:
 var _coins: Array[Coin] = []
 var _stacks := {}  # Vector2i -> Array[Coin], bottom first
 var _buffer := PackedFloat32Array()
+## Coins taken off the mat by the coin vacuums and not banked yet (their value).
+var _held := 0
+## Value of payouts set to arrive by throw_in_after and not thrown yet.
+var _scheduled := 0
 
 
 func _ready() -> void:
@@ -81,14 +87,27 @@ func _ready() -> void:
 	custom_aabb = AABB(Vector3(-4, -1, -4), Vector3(8, 4, 8))
 	# Coins still flying or lying on the mat are banked when the game quits, not lost.
 	SaveManager.closing.connect(func() -> void: SaveManager.save.coins += pending_value())
+	# The autosave writes them in as well (only into the file, the live coins stay as they are).
+	SaveManager.pending_coins = pending_value
 
 
 ## The value of every coin not banked yet (in the air, on the mat, on its way to the deposit).
 func pending_value() -> int:
-	var total := 0
+	var total := _held + _scheduled
 	for coin in _coins:
 		total += coin.value
 	return total
+
+
+## Throws `amount` in after `delay` seconds; until then pending_value counts it (so it is banked on quit).
+func throw_in_after(delay: float, origin: Vector3, amount: int) -> void:
+	_scheduled += amount
+	get_tree().create_timer(delay).timeout.connect(_throw_scheduled.bind(origin, amount))
+
+
+func _throw_scheduled(origin: Vector3, amount: int) -> void:
+	_scheduled -= amount
+	throw_in(origin, amount)
 
 
 ## Throws `amount` worth of coins in from `origin` (out of sight below the sill): up to the gap,
@@ -202,6 +221,79 @@ func _sweep(point: Vector3) -> void:
 			_stacks.erase(cell)
 
 
+## A coin vacuum at `point` sucks up the resting stacks within `reach`, at most `room` coins, and
+## holds them (pending_value still counts them) until bank_from. Returns (coins taken, their value).
+func vacuum_at(point: Vector3, reach: float, room: int) -> Vector2i:
+	var taken := 0
+	var value := 0
+	var span := ceili(reach / CELL)
+	var centre := cell_of(point)
+	for dx in range(-span, span + 1):
+		for dz in range(-span, span + 1):
+			var cell := centre + Vector2i(dx, dz)
+			if taken >= room or not _stacks.has(cell) or cell_centre(cell).distance_to(Vector2(point.x, point.z)) > reach:
+				continue
+			var stack: Array = _stacks[cell]
+			# Whole stacks only once they have settled, top coin first.
+			if not _settled(stack):
+				continue
+			while not stack.is_empty() and taken < room:
+				var coin: Coin = stack.pop_back()
+				coin.gone = true
+				_held += coin.value
+				value += coin.value
+				taken += 1
+				collected.emit(coin.xf.origin)
+			if stack.is_empty():
+				_stacks.erase(cell)
+	if taken > 0:
+		# One pass drops the taken coins (order kept, though _upload doesn't need it).
+		var kept := 0
+		for coin in _coins:
+			if not coin.gone:
+				_coins[kept] = coin
+				kept += 1
+		_coins.resize(kept)
+	return Vector2i(taken, value)
+
+
+## The centres (on the desk) of the stacks resting on the mat, for the vacuums to drive to.
+func resting_spots() -> Array[Vector3]:
+	var out: Array[Vector3] = []
+	for cell: Vector2i in _stacks:
+		var stack: Array = _stacks[cell]
+		if not stack.is_empty() and _settled(stack):
+			var at := cell_centre(cell)
+			out.append(Vector3(at.x, desk_height, at.y))
+	return out
+
+
+static func _settled(stack: Array) -> bool:
+	for coin: Coin in stack:
+		if coin.state != State.RESTING:
+			return false
+	return true
+
+
+## A vacuum empties its bag at `point`: `value` worth of the held coins fly from there to the deposit.
+func bank_from(point: Vector3, value: int) -> void:
+	value = mini(value, _held)
+	_held -= value
+	var order := 0
+	for v in coin_values(value):
+		if _coins.size() >= MAX_COINS:
+			_deposit_now(v)
+			continue
+		var coin := Coin.new()
+		coin.value = v
+		coin.state = State.HOMING
+		coin.xf = Transform3D(Basis(), point + Vector3(randf_range(-1, 1), 0.0, randf_range(-1, 1)) * 0.02)
+		coin.from = coin.xf
+		coin.delay = order * HOME_STAGGER
+		order += 1
+		_coins.append(coin)
+
+
 ## Up, over the hopper, then straight down into its mouth, accelerating. True when it arrives.
 func _home(coin: Coin, delta: float) -> bool:
 	if coin.delay > 0.0:
@@ -274,14 +366,22 @@ static func cell_centre(cell: Vector2i) -> Vector2:
 
 
 ## Silver for the change, then a gold coin for every full GOLD_VALUE of `amount`: thrown in this
-## order, the gold ends up on top of the stack where the camera sees it.
+## order, the gold ends up on top of the stack where the camera sees it. A big amount comes as gold
+## worth ten times more, and again, so one payout never throws much more than MAX_THROW coins.
 static func coin_values(amount: int) -> Array[int]:
+	var big := GOLD_VALUE
+	@warning_ignore("integer_division")
+	while amount / big > MAX_THROW:
+		big *= 10
 	var out: Array[int] = []
 	for i in amount % GOLD_VALUE:
 		out.append(1)
 	@warning_ignore("integer_division")
-	for i in amount / GOLD_VALUE:
+	for i in (amount % big) / GOLD_VALUE:
 		out.append(GOLD_VALUE)
+	@warning_ignore("integer_division")
+	for i in amount / big:
+		out.append(big)
 	return out
 
 

@@ -1,13 +1,16 @@
 class_name TallyMachine
 extends Node3D
-## The coin tally machine. Its nine number drums show the saved coin total. When the total moves,
+## A drum counter for a saved number: the coin tally machine (nine drums, coins) and the Findings
+## counter (six drums, findings). Its drums show the saved total. When the total moves,
 ## the shown value rolls toward it (faster the further behind it is) and carries like a real
 ## odometer: a drum only turns while every drum to its right rolls from 9 to 0.
 
 ## Once per frame in which the ones drum passed a whole number (the tick sound hooks in here).
 signal ticked
 
-const DRUMS := 9
+## The SaveGame field shown, and how many drums show it.
+@export var field := &"coins"
+@export var drums := 9
 ## Units per second the drums roll at least, plus this much per unit still to go.
 const MIN_RATE := 8.0
 const CATCH_UP := 4.0
@@ -20,14 +23,14 @@ var _bones := PackedInt32Array()
 
 
 func _ready() -> void:
-	for k in DRUMS:
+	for k in drums:
 		_bones.append(_skeleton.find_bone("Drum%d" % k))
-	_shown = SaveManager.save.coins
+	_shown = SaveManager.save.get(field)
 	_pose()
 
 
 func _process(delta: float) -> void:
-	var target := float(SaveManager.save.coins)
+	var target := float(SaveManager.save.get(field))
 	if _shown == target:
 		return
 	var before := floori(_shown)
@@ -39,8 +42,8 @@ func _process(delta: float) -> void:
 
 
 func _pose() -> void:
-	var positions := drum_positions(_shown, DRUMS)
-	for k in DRUMS:
+	var positions := drum_positions(_shown, drums)
+	for k in drums:
 		_skeleton.set_bone_pose_rotation(_bones[k], Quaternion(Vector3.RIGHT, deg_to_rad(positions[k] * 36.0)))
 
 

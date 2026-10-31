@@ -252,6 +252,10 @@ Give the flow link for re-picking takes. Never claim it sounds right.
 
 ## Worked examples
 
+QA bay (2026-10-31): `qa_flap_shut_1..3` (−5 dB, three takes in a randomizer), `qa_flap_open` (−7), `qa_scan` (−6, a rising hum timed to the 0.45 s scan sweep), `qa_done` (−5, brass bell when a Finding is filed). The arrival reuses `console_drop`, the suck-in reuses `cabbage_suck`. A 5 s "quiet analyser whirr" prompt gave four near-silent takes (−50 dB): ask for something audible ("steady electric motor hum") rather than "quiet". `peaks.py` under-reads short transients by 10–15 dB; check a finished wav with `ffmpeg -af volumedetect`.
+
+Projector screen (2026-10-31): `projector_roll_down` (−2 dB, 1.0 s: unroll whirr 0–0.2 s, bar thud at 0.145 s where TRANS_BOUNCE first lands, lamp clunk/buzz at 0.40 s when the flicker starts), `projector_roll_up` (−4, whirr then the spare `qa_flap_shut_yKhq` clank at 0.35 s; the roll-up takes peaked at their start, not on the end clack), `projector_approve` (−3, small rubber stamp), `projector_denied` (−8, reuses `console_denied_4` pitched down 10 %). 20 takes, ~40 credits.
+
 Stage 1 (2026-10-30), 8 sounds, 32 takes, ~90 credits. One file per variation
 (`<sound>_<n>.wav`), one take each, played through an `AudioStreamRandomizer`
 (`random_volume_offset_db` 1.5) on a `SoundCue`:

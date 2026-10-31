@@ -18,6 +18,9 @@ func _ready() -> void:
 	# A payout is silver for the change, then gold for every full 10 (on top).
 	_check(CoinPile.coin_values(23) == [1, 1, 1, 10, 10], "coin_values(23) = %s" % [CoinPile.coin_values(23)])
 	_check(CoinPile.coin_values(4) == [1, 1, 1, 1], "coin_values(4) = %s" % [CoinPile.coin_values(4)])
+	var big := CoinPile.coin_values(1848)
+	_check(big.size() <= CoinPile.MAX_THROW + 18 and big.reduce(func(a: int, b: int) -> int: return a + b, 0) == 1848,
+			"coin_values(1848) stays few and adds up: %s" % [big])
 
 	# A toss lands where it aims.
 	var g := Vector3.DOWN * float(ProjectSettings.get_setting("physics/3d/default_gravity"))
@@ -40,8 +43,44 @@ func _ready() -> void:
 	var near := CoinPile.home_point(start, hopper, 0.95)
 	_check(near.y > hopper.y and Vector2(near.x - hopper.x, near.z - hopper.z).length() < near.y - hopper.y,
 			"homing should end mostly vertical: %s" % near)
+	_test_vacuum()
 	print("coin pile tests failed" if _failed else "coin pile tests passed")
 	get_tree().quit(1 if _failed else 0)
+
+
+## A vacuum takes resting stacks in reach up to its room, the money stays pending until it banks it.
+func _test_vacuum() -> void:
+	var pile := CoinPile.new()
+	pile.multimesh = MultiMesh.new()
+	pile.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(pile)
+	for spot: Array in [[Vector2i(0, 0), [1, 1, 10]], [Vector2i(1, 0), [1, 1]], [Vector2i(20, 0), [10]]]:
+		var stack := []
+		for value: int in spot[1]:
+			var coin := CoinPile.Coin.new()
+			coin.state = CoinPile.State.RESTING
+			coin.value = value
+			stack.append(coin)
+			pile._coins.append(coin)
+		pile._stacks[spot[0]] = stack
+	_check(pile.pending_value() == 24 and pile.resting_spots().size() == 3, "setup: %d" % pile.pending_value())
+	var got := pile.vacuum_at(Vector3(CoinPile.CELL * 0.5, 0.76, CoinPile.CELL * 0.5), 0.07, 4)
+	_check(got == Vector2i(4, 13), "vacuum_at took %s" % got)
+	_check(pile.pending_value() == 24 and pile._coins.size() == 2, "vacuumed coins must stay pending")
+	# One coin of the second stack and the far stack stay; nothing taken is left in _coins.
+	_check(pile._coins.all(func(coin: CoinPile.Coin) -> bool: return not coin.gone)
+			and pile._coins.has(pile._stacks[Vector2i(1, 0)][0]) and pile._coins.has(pile._stacks[Vector2i(20, 0)][0]),
+			"the coins left on the mat")
+	_check(pile.vacuum_at(Vector3(CoinPile.CELL * 0.5, 0.76, CoinPile.CELL * 0.5), 0.07, 10) == Vector2i(1, 1), "the rest of the stack")
+	pile.bank_from(Vector3.ZERO, 14)
+	_check(pile.pending_value() == 24 and pile._held == 0 and pile._coins.size() == 1 + 5,
+			"banked coins fly home: held %d, coins %d" % [pile._held, pile._coins.size()])
+	# A delayed payout counts as pending from the start (banked on quit), and once over the timer.
+	pile.throw_in_after(60.0, Vector3.ZERO, 7)
+	_check(pile.pending_value() == 31, "scheduled payout pending: %d" % pile.pending_value())
+	pile._throw_scheduled(Vector3.ZERO, 7)
+	_check(pile.pending_value() == 31 and pile._scheduled == 0, "thrown payout pending: %d" % pile.pending_value())
+	pile.free()
 
 
 func _check(ok: bool, message := "check failed") -> void:

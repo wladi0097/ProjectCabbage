@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/meshes/Machines/coin_vacuum.blend" id="1_model"]
+
+[sub_resource type="StandardMaterial3D" id="Lamp_mat"]
+resource_local_to_scene = true
+albedo_color = Color(0.3, 0.2, 0.09, 1)
+roughness = 0.35
+emission_enabled = true
+emission = Color(1, 0.62, 0.22, 1)
+emission_energy_multiplier = 0.0
+
+[node name="VacuumBody" type="Node3D"]
+editor_description = "Coin collector puck, 0.234 x 0.073 x 0.226 m (bumper included), origin bottom centre, forward -Z. Lamp: $Model/Lamp (per-instance material, drive emission_energy_multiplier). Side brush: $Model/Brush, origin at its hub, spin about local Y."
+
+[node name="Model" parent="." instance=ExtResource("1_model")]
+
+[node name="Lamp" parent="Model"]
+material_override = SubResource("Lamp_mat")

@@ -48,14 +48,16 @@ func _physics_process(_delta: float) -> void:
 			or not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)):
 		_release()
 	if held == null:
-		_set_hovered(_pick())
+		# Over a GUI control (the projector overlay) nothing behind it is hovered or caught.
+		_set_hovered(null if get_viewport().gui_get_hovered_control() != null else _pick())
 		if hovered != null and hovered.catchable and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			held = hovered
 			held.grabbed.emit()
 
 
 func _process(delta: float) -> void:
-	var in_game := get_window().has_focus() and get_viewport().get_camera_3d() != null 			and get_viewport().gui_get_hovered_control() == null and not get_tree().get_nodes_in_group(&"blocks_hand").any(func(n: Node) -> bool:
+	var in_game := get_window().has_focus() and get_viewport().get_camera_3d() != null \
+			and get_viewport().gui_get_hovered_control() == null and not get_tree().get_nodes_in_group(&"blocks_hand").any(func(n: Node) -> bool:
 				return n is CanvasItem and (n as CanvasItem).is_visible_in_tree())
 	_model.visible = in_game
 	var mode := Input.MOUSE_MODE_HIDDEN if in_game else Input.MOUSE_MODE_VISIBLE

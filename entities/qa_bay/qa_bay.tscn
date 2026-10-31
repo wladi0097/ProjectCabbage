@@ -1,0 +1,188 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/qa_bay/qa_bay.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Machines/qa_bay.blend" id="2_model"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="4_font"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_drop"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/qa_flap_shut_1.wav" id="sfx_shut_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/qa_flap_shut_2.wav" id="sfx_shut_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/qa_flap_shut_3.wav" id="sfx_shut_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/qa_flap_open.wav" id="sfx_open"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/qa_scan.wav" id="sfx_scan"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/qa_done.wav" id="sfx_done"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_1.wav" id="sfx_out_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_2.wav" id="sfx_out_2"]
+
+[sub_resource type="BoxShape3D" id="Panel"]
+size = Vector3(0.3, 0.3, 0.4)
+
+[sub_resource type="BoxShape3D" id="Cheek"]
+size = Vector3(0.04, 0.3, 0.4)
+
+[sub_resource type="BoxShape3D" id="Back"]
+size = Vector3(0.46, 0.3, 0.04)
+
+[sub_resource type="BoxShape3D" id="Top"]
+size = Vector3(0.46, 0.03, 0.4)
+
+[sub_resource type="BoxShape3D" id="Mouth"]
+size = Vector3(0.41, 0.28, 0.03)
+
+[sub_resource type="BoxShape3D" id="Inside"]
+size = Vector3(0.36, 0.24, 0.24)
+
+[sub_resource type="StandardMaterial3D" id="ScanGlow"]
+transparency = 1
+blend_mode = 1
+no_depth_test = true
+shading_mode = 0
+albedo_color = Color(0.75, 0.95, 1, 1)
+
+[sub_resource type="BoxMesh" id="ScanLine"]
+material = SubResource("ScanGlow")
+size = Vector3(0.012, 0.2, 0.2)
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_drop"]
+streams_count = 1
+stream_0/stream = ExtResource("sfx_drop")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_shut"]
+random_pitch = 1.06
+streams_count = 3
+stream_0/stream = ExtResource("sfx_shut_1")
+stream_1/stream = ExtResource("sfx_shut_2")
+stream_2/stream = ExtResource("sfx_shut_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_open"]
+random_pitch = 1.08
+streams_count = 1
+stream_0/stream = ExtResource("sfx_open")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_scan"]
+random_pitch = 1.04
+streams_count = 1
+stream_0/stream = ExtResource("sfx_scan")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_done"]
+random_pitch = 1.03
+streams_count = 1
+stream_0/stream = ExtResource("sfx_done")
+
+[sub_resource type="StandardMaterial3D" id="LampLens"]
+albedo_color = Color(0.22, 0.05, 0.03, 1)
+roughness = 0.25
+emission_enabled = true
+emission = Color(1, 0.32, 0.12, 1)
+emission_energy_multiplier = 0.0
+
+[sub_resource type="SphereMesh" id="LampDome"]
+material = SubResource("LampLens")
+radius = 0.022
+height = 0.022
+radial_segments = 16
+rings = 8
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_out"]
+random_pitch = 1.05
+streams_count = 2
+stream_0/stream = ExtResource("sfx_out_1")
+stream_1/stream = ExtResource("sfx_out_2")
+
+[node name="QaBay" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Body" type="StaticBody3D" parent="."]
+
+[node name="Panel" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0.15, -0.04)
+shape = SubResource("Panel")
+
+[node name="Cheek" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.355, 0.15, -0.04)
+shape = SubResource("Cheek")
+
+[node name="Back" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.15, -0.22)
+shape = SubResource("Back")
+
+[node name="Top" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.3, -0.04)
+shape = SubResource("Top")
+
+[node name="Shut" type="StaticBody3D" parent="."]
+
+[node name="Shape" type="CollisionShape3D" parent="Shut"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.135, 0.155, 0.17)
+shape = SubResource("Mouth")
+disabled = true
+
+[node name="Chamber" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="Shape" type="CollisionShape3D" parent="Chamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.135, 0.14, -0.04)
+shape = SubResource("Inside")
+
+[node name="Scan" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.18, -0.1)
+cast_shadow = 0
+mesh = SubResource("ScanLine")
+
+[node name="Lamp" type="OmniLight3D" parent="Scan"]
+light_color = Color(0.72, 0.9, 1, 1)
+light_energy = 2.5
+omni_range = 0.35
+
+[node name="BusyLamp" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.13, 0.213, 0.1187)
+cast_shadow = 0
+mesh = SubResource("LampDome")
+
+[node name="Plate" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.2625, 0.2125, 0.1216)
+pixel_size = 0.0004
+modulate = Color(0.1, 0.08, 0.05, 1)
+text = "QUALITY
+ASSURANCE"
+font = ExtResource("4_font")
+font_size = 60
+line_spacing = -8.0
+outline_size = 0
+
+[node name="Thud" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_drop")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="FlapShut" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.135, 0.05, 0.17)
+stream = SubResource("Rand_shut")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="FlapOpen" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.135, 0.05, 0.17)
+stream = SubResource("Rand_open")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="ScanSound" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_scan")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="Done" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.22, 0.12)
+stream = SubResource("Rand_done")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="Out" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_out")
+bus = &"SFX"
+script = ExtResource("3_cue")

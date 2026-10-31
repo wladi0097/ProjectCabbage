@@ -3,9 +3,13 @@ extends Node
 ## Makes its parent CollisionObject3D hoverable and grabbable by the Hand autoload.
 ## The parent reacts to the signals; the Hand only picks, grabs and swaps the cursor.
 
+@warning_ignore("unused_signal")
 signal hovered
+@warning_ignore("unused_signal")
 signal unhovered
+@warning_ignore("unused_signal")
 signal grabbed
+@warning_ignore("unused_signal")
 signal released
 
 @export var enabled := true

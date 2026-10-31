@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/vacuum/vacuum.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://entities/vacuum/vacuum_dock.tscn" id="2_dock"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/vacuum_beep.wav" id="4_beep"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_beep"]
+random_pitch = 1.04
+random_volume_offset_db = 1.0
+streams_count = 1
+stream_0/stream = ExtResource("4_beep")
+
+[node name="CoinVacuums" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Dock" parent="." instance=ExtResource("2_dock")]
+
+[node name="Beep" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_beep")
+bus = &"SFX"
+script = ExtResource("3_cue")
+min_interval = 0.2

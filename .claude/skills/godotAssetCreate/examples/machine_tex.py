@@ -3,7 +3,7 @@
 #  machine_metal/  tiling greyscale brushed metal (tinted by vertex colour: brass, chrome)
 #  machine_dial/   atlas. Drum digits 0-9 stacked along v (digit d in v [d/10, (d+1)/10], upright
 #                  toward +v) in u [0, DRUM_U]; black drum sides at u [0.15, 0.25]; brass
-#                  "$$$" plate in u [0.5, 1], v [0.8, 1].
+#                  "$$$" plate in u [0.5, 1], v [0.8, 1]; Findings plate in u [0.25, 0.5], v [0.9, 1].
 import math, numpy as np, sys
 from PIL import Image, ImageDraw, ImageFont
 
@@ -60,15 +60,21 @@ for k in range(10):
     cy = N - (k + 0.5) * ch          # v up
     d.text((cw / 2, cy), str(k), font=digits, fill=(226, 220, 198), anchor="mm")
 # Plate: brass with an engraved border and text.
-x0, y0, x1, y1 = N // 2, 0, N, int(0.2 * N)
-d.rectangle((x0, y0, x1, y1), fill=(150, 124, 78)); dm.rectangle((x0, y0, x1, y1), fill=255)
-d.rectangle((x0 + 10, y0 + 10, x1 - 10, y1 - 10), outline=(30, 24, 14), width=6)
-dh.rectangle((x0 + 10, y0 + 10, x1 - 10, y1 - 10), outline=60, width=5)
-big = ImageFont.truetype("C:/Users/wladi/Desktop/ProjectCabbage/assets/fonts/Oswald.ttf", 110)
-small = ImageFont.truetype("C:/Users/wladi/Desktop/ProjectCabbage/assets/fonts/Oswald.ttf", 27)
-for font, text, y in ((big, "$$$", 0.42), (small, "TALLY MODEL 9  \u00b7  DEPT. OF REVENUE", 0.82)):
-    d.text(((x0 + x1) / 2, y0 + (y1 - y0) * y), text, font=font, fill=(24, 19, 12), anchor="mm")
-    dh.text(((x0 + x1) / 2, y0 + (y1 - y0) * y), text, font=font, fill=50, anchor="mm")
+def plate(box, symbol, line, scale):
+    x0, y0, x1, y1 = box
+    border = round(10 * scale)
+    d.rectangle(box, fill=(150, 124, 78)); dm.rectangle(box, fill=255)
+    d.rectangle((x0 + border, y0 + border, x1 - border, y1 - border), outline=(30, 24, 14), width=max(3, round(6 * scale)))
+    dh.rectangle((x0 + border, y0 + border, x1 - border, y1 - border), outline=60, width=max(3, round(5 * scale)))
+    big = ImageFont.truetype("C:/Users/wladi/Desktop/ProjectCabbage/assets/fonts/Oswald.ttf", round(110 * scale))
+    small = ImageFont.truetype("C:/Users/wladi/Desktop/ProjectCabbage/assets/fonts/Oswald.ttf", round(27 * scale))
+    for font, text, y in ((big, symbol, 0.42), (small, line, 0.82)):
+        d.text(((x0 + x1) / 2, y0 + (y1 - y0) * y), text, font=font, fill=(24, 19, 12), anchor="mm")
+        dh.text(((x0 + x1) / 2, y0 + (y1 - y0) * y), text, font=font, fill=50, anchor="mm")
+
+
+plate((N // 2, 0, N, int(0.2 * N)), "$$$", "TALLY MODEL 9  ·  DEPT. OF REVENUE", 1.0)
+plate((N // 4, 0, N // 2, int(0.1 * N)), "¶¶¶", "DEPT. OF QUALITY", 0.5)
 alb.save(OUT + "machine_dial/machine_dial_albedo.png")
 h = np.array(hgt) / 255.0
 normal_from(h, 4.0).save(OUT + "machine_dial/machine_dial_normal.png")

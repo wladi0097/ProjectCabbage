@@ -3,7 +3,10 @@ extends Node3D
 ## stock left that isn't on the mat yet, and the mat holds fewer than the save's desk_capacity,
 ## it rolls the next cabbage down the ramp every dispense_interval and flings it off the lip
 ## onto the bottom half of the mat; after a sale the next one waits restock_wait first. The drum bar
-## on its front rail rolls to the stock.
+## on its front rail rolls to the stock. Once rotten units are in (save.rotten_unlocked), one in
+## ROTTEN_EVERY comes down rotten. Rotten units don't take up desk_capacity (the hired hands leave
+## them until hands_bin, they must not stall the chute); while MAX_ROTTEN lie on the mat the chute
+## sends fresh ones only, so they never pile up.
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
 const PLAY_AREA_LAYER := 2
@@ -17,12 +20,15 @@ const DRUM_AXIS := Vector3(0.9062, 0.4122, 0.0943)
 ## Drum roll speed, as on the tally machine: units per second plus this much per unit to go.
 const ROLL_RATE := 8.0
 const CATCH_UP := 4.0
+const ROTTEN_EVERY := 8
+const MAX_ROTTEN := 2
 
 ## Where the ramp starts, off-screen, relative to the lip.
 @export var ramp_top := Vector3(0.65, 0.3, 0.12)
 @export var landing_area := AABB(Vector3(0.2, 0.85, 0.3), Vector3(0.8, 0.0, 0.45))
 
 var _on_desk: Array[Cabbage] = []
+var _rotten_on_desk := 0
 var _cooldown := 0.0
 var _shown := 0.0
 var _drums := PackedInt32Array()
@@ -55,12 +61,19 @@ func _pose_drums() -> void:
 
 func _physics_process(delta: float) -> void:
 	var save := SaveManager.save
-	var before := _on_desk.size()
-	_on_desk = _on_desk.filter(func(c: Cabbage) -> bool: return is_instance_valid(c) and not c.sold)
+	var gone := false
+	_rotten_on_desk = 0
+	for i in range(_on_desk.size() - 1, -1, -1):
+		var cabbage := _on_desk[i]
+		if not is_instance_valid(cabbage) or cabbage.sold:
+			_on_desk.remove_at(i)
+			gone = true
+		elif cabbage.rotten:
+			_rotten_on_desk += 1
 	_cooldown -= delta
-	if _on_desk.size() < before:
+	if gone:
 		_cooldown = maxf(_cooldown, restock_wait(save.restock_delay, randf()))
-	if _cooldown > 0.0 or not should_dispense(_on_desk.size(), save.desk_capacity, save.stock):
+	if _cooldown > 0.0 or not should_dispense(_on_desk.size() - _rotten_on_desk, _on_desk.size(), save.desk_capacity, save.stock):
 		return
 	_cooldown = save.dispense_interval
 	_roll()
@@ -71,13 +84,20 @@ static func restock_wait(delay: float, roll: float) -> float:
 	return delay * (0.5 + roll)
 
 
-## Room on the mat, and stock that isn't on it yet.
-static func should_dispense(on_desk: int, capacity: int, stock: int) -> bool:
-	return on_desk < capacity and on_desk < stock
+## Whether the next unit comes down rotten: `rotten` already lie on the mat, `roll` is 0..1.
+static func is_rotten(unlocked: bool, roll: float, rotten := 0) -> bool:
+	return unlocked and rotten < MAX_ROTTEN and roll < 1.0 / ROTTEN_EVERY
+
+
+## Room on the mat for `fresh` units (rotten ones don't count), and stock that isn't on it yet
+## (`on_desk` counts every unit there).
+static func should_dispense(fresh: int, on_desk: int, capacity: int, stock: int) -> bool:
+	return fresh < capacity and on_desk < stock
 
 
 func _roll() -> void:
 	var cabbage := CABBAGE.instantiate() as Cabbage
+	cabbage.rotten = is_rotten(SaveManager.save.rotten_unlocked, randf(), _rotten_on_desk)
 	get_parent().add_child(cabbage)
 	_on_desk.append(cabbage)
 	var interactable := cabbage.get_node("Interactable") as Interactable

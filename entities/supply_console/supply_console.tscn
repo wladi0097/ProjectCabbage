@@ -42,6 +42,9 @@ albedo_color = Color(1, 0.62, 0.18, 1)
 height = 0.08
 radius = 0.058
 
+[sub_resource type="BoxShape3D" id="AutoShape"]
+size = Vector3(0.09, 0.03, 0.035)
+
 [sub_resource type="StandardMaterial3D" id="DustMat"]
 transparency = 1
 shading_mode = 0
@@ -100,6 +103,27 @@ shape = SubResource("ButtonShape")
 
 [node name="Interactable" type="Node" parent="Button"]
 script = ExtResource("2_interactable")
+pressable = true
+
+[node name="Auto" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.0, 1.0, 0, -1.0, 0.0, 0.065, 0.084, 0.085)
+visible = false
+pixel_size = 0.0007
+modulate = Color(1, 0.62, 0.18, 1)
+shaded = false
+text = "● AUTO"
+font_size = 32
+outline_size = 0
+
+[node name="AutoSwitch" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, 0.065, 0.08, 0.085)
+
+[node name="Shape" type="CollisionShape3D" parent="AutoSwitch"]
+shape = SubResource("AutoShape")
+
+[node name="Interactable" type="Node" parent="AutoSwitch"]
+script = ExtResource("2_interactable")
+enabled = false
 pressable = true
 
 [node name="Dust" type="CPUParticles3D" parent="."]

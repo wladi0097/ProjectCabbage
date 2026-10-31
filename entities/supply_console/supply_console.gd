@@ -2,13 +2,19 @@ class_name SupplyConsole
 extends Node3D
 ## The supply chain's console: an amber ticker with the current pack price and the buy-pack button
 ## (a crate icon, no text). Pressing it pays the price from the tally and adds pack_size to the stock.
+## A pack's cabbage costs PACK_SHARE of the full-sale price (PriceSlate.BASE_REF_PRICE × marketing),
+## so packs stay a steady share of what a sale brings as marketing grows.
 ## Every minute the price moves: around the base, ±50%, pushed up by the packs bought in the
 ## minute before, plus noise. It drops onto the desk once the first UNLOCK_SALES are sold.
 ## Sold out and unable to pay for a pack for BAILOUT_WAIT seconds, the price drops to the coins
 ## left (a bailout) until the next pack is bought or the minute turns.
+## Once the auto_procurement card is stamped an AUTO lamp lights on the screen: pressed, it switches
+## automatic buying on or off (save.auto_buy). On, a pack is bought whenever should_auto_buy says so.
+
+const Slate := preload("res://entities/price_slate/price_slate.gd")
 
 const UNLOCK_SALES := 10
-const BASE_PRICE_PER_CABBAGE := 0.6
+const PACK_SHARE := 0.35
 const PRICE_PERIOD := 60.0
 const PRESSURE_PER_PACK := 0.12
 ## Share of the pressure left after each price change.
@@ -23,6 +29,9 @@ const BAILOUT_WAIT := 10.0
 const AMBER := Color(1, 0.62, 0.18, 1)
 const DENIED_RED := Color(1, 0.12, 0.08, 1)
 const BLINK_TIME := 0.12
+## Seconds between two automatic buys, and the AUTO lamp's colour when switched off.
+const AUTO_COOLDOWN := 1.0
+const AUTO_OFF := Color(0.3, 0.27, 0.22, 1)
 
 ## Coins still on the mat or in the air count as money when deciding on a bailout.
 @export var coins: CoinPile
@@ -32,8 +41,13 @@ var _broke_for := 0.0
 ## The bailout price while one is on offer, else -1.
 var _bailout := -1
 var _blinking: Tween
+var _auto_wait := 0.0
+## The cost the ticker shows, so it is only reformatted when it changes.
+var _shown_cost := -1
 
 @onready var _button: Interactable = $Button/Interactable
+@onready var _auto: Label3D = $Auto
+@onready var _auto_switch: Interactable = $AutoSwitch/Interactable
 @onready var _price: Label3D = $Price
 @onready var _spark: MeshInstance3D = $Sparkline
 @onready var _skeleton: Skeleton3D = $Model/Armature/Skeleton3D
@@ -45,6 +59,8 @@ func _ready() -> void:
 	_button.grabbed.connect(_press)
 	_button.grabbed.connect(_push.bind(true))
 	_button.released.connect(_push.bind(false))
+	_auto_switch.grabbed.connect(_toggle_auto)
+	_show_auto()
 	var save := SaveManager.save
 	if save.price_history.size() < 2:
 		var steps := PackedFloat32Array()
@@ -67,15 +83,29 @@ func _process(delta: float) -> void:
 	if _clock >= PRICE_PERIOD:
 		_clock -= PRICE_PERIOD
 		_tick_price()
-	_broke_for = _broke_for + delta if save.buy_unlocked and _bailout < 0 and is_broke(save.stock, save.coins + (coins.pending_value() if coins != null else 0), _cost()) else 0.0
+	# Only out of stock is the mat's coin pile worth counting.
+	_broke_for = _broke_for + delta if save.buy_unlocked and _bailout < 0 and save.stock <= 0 and is_broke(save.stock, save.coins + (coins.pending_value() if coins != null else 0), _cost()) else 0.0
 	if _broke_for >= BAILOUT_WAIT:
 		_bailout = save.coins
 		_show_price()
+	if _auto.visible != save.stamped.has("auto_procurement"):
+		_show_auto()
+	_auto_wait -= delta
+	if _auto.visible and save.auto_buy and save.buy_unlocked and _auto_wait <= 0.0 \
+			and should_auto_buy(save.stock, save.auto_reserve, save.price_factor, save.auto_max_factor, save.coins, _cost()):
+		_auto_wait = AUTO_COOLDOWN
+		_press()
+		_push(true)
+		get_tree().create_timer(0.12).timeout.connect(_push.bind(false))
+	# Marketing and pack size change between ticks; the ticker follows at once.
+	if _cost() != _shown_cost:
+		_shown_cost = _cost()
+		_price.text = "$%d" % _shown_cost
 
 
 func _cost() -> int:
 	var save := SaveManager.save
-	return _bailout if _bailout >= 0 else pack_price(save.price_factor, save.pack_size)
+	return _bailout if _bailout >= 0 else pack_price(save.price_factor, save.pack_size, save.marketing, save.pack_discount)
 
 
 func _tick_price() -> void:
@@ -117,6 +147,20 @@ func _blink() -> void:
 		_blinking.tween_interval(BLINK_TIME)
 
 
+## The AUTO lamp: there once the card is stamped, amber while on, dark while off.
+func _show_auto() -> void:
+	var save := SaveManager.save
+	_auto.visible = save.stamped.has("auto_procurement")
+	_auto_switch.enabled = _auto.visible
+	_auto.modulate = AMBER if save.auto_buy else AUTO_OFF
+
+
+func _toggle_auto() -> void:
+	SaveManager.save.auto_buy = not SaveManager.save.auto_buy
+	$Press.cue($AutoSwitch.global_position)
+	_show_auto()
+
+
 func _push(down: bool) -> void:
 	var rest := _skeleton.get_bone_rest(_plunger).origin
 	create_tween().tween_method(func(at: Vector3) -> void: _skeleton.set_bone_pose_position(_plunger, at),
@@ -138,7 +182,8 @@ func _drop() -> void:
 
 func _show_price() -> void:
 	var save := SaveManager.save
-	_price.text = "$%d" % _cost()
+	_shown_cost = _cost()
+	_price.text = "$%d" % _shown_cost
 	var mesh := ImmediateMesh.new()
 	var points := sparkline(save.price_history, HISTORY, Vector2(0.14, 0.03))
 	if points.size() >= 2:
@@ -168,8 +213,14 @@ static func is_broke(stock: int, money: int, cost: int) -> bool:
 	return stock <= 0 and money < cost
 
 
-static func pack_price(factor: float, size: int) -> int:
-	return maxi(roundi(factor * BASE_PRICE_PER_CABBAGE * size), 1)
+static func pack_price(factor: float, size: int, marketing: float, discount := 1.0) -> int:
+	return maxi(roundi(factor * PACK_SHARE * Slate.BASE_REF_PRICE * marketing * size * discount), 1)
+
+
+## Automatic buying: stock is down to the reserve and the tally can pay; while stock is left it
+## also waits for the price factor to come down to `max_factor`.
+static func should_auto_buy(stock: int, reserve: int, factor: float, max_factor: float, money: int, cost: int) -> bool:
+	return stock <= reserve and money >= cost and (stock <= 0 or factor <= max_factor + 0.001)
 
 
 ## Points of the price history in a `size` box (factor 0.5 at the bottom, 1.5 at the top),

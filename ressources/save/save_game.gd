@@ -2,6 +2,8 @@ class_name SaveGame
 extends Resource
 
 @export var version := ""
+## Which one-off fix-ups of old saves have run (UpgradeDesk.migrate); new saves start at MIGRATION.
+@export var migration := 0
 @export var created := 0
 @export var last_played := 0
 @export var play_seconds := 0
@@ -30,8 +32,120 @@ extends Resource
 ## Mean seconds after a sale before the next cabbage rolls (each wait is 0.5..1.5 of it). Upgradeable.
 @export var restock_delay := 0.67
 @export var pack_size := 10
+## Quality Assurance's output: each cabbage analysed in the QA bay adds findings_per_cabbage.
+@export var findings := 0
+## Seconds the QA bay analyses one cabbage, and the Findings it yields. Upgradeable (projector tree).
+@export var qa_time := 5.0
+@export var findings_per_cabbage := 1
+## Seconds between each hired hand's trips to the mat. Upgradeable. Old saves that never changed it
+## stored nothing (the old default 12 s) and so load this default too.
+@export var associate_interval := 8.0
+## How fast the hired hands move (times Associate's slow base speeds). Upgradeable (projector tree).
+@export var associate_speed := 1.0
+## Hired hands (associates): 1 once the junior associate card is stamped, +1 per further hire.
+@export var hands := 0
 ## Pack price as a multiple of the base price (0.5..1.5), the buy pressure still pushing it up,
 ## and the last factors for the ticker's sparkline.
 @export var price_factor := 1.0
 @export var price_pressure := 0.0
 @export var price_history := PackedFloat32Array()
+## The projector tree's nodes bought so far (ids from Projector.NODES), in order.
+@export var tree_bought := PackedStringArray()
+## Units-sold milestones reached (ids from MilestoneMemo's MILESTONES), each bonus applied once.
+@export var milestones := PackedStringArray()
+# Manager + pricing consultant (entities/manager/, entities/consultant/).
+## The manager's quota: seconds given, bonus coins per unit of quota per coin of price, and how
+## much the last 5 minutes' pace is raised. Upgradeable (projector tree). Quotas met and missed.
+@export var manager_time := 45.0
+@export var manager_reward := 1.0
+@export var manager_raise := 1.25
+@export var quotas_met := 0
+@export var quotas_missed := 0
+## The pricing consultant: seconds between its taps on the slate, and its skill (0 textbook price,
+## 1 reads the mood, 2 best income after pack costs). Upgradeable (projector tree).
+@export var consultant_interval := 4.0
+@export var consultant_skill := 0
+# Sales events: golden lamp, catch combo, rotten units + bin, window targets (entities/golden_lamp/,
+# entities/catch_combo/, entities/rotten_bin/, entities/window_targets/). All upgradeable (projector tree).
+## Golden lamp: sale multiplier while it glows, seconds it glows, mean seconds between glows.
+@export var lamp_mult := 5.0
+@export var lamp_time := 20.0
+@export var lamp_every := 150.0
+## Catch combo: seconds a catch keeps the combo, the most it multiplies a sale, and what each catch adds.
+@export var combo_window := 4.0
+@export var combo_cap := 1.5
+@export var combo_step := 0.1
+## Rotten units come down the chute once the bin card has been offered. The bin's mouth size (×),
+## the rebate per binned unit (times the chalked price), whether hired hands bin rotten units (0/1),
+## and the fines paid and units binned so far.
+@export var rotten_unlocked := false
+@export var bin_mouth := 1.0
+@export var bin_rebate := 0.0
+@export var hands_bin := 0
+@export var fines := 0
+@export var binned := 0
+## Window targets: target width (×), mean seconds between targets, a hit's shower (times the sale).
+@export var target_size := 1.0
+@export var target_every := 60.0
+@export var target_shower := 10
+# Supply + automation: Open-Plan Seating, packs, auto-buy, coin vacuums, QA slots and feed
+# (entities/associate/, entities/supply_console/, entities/vacuum/, entities/qa_bay/).
+## Trips per hired hand per associate_interval (Open-Plan Seating raises it).
+@export var hand_output := 1.0
+## Pack price multiplier (cheaper-pack nodes lower it).
+@export var pack_discount := 1.0
+## Automatic pack buying (desk card auto_procurement): switched on at the console, buys when the
+## stock is at most auto_reserve, and (stock left) waits while the price factor is above auto_max_factor.
+@export var auto_buy := true
+@export var auto_reserve := 3
+@export var auto_max_factor := 1.5
+## Coin vacuums on the mat (desk card coin_collector gives the first): count, speed (× base),
+## coins carried before docking, suction radius (m).
+@export var vacuums := 0
+@export var vacuum_speed := 1.0
+@export var vacuum_capacity := 8
+@export var vacuum_reach := 0.07
+## Cabbages the QA bay analyses at once, and every how many hired-hand trips one goes to QA (0 off).
+@export var qa_slots := 1
+@export var qa_feed_every := 0
+## For playtests: every purchase, session start and a snapshot every SaveManager.LOG_EVERY seconds,
+## each with the play time and the state after it (log_entry). Also written as playtest_log.csv.
+@export var playtest_log: Array[Dictionary] = []
+
+const MIGRATION := 1
+## Snapshots older than THIN_AFTER play seconds are kept one per THIN_EVERY seconds (thin_log).
+const THIN_AFTER := 3600
+const THIN_EVERY := 300
+const LOG_COLUMNS := ["t", "kind", "id", "price", "currency", "coins", "findings", "sold", "stock",
+		"hands", "sale_price", "marketing", "catches"]
+
+
+## One playtest log line: what happened at play second `t`, and the state right after it.
+func log_entry(t: int, kind: String, id := "", price := 0, currency := "") -> Dictionary:
+	return {t = t, kind = kind, id = id, price = price, currency = currency, coins = coins,
+			findings = findings, sold = sold, stock = stock, hands = hands, sale_price = sale_price,
+			marketing = snappedf(marketing, 0.001), catches = catches}
+
+
+## `entries` with the snapshots from before play second `now` - THIN_AFTER kept only one per THIN_EVERY
+## seconds; every other entry (purchases, milestones, sessions...) stays.
+static func thin_log(entries: Array[Dictionary], now: int) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var bucket := -1
+	for entry in entries:
+		var t: int = entry.t
+		if entry.kind == "snapshot" and t < now - THIN_AFTER:
+			@warning_ignore("integer_division")
+			if t / THIN_EVERY == bucket:
+				continue
+			@warning_ignore("integer_division")
+			bucket = t / THIN_EVERY
+		out.append(entry)
+	return out
+
+
+func playtest_csv() -> String:
+	var lines := PackedStringArray([",".join(LOG_COLUMNS)])
+	for entry in playtest_log:
+		lines.append(",".join(LOG_COLUMNS.map(func(column: String) -> String: return str(entry.get(column, "")))))
+	return "\n".join(lines) + "\n"

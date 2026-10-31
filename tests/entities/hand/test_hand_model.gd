@@ -2,6 +2,8 @@ extends Node
 ## Run: Godot --headless --path . res://tests/entities/hand/test_hand_model.tscn
 ## Exit code 1 on failure.
 
+const HandScript := preload("res://globalScripts/hand.gd")
+
 var _failed := false
 
 
@@ -14,8 +16,8 @@ func _ready() -> void:
 	_check(HandModel.pose_for(false, true, false, true) == P.PINCH and HandModel.pose_for(true, true, false, true) == P.PINCH, "paper should be pinched")
 	_check(HandModel.pose_for(false, false, false, true) == P.POINT, "carried only while hovered or held")
 	_check(HandModel.pose_for(false, true, false, false, true) == P.REACH and HandModel.pose_for(true, true, false, false, true) == P.GRAB, "handles are half gripped on hover, gripped when held")
-	_check(Hand.tap_lift(0.0, false) > Hand.tap_lift(PI / Hand.TAP_SPEED, false), "the fingertip should tap up and down")
-	_check(Hand.tap_lift(0.0, true) < 0.0, "a held button should be pressed in")
+	_check(HandScript.tap_lift(0.0, false) > HandScript.tap_lift(PI / HandScript.TAP_SPEED, false), "the fingertip should tap up and down")
+	_check(HandScript.tap_lift(0.0, true) < 0.0, "a held button should be pressed in")
 
 	# A negative curl bends a finger (pointing -Z) down; spread turns it toward the thumb (-X).
 	var tip := HandModel.segment_rotation(0, 1, -90, 0) * Vector3.FORWARD
@@ -44,8 +46,8 @@ func _ready() -> void:
 	_check(HandModel.squash(1.0).y < 1.0 and HandModel.squash(1.0).x > 1.0, "a clench should flatten and widen")
 	# The hidden mouse is reined in to the hand: never further than the limit, untouched inside it.
 	var a := Vector3(1, 0.9, 0)
-	_check(Hand.rein(a, Vector3(1.05, 0.9, 0), 0.1) == Vector3(1.05, 0.9, 0), "a mouse inside the limit stays put")
-	_check(Hand.rein(a, Vector3(0, 0.9, 0), 0.1).is_equal_approx(Vector3(0.9, 0.9, 0)), "a mouse past a wall is pulled back")
+	_check(HandScript.rein(a, Vector3(1.05, 0.9, 0), 0.1) == Vector3(1.05, 0.9, 0), "a mouse inside the limit stays put")
+	_check(HandScript.rein(a, Vector3(0, 0.9, 0), 0.1).is_equal_approx(Vector3(0.9, 0.9, 0)), "a mouse past a wall is pulled back")
 	print("hand model tests failed" if _failed else "hand model tests passed")
 	get_tree().quit(1 if _failed else 0)
 

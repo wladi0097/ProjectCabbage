@@ -6,7 +6,7 @@ const Slate := preload("res://entities/price_slate/price_slate.gd")
 
 func _ready() -> void:
 	var failed := false
-	for case: Array in [[2, 1.0], [3, 1.0], [4, 0.698], [6, 0.42]]:
+	for case: Array in [[2, 1.0], [3, 1.0], [4, 0.5625], [6, 0.25]]:
 		var got := Slate.demand(case[0], Slate.ref_price(1.0, 1.0))
 		if absf(got - case[1]) > 0.001:
 			failed = true
@@ -14,6 +14,9 @@ func _ready() -> void:
 	if not is_equal_approx(Slate.demand(6, Slate.ref_price(2.0, 1.0)), 1.0):
 		failed = true
 		push_error("marketing x2 should sell everything at $6")
+	if Slate.max_price(1.0) != 12 or Slate.max_price(2.25) != 27:
+		failed = true
+		push_error("max price should be 12 x marketing")
 	if Slate.next_mood(1.2, 0.1) != Slate.MOOD_RANGE.y or Slate.next_mood(0.8, -0.1) != Slate.MOOD_RANGE.x:
 		failed = true
 		push_error("mood should stay in its range")

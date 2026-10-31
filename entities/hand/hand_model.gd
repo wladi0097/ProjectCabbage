@@ -49,6 +49,8 @@ var pose := Pose.POINT:
 		if value != pose:
 			_punch = PUNCH[value]
 		pose = value
+## Uniform scale about the anchor (the hired hands are half size).
+var size := 1.0
 var _punch := 0.0
 var _angles: Array = POSES[Pose.POINT].duplicate(true)
 var _anchor: Vector3 = ANCHORS[Pose.POINT]
@@ -83,7 +85,7 @@ func move_to(target: Vector3, delta: float) -> void:
 		_apply_angles()
 		_punch *= exp(-PUNCH_SPEED * delta)
 	_last_target = target
-	basis = Basis.from_euler(_sway + Vector3(_pitch, _yaw, 0.0)) * Basis.from_scale(squash(_punch))
+	basis = Basis.from_euler(_sway + Vector3(_pitch, _yaw, 0.0)) * Basis.from_scale(squash(_punch) * size)
 	global_position = target - basis * _anchor
 
 

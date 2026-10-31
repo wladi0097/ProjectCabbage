@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/ledger/ledger.gd" id="1_ledger"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/qa_flap_shut_1.wav" id="2_latch"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_denied_1.wav" id="3_thud"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_pickup_1.wav" id="4_page"]
+
+[node name="Ledger" type="CanvasLayer"]
+
+[node name="Book" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ledger")
+latch_sound = ExtResource("2_latch")
+thud_sound = ExtResource("3_thud")
+page_sound = ExtResource("4_page")

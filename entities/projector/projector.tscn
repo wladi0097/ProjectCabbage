@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/projector/projector.gd" id="1_projector"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/projector_roll_down.wav" id="2_roll_down"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/projector_roll_up.wav" id="3_roll_up"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/projector_approve.wav" id="4_approve"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/projector_denied.wav" id="5_denied"]
+
+[node name="Projector" type="CanvasLayer"]
+
+[node name="Screen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_projector")
+roll_down_sound = ExtResource("2_roll_down")
+roll_up_sound = ExtResource("3_roll_up")
+approve_sound = ExtResource("4_approve")
+denied_sound = ExtResource("5_denied")

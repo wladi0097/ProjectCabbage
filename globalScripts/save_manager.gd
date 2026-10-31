@@ -2,6 +2,9 @@ extends Node
 
 const SETTINGS_PATH := "user://settings.tres"
 const SAVE_PATH := "user://savegame.tres"
+const LOG_PATH := "user://playtest_log.csv"
+## Seconds between playtest snapshots; the save is written with each one.
+const LOG_EVERY := 30.0
 
 ## The game is about to quit: last chance to put anything into the save before it is written.
 signal closing
@@ -9,8 +12,12 @@ signal closing
 var settings: SettingsResource
 var save: SaveGame
 var seconds_away := 0
+## Returns the coins not banked yet (CoinPile.pending_value): the autosave writes them into the file
+## without adding them to save.coins, so a crash loses nothing and nothing is counted twice.
+var pending_coins := Callable()
 
 var _played_since_msec := 0
+var _log_timer := 0.0
 
 
 func _init() -> void:
@@ -21,6 +28,37 @@ func _init() -> void:
 func _ready() -> void:
 	# The display setters need the window, which isn't up while _init loads the settings.
 	apply_viewport_settings.call_deferred()
+	log_event("session", str(seconds_away))
+
+
+func _process(delta: float) -> void:
+	if not writes_allowed():
+		return
+	_log_timer += delta
+	if _log_timer >= LOG_EVERY:
+		_log_timer = 0.0
+		log_event("snapshot")
+		save.playtest_log = SaveGame.thin_log(save.playtest_log, played_now())
+		var unbanked: int = pending_coins.call() if pending_coins.is_valid() else 0
+		save.coins += unbanked
+		write_save()
+		save.coins -= unbanked
+
+
+## Adds a playtest log line (see SaveGame.log_entry): a "card" or "node" purchase, a "session" start
+## (id = seconds away) or a "snapshot".
+func log_event(kind: String, id := "", price := 0, currency := "") -> void:
+	save.playtest_log.append(save.log_entry(played_now(), kind, id, price, currency))
+
+
+## Test scenes and -s probe scripts never write the player's save, on any path (autosave, quit, reset).
+static func writes_allowed() -> bool:
+	return DisplayServer.get_name() != "headless" and not OS.get_cmdline_args().has("-s") and not OS.get_cmdline_args().has("--script")
+
+
+## Play time so far in seconds, this session included.
+func played_now() -> int:
+	return played_seconds(save.play_seconds, _played_since_msec, Time.get_ticks_msec())
 
 
 func load_settings() -> void:
@@ -52,7 +90,12 @@ func write_save() -> void:
 	_played_since_msec += (played - save.play_seconds) * 1000
 	save.play_seconds = played
 	save.last_played = int(Time.get_unix_time_from_system())
+	if not writes_allowed():
+		return
 	ResourceSaver.save(save, SAVE_PATH)
+	var log_file := FileAccess.open(LOG_PATH, FileAccess.WRITE)
+	if log_file != null:
+		log_file.store_string(save.playtest_csv())
 
 
 func reset_save() -> void:
@@ -67,6 +110,7 @@ func _new_save() -> SaveGame:
 	var created := SaveGame.new()
 	created.version = get_current_version()
 	created.created = int(Time.get_unix_time_from_system())
+	created.migration = SaveGame.MIGRATION
 	return created
 
 

@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/window_targets/window_targets.gd" id="1_script"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/target_on.wav" id="2_on"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/target_bell.wav" id="3_bell"]
+
+[sub_resource type="StandardMaterial3D" id="Lit"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+albedo_color = Color(0.9, 0.92, 0.95, 0.1)
+
+[sub_resource type="BoxMesh" id="FaceMesh"]
+material = SubResource("Lit")
+size = Vector3(0.32, 0.2, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="Rim"]
+shading_mode = 0
+albedo_color = Color(1, 0.94, 0.8, 1)
+
+[sub_resource type="BoxMesh" id="EdgeMesh"]
+material = SubResource("Rim")
+size = Vector3(0.32, 0.014, 0.014)
+
+[node name="WindowTargets" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Glow" type="Node3D" parent="."]
+visible = false
+
+[node name="Face" type="MeshInstance3D" parent="Glow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -1.17)
+cast_shadow = 0
+mesh = SubResource("FaceMesh")
+
+[node name="Edge" type="MeshInstance3D" parent="Glow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, -1.16)
+cast_shadow = 0
+mesh = SubResource("EdgeMesh")
+
+[node name="Light" type="SpotLight3D" parent="Glow"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 1.7, -1.45)
+light_color = Color(0.92, 0.94, 1, 1)
+light_energy = 6.0
+spot_range = 1.6
+spot_angle = 9.0
+spot_angle_attenuation = 0.5
+
+[node name="Spill" type="OmniLight3D" parent="Glow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74, -1.02)
+light_color = Color(0.92, 0.94, 1, 1)
+light_energy = 3.0
+omni_range = 0.45
+omni_attenuation = 1.5
+
+[node name="On" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_on")
+bus = &"SFX"
+
+[node name="Bell" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("3_bell")
+bus = &"SFX"

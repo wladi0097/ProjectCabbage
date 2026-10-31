@@ -135,7 +135,7 @@ Every ElevenLabs take generated for Project Cabbage, picked or not. One section 
 | `price_tick_beep_1.wav` | 0.5 s prompt | 0.48 s | -33 dB | — | — |
 | `price_tick_beep_2.wav` | 0.5 s prompt | 0.48 s | -35 dB | — | — |
 | `price_tick_beep_3.wav` | 0.5 s prompt | 0.48 s | -22 dB | — | — |
-| `price_tick_beep_4.wav` | 0.5 s prompt | 0.48 s | -7 dB | — | — (price_tick removed: the user wanted the console price update silent) |
+| `price_tick_beep_4.wav` | 0.5 s prompt | 0.48 s | -7 dB | — | vacuum_beep (−6 dB; coin vacuum docks and arrives). Was price_tick, removed: the user wanted the console price update silent |
 
 ### cabbage_roll
 > A fresh cabbage rolling quickly down a sheet steel chute, short hollow metallic rumble, no impact, close-mic, dry
@@ -195,3 +195,206 @@ Prompt: "A heavy cabbage tossed hard back in through an open window from outside
 | `press_return_take_2.wav` | lever springs back to its stop | 0.68s | -5 dB | 0.02s | press_return_1 |
 | `press_return_take_3.wav` | lever springs back to its stop | 0.68s | -4 dB | 0.18s | — |
 | `press_return_take_4.wav` | lever springs back to its stop | 0.68s | -6 dB | 0.08s | press_return_2 |
+
+## QA bay (2026-10-31)
+
+### qa_flap_shut
+> A small hinged steel flap on an office machine snapping shut, single sharp metallic clank with a short latch click, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `qa_flap_shut_4HLn.wav` | (above) | 0.48s | -5.3 dB | 0.01s | qa_flap_shut_1 |
+| `qa_flap_shut_AZSx.wav` | (above) | 0.48s | -10.0 dB | 0.02s | qa_flap_shut_2 |
+| `qa_flap_shut_Q9xn.wav` | (above) | 0.48s | -13.2 dB | 0.02s | qa_flap_shut_3 |
+| `qa_flap_shut_yKhq.wav` | (above) | 0.48s | -1.6 dB | 0.11s | — |
+
+### qa_flap_open
+> A small hinged steel flap dropping open and settling flat on a desk, light metallic clack with a faint rattle, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `qa_flap_open_DBIl.wav` | (above) | 0.48s | -28.4 dB | 0.06s | — |
+| `qa_flap_open_OESb.wav` | (above) | 0.48s | -23.2 dB | 0.00s | qa_flap_open |
+| `qa_flap_open_T4pI.wav` | (above) | 0.48s | -35.2 dB | 0.01s | — |
+| `qa_flap_open_oIAY.wav` | (above) | 0.48s | -29.2 dB | 0.04s | — |
+
+### qa_scan
+> An old office inspection scanner lamp sweeping once across an object, short rising fluorescent electrical hum with a soft crackle, ending abruptly, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `qa_scan_63Z1.wav` | (above) | 0.68s | -28.6 dB | 0.33s | — |
+| `qa_scan_9o1Z.wav` | (above) | 0.68s | -25.3 dB | 0.31s | qa_scan |
+| `qa_scan_HLbp.wav` | (above) | 0.68s | -31.0 dB | 0.59s | — |
+| `qa_scan_vclX.wav` | (above) | 0.68s | -29.2 dB | 0.40s | — |
+
+### qa_analyse
+> A small electromechanical office analyser working, quiet steady low whirr with soft regular relay ticking, no beeps, no impact, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `qa_analyse_713L.wav` | (above) | 5.00s | -52.1 dB | 0.28s | — (near-silent, dropped) |
+| `qa_analyse_8UAp.wav` | (above) | 5.00s | -50.7 dB | 4.03s | — (near-silent, dropped) |
+| `qa_analyse_Ae0C.wav` | (above) | 5.00s | -50.9 dB | 1.43s | — (near-silent, dropped) |
+| `qa_analyse_IEAe.wav` | (above) | 5.00s | -48.7 dB | 1.47s | — (near-silent, dropped) |
+
+### qa_done
+> A single small brass desk bell ding as an office report is filed, one clear dry ding with a short ring out, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `qa_done_JW7f.wav` | (above) | 0.88s | -33.8 dB | 0.01s | — |
+| `qa_done_Mi6X.wav` | (above) | 0.88s | -19.3 dB | 0.02s | qa_done |
+| `qa_done_UIYH.wav` | (above) | 0.88s | -37.2 dB | 0.00s | — |
+| `qa_done_uNeF.wav` | (above) | 0.88s | -32.7 dB | 0.00s | — |
+
+## Projector screen (2026-10-31)
+
+### projector_unroll
+> A heavy canvas pull-down projector screen unrolling fast off a steel spring roller, rapid fabric flap and roller ratchet whirr, no impact, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `projector_unroll_4Z45.wav` | (above) | 0.48s | -0.7 dB | 0.10s | projector_roll_down |
+| `projector_unroll_5fR9.wav` | (above) | 0.48s | -0.6 dB | 0.07s | — |
+| `projector_unroll_5zZm.wav` | (above) | 0.48s | -1.7 dB | 0.03s | — |
+| `projector_unroll_ODsT.wav` | (above) | 0.48s | -1.4 dB | 0.03s | — |
+
+### projector_bar_thud
+> The weighted steel bottom bar of a projector screen dropping to the end of its travel, one dull heavy metallic thud with a small bounce rattle, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `projector_bar_thud_IBiL.wav` | (above) | 0.48s | -5.6 dB | 0.06s | projector_roll_down |
+| `projector_bar_thud_FWaX.wav` | (above) | 0.48s | -10.8 dB | 0.02s | — |
+| `projector_bar_thud_T5q6.wav` | (above) | 0.48s | -13.4 dB | 0.02s | — |
+| `projector_bar_thud_6fGr.wav` | (above) | 0.48s | -27.1 dB | 0.00s | — (near-silent) |
+
+### projector_lamp_on
+> An old office slide projector switched on, a solid mechanical switch clunk, the lamp flickering on with a brief electrical buzz, then a steady fan hum, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `projector_lamp_on_QTfb.wav` | (above) | 0.80s | -0.6 dB | 0.09s | projector_roll_down |
+| `projector_lamp_on_PbVO.wav` | (above) | 0.80s | -0.8 dB | 0.14s | — |
+| `projector_lamp_on_Y6A5.wav` | (above) | 0.80s | -3.2 dB | 0.12s | — |
+| `projector_lamp_on_8pk5.wav` | (above) | 0.80s | -23.2 dB | 0.00s | — |
+
+### projector_roll_up
+> A spring roller blind snapping back up, fast fabric whirr rolling onto a steel roller ending in a sharp clack and a short metallic rattle, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `projector_roll_up_IB8y.wav` | (above) | 0.60s | -6.2 dB | 0.09s | projector_roll_up (whirr; the end clack is `qa_flap_shut_yKhq`) |
+| `projector_roll_up_Hoxt.wav` | (above) | 0.60s | -8.2 dB | 0.01s | — |
+| `projector_roll_up_Z8UE.wav` | (above) | 0.60s | -8.1 dB | 0.00s | — |
+| `projector_roll_up_iuF4.wav` | (above) | 0.60s | -13.0 dB | 0.16s | — |
+
+### projector_stamp
+> A small office rubber stamp pressed firmly onto a paper form on a desk, one crisp short thump with a tiny wooden knock, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `projector_stamp_GDEl.wav` | (above) | 0.48s | -7.3 dB | 0.08s | projector_approve |
+| `projector_stamp_6MLX.wav` | (above) | 0.48s | -7.7 dB | 0.01s | — |
+| `projector_stamp_ywTm.wav` | (above) | 0.48s | -8.7 dB | 0.01s | — |
+| `projector_stamp_ZL35.wav` | (above) | 0.48s | -9.3 dB | 0.02s | — |
+
+Reused: `qa_flap_shut_yKhq.wav` → projector_roll_up (end clack); `console_denied_4.wav` → projector_denied (pitched down 10 %).
+
+### window_knock_three
+> Three quick firm knuckle raps on a glass window pane, impatient and curt, slightly muffled glassy knocks, then silence, no voice, close-mic, dry
+
+Each take came back as one knock (m3Ee as two), not three; the patterns are built from cut single hits in `layers`.
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `window_knock_three_Ht1b.wav` | (above) | 0.80s | -1.5 dB | 0.13s | manager_knock_1 (1st knock), manager_knock_2 (2nd) |
+| `window_knock_three_eYs6.wav` | (above) | 0.80s | -0.3 dB | 0.34s | manager_knock_1 (2nd knock), manager_knock_2 (3rd) |
+| `window_knock_three_s4WA.wav` | (above) | 0.80s | -8.6 dB | 0.12s | manager_knock_2 (1st knock, +3 dB) |
+| `window_knock_three_m3Ee.wav` | (above) | 0.80s | -1.2 dB | 0.08s | manager_knock_3 (whole take: two knocks 0.27 s apart) |
+
+### window_knock_two
+> Two firm curt knuckle knocks on a glass office window pane from outside, slightly muffled, hard glassy tap with a dull thud, then silence, no voice, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `window_knock_two_1a9p.wav` | (above) | 0.80s | -27.7 dB | 0.00s | — (near-silent) |
+| `window_knock_two_Zi34.wav` | (above) | 0.80s | -31.1 dB | 0.00s | — (near-silent) |
+| `window_knock_two_oMzW.wav` | (above) | 0.80s | -33.7 dB | 0.00s | — (near-silent) |
+| `window_knock_two_18XK.wav` | (above) | 0.80s | -40.5 dB | 0.01s | — (near-silent) |
+
+## Desk lamp, waste bin, target crate (2026-10-31)
+
+### desk_lamp_on
+> An old metal office desk lamp switched on, one firm mechanical toggle switch click, then the incandescent bulb filament warming with a soft low electric hum swelling up, no music, no chime, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `desk_lamp_on_EcC6.wav` | (above) | 1.20s | -8.1 dB | 0.06s | — |
+| `desk_lamp_on_FX5I.wav` | (above) | 1.20s | -5.7 dB | 0.01s | lamp_on (click) |
+| `desk_lamp_on_XACF.wav` | (above) | 1.20s | -39.5 dB | 0.00s | — (near-silent) |
+| `desk_lamp_on_w3dG.wav` | (above) | 1.20s | -3.6 dB | 0.61s | — |
+
+### lamp_hum
+> An old incandescent desk lamp bulb warming up, a steady audible low electric mains hum swelling in, slight filament buzz, no click, no music, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `lamp_hum_6bvM.wav` | (above) | 1.20s | -22.8 dB | 0.00s | — |
+| `lamp_hum_6cwN.wav` | (above) | 1.20s | -13.4 dB | 0.06s | — |
+| `lamp_hum_P1L9.wav` | (above) | 1.20s | -17.9 dB | 0.61s | lamp_on (hum, cut at 0.75 s) |
+| `lamp_hum_Qmci.wav` | (above) | 1.20s | -12.6 dB | 0.20s | — |
+
+### desk_lamp_off
+> An old metal office desk lamp switched off, one crisp mechanical toggle switch click with a tiny faint filament tick, then silence, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `desk_lamp_off_9Oll.wav` | (above) | 0.48s | -27.8 dB | 0.01s | — |
+| `desk_lamp_off_KdIo.wav` | (above) | 0.48s | -14.0 dB | 0.02s | lamp_off |
+| `desk_lamp_off_m86t.wav` | (above) | 0.48s | -20.5 dB | 0.03s | — |
+| `desk_lamp_off_sW20.wav` | (above) | 0.48s | -51.8 dB | 0.03s | — (near-silent) |
+
+### bin_drop
+> A heavy wet cabbage dropped into an empty steel office waste-paper bin, one dull hollow metallic thunk with a soft leafy thud, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `bin_drop_DtSk.wav` | (above) | 0.68s | -8.9 dB | 0.01s | bin_drop_2 |
+| `bin_drop_fugB.wav` | (above) | 0.68s | -11.3 dB | 0.01s | — |
+| `bin_drop_jLry.wav` | (above) | 0.68s | -12.2 dB | 0.07s | — |
+| `bin_drop_uSxP.wav` | (above) | 0.68s | -1.3 dB | 0.05s | bin_drop_1 |
+
+### target_lamp_on
+> A cold outdoor fluorescent work lamp flickering on, a few quick electric ticks and a short harsh buzz settling into a steady hum, distant outdoors
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `target_lamp_on_5eFo.wav` | (above) | 0.80s | -16.6 dB | 0.10s | target_on (low-pass 4 kHz) |
+| `target_lamp_on_D70u.wav` | (above) | 0.80s | -14.9 dB | 0.38s | — |
+| `target_lamp_on_LFh8.wav` | (above) | 0.80s | -19.4 dB | 0.44s | — |
+| `target_lamp_on_Lxee.wav` | (above) | 0.80s | -25.5 dB | 0.09s | — |
+
+### target_bell
+> A single tap on an old steel desk service bell, one muted slightly dull ding with a short ring out, no music, close-mic, dry
+
+All four near-silent (true peaks -28 to -39 dB; "muted" in the prompt is likely why), regenerated as target_bell2. Peak dB in these tables is the 8 kHz `peaks.py` reading; bells and clicks are 10-20 dB louder in truth.
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `target_bell_FckC.wav` | (above) | 1.00s | -37.9 dB | 0.00s | — (near-silent) |
+| `target_bell_R9D9.wav` | (above) | 1.00s | -28.9 dB | 0.00s | — (near-silent) |
+| `target_bell_VhKx.wav` | (above) | 1.00s | -29.3 dB | 0.01s | — (near-silent) |
+| `target_bell_ctW4.wav` | (above) | 1.00s | -39.9 dB | 0.07s | — (near-silent) |
+
+### target_bell2
+> A reception desk service bell struck once by a palm, one clear loud metallic ding with a short ring out, no music, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `target_bell2_MWHC.wav` | (above) | 1.00s | -20.5 dB | 0.00s | — |
+| `target_bell2_Tkcg.wav` | (above) | 1.00s | -31.4 dB | 0.00s | — |
+| `target_bell2_UEF5.wav` | (above) | 1.00s | -20.4 dB | 0.00s | target_bell (low-pass 3.5 kHz) |
+| `target_bell2_mgeh.wav` | (above) | 1.00s | -24.2 dB | 0.00s | — |
+

@@ -4,6 +4,8 @@ extends RigidBody3D
 ## speed, so a throw needs a deliberate drag. Let go and it keeps the momentum it built up.
 ## Out through the window gap is a sale; the SaleWindow marks it sold, or sends it out and back
 ## when the street refuses it (`away` meanwhile). Every cabbage is in the "cabbages" group.
+## A rotten one (set before it enters the tree) is grey and slumped: sold, it is fined (SaleWindow);
+## binned, it is gone (RottenBin). A mid-air catch calls `caught` on the "catch_combo" group.
 
 signal bumped(speed: float)
 
@@ -20,6 +22,9 @@ const SIZE_SPREAD := 0.1
 ## How flat a grab squashes it (0.18 = 18% lower, wider to match), springing back over SQUISH_TIME.
 const SQUISH := 0.18
 const SQUISH_TIME := 0.6
+const ROTTEN_MATERIAL := preload("res://assets/materials/cabbage_rotten.tres")
+## A rotten one sags: this much lower, a little wider.
+const SLUMP := Vector3(1.08, 0.78, 1.08)
 
 ## How hard it is pulled toward the hand per metre of lag.
 @export var follow := 18.0
@@ -29,6 +34,7 @@ const SQUISH_TIME := 0.6
 @export var max_speed := 5.5
 
 var sold := false
+var rotten := false
 ## Out of the window or on its way back after a refusal: the SaleWindow leaves it alone.
 var away := false
 ## Seconds the SaleWindow has seen it off the mat in a row.
@@ -58,6 +64,9 @@ func _ready() -> void:
 	$Mesh.mesh = MESHES.pick_random()
 	var size := randf_range(1.0 - SIZE_SPREAD, 1.0 + SIZE_SPREAD)
 	_look = Basis.from_euler(Vector3(randf(), randf(), randf()) * TAU).scaled(Vector3.ONE * 1.5 * size)
+	if rotten:
+		$Mesh.material_override = ROTTEN_MATERIAL
+		_look = Basis.from_scale(SLUMP) * _look
 	$Mesh.basis = _look
 	var ball := $Shape.shape.duplicate() as SphereShape3D
 	ball.radius *= size
@@ -147,6 +156,7 @@ func _on_grabbed() -> void:
 	if in_flight:
 		in_flight = false
 		SaveManager.save.catches += 1
+		get_tree().call_group(&"catch_combo", &"caught", global_position)
 	_held = true
 	gravity_scale = 0.0
 	angular_velocity *= 0.3

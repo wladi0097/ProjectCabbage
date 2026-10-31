@@ -55,6 +55,8 @@ const PINCH_AT := Vector3(-0.165, 0.0, 0.085)
 
 var id := ""
 var price := 0
+## The SaveGame field it is paid from: "coins" ($) or "findings" (¶).
+var currency := "coins"
 ## The press pad (world space), set by the desk; hovered cards stay small near it.
 var press_at := Vector3.INF
 
@@ -82,6 +84,7 @@ var _blinking: Tween
 func _init(card: Dictionary) -> void:
 	id = card.id
 	price = card.price
+	currency = card.get("currency", "coins")
 	collision_layer = LAYER
 	collision_mask = 0
 	var shape := CollisionShape3D.new()
@@ -100,7 +103,8 @@ func _init(card: Dictionary) -> void:
 		(paper.mesh as PlaneMesh).size = SIZE
 		paper.material_override = MATERIAL
 		face.add_child(paper)
-		_text(face, "FORM 7-B  REQUISITION", Vector3(0, 0.002, -0.0825), 60, TITLE_FONT)
+		_text(face, "FORM 7-R  RESEARCH DIRECTIVE" if card.get("research", false) else "FORM 7-B  REQUISITION",
+				Vector3(0, 0.002, -0.0825), 60, TITLE_FONT)
 	# Long titles get a smaller face so they stay on two lines under the form header.
 	_heading = _text(_front, card.title, Vector3(0, 0.002, -0.005), 150 if card.title.length() <= 20 else 118, TITLE_FONT, 0.33)
 	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -109,8 +113,8 @@ func _init(card: Dictionary) -> void:
 	# The thin body face needs a same-colour outline to read at desk distance.
 	body.outline_size = 8
 	body.outline_modulate = INK
-	_price = _text(_back, "$%d" % price, Vector3(0.125, 0.002, 0.07), 140, TITLE_FONT)
-	_front_price = _text(_front, "$%d" % price, Vector3(0.135, 0.002, 0.075), 110, TITLE_FONT)
+	_price = _text(_back, price_text(price, currency), Vector3(0.125, 0.002, 0.07), 140, TITLE_FONT)
+	_front_price = _text(_front, price_text(price, currency), Vector3(0.135, 0.002, 0.075), 110, TITLE_FONT)
 	_stamp = _text(_front, "APPROVED", Vector3(0.0, 0.003, 0.005), 220, TITLE_FONT)
 	_stamp.modulate = STAMP_RED
 	_stamp.rotation.z = 0.35
@@ -290,3 +294,8 @@ func _text(face: Node3D, text: String, at: Vector3, size: int, font: Font, width
 		label.width = width / PIXEL
 	face.add_child(label)
 	return label
+
+
+## "$130" or "¶10": the price with its currency's sign, as on the tally machine's plates.
+static func price_text(amount: int, paid_in: String) -> String:
+	return ("¶%d" if paid_in == "findings" else "$%d") % amount

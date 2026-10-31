@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/milestone/milestone_memo.gd" id="1_script"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_1.wav" id="2_land"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_stamp_1.wav" id="3_stamp"]
+
+[node name="MilestoneMemo" type="CanvasLayer"]
+layer = 2
+script = ExtResource("1_script")
+
+[node name="Paper" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 560.0
+offset_bottom = 250.0
+
+[node name="Land" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_land")
+bus = &"SFX"
+
+[node name="Stamp" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_stamp")
+volume_db = -4.0
+bus = &"SFX"
