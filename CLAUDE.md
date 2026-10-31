@@ -25,6 +25,10 @@ Every agent follows this for art, sound, UI and writing:
 
 `research/numbers.md` lists every number the save tracks, with its meaning and ideas for future use (not how it is calculated). Add a row in the same turn a new number enters `ressources/save/save_game.gd`.
 
+## Pacing
+
+Before proposing any price, unlock threshold or upgrade, calculate how long an average player needs to reach it, and show the timeline. `tools/pace.py` simulates the early game (flick time, refusals, pack prices); extend it as systems arrive. Early on, something new should arrive every 30–90 s, gaps growing slowly and never more than about 2–3 minutes in the first 15 minutes. Each upgrade should be felt (aim for +25% or more on what it improves).
+
 ## Skills
 
 - `/godotAssetCreate`: build an original 3D asset with scripted Blender, then check it in Godot.

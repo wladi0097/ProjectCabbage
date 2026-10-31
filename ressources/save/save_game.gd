@@ -14,8 +14,12 @@ extends Resource
 @export var buy_unlocked := false
 ## Coins per cabbage, chalked on the price slate. Higher sells less often (see PriceSlate.demand).
 @export var sale_price := 2
-## The price slate drops onto the desk the first time the coins reach PriceSlate.UNLOCK_COINS.
+## The price slate drops onto the desk once its upgrade card is stamped.
 @export var slate_unlocked := false
+## The upgrade cards' inbox tray dropped in (first time at UpgradeDesk.TRAY_COINS), and the ids of
+## the cards stamped so far, in order.
+@export var tray_unlocked := false
+@export var stamped := PackedStringArray()
 ## Hidden demand: marketing multiplies the full-sale price (upgrades raise it), the mood drifts it
 ## each minute within PriceSlate.MOOD_RANGE.
 @export var marketing := 1.0
@@ -23,6 +27,8 @@ extends Resource
 ## Upgradeable: how many cabbages may sit on the mat, seconds between dispenses, cabbages per pack.
 @export var desk_capacity := 1
 @export var dispense_interval := 1.0
+## Mean seconds after a sale before the next cabbage rolls (each wait is 0.5..1.5 of it). Upgradeable.
+@export var restock_delay := 0.67
 @export var pack_size := 10
 ## Pack price as a multiple of the base price (0.5..1.5), the buy pressure still pushing it up,
 ## and the last factors for the ticker's sparkline.

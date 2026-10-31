@@ -98,6 +98,7 @@ below current: every shared material gets a row when it is made.
 | `table_steel` (embedded in `table.blend`) | dark brushed steel: desk edge band, divider, legs. Extract to a `.tres` when a second asset needs it |
 | `table_mat.tres` | the cabbage mat: dark grey-green leather blotter, generated texture (`table_mat_pack.py`), UV 0–1 over the mat. Noise regenerated 2026-10-30 with the pebble grain 2× coarser and fainter and the mottle 4× larger: the finer noise was "too noticeable" |
 | `cabbage.tres` | the cabbage: one generated atlas, one tint row per variant, cheap backlight, low specular (0.2), faint rim. No clearcoat: the user found it "way too shiny" |
+| `machine_paint_matte.tres` | `machine_paint` with no shine (roughness 1, specular 0.05), for flat paint facing the lamp: the inbox tray's floor glared white with the shared one |
 | `room_wall.tres` | grey-sage painted concrete blocks, generated, `uv1_scale` 0.41667 |
 | `room_window.tres`, `room_blinds.tres` | flat dark steel / flat grey, no textures |
 | `room_street.tres` | wet concrete paving outside, generated, `uv1_scale` 0.41667 |
@@ -106,6 +107,7 @@ below current: every shared material gets a row when it is made.
 | `price_slate.tres` | dark chalk slate with faint eraser haze, generated (`examples/slate_tex.py`), `uv1_offset` 0.5 so the face sits mid-tile |
 | `coin.tres` | worn brass coin, generated (`coin_tex.py`): the face fills the UV square (top projection), stamp = serif "1" in a dot ring. Metallic from ORM blue |
 | `machine_paint.tres`, `machine_metal.tres` | tiling greyscale enamel / brushed metal (`machine_tex.py`), `uv1_scale` 4, **tinted by vertex colour** (`vertex_color_use_as_albedo`): one surface serves enamel + bakelite, one serves chrome + brass. Reuse for later machines |
+| `card_paper.tres` | the upgrade cards' FORM 7-B paper: generated (`examples/card_tex.py`) warm grey stock, sage header band, perforated stub, faint grid and seal; UV 0–1 over a PlaneMesh, double-sided, **unshaded** at 0.78 grey: lit by the lamp it bloomed and the text washed out. `card_paper_on_top.tres` is the same with no depth test for hovered/held cards (drawn over the hand). Text stays Label3D, unshaded |
 | `machine_dial.tres` | the tally machine atlas: odometer digits 0-9 along v in u 0-0.11, black drum sides, brass "UNITS RECEIVED" plate in u 0.5-1, v 0.8-1 |
 | `ramp_steel.tres` | brushed sheet steel for big flat parts (the supply chute, its dock): own tiling texture (`ramp_steel_tex.py`, faint streaks along U, soft grime), `uv1_scale` 2, tint 0.68. The shared `machine_metal` grain looked speckled at that size, an untextured steel was rejected as "no texture", and a first brushed pass with strong streaks read as wood planks |
 
@@ -309,8 +311,12 @@ User corrections:
 
 Stage 1 price slate (2026-10-30): **`price_slate_geo.py`** + **`slate_tex.py`**. A static (unrigged) desk slate tilted 61° back, so its face looks straight at the game camera; a wire kickstand behind and a chalk tray in front. The script prints the face centre, normal and up in Godot space for the Label3D and collider transforms. The chalk text is a Label3D (Oswald, off-white, semi-transparent). The slate texture is not tileable: a face whose box-projected UVs straddle 0 shows four quadrant seams, so the material shifts it with `uv1_offset` 0.5. User corrections: at 1.3× it was too big (now 1×, front-left beside the mat), and a drag-to-scrub control was replaced by clickable chalk `<` `>` labels that brighten and grow on hover; the art review asked for a darker frame (it read near-white under the desk lamp) and a cooler face.
 
+Upgrade desk (2026-10-31), scripts in `examples/` (prepend `desk_vc_common.py` after `blender_lib.py`): `approval_press_geo.py` (skinned: Body, Head slides, Lever rotates about X at its pivot; the handle collider is moved by code, no BoneAttachment), `inbox_tray_geo.py`, `spike_file_geo.py`, `card_tex.py`. The independent review asked for a chunkier press (the first column and arm read as a desk lamp from the game camera), a thicker, taller spike (a 3.5 mm spike was invisible) and a bigger diagonal APPROVED; all applied.
+
 The previous project's examples (industrial machines, doors, skinned rigs,
 trim-sheet mapping, decal UV2) are in
 `C:\Users\wladi\Desktop\UnitedExpedition\.claude\skills\godotAssetCreate\examples\`.
 Read them for technique only: their style, materials and paths don't apply
 here.
+
+Acceptance gauge (2026-10-31): `acceptance_gauge_geo.py`, a round steel gauge clamped to the price slate's corner, Body + Needle bones (needle turns about the face normal, Godot `Vector3.BACK`). Its face is painted into the free block of the `machine_dial` atlas by `machine_tex.py` (centre (768, 512) px); the mockup appends `price_slate.blend` as `-noimp` context. User feedback: at desk distance small print vanishes, so a dial gets three bold numbers and one word, no fine ticks or slogans; turn small readouts to face the game camera fully (it was "too small" and foreshortened at the slate's tilt): in the slate scene it is shown at 2× and aimed at the camera.

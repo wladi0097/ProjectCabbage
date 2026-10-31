@@ -164,8 +164,8 @@ static func next_factor(pressure: float, noise: float) -> float:
 
 
 ## No cabbages left to sell and not enough coins for the next pack: stuck without a bailout.
-static func is_broke(stock: int, coins: int, cost: int) -> bool:
-	return stock <= 0 and coins < cost
+static func is_broke(stock: int, money: int, cost: int) -> bool:
+	return stock <= 0 and money < cost
 
 
 static func pack_price(factor: float, size: int) -> int:

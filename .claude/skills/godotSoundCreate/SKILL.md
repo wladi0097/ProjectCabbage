@@ -104,6 +104,7 @@ space**.
   events on the street outside the window.
 - Never write a duration in the prompt (it does nothing). Set
   `duration_seconds` instead: about the step's length, plus 0.1–0.3 s.
+  The minimum is 0.5 s (0.4 is refused); trim shorter sounds in `layers`.
 - **Tone** (GDD §1b, "cozy, then quietly sinister"): early phases are warm,
   organic and tactile (wood, burlap, leaves, chalk, coins, clay), with a soft
   folk feel. Supply-chain screens get small, clean electronic blips. Later
@@ -271,6 +272,10 @@ Stage 1 (2026-10-30), 8 sounds, 32 takes, ~90 credits. One file per variation
 | cabbage_roll | `CabbageFeeder` rolls a cabbage down the chute (0.4 s) | 3 × 0.45 s | −11 dB, `asetrate=25600,aresample=32000,lowpass=f=2500` (the user found it "too high": pitched down 20 %) | 1.1 | 2 voices, 100 ms |
 | chalk_tap | `PriceSlate` arrow steps the price | 2 × 0.25 s | −8 dB | 1.08 | 50 ms |
 | cabbage_refused | `SaleWindow.refused`: the street throws a cabbage back | 3 × 0.6 s | −4 dB | 1.06 | 100 ms |
+| tray_drop | `UpgradeDesk` inbox tray lands | 1 × 0.8 s | −1 dB | 1.06 | — |
+| card_land / card_pickup / card_hover | an upgrade card lands after a move / is grabbed / is hovered | 3 / 3 / 2 × 0.25–0.35 s | −6 / −6 / −14 dB | 1.06 | 50 / 0 / 80 ms |
+| card_impale | a stamped card drops onto the spike | 2 × 0.35 s | −5 dB | 1.06 | — |
+| press_lever / press_stamp / press_denied / press_return | lever grabbed / cranked down onto a payable card / onto nothing or too poor / let go after a crank | 2 each, 0.45–0.8 s | −6 / −1 / −3 / −4 dB | 1.06 | denied 150 ms |
 | (stock counter) | `CabbageFeeder` drum bar crosses a whole number | reuses `tally_tick_1-3` | node `pitch_scale` 0.75 | 1.06 | 2 voices, 30 ms |
 
 The console's once-a-minute price tick was removed: the user wants silent price updates there. A prompt naming a "CRT display" came back as four steady tones; "a single tiny soft electronic beep ... one short muted blip then silence" gave a usable blip. To pitch a sound down without regenerating, put `asetrate=<32000 × factor>,aresample=32000` in the `layers` filter field.

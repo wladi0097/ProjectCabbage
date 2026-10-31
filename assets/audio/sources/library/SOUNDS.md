@@ -158,3 +158,40 @@ Prompt: "A heavy cabbage tossed hard back in through an open window from outside
 | `cabbage_refused_take_2.wav` | toss whoosh | 0.68 s | -3 dB | 0.01 s | — |
 | `cabbage_refused_take_3.wav` | toss whoosh | 0.68 s | -2 dB | 0.08 s | cabbage_refused_2 |
 | `cabbage_refused_take_4.wav` | toss whoosh | 0.68 s | -0 dB | 0.13 s | cabbage_refused_3 |
+
+| `tray_drop_take_1.wav` | steel in-tray dropped on desk | 0.80s | -19 dB | 0.05s | — |
+| `tray_drop_take_2.wav` | steel in-tray dropped on desk | 0.80s | -16 dB | 0.03s | — |
+| `tray_drop_take_3.wav` | steel in-tray dropped on desk | 0.80s | -10 dB | 0.01s | tray_drop |
+| `tray_drop_take_4.wav` | steel in-tray dropped on desk | 0.80s | -19 dB | 0.06s | — |
+| `card_land_take_1.wav` | stiff paper card landing | 0.48s | -21 dB | 0.11s | card_land_3 |
+| `card_land_take_2.wav` | stiff paper card landing | 0.48s | -18 dB | 0.23s | card_land_2 |
+| `card_land_take_3.wav` | stiff paper card landing | 0.48s | -13 dB | 0.15s | card_land_1 |
+| `card_land_take_4.wav` | stiff paper card landing | 0.48s | -31 dB | 0.17s | — |
+| `card_pickup_take_1.wav` | paper card picked up | 0.48s | -8 dB | 0.13s | card_pickup_2 |
+| `card_pickup_take_2.wav` | paper card picked up | 0.48s | -6 dB | 0.19s | card_pickup_1 |
+| `card_pickup_take_3.wav` | paper card picked up | 0.48s | -6 dB | 0.32s | — |
+| `card_pickup_take_4.wav` | paper card picked up | 0.48s | -8 dB | 0.21s | card_pickup_3 |
+| `card_hover_take_1.wav` | paper card lifted, soft flutter | 0.48s | -22 dB | 0.33s | — |
+| `card_hover_take_2.wav` | paper card lifted, soft flutter | 0.48s | -20 dB | 0.16s | card_hover_2 |
+| `card_hover_take_3.wav` | paper card lifted, soft flutter | 0.48s | -24 dB | 0.06s | — |
+| `card_hover_take_4.wav` | paper card lifted, soft flutter | 0.48s | -17 dB | 0.32s | card_hover_1 |
+| `card_impale_take_1.wav` | card pushed onto receipt spike | 0.48s | -23 dB | 0.20s | — |
+| `card_impale_take_2.wav` | card pushed onto receipt spike | 0.48s | -12 dB | 0.09s | card_impale_2 |
+| `card_impale_take_3.wav` | card pushed onto receipt spike | 0.48s | -6 dB | 0.11s | card_impale_1 |
+| `card_impale_take_4.wav` | card pushed onto receipt spike | 0.48s | -12 dB | 0.13s | — |
+| `press_lever_take_1.wav` | iron press lever creak | 0.80s | -9 dB | 0.13s | press_lever_2 |
+| `press_lever_take_2.wav` | iron press lever creak | 0.80s | -4 dB | 0.03s | — |
+| `press_lever_take_3.wav` | iron press lever creak | 0.80s | 0 dB | 0.19s | press_lever_1 |
+| `press_lever_take_4.wav` | iron press lever creak | 0.80s | -18 dB | 0.41s | — |
+| `press_stamp_take_1.wav` | press stamp thunk on paper | 0.68s | -3 dB | 0.06s | press_stamp_2 |
+| `press_stamp_take_2.wav` | press stamp thunk on paper | 0.68s | -8 dB | 0.02s | — |
+| `press_stamp_take_3.wav` | press stamp thunk on paper | 0.68s | -2 dB | 0.19s | — |
+| `press_stamp_take_4.wav` | press stamp thunk on paper | 0.68s | -1 dB | 0.06s | press_stamp_1 |
+| `press_denied_take_1.wav` | press on empty felt, dry thud | 0.48s | -7 dB | 0.03s | press_denied_2 |
+| `press_denied_take_2.wav` | press on empty felt, dry thud | 0.48s | -2 dB | 0.06s | press_denied_1 |
+| `press_denied_take_3.wav` | press on empty felt, dry thud | 0.48s | -24 dB | 0.07s | — |
+| `press_denied_take_4.wav` | press on empty felt, dry thud | 0.48s | -23 dB | 0.03s | — |
+| `press_return_take_1.wav` | lever springs back to its stop | 0.68s | -10 dB | 0.01s | — |
+| `press_return_take_2.wav` | lever springs back to its stop | 0.68s | -5 dB | 0.02s | press_return_1 |
+| `press_return_take_3.wav` | lever springs back to its stop | 0.68s | -4 dB | 0.18s | — |
+| `press_return_take_4.wav` | lever springs back to its stop | 0.68s | -6 dB | 0.08s | press_return_2 |

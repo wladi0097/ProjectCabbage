@@ -9,8 +9,6 @@ const RAY_LENGTH := 20.0
 const PLAY_AREA_LAYER := 2
 ## The empty hand floats here, above the cabbages on the mat.
 const HOVER_HEIGHT := 1.05
-## How far above a held object's centre the palm rests (the cabbage's radius).
-const GRIP_HEIGHT := 0.135
 ## The empty hand's fingertip stops here, just short of the window wall's inner face (z -0.80).
 const WALL_Z := -0.76
 ## How far the hidden mouse may run ahead of a held object: a little slack plus the lag it has
@@ -26,6 +24,9 @@ const PRESS_LIFT := -0.006
 ## The fingertip touches a button this far toward the player from the hovered spot, so the
 ## glove trails off below it on screen instead of covering it.
 const TIP_BACK := 0.04
+## On hovered paper the hand eases to the corner it pinches at this rate (per second); held paper
+## moves with the hand, so there it sits exactly.
+const CARRY_FOLLOW := 14.0
 
 var hovered: Interactable
 var held: Interactable
@@ -33,6 +34,8 @@ var held: Interactable
 var _model: HandModel
 ## Where the mouse ray last hit the hovered thing; frozen while it is held.
 var _point := Vector3.ZERO
+## Where the hand was put last frame.
+var _placed := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -62,22 +65,36 @@ func _process(delta: float) -> void:
 		return
 	var touching := held if is_instance_valid(held) else hovered
 	var pressing := is_instance_valid(touching) and touching.pressable
-	_model.pose = HandModel.pose_for(held != null, hovered != null, pressing)
-	var body := held.get_parent() as Node3D if is_instance_valid(held) else null
+	var carrying := is_instance_valid(touching) and touching.carried
+	var reaching := is_instance_valid(touching) and touching.reach
+	_model.pose = HandModel.pose_for(held != null, hovered != null, pressing, carrying, reaching)
 	if pressing:
 		# Only the fingertip goes onto a button, tapping while it hovers, so the hand doesn't cover it.
 		var lift := tap_lift(Time.get_ticks_msec() / 1000.0, held != null)
-		_model.move_to(_point + Vector3(0.0, lift, TIP_BACK), delta)
-	elif body != null:
-		var speed := (body as RigidBody3D).linear_velocity.length() if body is RigidBody3D else 0.0
-		var mouse := point_on_height(body.global_position.y)
-		_warp_to(mouse, rein(body.global_position, mouse, LEAD_SLACK + speed * LEAD_PER_SPEED))
-		_model.move_to(body.global_position + Vector3.UP * GRIP_HEIGHT, delta)
+		_place(_point + Vector3(0.0, lift, TIP_BACK), delta)
+	elif held != null or reaching or carrying:
+		# On what it holds, on a hovered handle (half closed), or easing onto hovered paper's corner.
+		# A held physics body lags the mouse, so the mouse is reined in to it; elsewhere it stays put.
+		var thing := touching.get_parent() as Node3D
+		if thing is RigidBody3D:
+			var mouse := point_on_height(thing.global_position.y)
+			var lead := LEAD_SLACK + (thing as RigidBody3D).linear_velocity.length() * LEAD_PER_SPEED
+			_warp_to(mouse, rein(thing.global_position, mouse, lead))
+		var offset := touching.carry_offset if carrying else Vector3.UP * touching.grip_height
+		_place(thing.global_position + offset, delta, carrying and held == null)
 	else:
 		var mouse := point_on_height(HOVER_HEIGHT)
 		var stopped := Vector3(mouse.x, mouse.y, maxf(mouse.z, WALL_Z))
 		_warp_to(mouse, stopped)
-		_model.move_to(stopped, delta)
+		_place(stopped, delta)
+
+
+## Puts the hand at `target`; `soft` (onto hovered paper) eases it there instead of snapping.
+func _place(target: Vector3, delta: float, soft := false) -> void:
+	if soft:
+		target = _placed.lerp(target, 1.0 - exp(-CARRY_FOLLOW * delta))
+	_placed = target
+	_model.move_to(target, delta)
 
 
 func _unhandled_input(event: InputEvent) -> void:

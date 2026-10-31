@@ -1,19 +1,37 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cyemby4epomiq"]
 
-[ext_resource type="Script" path="res://entities/price_slate/price_slate.gd" id="1_slate"]
-[ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
-[ext_resource type="PackedScene" path="res://assets/meshes/Machines/price_slate.blend" id="3_model"]
-[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="5_cue"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_drop"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/chalk_tap_1.wav" id="sfx_tap_1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/chalk_tap_2.wav" id="sfx_tap_2"]
-[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="4_font"]
+[ext_resource type="Script" uid="uid://dognolxwdsylo" path="res://entities/price_slate/price_slate.gd" id="1_slate"]
+[ext_resource type="Script" uid="uid://b8vly5jskxxs3" path="res://entities/components/interactable.gd" id="2_interactable"]
+[ext_resource type="PackedScene" uid="uid://5qmkn8lfw4rr" path="res://assets/meshes/Machines/price_slate.blend" id="3_model"]
+[ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="4_font"]
+[ext_resource type="Script" uid="uid://s7bovuudwem5" path="res://entities/components/sound_cue.gd" id="5_cue"]
+[ext_resource type="PackedScene" uid="uid://c3wahtk4uq57x" path="res://assets/meshes/Machines/acceptance_gauge.blend" id="6_gauge"]
+[ext_resource type="AudioStream" uid="uid://dn2cg4mr1i7v4" path="res://assets/audio/effects/console_drop.wav" id="sfx_drop"]
+[ext_resource type="AudioStream" uid="uid://cnbxm6o6d2xbe" path="res://assets/audio/effects/chalk_tap_1.wav" id="sfx_tap_1"]
+[ext_resource type="AudioStream" uid="uid://dbrmsogdx2hsi" path="res://assets/audio/effects/chalk_tap_2.wav" id="sfx_tap_2"]
 
 [sub_resource type="BoxShape3D" id="BoardShape"]
 size = Vector3(0.56, 0.3, 0.03)
 
 [sub_resource type="BoxShape3D" id="ArrowShape"]
 size = Vector3(0.07, 0.1, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="DustMat"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.55, 0.53, 0.5, 0.5)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="DustQuad"]
+material = SubResource("DustMat")
+size = Vector2(0.03, 0.03)
+
+[sub_resource type="Gradient" id="DustFade"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_thud"]
 random_pitch = 1.03
@@ -28,45 +46,29 @@ streams_count = 2
 stream_0/stream = ExtResource("sfx_tap_1")
 stream_1/stream = ExtResource("sfx_tap_2")
 
-[sub_resource type="StandardMaterial3D" id="DustMat"]
-transparency = 1
-shading_mode = 0
-vertex_color_use_as_albedo = true
-albedo_color = Color(0.55, 0.53, 0.5, 0.5)
-billboard_mode = 3
-particles_anim_h_frames = 1
-particles_anim_v_frames = 1
-
-[sub_resource type="QuadMesh" id="DustQuad"]
-material = SubResource("DustMat")
-size = Vector2(0.03, 0.03)
-
-[sub_resource type="Gradient" id="DustFade"]
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
-
-[node name="PriceSlate" type="Node3D"]
+[node name="PriceSlate" type="Node3D" unique_id=965376028]
 script = ExtResource("1_slate")
 
-[node name="Model" parent="." instance=ExtResource("3_model")]
+[node name="Model" parent="." unique_id=611707234 instance=ExtResource("3_model")]
 
-[node name="Board" type="StaticBody3D" parent="."]
+[node name="Board" type="StaticBody3D" parent="." unique_id=804265175]
 transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, 0, 0.0988, 0.0058)
 
-[node name="Shape" type="CollisionShape3D" parent="Board"]
+[node name="Shape" type="CollisionShape3D" parent="Board" unique_id=533443437]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.02)
 shape = SubResource("BoardShape")
 
-[node name="Down" type="StaticBody3D" parent="."]
+[node name="Down" type="StaticBody3D" parent="." unique_id=1459940010]
 transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, -0.19, 0.1045, 0.0204)
 
-[node name="Shape" type="CollisionShape3D" parent="Down"]
+[node name="Shape" type="CollisionShape3D" parent="Down" unique_id=127072573]
 shape = SubResource("ArrowShape")
 
-[node name="Interactable" type="Node" parent="Down"]
+[node name="Interactable" type="Node" parent="Down" unique_id=295971598]
 script = ExtResource("2_interactable")
 pressable = true
 
-[node name="Label" type="Label3D" parent="Down"]
+[node name="Label" type="Label3D" parent="Down" unique_id=2050193159]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.008)
 pixel_size = 0.0015
 text = "<"
@@ -74,17 +76,17 @@ font = ExtResource("4_font")
 font_size = 96
 outline_size = 0
 
-[node name="Up" type="StaticBody3D" parent="."]
+[node name="Up" type="StaticBody3D" parent="." unique_id=1336019461]
 transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, 0.19, 0.1045, 0.0204)
 
-[node name="Shape" type="CollisionShape3D" parent="Up"]
+[node name="Shape" type="CollisionShape3D" parent="Up" unique_id=1922455735]
 shape = SubResource("ArrowShape")
 
-[node name="Interactable" type="Node" parent="Up"]
+[node name="Interactable" type="Node" parent="Up" unique_id=939184124]
 script = ExtResource("2_interactable")
 pressable = true
 
-[node name="Label" type="Label3D" parent="Up"]
+[node name="Label" type="Label3D" parent="Up" unique_id=1472678271]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.008)
 pixel_size = 0.0015
 text = ">"
@@ -92,16 +94,15 @@ font = ExtResource("4_font")
 font_size = 96
 outline_size = 0
 
-[node name="Header" type="Label3D" parent="."]
+[node name="Header" type="Label3D" parent="." unique_id=1542645976]
 transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, 0, 0.1445, -0.0738)
 pixel_size = 0.001
 modulate = Color(0.86, 0.85, 0.8, 0.55)
 text = "PRICE PER UNIT"
 font = ExtResource("4_font")
-font_size = 32
 outline_size = 0
 
-[node name="Price" type="Label3D" parent="."]
+[node name="Price" type="Label3D" parent="." unique_id=1874834330]
 transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, 0, 0.0957, 0.0155)
 pixel_size = 0.0015
 modulate = Color(0.9, 0.89, 0.84, 0.9)
@@ -110,7 +111,10 @@ font = ExtResource("4_font")
 font_size = 96
 outline_size = 0
 
-[node name="Dust" type="CPUParticles3D" parent="."]
+[node name="Gauge" parent="." unique_id=1649192029 instance=ExtResource("6_gauge")]
+transform = Transform3D(1.999994, 0, 0, 0, 1.1722769, 1.6203997, 0, -1.6203595, 1.1723061, 0.2424986, 0.18478289, -0.17)
+
+[node name="Dust" type="CPUParticles3D" parent="." unique_id=1235918243]
 emitting = false
 amount = 40
 lifetime = 1.4
@@ -122,6 +126,7 @@ emission_ring_axis = Vector3(0, 1, 0)
 emission_ring_height = 0.01
 emission_ring_radius = 0.32
 emission_ring_inner_radius = 0.26
+emission_ring_cone_angle = 90.0
 direction = Vector3(1, 0.2, 0)
 spread = 180.0
 flatness = 0.8
@@ -134,12 +139,12 @@ scale_amount_min = 0.6
 scale_amount_max = 1.6
 color_ramp = SubResource("DustFade")
 
-[node name="Thud" type="AudioStreamPlayer3D" parent="."]
+[node name="Thud" type="AudioStreamPlayer3D" parent="." unique_id=815609324]
 stream = SubResource("Rand_thud")
 bus = &"SFX"
 script = ExtResource("5_cue")
 
-[node name="Tap" type="AudioStreamPlayer3D" parent="."]
+[node name="Tap" type="AudioStreamPlayer3D" parent="." unique_id=138467455]
 stream = SubResource("Rand_tap")
 bus = &"SFX"
 script = ExtResource("5_cue")

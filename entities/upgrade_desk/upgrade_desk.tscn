@@ -1,0 +1,256 @@
+[gd_scene format=3 uid="uid://wp2fpr54kw2c"]
+
+[ext_resource type="Script" uid="uid://ktixduc3cxpp" path="res://entities/upgrade_desk/upgrade_desk.gd" id="1_desk"]
+[ext_resource type="Script" uid="uid://s7bovuudwem5" path="res://entities/components/sound_cue.gd" id="2_cue"]
+[ext_resource type="Script" uid="uid://b8vly5jskxxs3" path="res://entities/components/interactable.gd" id="3_interactable"]
+[ext_resource type="PackedScene" uid="uid://cyckbeof4u05s" path="res://assets/meshes/Props/inbox_tray.blend" id="4_tray"]
+[ext_resource type="PackedScene" uid="uid://b8dosoai5wba8" path="res://assets/meshes/Machines/approval_press.blend" id="5_press"]
+[ext_resource type="PackedScene" uid="uid://dmc0og2ryhoub" path="res://assets/meshes/Props/spike_file.blend" id="6_spike"]
+[ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="7_font"]
+[ext_resource type="AudioStream" uid="uid://wbc8wcvrd8t7" path="res://assets/audio/effects/card_hover_1.wav" id="sfx_card_hover_1"]
+[ext_resource type="AudioStream" uid="uid://caca7dfoh7wp6" path="res://assets/audio/effects/card_hover_2.wav" id="sfx_card_hover_2"]
+[ext_resource type="AudioStream" uid="uid://btjnudu3qy3jm" path="res://assets/audio/effects/card_impale_1.wav" id="sfx_card_impale_1"]
+[ext_resource type="AudioStream" uid="uid://cum1oybtgbb41" path="res://assets/audio/effects/card_impale_2.wav" id="sfx_card_impale_2"]
+[ext_resource type="AudioStream" uid="uid://c7fxv54dej1v7" path="res://assets/audio/effects/card_land_1.wav" id="sfx_card_land_1"]
+[ext_resource type="AudioStream" uid="uid://bkjgplon1nbhc" path="res://assets/audio/effects/card_land_2.wav" id="sfx_card_land_2"]
+[ext_resource type="AudioStream" uid="uid://dim1rttesxfd5" path="res://assets/audio/effects/card_land_3.wav" id="sfx_card_land_3"]
+[ext_resource type="AudioStream" uid="uid://cgdvjebhkvv1n" path="res://assets/audio/effects/card_pickup_1.wav" id="sfx_card_pickup_1"]
+[ext_resource type="AudioStream" uid="uid://c0y8v2g8ipqpt" path="res://assets/audio/effects/card_pickup_2.wav" id="sfx_card_pickup_2"]
+[ext_resource type="AudioStream" uid="uid://spyqwlstn2vy" path="res://assets/audio/effects/card_pickup_3.wav" id="sfx_card_pickup_3"]
+[ext_resource type="AudioStream" uid="uid://dw4303l0upgiy" path="res://assets/audio/effects/press_denied_1.wav" id="sfx_press_denied_1"]
+[ext_resource type="AudioStream" uid="uid://xu5i1e4tfwxm" path="res://assets/audio/effects/press_denied_2.wav" id="sfx_press_denied_2"]
+[ext_resource type="AudioStream" uid="uid://bg7f15vdlfa0q" path="res://assets/audio/effects/press_lever_1.wav" id="sfx_press_lever_1"]
+[ext_resource type="AudioStream" uid="uid://c0h6xlxy48ea" path="res://assets/audio/effects/press_lever_2.wav" id="sfx_press_lever_2"]
+[ext_resource type="AudioStream" uid="uid://dgmugfgjgighu" path="res://assets/audio/effects/press_return_1.wav" id="sfx_press_return_1"]
+[ext_resource type="AudioStream" uid="uid://box86q75rl1vg" path="res://assets/audio/effects/press_return_2.wav" id="sfx_press_return_2"]
+[ext_resource type="AudioStream" uid="uid://07eafdx72iyc" path="res://assets/audio/effects/press_stamp_1.wav" id="sfx_press_stamp_1"]
+[ext_resource type="AudioStream" uid="uid://s0532vmyd6wn" path="res://assets/audio/effects/press_stamp_2.wav" id="sfx_press_stamp_2"]
+[ext_resource type="AudioStream" uid="uid://b0mb32fxtafxh" path="res://assets/audio/effects/tray_drop.wav" id="sfx_tray_drop"]
+
+[sub_resource type="StandardMaterial3D" id="DustMat"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.55, 0.53, 0.5, 0.5)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="DustQuad"]
+material = SubResource("DustMat")
+size = Vector2(0.03, 0.03)
+
+[sub_resource type="Gradient" id="DustFade"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="BoxShape3D" id="PressBase"]
+size = Vector3(0.42, 0.046, 0.28)
+
+[sub_resource type="SphereShape3D" id="HandleShape"]
+radius = 0.07985576
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Thud"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 1
+stream_0/stream = ExtResource("sfx_tray_drop")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Hover"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_card_hover_1")
+stream_1/stream = ExtResource("sfx_card_hover_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Pickup"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_card_pickup_1")
+stream_1/stream = ExtResource("sfx_card_pickup_2")
+stream_2/stream = ExtResource("sfx_card_pickup_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Land"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_card_land_1")
+stream_1/stream = ExtResource("sfx_card_land_2")
+stream_2/stream = ExtResource("sfx_card_land_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Impale"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_card_impale_1")
+stream_1/stream = ExtResource("sfx_card_impale_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Lever"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_press_lever_1")
+stream_1/stream = ExtResource("sfx_press_lever_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Stamp"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_press_stamp_1")
+stream_1/stream = ExtResource("sfx_press_stamp_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Denied"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_press_denied_1")
+stream_1/stream = ExtResource("sfx_press_denied_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Return"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_press_return_1")
+stream_1/stream = ExtResource("sfx_press_return_2")
+
+[node name="UpgradeDesk" type="Node3D" unique_id=898780668]
+script = ExtResource("1_desk")
+
+[node name="Tray" type="Node3D" parent="." unique_id=801289409]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.80094147, 0.75, 0.8392829)
+
+[node name="Model" parent="Tray" unique_id=539275437 instance=ExtResource("4_tray")]
+
+[node name="Plate" type="Label3D" parent="Tray" unique_id=822323235]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1375, 0.023, 0.3756)
+pixel_size = 0.00045
+modulate = Color(0.12, 0.1, 0.06, 0.9)
+text = "REQUISITIONS"
+font = ExtResource("7_font")
+font_size = 24
+outline_size = 0
+
+[node name="Dust" type="CPUParticles3D" parent="Tray" unique_id=1164063798]
+emitting = false
+amount = 40
+lifetime = 1.4
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("DustQuad")
+emission_shape = 3
+emission_box_extents = Vector3(0.24, 0.01, 0.4)
+direction = Vector3(1, 0.2, 0)
+spread = 180.0
+flatness = 0.8
+gravity = Vector3(0, 0.05, 0)
+initial_velocity_min = 0.2
+initial_velocity_max = 0.5
+damping_min = 0.6
+damping_max = 1.0
+scale_amount_min = 0.6
+scale_amount_max = 1.6
+color_ramp = SubResource("DustFade")
+
+[node name="Press" type="StaticBody3D" parent="." unique_id=215961384]
+transform = Transform3D(0.99908936, 0, -0.04266609, 0, 1, 0, 0.04266609, 0, 0.99908936, 1.6212791, 0.75, -0.48965657)
+
+[node name="Model" parent="Press" unique_id=898559314 instance=ExtResource("5_press")]
+
+[node name="Shape" type="CollisionShape3D" parent="Press" unique_id=514855580]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.023, 0)
+shape = SubResource("PressBase")
+
+[node name="Plate" type="Label3D" parent="Press" unique_id=391239488]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.017, 0.1465)
+pixel_size = 0.0005
+modulate = Color(0.12, 0.1, 0.06, 0.9)
+text = "APPROVALS"
+font = ExtResource("7_font")
+font_size = 28
+outline_size = 0
+
+[node name="Puff" type="CPUParticles3D" parent="Press" unique_id=549942608]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+emitting = false
+amount = 24
+lifetime = 0.8
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("DustQuad")
+emission_shape = 3
+emission_box_extents = Vector3(0.09, 0.005, 0.06)
+direction = Vector3(1, 0.3, 0)
+spread = 180.0
+flatness = 0.7
+gravity = Vector3(0, 0.05, 0)
+initial_velocity_min = 0.3
+initial_velocity_max = 0.6
+damping_min = 1.0
+damping_max = 1.5
+scale_amount_min = 0.5
+scale_amount_max = 1.2
+color_ramp = SubResource("DustFade")
+
+[node name="Handle" type="StaticBody3D" parent="Press" unique_id=740587006]
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Press/Handle" unique_id=1060894887]
+shape = SubResource("HandleShape")
+
+[node name="Interactable" type="Node" parent="Press/Handle" unique_id=988583497]
+script = ExtResource("3_interactable")
+
+[node name="Spike" type="Node3D" parent="." unique_id=1042276350]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0442882, 0.75, -0.33673063)
+
+[node name="Model" parent="Spike" unique_id=380128181 instance=ExtResource("6_spike")]
+
+[node name="Thud" type="AudioStreamPlayer3D" parent="." unique_id=652023664]
+stream = SubResource("Rand_Thud")
+bus = &"SFX"
+script = ExtResource("2_cue")
+
+[node name="Hover" type="AudioStreamPlayer3D" parent="." unique_id=1498841692]
+stream = SubResource("Rand_Hover")
+bus = &"SFX"
+script = ExtResource("2_cue")
+min_interval = 0.08
+
+[node name="Pickup" type="AudioStreamPlayer3D" parent="." unique_id=700452146]
+stream = SubResource("Rand_Pickup")
+bus = &"SFX"
+script = ExtResource("2_cue")
+
+[node name="Land" type="AudioStreamPlayer3D" parent="." unique_id=576133087]
+stream = SubResource("Rand_Land")
+bus = &"SFX"
+script = ExtResource("2_cue")
+min_interval = 0.05
+
+[node name="Impale" type="AudioStreamPlayer3D" parent="." unique_id=2094165829]
+stream = SubResource("Rand_Impale")
+bus = &"SFX"
+script = ExtResource("2_cue")
+
+[node name="Lever" type="AudioStreamPlayer3D" parent="." unique_id=381191674]
+stream = SubResource("Rand_Lever")
+bus = &"SFX"
+script = ExtResource("2_cue")
+
+[node name="Stamp" type="AudioStreamPlayer3D" parent="." unique_id=3262507]
+stream = SubResource("Rand_Stamp")
+bus = &"SFX"
+script = ExtResource("2_cue")
+
+[node name="Denied" type="AudioStreamPlayer3D" parent="." unique_id=1883592514]
+stream = SubResource("Rand_Denied")
+bus = &"SFX"
+script = ExtResource("2_cue")
+min_interval = 0.15
+
+[node name="Return" type="AudioStreamPlayer3D" parent="." unique_id=729495810]
+stream = SubResource("Rand_Return")
+bus = &"SFX"
+script = ExtResource("2_cue")

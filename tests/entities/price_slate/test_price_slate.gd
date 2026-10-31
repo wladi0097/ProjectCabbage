@@ -20,5 +20,8 @@ func _ready() -> void:
 	if Slate.wiggle_at(0.0) != 0.0 or Slate.wiggle_at(Slate.WIGGLE_TIME) != 0.0 or absf(Slate.wiggle_at(0.04)) < 0.05:
 		failed = true
 		push_error("wiggle should start and end at rest and shake in between")
+	if not is_equal_approx(Slate.needle_angle(0.5), 0.0) or Slate.needle_angle(0.0) <= 0.0 or Slate.needle_angle(1.0) >= 0.0:
+		failed = true
+		push_error("needle should point up at 50%, turn left (positive) below and right above")
 	print("price slate tests failed" if failed else "price slate tests passed")
 	get_tree().quit(1 if failed else 0)

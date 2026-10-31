@@ -2,7 +2,8 @@ extends Node3D
 ## The metal ramp in the bottom-right corner. This node sits at the ramp's lip. While there is
 ## stock left that isn't on the mat yet, and the mat holds fewer than the save's desk_capacity,
 ## it rolls the next cabbage down the ramp every dispense_interval and flings it off the lip
-## onto the bottom half of the mat. The drum bar on its front rail rolls to the stock.
+## onto the bottom half of the mat; after a sale the next one waits restock_wait first. The drum bar
+## on its front rail rolls to the stock.
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
 const PLAY_AREA_LAYER := 2
@@ -54,12 +55,20 @@ func _pose_drums() -> void:
 
 func _physics_process(delta: float) -> void:
 	var save := SaveManager.save
+	var before := _on_desk.size()
 	_on_desk = _on_desk.filter(func(c: Cabbage) -> bool: return is_instance_valid(c) and not c.sold)
 	_cooldown -= delta
+	if _on_desk.size() < before:
+		_cooldown = maxf(_cooldown, restock_wait(save.restock_delay, randf()))
 	if _cooldown > 0.0 or not should_dispense(_on_desk.size(), save.desk_capacity, save.stock):
 		return
 	_cooldown = save.dispense_interval
 	_roll()
+
+
+## The wait after a sale: `roll` (0..1) spreads it over 0.5..1.5 of the save's mean `delay`.
+static func restock_wait(delay: float, roll: float) -> float:
+	return delay * (0.5 + roll)
 
 
 ## Room on the mat, and stock that isn't on it yet.
@@ -92,13 +101,14 @@ func _fling(cabbage: Cabbage, interactable: Interactable) -> void:
 	cabbage.collision_mask &= ~PLAY_AREA_LAYER
 	cabbage.freeze = false
 	var target := landing_area.position + Vector3(randf(), 0.0, randf()) * landing_area.size
-	var gravity := Vector3.DOWN * float(ProjectSettings.get_setting("physics/3d/default_gravity"))
-	cabbage.linear_velocity = ballistic_velocity(global_position, target, FLIGHT_TIME, gravity)
+	cabbage.linear_velocity = ballistic_velocity(global_position, target, FLIGHT_TIME)
 	cabbage.angular_velocity = Vector3(randf_range(-4, 4), randf_range(-4, 4), randf_range(-4, 4))
 	get_tree().create_timer(ENTER_TIME, true, true).timeout.connect(func() -> void:
 		if is_instance_valid(cabbage):
 			cabbage.collision_mask |= PLAY_AREA_LAYER)
 
 
-static func ballistic_velocity(from: Vector3, to: Vector3, time: float, gravity: Vector3) -> Vector3:
+## The launch velocity that lands a body thrown from `from` on `to` after `time` under the project's gravity.
+static func ballistic_velocity(from: Vector3, to: Vector3, time: float) -> Vector3:
+	var gravity := Vector3.DOWN * float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 	return (to - from) / time - 0.5 * gravity * time

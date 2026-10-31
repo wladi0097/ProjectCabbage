@@ -20,8 +20,8 @@ func _ready() -> void:
 	_check(CoinPile.coin_values(4) == [1, 1, 1, 1], "coin_values(4) = %s" % [CoinPile.coin_values(4)])
 
 	# A toss lands where it aims.
-	var g := Vector3.DOWN * 9.8
-	var toss := preload("res://worlds/components/cabbage_feeder.gd").ballistic_velocity(Vector3(2, 1, 1), Vector3(1, 0.8, 0), 0.7, g)
+	var g := Vector3.DOWN * float(ProjectSettings.get_setting("physics/3d/default_gravity"))
+	var toss := preload("res://worlds/components/cabbage_feeder.gd").ballistic_velocity(Vector3(2, 1, 1), Vector3(1, 0.8, 0), 0.7)
 	var landed := Vector3(2, 1, 1) + toss * 0.7 + 0.5 * g * 0.49
 	_check(landed.is_equal_approx(Vector3(1, 0.8, 0)), "toss missed: %s" % landed)
 

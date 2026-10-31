@@ -2,7 +2,8 @@ class_name Cabbage
 extends RigidBody3D
 ## One unit of stock, and heavy: held, it accelerates toward the hand with capped force and
 ## speed, so a throw needs a deliberate drag. Let go and it keeps the momentum it built up.
-## Out through the window gap is a sale; the SaleWindow marks it sold.
+## Out through the window gap is a sale; the SaleWindow marks it sold, or sends it out and back
+## when the street refuses it (`away` meanwhile). Every cabbage is in the "cabbages" group.
 
 signal bumped(speed: float)
 
@@ -28,6 +29,10 @@ const SQUISH_TIME := 0.6
 @export var max_speed := 5.5
 
 var sold := false
+## Out of the window or on its way back after a refusal: the SaleWindow leaves it alone.
+var away := false
+## Seconds the SaleWindow has seen it off the mat in a row.
+var stray_time := 0.0
 ## Flung off the chute and not yet touching anything: grabbing it now is a catch.
 var in_flight := false:
 	set(flying):
@@ -44,7 +49,12 @@ var _squish := 0.0:
 		$Mesh.basis = turn.inverse() * Basis.from_scale(squish_scale(amount)) * turn * _look
 
 
+@onready var _layer := collision_layer
+@onready var _mask := collision_mask
+
+
 func _ready() -> void:
+	add_to_group(&"cabbages")
 	$Mesh.mesh = MESHES.pick_random()
 	var size := randf_range(1.0 - SIZE_SPREAD, 1.0 + SIZE_SPREAD)
 	_look = Basis.from_euler(Vector3(randf(), randf(), randf()) * TAU).scaled(Vector3.ONE * 1.5 * size)
@@ -90,26 +100,43 @@ static func carry_velocity(velocity: Vector3, to_target: Vector3, delta: float, 
 ## (out of sight in the street) instead of dropping onto the pavement.
 func suck_out(to: Vector3, time: float) -> void:
 	sold = true
+	_pull_out(to, time).chain().tween_callback(queue_free)
+
+
+## Refused: pulled out of the window like a sale, but kept (`away`) for throw_in to bring back.
+func send_away(to: Vector3, time: float) -> void:
+	away = true
+	_pull_out(to, time)
+
+
+## Thrown back in by the street from `from` at `velocity`. It passes through the window wall for
+## `clear` seconds, can't be grabbed for a moment, and is the window's again after `landed` seconds.
+func throw_in(from: Vector3, velocity: Vector3, clear: float, landed: float) -> void:
+	global_position = from
+	freeze = false
+	gravity_scale = 1.0
+	collision_layer = _layer
+	linear_velocity = velocity
+	angular_velocity = Vector3(randf_range(-6, 6), randf_range(-6, 6), randf_range(-6, 6))
+	# One tween on the cabbage itself, so nothing fires after it is freed.
+	var steps := create_tween().set_parallel()
+	steps.tween_callback(func() -> void: collision_mask = _mask).set_delay(clear)
+	steps.tween_callback(func() -> void: $Interactable.enabled = true).set_delay(0.3)
+	steps.tween_callback(func() -> void: away = false).set_delay(landed)
+
+
+## Torn from the hand, out of reach and out of the physics, pulled to `to` over `time`.
+func _pull_out(to: Vector3, time: float) -> Tween:
 	_held = false
 	$Interactable.enabled = false
 	freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
 	freeze = true
+	collision_layer = 0
 	collision_mask = 0
 	var tween := create_tween().set_parallel()
 	tween.tween_property(self, "global_position", to, time).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_property(self, "rotation", rotation + Vector3(-TAU, randf_range(-1, 1), 0), time)
-	tween.chain().tween_callback(queue_free)
-
-
-## Refused by the street: torn from the hand and thrown back in at `velocity`, out of reach
-## for a moment so the hand can't hold it against the window.
-func throw_back(velocity: Vector3) -> void:
-	_held = false
-	gravity_scale = 1.0
-	$Interactable.enabled = false
-	linear_velocity = velocity
-	angular_velocity = Vector3(randf_range(-6, 6), randf_range(-6, 6), randf_range(-6, 6))
-	get_tree().create_timer(0.3).timeout.connect(func() -> void: $Interactable.enabled = not sold)
+	return tween
 
 
 func _on_grabbed() -> void:

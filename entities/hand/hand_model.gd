@@ -1,11 +1,11 @@
 class_name HandModel
 extends Node3D
 ## The player's hand on screen, a cartoon clerk's glove in cold grey (three fingers and a
-## thumb). Points when idle, opens over something grabbable, closes on what it holds, and leans
-## after the mouse.
+## thumb). Points when idle, opens over something grabbable, closes on what it holds, pinches
+## paper by its corner, and leans after the mouse.
 ## The Hand autoload says where and which pose.
 
-enum Pose { POINT, OPEN, GRAB }
+enum Pose { POINT, OPEN, GRAB, PINCH, REACH }
 
 const FINGERS: Array[String] = ["Index", "Middle", "Ring", "Thumb"]
 const THUMB := 3
@@ -15,27 +15,33 @@ const POSES := {
 	Pose.POINT: [[-12, -5, -3, 4], [-75, -65, -35, 0], [-75, -65, -35, -4], [-35, -30, -20, -40]],
 	Pose.OPEN: [[-14, -12, -8, 16], [-10, -12, -8, 0], [-14, -14, -8, -16], [-12, -6, 0, 28]],
 	Pose.GRAB: [[-55, -40, -28, 12], [-55, -40, -28, 0], [-55, -40, -28, -12], [-55, -30, -20, 10]],
+	Pose.PINCH: [[-75, -68, -45, 6], [-80, -70, -40, 0], [-85, -72, -42, -6], [-20, -12, -6, -45]],
+	Pose.REACH: [[-32, -22, -14, 14], [-32, -22, -14, 0], [-32, -22, -14, -14], [-34, -18, -10, 20]],
 }
 ## The thumb's rest direction in the Blender build: forward and out to the left.
 const THUMB_YAW := deg_to_rad(40.0)
 ## The point of the hand that sits on the target, per pose (model space): the index tip
 ## when pointing, the underside of the palm when open, the knuckles when holding (so the
-## fingers wrap the far side of the cabbage).
+## fingers wrap the far side of the cabbage), where index and thumb tips meet when pinching.
 const ANCHORS := {
 	Pose.POINT: Vector3(-0.034, -0.012, -0.160),
 	Pose.OPEN: Vector3(0.0, -0.021, -0.055),
 	Pose.GRAB: Vector3(0.0, -0.021, -0.066),
+	Pose.PINCH: Vector3(-0.037, -0.036, -0.090),
+	Pose.REACH: Vector3(0.0, -0.021, -0.066),
 }
 ## Whole-hand pitch per pose (radians, negative tips the fingers down toward the desk).
 ## The pointing finger stays shallower than the camera's 61 deg look-down, or the knuckles hide it.
-const PITCH := { Pose.POINT: deg_to_rad(-22.0), Pose.OPEN: 0.0, Pose.GRAB: 0.0 }
+const PITCH := { Pose.POINT: deg_to_rad(-22.0) }
+## Whole-hand yaw per pose (0 if not listed): pinching comes in from the lower left, fingers up and right.
+const YAW := { Pose.PINCH: deg_to_rad(-35.0) }
 const POSE_SPEED := 16.0
 const SWAY_SPEED := 9.0
 ## Radians of lean per m/s of hand speed, and the most it ever leans.
 const SWAY_GAIN := 0.14
 const MAX_SWAY := 0.6
 ## Cartoon squash when the hand changes pose: how hard per pose, and how fast it settles.
-const PUNCH := { Pose.POINT: 0.3, Pose.OPEN: -0.5, Pose.GRAB: 1.0 }
+const PUNCH := { Pose.POINT: 0.3, Pose.OPEN: -0.5, Pose.GRAB: 1.0, Pose.PINCH: 0.6, Pose.REACH: 0.4 }
 const PUNCH_SPEED := 10.0
 
 var pose := Pose.POINT:
@@ -46,7 +52,8 @@ var pose := Pose.POINT:
 var _punch := 0.0
 var _angles: Array = POSES[Pose.POINT].duplicate(true)
 var _anchor: Vector3 = ANCHORS[Pose.POINT]
-var _pitch: float = PITCH[Pose.POINT]
+var _pitch: float = PITCH.get(Pose.POINT, 0.0)
+var _yaw := 0.0
 var _sway := Vector3.ZERO
 var _last_target := Vector3.ZERO
 var _bones: Array[PackedInt32Array] = []
@@ -70,17 +77,24 @@ func move_to(target: Vector3, delta: float) -> void:
 		_sway = _sway.lerp(sway(velocity), 1.0 - exp(-SWAY_SPEED * delta))
 		var t := 1.0 - exp(-POSE_SPEED * delta)
 		_anchor = _anchor.lerp(ANCHORS[pose], t)
-		_pitch = lerpf(_pitch, PITCH[pose], t)
+		_pitch = lerpf(_pitch, PITCH.get(pose, 0.0), t)
+		_yaw = lerpf(_yaw, YAW.get(pose, 0.0), t)
 		_angles = blend(_angles, POSES[pose], t)
 		_apply_angles()
 		_punch *= exp(-PUNCH_SPEED * delta)
 	_last_target = target
-	basis = Basis.from_euler(_sway + Vector3(_pitch, 0.0, 0.0)) * Basis.from_scale(squash(_punch))
+	basis = Basis.from_euler(_sway + Vector3(_pitch, _yaw, 0.0)) * Basis.from_scale(squash(_punch))
 	global_position = target - basis * _anchor
 
 
-## Buttons (`pressing`) are pointed at and pressed with the index, never grabbed.
-static func pose_for(holding: bool, hovering: bool, pressing := false) -> Pose:
+## Buttons (`pressing`) are pointed at and pressed with the index, never grabbed; paper
+## (`carrying`) is pinched by a corner, and handles (`reaching`) are already half gripped
+## while hovered.
+static func pose_for(holding: bool, hovering: bool, pressing := false, carrying := false, reaching := false) -> Pose:
+	if carrying and (holding or hovering):
+		return Pose.PINCH
+	if reaching and hovering and not holding:
+		return Pose.REACH
 	return Pose.POINT if pressing else Pose.GRAB if holding else Pose.OPEN if hovering else Pose.POINT
 
 

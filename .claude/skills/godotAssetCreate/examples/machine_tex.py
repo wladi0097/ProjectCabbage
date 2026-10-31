@@ -4,7 +4,7 @@
 #  machine_dial/   atlas. Drum digits 0-9 stacked along v (digit d in v [d/10, (d+1)/10], upright
 #                  toward +v) in u [0, DRUM_U]; black drum sides at u [0.15, 0.25]; brass
 #                  "$$$" plate in u [0.5, 1], v [0.8, 1].
-import numpy as np, sys
+import math, numpy as np, sys
 from PIL import Image, ImageDraw, ImageFont
 
 OUT = sys.argv[1] + "/"
@@ -75,3 +75,28 @@ normal_from(h, 4.0).save(OUT + "machine_dial/machine_dial_normal.png")
 m = np.array(metal) / 255.0
 r = np.where(m > 0.5, 0.62, 0.7)   # matte: the lamp must not glare over the lettering
 Image.fromarray((np.dstack((np.ones_like(h), r, m)) * 255).astype(np.uint8)).save(OUT + "machine_dial/machine_dial_orm.png")
+
+# Acceptance gauge face, painted into the free block u [0.5, 1], v [0.25, 0.75] (centre (768, 512)
+# px, radius GAUGE_R). Needle sweep -120..+120 deg from straight up = 0..100 %; the low end inked in.
+alb = Image.open(OUT + "machine_dial/machine_dial_albedo.png").convert("RGB"); d = ImageDraw.Draw(alb)
+GX, GY, GAUGE_R = 768, 512, 250
+INKD, PAPER = (222, 218, 204), (30, 31, 30)   # light print on a dark face
+d.ellipse((GX - GAUGE_R, GY - GAUGE_R, GX + GAUGE_R, GY + GAUGE_R), fill=PAPER)
+
+
+def polar(pct, r):
+    a = math.radians(-120 + 240 * pct / 100)
+    return GX + r * math.sin(a), GY - r * math.cos(a)
+
+
+d.arc((GX - 222, GY - 222, GX + 222, GY + 222), -210, -138, fill=(105, 104, 98), width=34)   # dark low band: 0..30 %
+d.arc((GX - 222, GY - 222, GX + 222, GY + 222), -210, 30, fill=INKD, width=9)
+for pct in range(0, 101, 10):
+    major = pct % 50 == 0
+    d.line((polar(pct, 222), polar(pct, 168 if major else 190)), fill=INKD, width=16 if major else 9)
+num = ImageFont.truetype("C:/Users/wladi/Desktop/ProjectCabbage/assets/fonts/Oswald.ttf", 70)
+for pct in (0, 50, 100):
+    d.text(polar(pct, 105), str(pct), font=num, fill=INKD, anchor="mm")
+lab = ImageFont.truetype("C:/Users/wladi/Desktop/ProjectCabbage/assets/fonts/Oswald.ttf", 50)
+d.text((GX, GY + 152), "ACCEPTANCE", font=lab, fill=INKD, anchor="mm")
+alb.save(OUT + "machine_dial/machine_dial_albedo.png")

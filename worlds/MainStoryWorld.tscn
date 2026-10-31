@@ -15,8 +15,9 @@
 [ext_resource type="PackedScene" path="res://entities/supply_console/supply_console.tscn" id="14_console"]
 [ext_resource type="PackedScene" path="res://worlds/components/dust_motes.tscn" id="15_dust"]
 [ext_resource type="PackedScene" uid="uid://cuwukr2skaw73" path="res://assets/meshes/Machines/supply_ramp.blend" id="16_ramp"]
-[ext_resource type="PackedScene" path="res://entities/price_slate/price_slate.tscn" id="17_slate"]
-[ext_resource type="Script" path="res://worlds/components/debug_keys.gd" id="18_debug"]
+[ext_resource type="PackedScene" uid="uid://cyemby4epomiq" path="res://entities/price_slate/price_slate.tscn" id="17_slate"]
+[ext_resource type="Script" uid="uid://dmue1m4brycav" path="res://worlds/components/debug_keys.gd" id="18_debug"]
+[ext_resource type="PackedScene" uid="uid://wp2fpr54kw2c" path="res://entities/upgrade_desk/upgrade_desk.tscn" id="19_upgrades"]
 [ext_resource type="AudioStream" uid="uid://bvegj1jwuv651" path="res://assets/audio/effects/cabbage_refused_1.wav" id="sfx_cabbage_refused_1"]
 [ext_resource type="AudioStream" uid="uid://ccccks88k3uru" path="res://assets/audio/effects/cabbage_refused_2.wav" id="sfx_cabbage_refused_2"]
 [ext_resource type="AudioStream" uid="uid://eixral3a7hwg" path="res://assets/audio/effects/cabbage_refused_3.wav" id="sfx_cabbage_refused_3"]
@@ -295,6 +296,8 @@ coins = NodePath("../Coins")
 [node name="PriceSlate" parent="." unique_id=1047906906 instance=ExtResource("17_slate")]
 transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, -0.8, 0.75, -0.38161275)
 
+[node name="UpgradeDesk" parent="." unique_id=613601056 instance=ExtResource("19_upgrades")]
+
 [node name="SaleWindow" type="Area3D" parent="." unique_id=1285898375 node_paths=PackedStringArray("coins")]
 collision_layer = 0
 collision_mask = 4
@@ -369,12 +372,11 @@ layer = 2
 
 [node name="InGameMenu" parent="UI" unique_id=520305776 instance=ExtResource("6_menu")]
 
-[node name="DebugKeys" type="Node" parent="."]
+[node name="DebugKeys" type="Node" parent="." unique_id=1045444223]
 script = ExtResource("18_debug")
 
+[connection signal="refused" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]
 [connection signal="bounced" from="Coins" to="Coins/Bounce" method="cue"]
 [connection signal="collected" from="Coins" to="Coins/Collect" method="cue"]
 [connection signal="deposited" from="Coins" to="Coins/Deposit" method="cue"]
 [connection signal="landed" from="Coins" to="Coins/Land" method="cue"]
-
-[connection signal="refused" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]

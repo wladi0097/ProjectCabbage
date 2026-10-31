@@ -37,8 +37,9 @@ const PICKUP_RADIUS := 0.1
 
 @export var desk_height := 0.76
 @export var deposit: Node3D
-## Thrown-in coins land anywhere in here (the top half of the mat).
-@export var landing_area := AABB(Vector3(-0.3, 0.76, -0.55), Vector3(2.0, 0.0, 0.75))
+## Thrown-in coins land anywhere in here: the top half of the mat, minus its right 30% where the
+## press and the ramp would hide them.
+@export var landing_area := AABB(Vector3(-0.3, 0.76, -0.55), Vector3(1.4, 0.0, 0.75))
 ## Seconds from the gap to the first touch: short keeps the arc flat enough for the gap.
 @export var throw_time := Vector2(0.28, 0.36)
 ## (y, z) where tossed coins come through the window gap. They start out of sight below the
@@ -70,6 +71,8 @@ var _buffer := PackedFloat32Array()
 
 
 func _ready() -> void:
+	# The MultiMesh resource outlives a scene reload (a save reset): empty it before reformatting.
+	multimesh.instance_count = 0
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.use_colors = true
 	multimesh.instance_count = MAX_COINS
