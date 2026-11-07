@@ -1,6 +1,0 @@
-[gd_scene format=3]
-
-[ext_resource type="Script" path="res://tests/entities/cabbage/test_cabbage.gd" id="1"]
-
-[node name="TestCabbage" type="Node"]
-script = ExtResource("1")

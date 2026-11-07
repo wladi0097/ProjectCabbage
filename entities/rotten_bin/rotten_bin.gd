@@ -1,18 +1,18 @@
 class_name RottenBin
 extends Node3D
 ## Rotten units and the bin (the "rotten_units" big event in globalScripts/game_events.gd). From
-## the moment the "rotten_bin" card is first offered in the tray, save.rotten_unlocked is set and
-## the chute sends one rotten unit in CabbageFeeder.ROTTEN_EVERY (the player meets the problem
-## before the fix is for sale). Selling one is fined by the SaleWindow; this node shows the fine
-## notice (FineNotice). Once the card is stamped a steel waste bin drops in at the mat's bottom
-## edge, just inside the screen, beside the supply console: any unit let go near its mouth is
-## lifted over the rim and dropped in (Cabbage.drop_into), and is gone (stock −1). A rotten one pays
+## the moment the catch_combo card is stamped, save.rotten_unlocked is set, the chute sends one
+## rotten unit in CabbageFeeder.ROTTEN_EVERY and the boss's note announces them. Selling one is
+## fined by the SaleWindow; this node shows the fine notice (FineNotice). At the same moment a steel
+## waste bin drops in for free at the mat's bottom edge, just inside the screen, beside the supply
+## console: a unit the player lets go of (or a hired hand lobs) near its mouth is
+## lifted over the rim and dropped in (Cabbage.drop_into), and is gone (stock −1). One that only
+## rolled or was bumped in (Cabbage.meant_for_bin false) is popped back out onto the desk. A rotten one pays
 ## a rebate (save.bin_rebate × the chalked price, counted in save.binned); a fresh one is simply
 ## wasted, for nothing. The mouth grows with save.bin_mouth. Hired hands sell rotten units too
 ## (fined) until save.hands_bin, then lob them at hand_aim(); they never bin fresh ones (bin_for).
 
 const Events := preload("res://globalScripts/game_events.gd")
-const CARD := "rotten_bin"
 ## Mouth radius at bin_mouth 1, and how far past it a cabbage's centre may be and still drop in.
 const MOUTH := 0.132
 ## The model is drawn at this scale of what was built (its mouth then is MOUTH at bin_mouth 1).
@@ -33,9 +33,12 @@ const DROP_TIME := 0.35
 const HAND_AIM_Y := 0.3
 ## Seconds between looks over the mouth for rotten units.
 const CHECK_EVERY := 0.1
+## A unit that only rolled in is popped back out this fast (m/s) sideways and up.
+const REJECT_SPEED := 1.2
+const REJECT_LIFT := 1.5
 
 var _rest := Vector3.ZERO
-## The stamped count rotten_due was last checked at (it only changes with a stamp or the tray).
+## The stamped count rotten_due was last checked at (it only changes with a stamp).
 var _due_checked := -1
 var _check := 0.0
 
@@ -43,7 +46,7 @@ var _check := 0.0
 func _ready() -> void:
 	add_to_group(&"rotten_bin")
 	_rest = position
-	visible = SaveManager.save.stamped.has(CARD)
+	visible = SaveManager.save.rotten_unlocked
 	_size(Vector3.ONE * MODEL_SCALE * SaveManager.save.bin_mouth)
 	var pit := MeshInstance3D.new()
 	var disc := CylinderMesh.new()
@@ -74,12 +77,11 @@ func _connect_window() -> void:
 
 func _process(delta: float) -> void:
 	var save := SaveManager.save
-	var key := save.stamped.size() * 2 + int(save.tray_unlocked)
-	if not save.rotten_unlocked and key != _due_checked:
-		_due_checked = key
+	if not save.rotten_unlocked and save.stamped.size() != _due_checked:
+		_due_checked = save.stamped.size()
 		save.rotten_unlocked = rotten_due(save)
 	if not visible:
-		if save.stamped.has(CARD):
+		if save.rotten_unlocked:
 			_arrive()
 		return
 	var mouth := Vector3.ONE * MODEL_SCALE * save.bin_mouth
@@ -97,10 +99,22 @@ func _physics_process(delta: float) -> void:
 		if not cabbage.sold and not cabbage.away and not cabbage.freeze \
 				and (Hand.held == null or Hand.held.get_parent() != cabbage) \
 				and in_mouth(global_position, cabbage.global_position, reach):
-			_take(cabbage)
+			if cabbage.meant_for_bin():
+				_take(cabbage)
+			else:
+				cabbage.linear_velocity = reject_velocity(global_position, cabbage.global_position)
 
 
-## Rotten units start coming once the bin card is in the tray (or stamped).
+## Rolled or bumped into the mouth, not put there: the rim pops the unit back out onto the desk,
+## away from the bin's middle but never toward the screen's bottom edge (straight up the desk when
+## dead centre).
+static func reject_velocity(bin: Vector3, at: Vector3) -> Vector3:
+	var out := Vector3(at.x - bin.x, 0.0, minf(at.z - bin.z, 0.0))
+	out = out.normalized() if out.length() > 0.01 else Vector3.FORWARD
+	return out * REJECT_SPEED + Vector3.UP * REJECT_LIFT
+
+
+## Rotten units (and the bin) start coming once catch_combo is stamped.
 static func rotten_due(save: SaveGame) -> bool:
 	return Events.due("rotten_units", save)
 

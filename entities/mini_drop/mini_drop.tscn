@@ -69,7 +69,7 @@ shape = SubResource("HandleShape")
 
 [node name="Interactable" type="Node" parent="Tube/Handle"]
 script = ExtResource("3_interactable")
-tooltip = "Tube lever. SALES: minis roll out of the window and sell. RESEARCH: they go to the QA lab for Findings. SPLIT: every other one. Drag it, or click to step."
+tooltip = "Tube lever. SALES: minis roll out of the window and sell. RESEARCH: they go to the research lab for Findings. SPLIT: every other one. Drag it, or click to step."
 
 [node name="Thud" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_Thud")

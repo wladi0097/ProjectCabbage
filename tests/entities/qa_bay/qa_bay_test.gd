@@ -1,0 +1,193 @@
+extends GdUnitTestSuite
+
+var _saved: SaveGame
+var _save: SaveGame
+
+
+func before_test() -> void:
+	_saved = SaveManager.save
+	_save = SaveGame.new()
+	SaveManager.save = _save
+
+
+func after_test() -> void:
+	SaveManager.save = _saved
+
+
+func _unit(is_mini := false, is_research := false) -> Cabbage:
+	var cabbage: Cabbage = auto_free(Cabbage.new())
+	cabbage.mini = is_mini
+	cabbage.research = is_research
+	return cabbage
+
+
+func _bay() -> QaBay:
+	return auto_free(QaBay.new())
+
+
+func _slip(at: Vector3, value: int, resting := true) -> Node3D:
+	var slip: Node3D = auto_free(Node3D.new())
+	add_child(slip)
+	slip.global_position = at
+	slip.set_meta(&"value", value)
+	slip.set_meta(&"resting", resting)
+	return slip
+
+
+func test_a_plain_unit_yields_the_findings_per_cabbage() -> void:
+	_save.findings_per_cabbage = 2
+	assert_int(QaBay.findings_for(_unit(), _save)).is_equal(2)
+
+
+func test_a_research_unit_yields_research_mult_times_the_findings() -> void:
+	_save.findings_per_cabbage = 2
+	_save.research_mult = 3.0
+	assert_int(QaBay.findings_for(_unit(false, true), _save)).is_equal(6)
+
+
+func test_a_mini_yields_its_rounded_share_of_the_findings_but_never_nothing() -> void:
+	_save.mini_value = 0.25
+	_save.findings_per_cabbage = 2
+	assert_int(QaBay.findings_for(_unit(true), _save)).is_equal(1)
+	_save.findings_per_cabbage = 10
+	assert_int(QaBay.findings_for(_unit(true), _save)).is_equal(3)
+	_save.findings_per_cabbage = 1
+	assert_int(QaBay.findings_for(_unit(true), _save)).is_equal(1)
+
+
+func test_a_unit_taken_in_costs_one_stock_and_a_mini_costs_none() -> void:
+	_save.stock = 5
+	_bay()._take(_unit())
+	assert_int(_save.stock).is_equal(4)
+	_bay()._take(_unit(true))
+	assert_int(_save.stock).is_equal(4)
+
+
+func test_a_research_unit_taken_in_is_counted() -> void:
+	_bay()._take(_unit(false, true))
+	_bay()._take(_unit())
+	assert_int(_save.research_units).is_equal(1)
+
+
+func test_the_bay_has_room_only_while_a_bench_is_free() -> void:
+	var bay := _bay()
+	_save.qa_slots = 2
+	bay._jobs = [1.0] as Array[float]
+	assert_bool(bay.has_room()).is_true()
+	bay._jobs = [1.0, 0.5] as Array[float]
+	assert_bool(bay.has_room()).is_false()
+
+
+func test_a_bay_not_delivered_yet_has_no_room() -> void:
+	var bay := _bay()
+	bay.visible = false
+	assert_bool(bay.has_room()).is_false()
+
+
+func test_a_vacuum_takes_only_resting_slips_within_its_reach() -> void:
+	var bay := _bay()
+	var near := _slip(Vector3(0.05, 0.76, 0.0), 1)
+	var flying := _slip(Vector3(0.0, 0.76, 0.02), 5, false)
+	var far := _slip(Vector3(0.3, 0.76, 0.0), 10)
+	bay._slips = [near, flying, far] as Array[Node3D]
+
+	var got := bay.vacuum_at(Vector3.ZERO, 0.07, 8)
+
+	assert_array(got).contains_exactly([near])
+	assert_bool(near.visible).is_false()
+	assert_array(bay.resting_spots()).has_size(1)
+
+
+func test_a_vacuum_takes_no_more_slips_than_its_bag_has_room_for() -> void:
+	var bay := _bay()
+	bay._slips = [_slip(Vector3.ZERO, 1), _slip(Vector3.ZERO, 1), _slip(Vector3.ZERO, 1)] as Array[Node3D]
+	assert_array(bay.vacuum_at(Vector3.ZERO, 0.07, 2)).has_size(2)
+	assert_array(bay.vacuum_at(Vector3.ZERO, 0.07, 0)).is_empty()
+
+
+func test_slips_in_a_vacuum_bag_still_count_as_pending_findings() -> void:
+	var bay := _bay()
+	bay._slips = [_slip(Vector3.ZERO, 5), _slip(Vector3.ZERO, 1, false)] as Array[Node3D]
+	bay.vacuum_at(Vector3.ZERO, 0.07, 8)
+	assert_int(bay.pending_findings()).is_equal(6)
+
+
+func test_quitting_files_the_units_on_the_benches_and_the_unfiled_slips() -> void:
+	var bay := _bay()
+	_save.findings = 3
+	bay._jobs = [2.0, 0.5] as Array[float]
+	bay._yields = [6, 1] as Array[int]
+	bay._slips = [_slip(Vector3.ZERO, 10), _slip(Vector3.ZERO, 5, false)] as Array[Node3D]
+
+	bay._file_pending()
+
+	assert_int(_save.findings).is_equal(3 + 7 + 15)
+	assert_int(bay.pending_findings()).is_equal(0)
+	assert_array(bay._jobs).is_empty()
+
+
+## The window: records what the street is asked to throw back, never touches its own scene.
+class FakeWindow extends SaleWindow:
+	var thrown: Array[Cabbage] = []
+
+	func split() -> void:
+		pass
+
+	func _send_back(cabbage: Cabbage, _wait: float, _refused_unit := false) -> void:
+		thrown.append(cabbage)
+
+
+## The bay scene in the tree, delivered, with a fake window and counter.
+func _bay_in_tree() -> QaBay:
+	_save.stamped = PackedStringArray(["quality_assurance"])
+	var bay: QaBay = auto_free(preload("res://entities/qa_bay/qa_bay.tscn").instantiate())
+	bay.window = auto_free(FakeWindow.new())
+	bay.counter = auto_free(Node3D.new())
+	add_child(bay)
+	bay.set_process(false)  # The hand's sweep needs a camera.
+	return bay
+
+
+## A mini as the tube hands it over: hidden, frozen, out of the physics.
+func _tube_mini() -> Cabbage:
+	var cabbage: Cabbage = auto_free(preload("res://entities/cabbage/cabbage.tscn").instantiate())
+	cabbage.mini = true
+	add_child(cabbage)
+	cabbage.freeze = true
+	cabbage.collision_layer = 0
+	cabbage.visible = false
+	return cabbage
+
+
+func test_a_tube_mini_for_research_appears_in_the_mouth_and_takes_a_bench_like_a_thrown_one() -> void:
+	var bay := _bay_in_tree()
+	var unit := _tube_mini()
+	_save.findings = 0
+
+	bay.file_direct(unit)
+
+	assert_bool(unit.visible).is_true()
+	assert_vector(unit.global_position).is_equal_approx(bay.mouth(), Vector3.ONE * 0.0001)
+	assert_bool(unit.sold).is_true()
+	assert_array(bay._jobs).has_size(1)
+	assert_int(_save.findings).is_equal(0)
+	assert_array((bay.window as FakeWindow).thrown).is_empty()
+
+
+func test_a_tube_mini_for_a_full_bay_is_thrown_back_onto_the_mat_like_a_refused_unit() -> void:
+	var bay := _bay_in_tree()
+	bay._jobs = [0.5] as Array[float]
+	var unit := _tube_mini()
+
+	bay.file_direct(unit)
+
+	assert_array((bay.window as FakeWindow).thrown).contains_exactly([unit])
+	assert_bool(unit.visible).is_true()
+	assert_bool(unit.sold).is_false()
+	assert_bool(unit.away).is_true()
+	assert_array(bay._jobs).has_size(1)
+
+
+func test_the_flap_lies_flat_when_open_and_stands_up_when_shut() -> void:
+	assert_float(QaBay.flap_angle(0.0)).is_equal(0.0)
+	assert_float(QaBay.flap_angle(1.0)).is_equal_approx(-PI / 2.0, 0.0001)

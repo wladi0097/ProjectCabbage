@@ -11,6 +11,9 @@ extends Node3D
 ## and, with hired hands, throttles: while no unit waits on the mat (the hands are starved, supply is
 ## the limit) it asks a step more each time, up to THROTTLE × the full-sale price, and gives a step
 ## back whenever one waits.
+## The player's word stands: each player step on the slate records how far over (or under) the
+## consultant's own target the price now is (save.consultant_markup), and from then on it aims that far
+## over its target as the target moves (aim). Left on its target, the markup is 0 again.
 ## A light switch on the slate's frame (there once the card is stamped) sends it away or back
 ## (save.consultant_on).
 
@@ -74,7 +77,7 @@ func _ready() -> void:
 	_model.visible = false
 	slate.player_rewrote.connect(_back_off)
 	_switch.transform = SWITCH_AT
-	_switch.tooltip = "Pricing consultant switch. Up: it keeps nudging your price toward where about 90% of units sell. Down: it stays away."
+	_switch.tooltip = "Pricing consultant switch. Up: it keeps nudging your price toward where about 90% of units sell, or as far over that as you set it. Down: it stays away."
 	slate.add_child(_switch)
 	_switch.flicked.connect(_flick)
 	_show_switch(false)
@@ -144,6 +147,16 @@ static func target_price(save: SaveGame, skill: int) -> int:
 	return best
 
 
+## Where the consultant actually steers: its target_price, save.consultant_markup over it, on the slate.
+static func aim(save: SaveGame, skill: int) -> int:
+	return clampi(roundi(target_price(save, skill) * (1.0 + save.consultant_markup)), Slate.MIN_PRICE, Slate.max_price(save.marketing))
+
+
+## The markup the player set: how far `price` lies over the consultant's `target` (0.2 is 20% over).
+static func markup(price: int, target: int) -> float:
+	return float(price) / target - 1.0
+
+
 ## The throttle's steps above the `base` target after one decision: up while nothing `waiting`, at
 ## most to THROTTLE × `ref`, down one when something waits.
 static func throttle(extra: int, waiting: bool, base: int, ref: float) -> int:
@@ -158,7 +171,7 @@ static func income(price: int, ref: float, cost: float) -> float:
 
 
 func _decide(save: SaveGame) -> void:
-	var target := target_price(save, save.consultant_skill)
+	var target := aim(save, save.consultant_skill)
 	if save.consultant_skill >= 2 and save.hands > 0:
 		var waiting := Associate.pick_target(get_tree().get_nodes_in_group(&"cabbages"), Vector3.ZERO, Hand.held) != null
 		_extra = throttle(_extra, waiting, target, Slate.ref_price(save.marketing, save.demand_mood))
@@ -191,6 +204,10 @@ func _show_switch(animate := true) -> void:
 
 func _back_off() -> void:
 	_wait = PLAYER_PAUSE
+	var save := SaveManager.save
+	# Before it is retained the player's pricing is no brief: it starts from its own target.
+	if save.stamped.has(CARD):
+		save.consultant_markup = markup(save.sale_price, target_price(save, save.consultant_skill))
 	if _phase != Phase.AWAY:
 		_step = 0
 		_phase = Phase.WITHDRAW

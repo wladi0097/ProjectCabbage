@@ -132,14 +132,14 @@ static func summary_rows(save: SaveGame, seconds: int) -> Array:
 	]
 
 
-## Every card and tree node bought, oldest first: [play time, what, price].
+## Every card and tree node bought, newest first: [play time, what, price].
 static func requisitions(save: SaveGame) -> Array:
 	var rows := []
 	for entry: Dictionary in save.playtest_log:
 		var data: Dictionary = UpgradeDesk.card_data(entry.id) if entry.kind == "card" \
 				else Projector.node_data(entry.id) if entry.kind == "node" else {}
 		if entry.kind in ["card", "node"]:
-			rows.append(["T+" + clock(entry.t), data.get("title", str(entry.id).to_upper()),
+			rows.push_front(["T+" + clock(entry.t), data.get("title", str(entry.id).to_upper()),
 					money(entry.price, entry.currency)])
 	return rows
 

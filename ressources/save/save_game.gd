@@ -73,6 +73,8 @@ extends Resource
 @export var consultant_skill := 0
 ## The slate's switch: the consultant works (true) or stays away.
 @export var consultant_on := true
+## How far over its own target the player last left the price (0.2 = 20% over): the consultant keeps it.
+@export var consultant_markup := 0.0
 # Sales events: golden lamp, catch combo, rotten units + bin, window targets (entities/golden_lamp/,
 # entities/catch_combo/, entities/rotten_bin/, entities/window_targets/). All upgradeable (projector tree).
 ## Golden lamp: sale multiplier while it glows, seconds it glows, mean seconds between glows.
@@ -139,8 +141,11 @@ extends Resource
 @export var radio_track := 0
 @export var songs_skipped := 0
 @export var radio_silent := 0.0
-## Stage 2 (globalScripts/game_events.gd): wholesale prices have exploded (SupplyConsole.crate_share),
-## and seconds left of the wholesalers' squeeze after the family farm was bought.
+## Stage 2 (globalScripts/game_events.gd): the boss's warning has come (the farm card is dealt) and
+## the units sold by then; wholesale prices have exploded (SupplyConsole.crate_share); seconds left
+## of the wholesalers' squeeze once both the shock and the family farm are in.
+@export var supply_warning := false
+@export var warning_sold := 0
 @export var supply_shock := false
 @export var squeeze_left := 0.0
 ## The family farm on the TV (entities/farm_screen/): seeds, open squares (0: not set up yet), each
@@ -150,6 +155,8 @@ extends Resource
 @export var farm_growth := PackedFloat32Array()
 @export var farm_bought := PackedStringArray()
 @export var farm_harvests := 0
+## Seconds played since the family farm was bought (the demo ends Demo.END_AFTER of them later).
+@export var farm_seconds := 0.0
 ## Big events whose boss report has been shown or filed (entities/boss_report/), GameEvents ids.
 @export var reports := PackedStringArray()
 ## For playtests: every purchase, session start and a snapshot every SaveManager.LOG_EVERY seconds,

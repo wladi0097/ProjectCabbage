@@ -5,37 +5,18 @@
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_2.wav" id="4_tick"]
 
-[sub_resource type="StandardMaterial3D" id="PlateMat"]
-transparency = 1
-shading_mode = 0
-albedo_color = Color(0.165, 0.18, 0.165, 0.92)
-billboard_mode = 1
-
-[sub_resource type="QuadMesh" id="PlateMesh"]
-material = SubResource("PlateMat")
-size = Vector2(0.36, 0.17)
-
 [node name="CatchCombo" type="Node3D"]
 script = ExtResource("1_script")
 
-[node name="Plate" type="MeshInstance3D" parent="."]
-visible = false
-cast_shadow = 0
-mesh = SubResource("PlateMesh")
-
 [node name="Label" type="Label3D" parent="."]
 visible = false
-pixel_size = 0.0013
-billboard = 1
+pixel_size = 0.0012
 double_sided = false
-no_depth_test = true
-render_priority = 2
-outline_render_priority = 1
 modulate = Color(0.86, 0.84, 0.74, 1)
 outline_modulate = Color(0.06, 0.07, 0.07, 0.85)
 text = "INTERCEPTS 1"
 font = ExtResource("2_font")
-font_size = 48
+font_size = 64
 outline_size = 0
 line_spacing = -8.0
 

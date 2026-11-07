@@ -58,6 +58,7 @@
 [ext_resource type="PackedScene" path="res://entities/radio/radio.tscn" id="radio_1"]
 [ext_resource type="PackedScene" path="res://entities/boss_report/boss_report.tscn" id="boss_report_1"]
 [ext_resource type="PackedScene" path="res://entities/farm_tv/farm_tv.tscn" id="farm_tv_1"]
+[ext_resource type="Script" path="res://worlds/components/ambience.gd" id="ambience_1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.45, 0.58, 0.75, 1)
@@ -403,7 +404,7 @@ transform = Transform3D(1.323, 0, 0.4578, 0, 1.4, 0, -0.4578, 0, 1.323, 2, 0.76,
 desk_light = NodePath("../DeskLamp")
 
 [node name="CatchCombo" parent="." unique_id=1336101039 instance=ExtResource("sales_combo")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 1.25, 0.3)
+transform = Transform3D(0.8955, 0.1815, -0.4064, 0.4133, 0, 0.9106, 0.1653, -0.9835, -0.075, 1.673, 1.003, 0.46)
 
 [node name="RottenBin" parent="." unique_id=1814032041 instance=ExtResource("sales_bin")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.76, 1.04)
@@ -416,6 +417,10 @@ mat = NodePath("../Table/cabbage_mat")
 
 [node name="Radio" parent="." instance=ExtResource("radio_1")]
 transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, -1.162, 0.75, 0.8)
+
+[node name="Ambience" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"
+script = ExtResource("ambience_1")
 
 [node name="FarmTv" parent="." instance=ExtResource("farm_tv_1")]
 
@@ -436,7 +441,7 @@ mouse_filter = 2
 [node name="MapSpecificSettings" parent="." unique_id=1221488417 instance=ExtResource("5_graphics")]
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=913145905]
-layer = 2
+layer = 10
 
 [node name="InGameMenu" parent="UI" unique_id=520305776 instance=ExtResource("6_menu")]
 
@@ -444,6 +449,8 @@ layer = 2
 script = ExtResource("18_debug")
 
 [connection signal="thrown_back" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]
+[connection signal="refused" from="SaleWindow" to="CatchCombo" method="hold" unbinds=1]
+[connection signal="thrown_back" from="SaleWindow" to="CatchCombo" method="hold" unbinds=1]
 [connection signal="bounced" from="Coins" to="Coins/Bounce" method="cue"]
 [connection signal="collected" from="Coins" to="Coins/Collect" method="cue"]
 [connection signal="deposited" from="Coins" to="Coins/Deposit" method="cue"]

@@ -104,9 +104,9 @@ func _ready() -> void:
 	_build_back()
 	_screen.world_2d = World2D.new()  # Its own canvas: the desk's 2D overlays must not show on the glass.
 	_screen.add_child(screen_scene.instantiate() if screen_scene != null else _placeholder())
-	var bought := bought(SaveManager.save)
-	_remote.visible = bought
-	_corner.visible = bought
+	var owned := bought(SaveManager.save)
+	_remote.visible = owned
+	_corner.visible = owned
 	_set_power(0.0)
 
 
@@ -133,7 +133,8 @@ func _process(_delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	# _input, not _unhandled_input: the pause menu (later in the tree) would take Esc first.
-	if not _at_tv:
+	# A boss report is up: it takes the mouse (and Esc goes to the pause menu), not the TV.
+	if not _at_tv or BossReport.up:
 		return
 	if event.is_action_pressed("ui_cancel") and not _menu_open():
 		_pan(false)
@@ -188,8 +189,8 @@ static func bought(save: SaveGame) -> bool:
 ## FILL of the view's height, shifted VIEW_SHIFT to the right.
 static func tv_view(screen: Transform3D) -> Transform3D:
 	var distance := SCREEN_HALF.y * 2.0 / FILL / (2.0 * tan(deg_to_rad(DESK_FOV) / 2.0))
-	var basis := screen.basis * Basis(Vector3.RIGHT, -deg_to_rad(VIEW_PITCH))
-	return Transform3D(basis, screen.origin + basis.z * distance + screen.basis.x * VIEW_SHIFT)
+	var look := screen.basis * Basis(Vector3.RIGHT, -deg_to_rad(VIEW_PITCH))
+	return Transform3D(look, screen.origin + look.z * distance + screen.basis.x * VIEW_SHIFT)
 
 
 ## The camera `t` of the way (0 desk, 1 TV) along the pan, eased in and out.

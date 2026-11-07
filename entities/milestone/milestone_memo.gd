@@ -32,7 +32,7 @@ const MEMOS := [
 		icon = "cabbage", note = "Your output has been observed.", bonus = "The street accepts prices 25% higher."},
 	{id = "units_100", stat = "sold", at = 100, key = "findings_per_cabbage", mul = 2, re = "100 UNITS MOVED",
 		how = "Sell 100 units.", icon = "cabbage", note = "Management notes your contribution.",
-		bonus = "Quality Assurance files twice the Findings."},
+		bonus = "The research lab files twice the Findings."},
 	{id = "units_250", stat = "sold", at = 250, key = "associate_speed", mul = 1.5, re = "250 UNITS MOVED",
 		how = "Sell 250 units.", icon = "cabbage", note = "Associates were reminded that walking is billable.",
 		bonus = "Hired hands move 50% faster."},
@@ -69,14 +69,14 @@ const MEMOS := [
 		icon = "hand", note = "You are now responsible for another person. Sign here."},
 	{id = "hands_10", stat = "hands", at = 10, re = "FULL HEADCOUNT", how = "Employ 10 associates.",
 		icon = "hand", note = "Ten associates. None of them have names on file."},
-	{id = "findings_1", stat = "findings", at = 1, re = "FIRST FINDING", how = "File a Finding in Quality Assurance.",
+	{id = "findings_1", stat = "findings", at = 1, re = "FIRST FINDING", how = "File a Finding in the research lab.",
 		icon = "lens", note = "Something has been found. Nobody asked what."},
 	{id = "findings_1000", stat = "findings", at = 1000, re = "1,000 FINDINGS ON FILE", how = "Hold 1,000 Findings at once.",
 		icon = "lens", note = "The filing cabinet has been extended."},
 	{id = "research_directive", card = "research_inspection", re = "FIRST RESEARCH DIRECTIVE",
 		how = "Stamp the first research directive.", icon = "stamp", note = "The inspection will be inspected."},
 	{id = "research_units_1", stat = "research_units", at = 1, re = "RESEARCH UNIT ANALYSED",
-		how = "Have Quality Assurance analyse a research unit.", icon = "research", note = "It was blue. It is now data."},
+		how = "Have the research lab analyse a research unit.", icon = "research", note = "It was blue. It is now data."},
 	{id = "minis_1000", stat = "minis_sold", at = 1000, re = "1,000 MINIATURE UNITS", how = "Sell 1,000 mini units.",
 		icon = "mini", note = "The units are small. So are the margins."},
 	{id = "lever_split", stat = "tube_split", at = 0.5, re = "OUTPUT DIVERTED", how = "Divert tube minis to research (lever on SPLIT or RESEARCH).",
@@ -222,15 +222,15 @@ func _process(delta: float) -> void:
 		_hover_to(1.0, func() -> void: _hover_to(_hovered))
 
 
-## Files every memo come due: applied, logged, sent to Steam, and queued for the paper if `show`.
-func _file_due(show: bool) -> void:
+## Files every memo come due: applied, logged, sent to Steam, and queued for the paper if `with_paper`.
+func _file_due(with_paper: bool) -> void:
 	var save := SaveManager.save
 	var m := due(save)
 	while not m.is_empty():
 		apply(save, m)
 		SaveManager.log_event("milestone", m.id)
 		SteamAchievements.unlock(m.id)
-		if show:
+		if with_paper:
 			_queue.append(m)
 			_glow_left = GLOW_TIME
 		m = due(save)

@@ -4,10 +4,11 @@
 # under its flush glass lid out toward the window gap. This file: the steel trims, the glass lid, the
 # intake name plate and the lever.
 # Left of the waste bin: a points lever on a small enamel pedestal, swinging in the plane facing the game
-# camera between SALES (right), SPLIT and RESEARCH (left), over a dark quadrant gate.
+# camera between SALES (right), SPLIT and RESEARCH (left), over a bevelled enamel quadrant with a pale face and chrome detent studs.
 # Prepend blender_lib.py + desk_vc_common.py.
 # Built in Godot world space (one fixed scene): origin = world origin, Godot (x, y, z) = Blender (x, -z, y).
-# Objects: mini_tube (static: paint, metal, glass), Lever (origin at its pivot: paint, metal).
+# Objects: mini_tube (static: paint, metal, glass), LeverBase (static pedestal and gate: paint, metal),
+# Lever (origin at its pivot: paint, metal).
 ASSET = "mini_tube"
 G_, S_, Q_, W_ = 7, 8, 9, 10            # pane glass, dull steel (matte under the desk lamp), pipe glass, pale block floor
 COLOURS.update({G_: (1, 1, 1), S_: (0.26, 0.27, 0.27), Q_: (1, 1, 1), W_: (0.42, 0.45, 0.42)})
@@ -75,30 +76,53 @@ ARMDIR = (CAM_UP - TOWARD * CAM_UP.dot(TOWARD)).normalized()   # "up" on screen
 LEVER_AXIS = TOWARD if TOWARD.cross(ARMDIR).x > 0 else -TOWARD  # positive turn = screen right
 RIGHT = LEVER_AXIS.cross(ARMDIR)
 SWING, ARM = 38.0, 0.15
-gbox(bm, (PIVOT.x - 0.07, DESK, PIVOT.z - 0.05), (PIVOT.x + 0.07, DESK + 0.03, PIVOT.z + 0.05), 0.008, E)      # foot
-gbox(bm, (PIVOT.x - 0.03, DESK + 0.02, PIVOT.z - 0.03), (PIVOT.x + 0.03, PIVOT.y + 0.01, PIVOT.z + 0.01), 0.006, E)  # post
-gate = bmesh.new()
-back = PIVOT - TOWARD * 0.012
-vs = [gate.verts.new(g2b(back))]
-for k in range(13):
-    a = math.radians(-SWING - 10 + (2 * SWING + 20) * k / 12)
-    vs.append(gate.verts.new(g2b(back + (ARMDIR * math.cos(a) + RIGHT * math.sin(a)) * (ARM + 0.05))))
-for k in range(1, 13):
-    gate.faces.new((vs[0], vs[k], vs[k + 1]))
-geom = bmesh.ops.extrude_face_region(gate, geom=list(gate.faces))
-bmesh.ops.translate(gate, verts=[v for v in geom["geom"] if isinstance(v, bmesh.types.BMVert)], vec=g2b(-TOWARD * 0.012))
-merge(bm, gate, I, K)
+pb = bmesh.new()                                   # the pedestal is its own object: hidden until tube_lever
+gbox(pb, (PIVOT.x - 0.07, DESK, PIVOT.z - 0.05), (PIVOT.x + 0.07, DESK + 0.03, PIVOT.z + 0.05), 0.008, E)      # foot
+gbox(pb, (PIVOT.x - 0.03, DESK + 0.02, PIVOT.z - 0.03), (PIVOT.x + 0.03, PIVOT.y + 0.01, PIVOT.z + 0.01), 0.006, E)  # post
+def quadrant(bm, radius, hub, half_angle, z0, z1, bevel, mat):
+    """A points-quadrant slab in the lever's swing plane: a fan of `radius` and +-half_angle round
+    the pivot, its foot rounded round the hub (radius `hub`), from z0 to z1 along TOWARD, edges bevelled."""
+    pts = [Vector((math.sin(math.radians(a)), math.cos(math.radians(a)))) * radius
+           for a in [-half_angle + 2 * half_angle * k / 16 for k in range(17)]]
+    pts += [Vector((math.sin(t), math.cos(t))) * hub for t in [math.radians(half_angle + 90 + (180 - 2 * half_angle) * k / 10) for k in range(11)]]
+    part = bmesh.new()
+    rings = [[part.verts.new(g2b(PIVOT + RIGHT * q.x + ARMDIR * q.y + TOWARD * z)) for q in pts] for z in (z0, z1)]
+    part.faces.new(rings[0]); part.faces.new(list(reversed(rings[1])))
+    n = len(pts)
+    for k in range(n):
+        part.faces.new((rings[0][k], rings[0][(k + 1) % n], rings[1][(k + 1) % n], rings[1][k]))
+    bmesh.ops.recalc_face_normals(part, faces=part.faces)
+    rim = [e for e in part.edges if e.calc_face_angle(0) > math.radians(30)]
+    bmesh.ops.bevel(part, geom=rim, offset=bevel, segments=2, profile=0.5, affect="EDGES")
+    merge(bm, part, I, mat)
+
+
+def along(v):
+    """Matrix that stands a lathe (local Y) along the Godot direction TOWARD at Godot point v."""
+    return Matrix.Translation(g2b(v)) @ Vector((0, 1, 0)).rotation_difference(g2b(TOWARD)).to_matrix().to_4x4()
+
+
+# The quadrant: a chunky enamel plate with a bevelled rim, a pale inset face proud of it, and a
+# chrome detent tick at each setting, running out to the rim (replaces a thin flat black fan that read as a cut-out).
+QUAD = SWING + 11
+quadrant(pb, ARM + 0.025, 0.042, QUAD, -0.034, -0.008, 0.006, E)                 # plate
+quadrant(pb, ARM + 0.012, 0.03, QUAD - 6, -0.012, -0.005, 0.002, P)               # inset face
 for a in (-SWING, 0.0, SWING):
     r = math.radians(a)
     d = ARMDIR * math.cos(r) + RIGHT * math.sin(r)
-    c = back + TOWARD * 0.003 + d * (ARM + 0.03)
-    rod(bm, g2b(c - d * 0.014), g2b(c + d * 0.014), 0.006, P, I, 8)
+    c = PIVOT - TOWARD * 0.004
+    rod(pb, g2b(c + d * (ARM + 0.004)), g2b(c + d * (ARM + 0.021)), 0.005, H)      # detent tick, out past the knob, inside the rim
+
 ob = finish("mini_tube", bm, [paint, metal, glass, pipe_glass])
 colourise(ob)
+po = finish("LeverBase", pb, [paint, metal], gv(PIVOT.x, DESK, PIVOT.z))   # origin on the desk under it, so it pops up from there
+colourise(po)
 
 lv = bmesh.new()
-rod(lv, g2b(PIVOT - TOWARD * 0.006), g2b(PIVOT + TOWARD * 0.03), 0.026, S_, I, 20)                  # hub
-rod(lv, g2b(PIVOT + TOWARD * 0.015), g2b(PIVOT + TOWARD * 0.015 + ARMDIR * ARM), 0.011, S_, I, 12)  # arm
+merge(lv, lathed([(0, -0.008), (0.03, -0.008), (0.034, -0.004), (0.034, 0.016), (0.026, 0.026), (0, 0.026)], 24),
+      along(PIVOT), S_)                                                                              # hub boss, chamfered
+merge(lv, lathed([(0, 0.02), (0.014, 0.02), (0.014, 0.03), (0.011, 0.034), (0, 0.034)], 6), along(PIVOT), H)   # hex nut
+rod(lv, g2b(PIVOT + TOWARD * 0.015), g2b(PIVOT + TOWARD * 0.015 + ARMDIR * ARM), 0.014, S_, I, 12)  # arm
 KNOB = TOWARD * 0.015 + ARMDIR * ARM
 merge(lv, lathed([(0, -0.034), (0.021, -0.031), (0.034, -0.011), (0.034, 0.011), (0.021, 0.031), (0, 0.034)], 20),
       at(*g2b(PIVOT + KNOB)), K)                                                                     # bakelite knob

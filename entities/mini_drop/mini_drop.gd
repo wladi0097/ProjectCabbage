@@ -8,10 +8,11 @@ extends Node3D
 ## area's right wall; a trench from the mat's notch to the desk's back edge) and the steel trims and the trench's flush glass lid drop in. Minis then fall
 ## into the intake instead, travel unseen under the desk, roll along the trench under the glass and
 ## hop out of its end into the window gap, where the SaleWindow judges them like any unit (a refused
-## one is thrown back onto the mat). With the tube lever (tube_lever) a points lever pops up on its
-## pedestal at the desk's front edge, left of the waste bin: SALES / SPLIT / RESEARCH
-## (save.tube_split 0 / 0.5 / 1). Minis routed to research stay under the desk and are filed by the
-## QA bay (QaBay.file_direct); SPLIT alternates, counted like SaleWindow._owed. The lever is dragged
+## one is thrown back onto the mat). With the tube lever (tube_lever) a points lever and its pedestal
+## pop up at the desk's front edge, left of the waste bin (absent before: no pedestal, no labels, no
+## collider): SALES / SPLIT / RESEARCH
+## (save.tube_split 0 / 0.5 / 1). Minis routed to research travel under the desk and appear in the
+## QA bay's mouth as if thrown in, or are thrown back onto the mat if it is full (QaBay.file_direct); SPLIT alternates, counted like SaleWindow._owed. The lever is dragged
 ## left/right, or clicked to step to the next position. Built in world space: the node stays at the
 ## world origin.
 
@@ -78,6 +79,7 @@ var _labels: Array[Label3D] = []
 
 @onready var _tube: Node3D = $Tube
 @onready var _lever: Node3D = $Tube/Model/Lever
+@onready var _lever_base: Node3D = $Tube/Model/LeverBase
 @onready var _lever_rest := _lever.basis
 @onready var _handle: StaticBody3D = $Tube/Handle
 @onready var _tube_rest := _tube.position
@@ -94,7 +96,7 @@ func _ready() -> void:
 		label.pixel_size = 0.0009
 		label.outline_size = 0
 		label.basis = Basis(RIGHT, ARM, -LEVER_AXIS)
-		label.position = PIVOT + Basis(LEVER_AXIS, lever_angle(i / 2.0)) * ARM * (KNOB.length() + 0.05)
+		label.position = PIVOT + Basis(LEVER_AXIS, lever_angle(i / 2.0)) * ARM * (KNOB.length() + 0.06)
 		_tube.add_child(label)
 		_labels.append(label)
 	var handle: Interactable = $Tube/Handle/Interactable
@@ -237,10 +239,9 @@ func _lab() -> Node:
 
 
 ## The tube variant of the desk and mat in, the plain ones out (one swap, never both drawn); the
-## trims, glass and the lever's pedestal follow `on`.
+## trims and glass follow `on`.
 func _show_tube(on: bool) -> void:
 	_tube.visible = on
-	$Tube/Pedestal/Shape.disabled = not on
 	$TubeDesk.visible = on
 	for plain: Node3D in [desk, mat]:
 		if plain != null:
@@ -260,14 +261,19 @@ func _deliver() -> void:
 
 func _pop_lever() -> void:
 	_show_lever(true)
-	_lever.scale = Vector3.ONE * 0.01
-	var tween := create_tween()
-	tween.tween_property(_lever, "scale", Vector3.ONE, POP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	var tween := create_tween().set_parallel()
+	for part: Node3D in [_lever, _lever_base]:
+		part.scale = Vector3.ONE * 0.01
+		tween.tween_property(part, "scale", Vector3.ONE, POP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.chain()
 	tween.tween_callback(func() -> void: $Clunk.cue(PIVOT))
 
 
+## The lever, its pedestal, labels and colliders: all there with `on`, all absent without.
 func _show_lever(on: bool) -> void:
 	_lever.visible = on
+	_lever_base.visible = on
+	$Tube/Pedestal/Shape.disabled = not on
 	for label in _labels:
 		label.visible = on
 	$Tube/Handle/Shape.disabled = not on

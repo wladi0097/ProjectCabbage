@@ -92,6 +92,7 @@ func _process(delta: float) -> void:
 	if not save.stamped.has("family_farm"):
 		return
 	ensure(save)
+	save.farm_seconds += delta
 	tick(save, delta)
 	_auto += delta
 	if _auto >= AUTO_EVERY:
@@ -274,7 +275,7 @@ func _square(i: int) -> Rect2:
 	var side := (FIELD.size.x - GAP * (COLUMNS - 1)) / COLUMNS
 	var rows := ceili(float(MAX_PLOTS) / COLUMNS)
 	var top := FIELD.position.y + (FIELD.size.y - rows * side - (rows - 1) * GAP) * 0.5
-	return Rect2(FIELD.position.x + (i % COLUMNS) * (side + GAP), top + (i / COLUMNS) * (side + GAP), side, side)
+	return Rect2(FIELD.position.x + (i % COLUMNS) * (side + GAP), top + floorf(i / float(COLUMNS)) * (side + GAP), side, side)
 
 
 func _title(id: String) -> String:

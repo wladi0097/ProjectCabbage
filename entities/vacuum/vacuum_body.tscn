@@ -11,9 +11,10 @@ emission = Color(1, 0.62, 0.22, 1)
 emission_energy_multiplier = 0.0
 
 [node name="VacuumBody" type="Node3D"]
-editor_description = "Coin collector puck, 0.234 x 0.073 x 0.226 m (bumper included), origin bottom centre, forward -Z. Lamp: $Model/Lamp (per-instance material, drive emission_energy_multiplier). Side brush: $Model/Brush, origin at its hub, spin about local Y."
+editor_description = "Coin collector puck, 0.117 x 0.037 x 0.113 m (the model at half scale) (bumper included), origin bottom centre, forward -Z. Lamp: $Model/Lamp (per-instance material, drive emission_energy_multiplier). Side brush: $Model/Brush, origin at its hub, spin about local Y."
 
 [node name="Model" parent="." instance=ExtResource("1_model")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 
 [node name="Lamp" parent="Model"]
 material_override = SubResource("Lamp_mat")

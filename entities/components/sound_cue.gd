@@ -51,9 +51,9 @@ static func level_for(strength: float, silent: float, full: float) -> float:
 	return clampf(inverse_lerp(silent, full, strength), 0.0, 1.0)
 
 
-## Another play fits under the game-wide cap: `playing` of this stream run now, at most `cap`.
-static func has_room(playing: int, cap: int) -> bool:
-	return playing < cap
+## Another play fits under the game-wide cap: `running` of this stream run now, at most `cap`.
+static func has_room(running: int, cap: int) -> bool:
+	return running < cap
 
 
 func _uncount() -> void:

@@ -29,6 +29,19 @@ Every agent follows this for art, sound, UI and writing:
 
 Before proposing any price, unlock threshold or upgrade, calculate how long an average player needs to reach it, and show the timeline. `tools/pace.py` simulates the early game (flick time, refusals, pack prices); extend it as systems arrive. Early on, something new should arrive every 30–90 s, gaps growing slowly and never more than about 2–3 minutes in the first 15 minutes. Each upgrade should be felt (aim for +25% or more on what it improves).
 
+## Tests
+
+gdUnit4 (`addons/gdUnit4`), run by `.\check.ps1` (warning check, then every suite; exit code is the only truth). One suite: `.\check.ps1 tests/entities/cabbage/cabbage_test.gd`. Compile + warnings only, no tests: `.\check.ps1 -WarningsOnly` (`--check-only -s` doesn't work here: it skips the autoloads, so game scripts fail to compile).
+
+- Suites mirror the source tree: `entities/cabbage/cabbage.gd` → `tests/entities/cabbage/cabbage_test.gd`, `extends GdUnitTestSuite`.
+- The test name is the game rule, as a sentence: `test_a_mini_weighs_about_a_quarter_of_a_full_cabbage`, never `test_squish_returns_value`.
+- A failing test means the rule broke. Fix the code, and change a test only when the rule itself changed.
+- Prefer pure logic (static funcs, `SaveGame.new()`). Instantiate a scene only when the rule lives in it, and free it (`auto_free`).
+
+**Before every commit, no exceptions:**
+1. Every code change comes with its tests. New rules get new tests, and changed rules get their tests updated in the same commit.
+2. Run the full `.\check.ps1` and read the exit code. Commit only on exit 0. Never commit with failing, skipped or unrun tests, and never call something "should pass" without running it.
+
 ## Skills
 
 - `/godotAssetCreate`: build an original 3D asset with scripted Blender, then check it in Godot.

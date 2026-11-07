@@ -11,12 +11,13 @@ emission = Color(1, 0.62, 0.22, 1)
 emission_energy_multiplier = 0.0
 
 [node name="VacuumDock" type="Node3D"]
-editor_description = "Coin collector dock. Open front faces +Z. Lamp: $Model/Lamp (per-instance material, drive emission_energy_multiplier). Park: set the vacuum's global_transform to $Park.global_transform; it sits backed into the dock at local (0, 0, 0.126) facing +Z (its -Z forward points away from the dock)."
+editor_description = "Coin collector dock. Open front faces +Z. Lamp: $Model/Lamp (per-instance material, drive emission_energy_multiplier). Park: set the vacuum's global_transform to $Park.global_transform; it sits backed into the dock at local (0, 0, 0.063) facing +Z; the model is at half scale (its -Z forward points away from the dock)."
 
 [node name="Model" parent="." instance=ExtResource("1_model")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 
 [node name="Lamp" parent="Model"]
 material_override = SubResource("Lamp_mat")
 
 [node name="Park" type="Marker3D" parent="."]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.126)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.063)

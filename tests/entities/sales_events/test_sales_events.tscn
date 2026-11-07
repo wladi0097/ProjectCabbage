@@ -1,6 +1,0 @@
-[gd_scene format=3]
-
-[ext_resource type="Script" path="res://tests/entities/sales_events/test_sales_events.gd" id="1"]
-
-[node name="TestSalesEvents" type="Node"]
-script = ExtResource("1")

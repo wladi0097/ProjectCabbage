@@ -30,6 +30,8 @@ const MINI_SCALE := 0.63
 ## A research unit: a cold cyan lab glow, and a faint light of the same tint on the mat around it.
 const RESEARCH_MATERIAL := preload("res://assets/materials/cabbage_research.tres")
 const RESEARCH_LIGHT := Color(0.45, 0.9, 1.0)
+## Let go by the hand, it may drop into the bin for this long (a drop or a short toss lands by then).
+const BIN_GRACE := 1.0
 
 ## How hard it is pulled toward the hand per metre of lag.
 @export var follow := 18.0
@@ -42,6 +44,7 @@ var sold := false
 var rotten := false
 ## A mini unit (entities/mini_drop/): a quarter-size free one, sold at save.mini_value of the price.
 ## Never rotten. Set before it enters the tree, like rotten.
+@warning_ignore("shadowed_global_identifier")
 var mini := false
 ## A research unit: glows a cold cyan, yields save.research_mult times the Findings in the QA bay. Never rotten.
 var research := false
@@ -55,6 +58,8 @@ var in_flight := false:
 		in_flight = flying
 		$Interactable.catchable = flying
 var _held := false
+## Until this tick (msec) the RottenBin may take it (aim_for_bin).
+var _bin_until := 0
 var _look := Basis()
 var _squishing: Tween
 var _squish := 0.0:
@@ -204,3 +209,14 @@ func _on_grabbed() -> void:
 func _on_released() -> void:
 	_held = false
 	gravity_scale = 1.0
+	aim_for_bin(BIN_GRACE)
+
+
+## Let go by the player or thrown by a hired hand: the RottenBin takes it for `seconds` from now.
+## A unit only rolled or bumped into the mouth is never binned (meant_for_bin is false).
+func aim_for_bin(seconds: float) -> void:
+	_bin_until = Time.get_ticks_msec() + int(seconds * 1000.0)
+
+
+func meant_for_bin() -> bool:
+	return Time.get_ticks_msec() < _bin_until

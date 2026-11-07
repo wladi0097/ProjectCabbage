@@ -11,8 +11,11 @@ extends Node3D
 ## aside. All the money logic is in CoinPile (vacuum_at, bank_from); coins in a bag still count in
 ## pending_value. Once TOKEN_CARD is stamped they also take the QA bay's resting report slips (one
 ## per bag slot) and, home, the slips fly from them into the Findings counter (QaBay.file_from).
+## The hand can pick a unit up and set it down anywhere on the mat (never past it: on_mat). About every
+## TIP_EVERY one unit out driving falls onto its back and stops, brush spinning, until the player
+## picks it up and sets it down; the projector's STABILISER node stops that.
 
-enum State { PARKED, ROAM, RETURN }
+enum State { PARKED, ROAM, RETURN, TIPPED }
 
 const BODY := preload("res://entities/vacuum/vacuum_body.tscn")
 ## Metres per second and radians per second at vacuum_speed 1. Slow on purpose.
@@ -28,15 +31,23 @@ const REPICK := 0.6
 ## Seconds between rescans of the mat for resting stacks.
 const RESCAN := 0.25
 ## Each further unit parks this far along the mat edge from the last (dock-local x).
-const ROW_STEP := 0.27
+const ROW_STEP := 0.135
 ## Where the units may drive: the open mat, clear of the press, the ramp and the window sill.
 const AREA := Rect2(-0.3, -0.6, 1.65, 1.25)
 const LAMP_ON := 3.0
-const RADIUS := 0.11
-const HEIGHT := 0.07
+const RADIUS := 0.055
+const HEIGHT := 0.035
+## Held, a unit hangs this far over the mat.
+const LIFT := 0.05
+## Seconds between tips (one unit of the fleet, random in this range) and the node that ends them.
+const TIP_EVERY := Vector2(240.0, 360.0)
+const STABILISER := "vacuum_gyro"
 const SLIDE_FROM := Vector3(0.0, 0.8, 0.0)
 const SLIDE_TIME := 0.4
 const TOKEN_CARD := "token_recovery"
+## Strength of the beep when a unit empties at home (SoundCue level): a faint blip, the coins landing
+## in the tally carry the moment. Tipping over and arriving still beep at full strength.
+const UNLOAD_BEEP := 0.15
 
 @export var coins: CoinPile
 
@@ -56,6 +67,10 @@ class Unit:
 	## QA report slips in the bag (token_recovery), filed when it empties.
 	var slips: Array[Node3D] = []
 	var wait := 0.0
+	## In the player's hand.
+	var held := false
+	## Which way it faced when it fell over (TIPPED).
+	var fallen_yaw := 0.0
 
 
 var _units: Array[Unit] = []
@@ -65,6 +80,7 @@ var _spots: Array[Vector3] = []
 var _rescan := 0.0
 ## The QA bay, found on the first _bay call.
 var _qa: QaBay
+var _tip_in := randf_range(TIP_EVERY.x, TIP_EVERY.y)
 
 @onready var _rest := position
 
@@ -85,13 +101,19 @@ func _physics_process(delta: float) -> void:
 	_rescan -= delta
 	if _rescan <= 0.0:
 		_rescan = RESCAN
-		# Only the stacks a unit can get close enough to (inside AREA, give or take its reach).
-		var reach := AREA.grow(save.vacuum_reach * 0.9)
+		# Only the stacks a unit can get close enough to (inside AREA, give or take its reach). Measured,
+		# not boxed: one past a corner of AREA is further from it than one past an edge.
 		_spots.clear()
 		var bay := _bay(save)
 		for spot in coins.resting_spots() + (bay.resting_spots() if bay != null else [] as Array[Vector3]):
-			if reach.has_point(Vector2(spot.x, spot.z)):
+			if reachable(spot, save.vacuum_reach):
 				_spots.append(spot)
+	_tip_in -= delta
+	if _tip_in <= 0.0:
+		_tip_in = randf_range(TIP_EVERY.x, TIP_EVERY.y)
+		var out := _units.filter(func(u: Unit) -> bool: return can_tip(u.state, u.held, save))
+		if not out.is_empty():
+			_tip(out.pick_random())
 	for unit in _units:
 		_drive(unit, _spots, save, delta)
 		unit.dock_lamp.emission_energy_multiplier = LAMP_ON * 0.5 if unit.state == State.PARKED and unit.wait > 0.0 else 0.0
@@ -104,6 +126,28 @@ func _bay(save: SaveGame) -> QaBay:
 	if _qa == null:
 		_qa = get_tree().get_first_node_in_group(&"qa_bay") as QaBay
 	return _qa
+
+
+## Whether a unit may fall over now: out driving, not in the hand, and no stabiliser bought.
+static func can_tip(state: State, held: bool, save: SaveGame) -> bool:
+	return not held and (state == State.ROAM or state == State.RETURN) and not save.tree_bought.has(STABILISER)
+
+
+## Whether a unit sucks up coins now: only out collecting, upright and not in the hand.
+static func collects(state: State, held: bool) -> bool:
+	return state == State.ROAM and not held
+
+
+## The state a unit goes on in once the hand sets it down: a fallen one is upright again and drives
+## out, one taken off its dock drives home.
+static func set_down(state: State) -> State:
+	return State.ROAM if state == State.TIPPED else State.RETURN if state == State.PARKED else state
+
+
+## Whether a unit driving on the mat can get within `reach` of a stack at `spot`.
+static func reachable(spot: Vector3, reach: float) -> bool:
+	var on := on_mat(spot)
+	return Vector2(spot.x, spot.z).distance_to(Vector2(on.x, on.z)) <= reach * 0.9
 
 
 static func unlocked(save: SaveGame) -> bool:
@@ -135,16 +179,28 @@ static func turn_toward(yaw: float, from: Vector3, to: Vector3, step: float) -> 
 
 
 func _drive(unit: Unit, spots: Array[Vector3], save: SaveGame, delta: float) -> void:
+	if unit.held:
+		_carry(unit)
+		return
 	var at := unit.body.global_position
 	unit.wait -= delta
 	match unit.state:
+		State.TIPPED:
+			# On its back: the brush spins in the air, the lamp blinks, nothing is collected.
+			unit.lamp.emission_energy_multiplier = LAMP_ON if fmod(_time, 0.8) < 0.4 else 0.0
+			if unit.brush != null:
+				unit.brush.rotate_y(delta * 30.0)
+			# Rocks on its back as the wheels spin.
+			unit.body.global_transform = Transform3D(Basis(Vector3.UP, unit.fallen_yaw)
+					* Basis(Vector3.BACK, PI + 0.06 * sin(_time * 23.0)), unit.body.global_position)
+			return
 		State.PARKED:
 			unit.lamp.emission_energy_multiplier = 0.0
 			if unit.wait <= 0.0 and not spots.is_empty() and nearest(spots, at, _taken(unit)) != null:
 				unit.state = State.ROAM
 				unit.wait = 0.0
 			return
-		State.ROAM:
+		State.ROAM when collects(unit.state, unit.held):
 			var got := coins.vacuum_at(at, save.vacuum_reach, save.vacuum_capacity - unit.loaded)
 			unit.loaded += got.x
 			var bay := _bay(save)
@@ -167,7 +223,7 @@ func _drive(unit: Unit, spots: Array[Vector3], save: SaveGame, delta: float) -> 
 				if spot == null:
 					unit.state = State.RETURN
 				else:
-					unit.goal = _clamp(spot)
+					unit.goal = on_mat(spot)
 		State.RETURN:
 			unit.goal = (global_transform * unit.home).origin
 			# Full: the lamp blinks on the way home.
@@ -178,33 +234,82 @@ func _drive(unit: Unit, spots: Array[Vector3], save: SaveGame, delta: float) -> 
 	_steer(unit, save, delta)
 
 
-## The goals of the other units out collecting.
+## The goals of the other units out collecting, and where the parked or fallen ones sit: a stack
+## under a unit is that unit's, as the others can't drive into it to reach it.
 func _taken(unit: Unit) -> Array[Vector3]:
 	var out: Array[Vector3] = []
 	for other in _units:
-		if other != unit and other.state == State.ROAM:
+		if other == unit:
+			continue
+		if other.state == State.ROAM:
 			out.append(other.goal)
+		elif other.state == State.PARKED or other.state == State.TIPPED:
+			out.append(other.body.global_position)
 	return out
 
 
 func _steer(unit: Unit, save: SaveGame, delta: float) -> void:
-	var xf := unit.body.global_transform
-	var yaw := turn_toward(xf.basis.get_euler().y, xf.origin, unit.goal, TURN_SPEED * save.vacuum_speed * delta)
-	var forward := Vector3(-sin(yaw), 0.0, -cos(yaw))
-	var flat := Vector3(unit.goal.x - xf.origin.x, 0.0, unit.goal.z - xf.origin.z)
-	var step := 0.0
-	if absf(wrapf(atan2(-flat.x, -flat.z) - yaw, -PI, PI)) < FACING:
-		step = minf(BASE_SPEED * save.vacuum_speed * delta, flat.length())
-	var to := xf.origin + forward * step
-	# Units don't drive through each other: an overlap is pushed apart.
+	var others: Array[Vector3] = []
 	for other in _units:
-		var apart := to - other.body.global_position
-		apart.y = 0.0
-		if other != unit and apart.length() < RADIUS * 2.0:
-			to += (apart.normalized() if apart.length() > 0.001 else forward.cross(Vector3.UP)) * (RADIUS * 2.0 - apart.length()) * 0.5
-	unit.body.global_transform = Transform3D(Basis(Vector3.UP, yaw), to)
+		if other != unit:
+			others.append(other.body.global_position)
+	unit.body.global_transform = drive_step(unit.body.global_transform, unit.goal, others,
+			TURN_SPEED * save.vacuum_speed * delta, BASE_SPEED * save.vacuum_speed * delta)
 	if unit.brush != null:
 		unit.brush.rotate_y(delta * 14.0)
+
+
+## One drive step from `xf` toward `goal`: turns by at most `turn`, rolls forward up to `step` while
+## facing it, and never into a unit at `others`. One in the way is driven round (on the side toward
+## the goal), not pushed against: a unit parked or fallen in the path used to block it for good.
+static func drive_step(xf: Transform3D, goal: Vector3, others: Array[Vector3], turn: float, step: float) -> Transform3D:
+	var yaw := turn_toward(xf.basis.get_euler().y, xf.origin, goal, turn)
+	var forward := Vector3(-sin(yaw), 0.0, -cos(yaw))
+	var flat := Vector3(goal.x - xf.origin.x, 0.0, goal.z - xf.origin.z)
+	var move := 0.0
+	if absf(wrapf(atan2(-flat.x, -flat.z) - yaw, -PI, PI)) < FACING:
+		move = minf(step, flat.length())
+	var to := xf.origin + forward * move
+	for other in others:
+		var apart := Vector3(to.x - other.x, 0.0, to.z - other.z)
+		if apart.length() >= RADIUS * 2.0:
+			continue
+		var out := apart.normalized() if apart.length() > 0.001 else forward.cross(Vector3.UP)
+		var side := out.cross(Vector3.UP)
+		if side.dot(flat) < 0.0:
+			side = -side
+		to = Vector3(other.x, to.y, other.z) + out * RADIUS * 2.0 + side * move
+	return Transform3D(Basis(Vector3.UP, yaw), to)
+
+
+## Falls onto its back where it is: stops until the hand picks it up.
+func _tip(unit: Unit) -> void:
+	unit.state = State.TIPPED
+	var xf := unit.body.global_transform
+	unit.fallen_yaw = xf.basis.get_euler().y
+	unit.body.global_position = xf.origin + Vector3.UP * HEIGHT
+	$Beep.cue(xf.origin)
+
+
+## In the hand: upright, hanging under it, never off the mat.
+func _carry(unit: Unit) -> void:
+	var desk := (global_transform * unit.home).origin.y
+	unit.body.global_transform = Transform3D(Basis(Vector3.UP, _yaw(unit)), on_mat(Hand.point_on_height(desk + LIFT)))
+
+
+## Which way a unit faces (a fallen one: the way it fell).
+func _yaw(unit: Unit) -> float:
+	return unit.fallen_yaw if unit.state == State.TIPPED else unit.body.global_transform.basis.get_euler().y
+
+
+## Set down where the hand lets go: on the mat (on_mat keeps it off the sill and out of the window).
+func _set_down(unit: Unit) -> void:
+	unit.held = false
+	var at := on_mat(unit.body.global_position)
+	at.y = (global_transform * unit.home).origin.y
+	unit.body.global_transform = Transform3D(Basis(Vector3.UP, _yaw(unit)), at)
+	unit.state = set_down(unit.state)
+	unit.wait = 0.0
 
 
 ## Home: backs into its spot, beeps, and the bag's coins fly to the tally.
@@ -217,12 +322,13 @@ func _unload(unit: Unit) -> void:
 		unit.slips = []
 	if unit.value > 0:
 		coins.bank_from(unit.body.global_position + Vector3.UP * HEIGHT, unit.value)
-		$Beep.cue(unit.body.global_position)
+		$Beep.cue(unit.body.global_position, UNLOAD_BEEP)
 	unit.loaded = 0
 	unit.value = 0
 
 
-func _clamp(spot: Vector3) -> Vector3:
+## `spot` moved onto the open mat (AREA), height kept: where a unit may drive or be set down.
+static func on_mat(spot: Vector3) -> Vector3:
 	return Vector3(clampf(spot.x, AREA.position.x, AREA.end.x), spot.y, clampf(spot.z, AREA.position.y, AREA.end.y))
 
 
@@ -231,6 +337,9 @@ func _add_unit() -> void:
 	unit.body = AnimatableBody3D.new()
 	unit.body.collision_layer = 1
 	unit.body.collision_mask = 0
+	# Moved by setting its transform, which must hold at once (synced, a set-down was undone by the
+	# next drive step reading the old one back).
+	unit.body.sync_to_physics = false
 	var shape := CollisionShape3D.new()
 	var cylinder := CylinderShape3D.new()
 	cylinder.radius = RADIUS
@@ -238,6 +347,12 @@ func _add_unit() -> void:
 	shape.shape = cylinder
 	shape.position.y = HEIGHT / 2.0
 	unit.body.add_child(shape)
+	var grip := Interactable.new()
+	grip.grip_height = HEIGHT + 0.02
+	grip.tooltip = "Coin robot: it collects the coins resting on the mat. If it falls over, pick it up and set it down."
+	unit.body.add_child(grip)
+	grip.grabbed.connect(func() -> void: unit.held = true)
+	grip.released.connect(func() -> void: _set_down(unit))
 	var model := BODY.instantiate()
 	unit.body.add_child(model)
 	add_child(unit.body)

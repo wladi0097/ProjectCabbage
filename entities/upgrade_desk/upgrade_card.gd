@@ -40,6 +40,18 @@ const TITLE_FONT := preload("res://assets/fonts/Oswald.ttf")
 const PIXEL := 0.0003
 ## The corner the hand pinches, in the card's look space (near left, a little in from the edges).
 const PINCH_AT := Vector3(-0.165, 0.0, 0.085)
+## The price sits in the ruled box at the bottom right (the texture's box: x 0.096-0.168, z 0.047-0.088),
+## in PRICE_SIZE print, smaller when it would not fit PRICE_WIDTH.
+const PRICE_AT := Vector3(0.1316, 0.002, 0.0672)
+const PRICE_WIDTH := 0.064
+const PRICE_SIZE := 110
+## The heading wraps in HEADING_BOX (width, height in metres) under the form line, printed in
+## HEADING_SIZE or smaller (fit_size, never under MIN_SIZE). The form line keeps to one line in FORM_BOX.
+const HEADING_BOX := Vector2(0.33, 0.11)
+const HEADING_SIZE := 150
+const FORM_BOX := Vector2(0.33, 0.03)
+const FORM_SIZE := 60
+const MIN_SIZE := 40
 
 var id := ""
 var price := 0
@@ -75,11 +87,12 @@ func _init(card: Dictionary) -> void:
 	(paper.mesh as PlaneMesh).size = SIZE
 	paper.material_override = MATERIAL
 	_look.add_child(paper)
-	_text(form_of(card), Vector3(0, 0.002, -0.0825), 60, TITLE_FONT)
-	# Long titles get a smaller face so they stay on two lines under the form header.
-	_heading = _text(card.title, Vector3(0, 0.002, -0.005), 150 if tr(card.title).length() <= 20 else 118, TITLE_FONT, 0.33)
+	_text(form_of(card), Vector3(0, 0.002, -0.0825), fit_size(tr(form_of(card)), FORM_SIZE, FORM_BOX), TITLE_FONT)
+	# Long titles (German ones above all) print smaller so they stay between the form line and the price box.
+	_heading = _text(card.title, Vector3(0, 0.002, -0.005), fit_size(tr(card.title), HEADING_SIZE, HEADING_BOX), TITLE_FONT, HEADING_BOX.x)
 	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_price = _text(price_text(price, currency), Vector3(0.135, 0.002, 0.075), 110, TITLE_FONT)
+	var shown := price_text(price, currency)
+	_price = _text(shown, PRICE_AT, price_size(shown), TITLE_FONT)
 	_build_stamp()
 	_interactable.carried = true
 	add_child(_interactable)
@@ -255,6 +268,27 @@ func _text(text: String, at: Vector3, size: int, font: Font, width := 0.0) -> La
 ## "$130" or "¶10": the price with its currency's sign, as on the tally machine's plates.
 static func price_text(amount: int, paid_in: String) -> String:
 	return ("¶%d" if paid_in == "findings" else "$%d") % amount
+
+
+## The font size that fits price text `shown` into the price box: PRICE_SIZE, or smaller.
+static func price_size(shown: String) -> int:
+	var size := PRICE_SIZE
+	while size > 40 and TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * PIXEL > PRICE_WIDTH:
+		size -= 2
+	return size
+
+
+## The biggest font size from `size` down (in steps of 4, not under MIN_SIZE) at which `shown`,
+## word-wrapped to `box`.x, fits `box` (metres). No word is broken: one too long shrinks the print.
+static func fit_size(shown: String, size: int, box: Vector2) -> int:
+	while size > MIN_SIZE and not fits(shown, size, box):
+		size = maxi(size - 4, MIN_SIZE)
+	return size
+
+
+static func fits(shown: String, size: int, box: Vector2) -> bool:
+	var drawn := TITLE_FONT.get_multiline_string_size(shown, HORIZONTAL_ALIGNMENT_CENTER, box.x / PIXEL, size) * PIXEL
+	return drawn.x <= box.x and drawn.y <= box.y
 
 
 ## The form line printed across the top of card `card` (a CARDS entry).

@@ -46,7 +46,8 @@ const GAUGE_BOX := AABB(Vector3(-0.068, -0.08, -0.056), Vector3(0.136, 0.148, 0.
 ## The pricing consultant's tap lights its arrow this long.
 const NUDGE_LIGHT := 0.15
 
-## The player pressed an arrow (the pricing consultant backs off for a while).
+## The player stepped the price, by a press or a held arrow's repeat (the pricing consultant backs off
+## for a while and keeps the player's markup).
 signal player_rewrote
 
 var _step := 0
@@ -115,6 +116,7 @@ func _process(delta: float) -> void:
 	if _wait <= 0.0:
 		_wait = HOLD_REPEAT
 		_rewrite(_step)
+		player_rewrote.emit()
 
 
 func _light(label: Label3D, lit: bool) -> void:

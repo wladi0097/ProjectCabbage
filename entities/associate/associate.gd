@@ -112,6 +112,8 @@ var _tip := PARK
 var _target: Cabbage
 var _release := Vector3.ZERO
 var _aim := Vector3.ZERO
+## This trip's lob goes into the RottenBin (marked so the bin takes it).
+var _binning := false
 var _lob := LOB_TIME
 var _lifted := false
 ## The carried cabbage's collision layer and mask, off while it is carried so it shoves nothing.
@@ -192,17 +194,17 @@ func _process(delta: float) -> void:
 	_place(_tip + (Vector3.ZERO if _phase == Phase.IDLE else _wobble()), delta)
 
 
-## The sleeve material of every money hand, or (`research`) of every research hand: made once each.
-static func sleeve_for(research: bool) -> ShaderMaterial:
-	if not _sleeves.has(research):
+## The sleeve material of every money hand, or (`for_research`) of every research hand: made once each.
+static func sleeve_for(for_research: bool) -> ShaderMaterial:
+	if not _sleeves.has(for_research):
 		var sleeve := SLEEVE.duplicate() as ShaderMaterial
 		sleeve.set_shader_parameter(&"opacity", OPACITY.x)
 		sleeve.set_shader_parameter(&"edge_opacity", OPACITY.y)
-		if research:
+		if for_research:
 			for part: String in LAB_COAT:
 				sleeve.set_shader_parameter(part, LAB_COAT[part])
-		_sleeves[research] = sleeve
-	return _sleeves[research]
+		_sleeves[for_research] = sleeve
+	return _sleeves[for_research]
 
 
 ## The one place a hand is added (the projector tree's HIRE ASSOCIATE nodes); hand 0 spawns it.
@@ -213,20 +215,20 @@ static func add_hand(save: SaveGame) -> void:
 ## The nearest cabbage to `from` that rests on the mat and nobody has: not held by the player, not
 ## claimed by another hand, not sold, out of the window or frozen (rolling down the ramp, carried),
 ## not flying, not stray; and not rotten while `skip_rotten` (the spoilage memo, before hands bin).
-## A `research` hand never takes a rotten one. Under `lab` (desk card lab_priority) money hands never
+## A `for_research` hand never takes a rotten one. Under `lab` (desk card lab_priority) money hands never
 ## take research units and research hands take them first.
 static func pick_target(cabbages: Array, from: Vector3, held: Interactable, claimed: Array = [], skip_rotten := false,
-		research := false, lab := false) -> Cabbage:
+		for_research := false, lab := false) -> Cabbage:
 	var best: Cabbage = null
 	var best_score := INF
 	for cabbage: Cabbage in cabbages:
 		var interactable := cabbage.get_node("Interactable") as Interactable
-		if claimed.has(cabbage) or ((skip_rotten or research) and cabbage.rotten) or (lab and not research and cabbage.research) \
+		if claimed.has(cabbage) or ((skip_rotten or for_research) and cabbage.rotten) or (lab and not for_research and cabbage.research) \
 				or cabbage.sold or cabbage.away or cabbage.freeze or cabbage.in_flight or not interactable.enabled \
 				or held == interactable or cabbage.linear_velocity.length() > REST_SPEED \
 				or SaleWindow.is_stray(cabbage.global_position):
 			continue
-		var score := from.distance_to(cabbage.global_position) + (PREFER if research and lab and not cabbage.research else 0.0)
+		var score := from.distance_to(cabbage.global_position) + (PREFER if for_research and lab and not cabbage.research else 0.0)
 		if score < best_score:
 			best = cabbage
 			best_score = score
@@ -260,18 +262,18 @@ static func aim_at(roll: float, jitter: Vector2) -> Vector3:
 	return Vector3(lerpf(AIM_X.x, AIM_X.y, roll) + jitter.x * AIM_JITTER.x, AIM_Y + jitter.y * AIM_JITTER.y, AIM_Z)
 
 
-## Where hand `index` of its kind lies idle in its pile: a fixed jumble around the pile's middle, a
+## Where hand `i` of its kind lies idle in its pile: a fixed jumble around the pile's middle, a
 ## layer up every PILE_ROW hands. The few research hands pile tighter: half the spread, each one a layer up.
-static func park_spot(index: int, research: bool) -> Vector3:
-	var spread := PILE_SPREAD * (0.5 if research else 1.0)
-	var row := 1 if research else PILE_ROW
-	var jumble := Vector3(((index * 7) % 5 - 2) * 0.5 * spread, floorf(index / float(row)) * PILE_LAYER, -(index % 3) * 0.02)
-	return PARK + Vector3.RIGHT * (RESEARCH_PILE_X if research else PILE_X) + jumble
+static func park_spot(i: int, for_research: bool) -> Vector3:
+	var spread := PILE_SPREAD * (0.5 if for_research else 1.0)
+	var row := 1 if for_research else PILE_ROW
+	var jumble := Vector3(((i * 7) % 5 - 2) * 0.5 * spread, floorf(i / float(row)) * PILE_LAYER, -(i % 3) * 0.02)
+	return PARK + Vector3.RIGHT * (RESEARCH_PILE_X if for_research else PILE_X) + jumble
 
 
-## How far hand `index` is turned (yaw), so the pile looks dropped rather than lined up.
-static func park_turn(index: int) -> float:
-	return ((index * 5) % 7 - 3) / 3.0 * PILE_TURN
+## How far hand `i` is turned (yaw), so the pile looks dropped rather than lined up.
+static func park_turn(i: int) -> float:
+	return ((i * 5) % 7 - 3) / 3.0 * PILE_TURN
 
 
 ## Where a research hand's toss into the bay's `mouth` lands for clumsiness `jitter` (-1..1).
@@ -333,6 +335,7 @@ func _set_off() -> void:
 		_phase = Phase.REACH
 		return
 	var bin := bin_for(_target, save.hands_bin, get_tree().get_first_node_in_group(&"rotten_bin") as RottenBin)
+	_binning = bin != null
 	if bin != null:
 		_aim = bin.hand_aim()
 		_release = Vector3(_aim.x + BIN_RELEASE.x + randf_range(-0.05, 0.05), RELEASE_Y, _aim.z + BIN_RELEASE.z)
@@ -360,6 +363,8 @@ func _throw() -> void:
 	var from := _target.global_position
 	_let_go()
 	_target.linear_velocity = Feeder.ballistic_velocity(from, _aim, _lob)
+	if _binning:
+		_target.aim_for_bin(_lob + 0.5)
 	_target.angular_velocity = Vector3(randf_range(-5, 5), randf_range(-5, 5), randf_range(-5, 5))
 	_target = null
 	_model.pose = HandModel.Pose.OPEN

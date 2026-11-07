@@ -8,6 +8,8 @@ extends Node3D
 ## them on the mat, they must not stall the chute); while MAX_ROTTEN lie on the mat the chute
 ## sends fresh ones only, so they never pile up. Once the research_cabbage card is stamped, a fresh
 ## unit comes down a research unit with the save's research_chance (still stock, sold as usual).
+## When that share grows (the card stamped, a sampling quota bought) a research unit comes down at
+## once, even onto a full mat.
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
 const PLAY_AREA_LAYER := 2
@@ -33,6 +35,9 @@ var _rotten_on_desk := 0
 var _cooldown := 0.0
 var _shown := 0.0
 var _drums := PackedInt32Array()
+## The research share last seen (research_share); a rise owes the mat a research unit now.
+var _research_share := research_share(SaveManager.save)
+var _research_due := false
 
 @onready var _skeleton: Skeleton3D = $Model/Armature/Skeleton3D
 
@@ -74,7 +79,14 @@ func _physics_process(delta: float) -> void:
 	_cooldown -= delta
 	if gone:
 		_cooldown = maxf(_cooldown, restock_wait(save.restock_delay, randf()))
-	if _cooldown > 0.0 or not should_dispense(_on_desk.size() - _rotten_on_desk, _on_desk.size(), save.desk_capacity, save.stock):
+	var share := research_share(save)
+	if share > _research_share:
+		_research_due = true
+		_cooldown = 0.0
+	_research_share = share
+	# A research unit owed comes down even onto a full mat (one over desk_capacity).
+	var capacity := save.desk_capacity + (1 if _research_due else 0)
+	if _cooldown > 0.0 or not should_dispense(_on_desk.size() - _rotten_on_desk, _on_desk.size(), capacity, save.stock):
 		return
 	_cooldown = save.dispense_interval
 	_roll()
@@ -95,6 +107,11 @@ static func is_research(stamped: bool, roll: float, chance: float) -> bool:
 	return stamped and roll < chance
 
 
+## The share of units that come down research units: research_chance once the card is stamped, else 0.
+static func research_share(save: SaveGame) -> float:
+	return save.research_chance if save.stamped.has("research_cabbage") else 0.0
+
+
 ## Room on the mat for `fresh` units (rotten ones don't count), and stock that isn't on it yet
 ## (`on_desk` counts every unit there).
 static func should_dispense(fresh: int, on_desk: int, capacity: int, stock: int) -> bool:
@@ -104,8 +121,9 @@ static func should_dispense(fresh: int, on_desk: int, capacity: int, stock: int)
 func _roll() -> void:
 	var cabbage := CABBAGE.instantiate() as Cabbage
 	var save := SaveManager.save
-	cabbage.rotten = is_rotten(save.rotten_unlocked, randf(), _rotten_on_desk)
-	cabbage.research = not cabbage.rotten and is_research(save.stamped.has("research_cabbage"), randf(), save.research_chance)
+	cabbage.rotten = not _research_due and is_rotten(save.rotten_unlocked, randf(), _rotten_on_desk)
+	cabbage.research = _research_due or (not cabbage.rotten and is_research(save.stamped.has("research_cabbage"), randf(), save.research_chance))
+	_research_due = false
 	get_parent().add_child(cabbage)
 	_on_desk.append(cabbage)
 	var interactable := cabbage.get_node("Interactable") as Interactable

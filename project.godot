@@ -34,6 +34,10 @@ window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[game]
+
+demo=false
+
 [gui]
 
 theme/custom="res://ressources/theme/main_theme.tres"
@@ -57,3 +61,7 @@ locale/translations=PackedStringArray("res://ressources/translations/translation
 [rendering]
 
 rendering_device/driver.windows="d3d12"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")

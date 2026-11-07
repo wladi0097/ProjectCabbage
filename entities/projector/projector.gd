@@ -6,15 +6,17 @@ extends Control
 ## wide unrolls under the hand; past LET_GO it unrolls the rest by itself, the pull goes, and the
 ## projector lamp warms up, showing the upgrade tree (NODES) over a grey overlay. The X in its corner,
 ## a click on the overlay, or Esc rolls it away. The game keeps running behind it.
-## Round the hub sit the departments (`dept`): bigger double-rimmed sub-hubs, free, never bought,
-## greyed until their own `needs` / `research` are stamped; every upgrade hangs under one of them.
+## Round the hub sit the departments (`dept`): info only, never bought, so drawn as rounded label
+## plates in the hub's green (no price, no hold) rather than circles; faded until their own `needs` /
+## `research` are stamped. Every upgrade hangs under one of them.
 ## Each node: a circle with a glyph and its name above; hovered, a block with name, description and
 ## cost; held for HOLD_TIME, it is bought with coins. A feature's whole branch stays hidden until
 ## the feature is unlocked: a node shows once every desk card it and its ancestors `need` is stamped
 ## (is_shown), a theme's heading with its first node. Then the whole branch shows, the part not yet
 ## reachable (parent not bought, department closed) greyed with dashed edges, its popup naming what it
 ## waits for, so the path ahead can be seen. One that becomes reachable for the first time is marked
-## NEW (a pulsing ring) until the screen is rolled up (save.tree_seen). A node with `research` (a
+## NEW (a pulsing ring) until the screen is rolled up (save.tree_seen); on the very first open
+## everything showing counts as seen already (mark_first_open), so the first look doesn't all blink. A node with `research` (a
 ## research card on the desk) is reachable but locked until that card is stamped: a padlock, and a
 ## hold is refused. Like a phone map, a held
 ## press dragged across the slide pans the tree (kept on the slide) and the wheel zooms it; a
@@ -24,6 +26,8 @@ extends Control
 ## down on the desk, so a hanging 3D screen would shrink to a thin strip, and a 2D overlay gets mouse
 ## hover and hold for free. _has_point lets the pull and the rest of the desk click through.
 
+const Events := preload("res://globalScripts/game_events.gd")
+
 ## Every node, in one list for retuning (prices from reports/economy_rework_2026-10-31.md). A bought
 ## node multiplies each save number in `mul`, raises each in `add`, and `hire` adds one hand.
 ## `research` names the desk card that unlocks it (see locked_by).
@@ -32,6 +36,12 @@ extends Control
 ## management fanning out), automation left (consultancy, supply chain, coin units, associates,
 ## headcount); THEMES names the fans. Generated, with no overlaps or crossing edges, by tools/projector_layout/layout.py from its
 ## sectors.json.
+## The mat allowance (MAT): bought once per extra unit on the mat, up to MAT_MAX; the step to the
+## mat's next unit costs MAT_BASE × MAT_GROWTH per unit already past 2 (mat_price).
+const MAT := "mat_space"
+const MAT_MAX := 20
+const MAT_BASE := 1500
+const MAT_GROWTH := 1.4
 const NODES := [
 	# Departments: free sub-hubs around the hub, one per direction, never bought (`dept`). Greyed until
 	# their own `needs` / `research` are met; every upgrade hangs under exactly one of them.
@@ -42,7 +52,7 @@ const NODES := [
 		dept = true, title = "MANUAL HANDLING",
 		body = "Work you still do yourself.\nPacks, desk space, minis, catches, the bin,\ntargets, the lamp and the manager's quotas."},
 	{id = "dept_qa", parent = "", at = Vector2(0.00, 0.77), icon = "lens", price = 0,
-		dept = true, needs = ["quality_assurance"], research = "research_inspection", title = "QUALITY ASSURANCE",
+		dept = true, needs = ["quality_assurance"], research = "research_inspection", title = "RESEARCH LAB",
 		body = "Every unit is a lesson.\nFaster analysis, more Findings (¶) per unit, more\nbenches, research units and lab hands."},
 	{id = "dept_automation", parent = "", at = Vector2(-0.61, 0.00), icon = "belt", price = 0,
 		dept = true, needs = ["junior_associate"], title = "AUTOMATION",
@@ -72,14 +82,14 @@ const NODES := [
 		research = "research_materials", add = {pack_size = 40}, title = "CONTAINER ORDERS",
 		body = "A container is parked in the street.\nEvery pack holds 40 more units: 53 instead of 13."},
 	{id = "conveyor_1", parent = "dept_automation", at = Vector2(-0.99, -0.87), icon = "belt", price = 775,
-		research = "research_materials", mul = {dispense_interval = 0.5}, add = {desk_capacity = 2}, title = "CONVEYOR RETROFIT",
-		body = "The ramp is motorised.\nThe chute rolls a unit down every 0.5 s, not 1 s.\n2 more units fit on the mat."},
+		research = "research_materials", mul = {dispense_interval = 0.5}, title = "CONVEYOR RETROFIT",
+		body = "The ramp is motorised.\nThe chute rolls a unit down every 0.5 s, not 1 s."},
 	{id = "conveyor_2", parent = "conveyor_1", at = Vector2(-1.47, -1.51), icon = "belt", price = 13500,
-		mul = {dispense_interval = 0.67}, add = {desk_capacity = 2}, title = "CONVEYOR II",
-		body = "A second motor, same belt.\nThe chute rolls a unit down every 0.33 s, not 0.5 s.\n2 more units fit on the mat."},
+		mul = {dispense_interval = 0.67}, title = "CONVEYOR II",
+		body = "A second motor, same belt.\nThe chute rolls a unit down every 0.33 s, not 0.5 s."},
 	{id = "conveyor_3", parent = "conveyor_2", at = Vector2(-1.95, -2.15), icon = "belt", price = 67500,
-		mul = {dispense_interval = 0.67}, add = {desk_capacity = 2}, title = "CONVEYOR III",
-		body = "Safety guards removed.\nThe chute rolls a unit down every 0.22 s, not 0.33 s.\n2 more units fit on the mat."},
+		mul = {dispense_interval = 0.67}, title = "CONVEYOR III",
+		body = "Safety guards removed.\nThe chute rolls a unit down every 0.22 s, not 0.33 s."},
 	{id = "associate_1", parent = "dept_automation", at = Vector2(-1.50, 0.75), icon = "clock", price = 180,
 		needs = ["junior_associate"], mul = {associate_speed = 1.5}, title = "BRISK WALK I",
 		body = "A stopwatch on every associate's desk.\nHired hands and lab hands move 50% faster."},
@@ -107,29 +117,26 @@ const NODES := [
 	{id = "hire_associate_8", parent = "hire_associate_7", at = Vector2(-1.69, 2.92), icon = "hand", price = 100000,
 		hire = true, title = "HIRE ASSOCIATE VIII",
 		body = "Full complement. Morale is not tracked.\nOne more hired hand throwing units out of the\nwindow: 7 to 8 hands."},
-	{id = "qa_time", parent = "dept_qa", at = Vector2(0.00, 1.33), icon = "lens", price = 425,
+	{id = "qa_time", parent = "dept_qa", at = Vector2(0.00, 1.33), icon = "lens", price = 150,
 		needs = ["quality_assurance"], research = "research_inspection", mul = {qa_time = 0.75}, title = "FASTER ANALYSIS",
-		body = "The scan line is told to hurry.\nThe QA bay analyses a unit in 3.75 s, not 5 s."},
+		body = "The scan line is told to hurry.\nThe research lab analyses a unit in 3.75 s, not 5 s."},
 	{id = "qa_findings", parent = "qa_time", at = Vector2(0.15, 1.89), icon = "pilcrow", price = 575,
 		add = {findings_per_cabbage = 1}, title = "MORE FINDINGS",
-		body = "Standards are revised.\nEach unit analysed gives 2 Findings, not 1."},
+		body = "Standards are revised.\nEach unit analysed gives 1 more Finding:
+1 to 2, or 2 to 3 after the 100-units memo."},
 	{id = "qa_fast_track", parent = "qa_findings", at = Vector2(0.15, 2.45), icon = "lens", price = 5000,
-		mul = {qa_time = 0.5}, title = "QA FAST TRACK",
-		body = "Analysis is now a formality.\nThe QA bay analyses a unit in 1.9 s, not 3.75 s."},
+		mul = {qa_time = 0.5}, title = "LAB FAST TRACK",
+		body = "Analysis is now a formality.\nThe research lab analyses a unit in 1.9 s, not 3.75 s."},
 	{id = "double_findings", parent = "qa_fast_track", at = Vector2(0.15, 3.01), icon = "pilcrow", price = 20000,
 		mul = {findings_per_cabbage = 2}, title = "DOUBLE FINDINGS",
-		body = "Every finding is filed twice.\nEach unit analysed gives 4 Findings, not 2."},
+		body = "Every finding is filed twice.\nEach unit analysed gives twice the Findings."},
 	# Supply + automation (desk space, packs, auto-buy, hands, seating, campaigns, vacuums, QA rest):
 	# entities/supply_console/, entities/associate/, entities/vacuum/, entities/qa_bay/.
-	{id = "desk_1", parent = "pack_2", at = Vector2(2.16, -1.18), icon = "desk", price = 1000,
-		add = {desk_capacity = 4}, title = "HOT-DESKING",
-		body = "Units now share the mat.\n4 more units fit on the mat (the chute keeps it full)."},
-	{id = "desk_2", parent = "desk_1", at = Vector2(2.26, -1.57), icon = "desk", price = 5000,
-		add = {desk_capacity = 4}, title = "CLEAR-DESK POLICY",
-		body = "Personal items have been binned.\n4 more units fit on the mat."},
-	{id = "desk_3", parent = "desk_2", at = Vector2(2.36, -1.96), icon = "desk", price = 18000,
-		add = {desk_capacity = 4}, title = "MAXIMUM OCCUPANCY",
-		body = "The fire code has been reinterpreted.\n4 more units fit on the mat."},
+	# The one upgrade bought again and again (MAT): each buy fits one more unit, up to MAT_MAX, at
+	# mat_price. Its `price` is the first step's.
+	{id = "mat_space", parent = "dept_manual", at = Vector2(2.26, -1.57), icon = "desk", price = MAT_BASE,
+		needs = ["mat_allowance"], add = {desk_capacity = 1}, title = "MAT ALLOWANCE",
+		body = "Floor space is leased by the unit.\nOne more unit fits on the mat (the chute keeps it full),\nup to 20. Each allowance costs more than the last."},
 	{id = "discount_1", parent = "pack_1", at = Vector2(2.03, -0.07), icon = "crate", price = 400,
 		mul = {pack_discount = 0.85}, title = "SUPPLIER REVIEW",
 		body = "The supplier is reminded of alternatives.\nPacks cost 15% less. The ticker shows the cut price."},
@@ -187,12 +194,16 @@ const NODES := [
 	{id = "vacuum_3", parent = "vacuum_speed_2", at = Vector2(-2.87, 0.19), icon = "puck", price = 87500,
 		add = {vacuums = 1, vacuum_capacity = 30}, title = "THIRD UNIT",
 		body = "The units have formed a department.\nA third coin robot docks on the mat.\nEach robot carries 50 coins per trip, not 20."},
+	# No number: entities/vacuum/ reads tree_bought (CoinVacuums.STABILISER).
+	{id = "vacuum_gyro", parent = "vacuum_speed_1", at = Vector2(-1.78, -0.33), icon = "puck", price = 1000,
+		title = "GYROSCOPIC STABILISER",
+		body = "A lead plate is bolted underneath. Falling over\nis now a disciplinary matter.\nCoin robots no longer tip onto their backs."},
 	{id = "qa_slot_2", parent = "qa_time", at = Vector2(-0.15, 1.89), icon = "lens", price = 900,
 		add = {qa_slots = 1}, title = "SECOND BENCH",
-		body = "A second bench in the bay.\nThe QA bay analyses 2 units at once, not 1."},
+		body = "A second bench in the lab.\nThe research lab analyses 2 units at once, not 1."},
 	{id = "qa_slot_3", parent = "qa_slot_2", at = Vector2(-0.15, 2.45), icon = "lens", price = 35000,
 		add = {qa_slots = 1}, title = "THIRD BENCH",
-		body = "The bay is now a lab.\nThe QA bay analyses 3 units at once, not 2."},
+		body = "The lab is now an institute.\nThe research lab analyses 3 units at once, not 2."},
 	# Manager (down-right) and pricing consultant (up-right): entities/manager/, entities/consultant/.
 	{id = "manager_time", parent = "dept_manual", at = Vector2(1.01, 0.92), icon = "clock", price = 200,
 		needs = ["managerial_oversight"], add = {manager_time = 15.0}, title = "EXTENDED DEADLINES",
@@ -239,7 +250,7 @@ const NODES := [
 		mul = {combo_step = 2.0}, title = "REFLEX TRAINING",
 		body = "A mandatory seminar on catching things.\nEach catch adds +20% to sales instead of +10%."},
 	{id = "bin_mouth", parent = "dept_manual", at = Vector2(1.43, 1.46), icon = "lens", price = 120,
-		needs = ["rotten_bin"], mul = {bin_mouth = 1.35}, title = "WIDER RECEPTACLE",
+		needs = ["catch_combo"], mul = {bin_mouth = 1.35}, title = "WIDER RECEPTACLE",
 		body = "A larger bin is requisitioned.\nThe bin's mouth is 35% wider: units let go nearby\ndrop in from further away."},
 	{id = "bin_rebate", parent = "bin_mouth", at = Vector2(1.89, 1.98), icon = "crate", price = 575,
 		add = {bin_rebate = 0.2}, title = "DISPOSAL REBATE",
@@ -257,7 +268,7 @@ const NODES := [
 		add = {bin_rebate = 0.25}, title = "SPOILAGE PREMIUM",
 		body = "A rotten unit is worth more than a fresh one. Fine.\nA binned rotten unit pays 120% of your price\n(95% before)."},
 	{id = "hands_bin", parent = "dept_automation", at = Vector2(-0.52, 0.96), icon = "hand", price = 400,
-		needs = ["junior_associate", "rotten_bin"], add = {hands_bin = 1}, title = "WASTE HANDLING PROTOCOL",
+		needs = ["junior_associate", "catch_combo"], add = {hands_bin = 1}, title = "WASTE HANDLING PROTOCOL",
 		body = "Associates are shown where the bin is.\nHired hands throw rotten units into the bin\ninstead of selling them or leaving them."},
 	{id = "target_size", parent = "dept_manual", at = Vector2(1.58, 1.10), icon = "lens", price = 575,
 		needs = ["window_targets"], mul = {target_size = 1.5}, title = "BROADER FLOODLIGHT",
@@ -311,15 +322,15 @@ const NODES := [
 		body = "Every unit is now a candidate.\n1 unit in 4 off the chute is blue, not 1 in 5."},
 	{id = "lab_hand_2", parent = "dept_qa", at = Vector2(0.50, 1.92), icon = "hand", price = 900,
 		needs = ["research_assistant"], add = {research_hands = 1}, title = "SECOND LAB ASSISTANT",
-		body = "A second coat, a smaller size.\nOne more lab hand tossing units into the QA bay:\n1 to 2 lab hands."},
+		body = "A second coat, a smaller size.\nOne more lab hand tossing units into the research lab:\n1 to 2 lab hands."},
 	{id = "lab_hand_3", parent = "lab_hand_2", at = Vector2(0.72, 2.41), icon = "hand", price = 9000,
 		add = {research_hands = 1}, title = "THIRD LAB ASSISTANT",
-		body = "The lab has a waiting list now.\nOne more lab hand tossing units into the QA bay:\n2 to 3 lab hands."},
+		body = "The lab has a waiting list now.\nOne more lab hand tossing units into the research lab:\n2 to 3 lab hands."},
 ]
 ## Each theme's faint heading on the slide, where its branch ends (same units as a node's `at`).
 const THEMES := [
 	["PROCUREMENT", Vector2(3.26, -0.51)],
-	["DESK SPACE", Vector2(2.58, -2.66)],
+	["DESK SPACE", Vector2(2.26, -2.05)],
 	["SALES EVENTS", Vector2(4.34, 4.02)],
 	["MANAGEMENT", Vector2(1.53, 3.91)],
 	["CONSULTANCY", Vector2(-1.33, -4.18)],
@@ -334,8 +345,6 @@ const THEMES := [
 ## The screen's rect as fractions of the view: centred, 70% wide, unrolled down to 88% of the height.
 const SCREEN := Rect2(0.15, 0.0, 0.7, 0.88)
 const HOLD_TIME := 0.6
-## A department's radius, in normal nodes'.
-const DEPT_SIZE := 1.5
 ## Zoomed right out, the whole tree with its theme headings fits on the slide.
 const ZOOM_MIN := 0.27
 const ZOOM_MAX := 2.5
@@ -350,8 +359,8 @@ const ROLLER_H := 26.0
 const BAR_H := 12.0
 ## The close button in the open sheet's top-right corner (px).
 const CLOSE := 40.0
-## Where the cord is tied along the bottom bar (0 left .. 1 right).
-const TAB_AT := 0.94
+## Where the cord is tied along the bottom bar (0 left .. 1 right): the middle, where it is seen.
+const TAB_AT := 0.5
 ## The pull, a pendulum: cord length (m), gravity (stylised, stiffer than real), the velocity kept
 ## per STEP, and the height (m) the cord is tied at, so the tab hangs at about the hand's height.
 const CORD := 0.15
@@ -363,13 +372,16 @@ const TIE_HEIGHT := 1.6
 ## overlapping waves (wind_at).
 const WIND := Vector2(1.1, 0.6)
 ## Tugs to draw the eye (tug_at): a push at the pull's own swing rate, so it swings hard. Until the
-## screen has been opened once it swings at TUG_FIRST (~40°); after that, for TUG_TIME whenever an
-## upgrade newly becomes buyable or affordable, at TUG_OFFER (~25°). Offers are counted every
-## OFFER_CHECK seconds.
-const TUG_FIRST := 5.0
-const TUG_OFFER := 3.0
+## screen has been opened once it swings at TUG_FIRST (~25°); after that, for TUG_TIME whenever an
+## upgrade becomes affordable for the first time, at TUG_OFFER (~15°): coins dipping under a price
+## and back don't tug again. Offers are checked every OFFER_CHECK seconds.
+const TUG_FIRST := 3.0
+const TUG_OFFER := 2.0
 const TUG_TIME := 3.0
 const OFFER_CHECK := 0.5
+## With the tug, the pennant lights up bright for FLASH_TIME seconds (emission energy FLASH_GLOW).
+const FLASH_TIME := 0.5
+const FLASH_GLOW := 4.0
 ## Seconds per beat of a NEW node's pulsing ring.
 const NEW_PULSE := 1.4
 ## The pennant's width and height (m), and how far its face is tipped back toward the camera (rad):
@@ -460,7 +472,13 @@ var _wind_time := 0.0
 ## be held, ones that can be bought; -1 before the first count, which never tugs).
 var _tug_left := 0.0
 var _offer_in := 0.0
-var _offers := Vector2i(-1, -1)
+## Ids of the upgrades the pull has already tugged for (affordable once); null until the first check.
+var _announced: Variant = null
+## Seconds of the pennant's flash left, and the count of buyable upgrades stamped at its tip.
+var _flash := 0.0
+var _count := Label3D.new()
+## The dark plate riveted under the tip that carries the count; hidden while nothing is buyable.
+var _badge := Node3D.new()
 var _step_left := 0.0
 ## While dragged, the tab keeps this offset from the mouse's point under it (no lag, no jump).
 var _grab_offset := Vector3.ZERO
@@ -522,8 +540,9 @@ func _process(delta: float) -> void:
 		if can_buy(_holding, save):
 			_hold += delta / HOLD_TIME
 			if _hold >= 1.0:
+				var paid := price_of(_holding, save)
 				buy(_holding, save)
-				SaveManager.log_event("node", _holding, node_data(_holding).price, "coins")
+				SaveManager.log_event("node", _holding, paid, "coins")
 				_play(approve_sound)
 				_holding = ""
 				_hold = 0.0
@@ -533,11 +552,17 @@ func _process(delta: float) -> void:
 	_offer_in -= delta
 	if _offer_in <= 0.0:
 		_offer_in = OFFER_CHECK
-		var now := offers(save)
-		if offer_grew(_offers, now):
+		var first: bool = _announced == null
+		if first:
+			_announced = {}
+		if announce(save, _announced) and not first:
 			_tug_left = TUG_TIME
-		_offers = now
+			_flash = FLASH_TIME
+		_count.text = count_text(offers(save).y)
+		_badge.visible = _count.text != ""
 	_tug_left = maxf(_tug_left - delta, 0.0)
+	_flash = maxf(_flash - delta, 0.0)
+	_enamel.emission_energy_multiplier = maxf(0.35 if _tab_hot else 0.0, FLASH_GLOW * _flash / FLASH_TIME)
 	_move_pull(delta)
 	# The bar trails the swinging pull a little while the sheet is loose; lit, the sheet hangs flat.
 	_sway = lerpf(_sway, clampf((_grip_px.x - _tie_px().x) * 0.4, -24.0, 24.0) * (1.0 - _lamp) * minf(_drop * 4.0, 1.0),
@@ -552,7 +577,7 @@ func _process(delta: float) -> void:
 		_layer.position = wheel[0] - area.position
 		_layer.modulate.a = _lamp * pulse(Time.get_ticks_msec() / 1000.0)
 		_top.size = area.size
-		var key := [_zoom, area.size, save.get_instance_id(), save.stamped.size(), save.tree_bought.size(), affordable(save.coins)]
+		var key := [_zoom, area.size, save.get_instance_id(), save.stamped.size(), save.tree_bought.size(), save.desk_capacity, affordable(save.coins)]
 		if key != _layer_key:
 			_layer_key = key
 			_themes_shown = themes_shown(save)
@@ -665,6 +690,14 @@ static func fresh(save: SaveGame) -> Array[String]:
 	return out
 
 
+## The first time the screen comes down, everything reachable counts as seen: nothing blinks NEW.
+## Only what turns up after that is marked NEW.
+static func mark_first_open(save: SaveGame) -> void:
+	if not save.projector_opened:
+		save.tree_seen.append_array(fresh(save))
+	save.projector_opened = true
+
+
 ## Which THEMES have a node showing: each node counts for the theme heading nearest it.
 static func themes_shown(save: SaveGame) -> Array[bool]:
 	var out: Array[bool] = []
@@ -699,20 +732,39 @@ static func is_open(id: String, save: SaveGame) -> bool:
 	return save.tree_bought.has(id)
 
 
-## The research card node `id` still waits for, or "" (none, stamped, or the node already bought).
+## The research card node `id` still waits for, "demo" if the demo locks it (dearer than
+## Demo.NODE_PRICE_CAP), or "" (none, stamped, or the node already bought).
 static func locked_by(id: String, save: SaveGame) -> String:
+	if Events.Demo.active() and price_of(id, save) > Events.Demo.NODE_PRICE_CAP and not save.tree_bought.has(id):
+		return "demo"
 	var card: String = node_data(id).get("research", "")
 	return "" if card == "" or save.stamped.has(card) or save.tree_bought.has(id) else card
+
+
+## Bought for good: in tree_bought, or for the mat allowance (MAT), the mat at MAT_MAX.
+static func is_bought(id: String, save: SaveGame) -> bool:
+	return save.tree_bought.has(id) or (id == MAT and save.desk_capacity >= MAT_MAX)
+
+
+## What node `id` costs now: its price, or for the mat allowance the next unit's (mat_price).
+static func price_of(id: String, save: SaveGame) -> int:
+	return mat_price(save.desk_capacity) if id == MAT else node_data(id).get("price", 0)
+
+
+## The mat allowance's price with `capacity` units fitting on the mat now: MAT_BASE for the third
+## unit, MAT_GROWTH times more for each after it, rounded to $50.
+static func mat_price(capacity: int) -> int:
+	return roundi(MAT_BASE * pow(MAT_GROWTH, maxi(capacity - 2, 0)) / 50.0) * 50
 
 
 ## Reachable, not bought and not waiting for research: a hold on it buys it (if the coins are there).
 ## Departments are never bought.
 static func can_hold(id: String, save: SaveGame) -> bool:
-	return not is_dept(id) and is_reachable(id, save) and not save.tree_bought.has(id) and locked_by(id, save) == ""
+	return not is_dept(id) and is_reachable(id, save) and not is_bought(id, save) and locked_by(id, save) == ""
 
 
 static func can_buy(id: String, save: SaveGame) -> bool:
-	return can_hold(id, save) and save.coins >= node_data(id).price
+	return can_hold(id, save) and save.coins >= price_of(id, save)
 
 
 ## What node `id` waits for, as [heading, name] for its popup, or [] if nothing: its parent, then a
@@ -725,22 +777,26 @@ static func requirement(id: String, save: SaveGame) -> Array:
 		if not save.stamped.has(card):
 			return ["REQUIRES DESK CARD:", UpgradeDesk.card_data(card).get("title", card)]
 	var research := locked_by(id, save)
+	if research == "demo":
+		return ["FULL GAME ONLY:", "Wishlist it on Steam"]
 	if research != "":
 		return ["REQUIRES RESEARCH:", UpgradeDesk.card_data(research).get("title", research).trim_prefix("RESEARCH: ")]
 	return []
 
 
-## Pays for node `id` and applies it; false (and nothing changes) if it can't be bought.
+## Pays for node `id` and applies it; false (and nothing changes) if it can't be bought. The mat
+## allowance is never filed in tree_bought: it is bought again until the mat is full (is_bought).
 static func buy(id: String, save: SaveGame) -> bool:
 	if not can_buy(id, save):
 		return false
-	save.coins -= node_data(id).price
-	save.tree_bought.append(id)
+	save.coins -= price_of(id, save)
+	if id != MAT:
+		save.tree_bought.append(id)
 	apply(id, save)
 	return true
 
 
-## What node `id` does to the save.
+## What node `id` does to the save. The mat never holds more than MAT_MAX.
 static func apply(id: String, save: SaveGame) -> void:
 	var node := node_data(id)
 	for stat in node.get("mul", {}):
@@ -750,6 +806,8 @@ static func apply(id: String, save: SaveGame) -> void:
 		save.set(stat, save.get(stat) + node.add[stat])
 	if node.get("hire", false):
 		Associate.add_hand(save)
+	if id == MAT:
+		save.desk_capacity = mini(save.desk_capacity, MAT_MAX)
 
 
 ## What the merged chains' nodes did before the merge (save.migration 2): per chain, each old id's
@@ -815,14 +873,24 @@ static func offers(save: SaveGame) -> Vector2i:
 	for node: Dictionary in NODES:
 		if can_hold(node.id, save):
 			out.x += 1
-			out.y += int(save.coins >= node.price)
+			out.y += int(save.coins >= price_of(node.id, save))
 	return out
 
 
-## Whether the pull should tug now that `now` upgrades are on offer after `before`: more can be held
-## or more paid for (never on the first count).
-static func offer_grew(before: Vector2i, now: Vector2i) -> bool:
-	return before.x >= 0 and (now.x > before.x or now.y > before.y)
+## The number stamped at the pennant's tip: how many upgrades can be bought now ("" for none).
+static func count_text(buyable: int) -> String:
+	return str(buyable) if buyable > 0 else ""
+
+
+## Adds every upgrade `save` can hold and pay for now to `announced` (id -> true); true if any was
+## new, so the pull tugs once per upgrade, not each time the coins climb back over its price.
+static func announce(save: SaveGame, announced: Dictionary) -> bool:
+	var grew := false
+	for node: Dictionary in NODES:
+		if not announced.has(node.id) and save.coins >= price_of(node.id, save) and can_hold(node.id, save):
+			announced[node.id] = true
+			grew = true
+	return grew
 
 
 ## The tug's strength now: hard until the screen was first opened (an old save that bought upgrades
@@ -967,6 +1035,30 @@ func _build_pull() -> void:
 	word.modulate = INK
 	word.position = Vector3(0.0, -TAB.y * 0.3, 0.0095)
 	_tab.add_child(word)
+	# The buyable count on its own dark plate hung just under the tip, apart from the word.
+	var rim := BoxMesh.new()
+	rim.size = Vector3(0.046, 0.032, 0.005)
+	rim.material = steel
+	var plate_box := BoxMesh.new()
+	plate_box.size = Vector3(0.04, 0.026, 0.006)
+	var plate_mat := StandardMaterial3D.new()
+	plate_mat.albedo_color = STEEL
+	plate_mat.roughness = 0.6
+	plate_box.material = plate_mat
+	for mesh: BoxMesh in [rim, plate_box]:
+		var slab := MeshInstance3D.new()
+		slab.mesh = mesh
+		_badge.add_child(slab)
+	_count.font = FONT
+	_count.font_size = 44
+	_count.pixel_size = 0.0006
+	_count.outline_size = 0
+	_count.modulate = BEAM
+	_count.position.z = 0.0035
+	_badge.add_child(_count)
+	_badge.position = Vector3(0.0, -TAB.y - 0.01, 0.0)
+	_badge.visible = false
+	_tab.add_child(_badge)
 	var eye := CylinderMesh.new()
 	eye.top_radius = 0.008
 	eye.bottom_radius = 0.012
@@ -1004,7 +1096,6 @@ func _build_pull() -> void:
 
 func _touch_tab(hot: bool) -> void:
 	_tab_hot = hot
-	_enamel.emission_energy_multiplier = 0.35 if hot else 0.0
 
 
 func _grab() -> void:
@@ -1032,7 +1123,7 @@ func _settle(down: bool) -> void:
 		_settling.kill()
 	_settling = create_tween()
 	if down:
-		SaveManager.save.projector_opened = true
+		mark_first_open(SaveManager.save)
 		_tug_left = 0.0
 		_play(roll_down_sound)
 		_settling.tween_property(self, "_drop", 1.0, 0.35 * (1.0 - _drop) + 0.05).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
@@ -1177,7 +1268,10 @@ func _node_at(point: Vector2) -> String:
 	var wheel := _wheel()
 	var r: float = wheel[2]
 	for node: Dictionary in NODES:
-		if _shown.has(node.id) and point.distance_to(wheel[0] + node.at * wheel[1]) < _size(node.id, r) * 1.2:
+		if not _shown.has(node.id):
+			continue
+		var at: Vector2 = wheel[0] + node.at * wheel[1]
+		if plate(node.id, at, r).grow(4.0).has_point(point) if is_dept(node.id) else point.distance_to(at) < r * 1.2:
 			return node.id
 	return ""
 
@@ -1266,7 +1360,8 @@ func _draw_layer() -> void:
 	for node: Dictionary in NODES:
 		if not _shown.has(node.id):
 			continue
-		# Edge to edge: the line stops at both circles instead of running into them.
+		# Edge to edge: the line stops at both circles instead of running into them (under a
+		# department's opaque plate it simply runs on to its centre).
 		var from: Vector2 = Vector2.ZERO if node.parent == "" else node_data(node.parent).at * unit
 		var to: Vector2 = node.at * unit
 		var dir := from.direction_to(to)
@@ -1290,8 +1385,8 @@ func _draw_layer() -> void:
 	for i in THEMES.size():
 		if i >= _themes_shown.size() or not _themes_shown[i]:
 			continue
-		var theme: Array = THEMES[i]
-		_layer.draw_string(FONT, theme[1] * unit - Vector2(300.0, 0.0), tr(theme[0]), HORIZONTAL_ALIGNMENT_CENTER, 600.0, heading, Color(INK, 0.22))
+		var named: Array = THEMES[i]
+		_layer.draw_string(FONT, named[1] * unit - Vector2(300.0, 0.0), tr(named[0]), HORIZONTAL_ALIGNMENT_CENTER, 600.0, heading, Color(INK, 0.22))
 	# The hub: a cabbage cross-section, the one green thing on the slide.
 	_layer.draw_circle(Vector2.ZERO, r * 1.1, CABBAGE)
 	_layer.draw_circle(Vector2.ZERO, r * 1.1, INK, false, 3.0, true)
@@ -1333,29 +1428,41 @@ func _draw_top() -> void:
 	var beat := fmod(Time.get_ticks_msec() / 1000.0, NEW_PULSE) / NEW_PULSE
 	for id in _fresh:
 		var at: Vector2 = wheel[0] + node_data(id).at * wheel[1]
-		var size := _size(id, r)
-		_top.draw_arc(at, size * (1.15 + 0.35 * beat), 0.0, TAU, 40, Color(INK, _lamp * 0.7 * (1.0 - beat)), 3.0, true)
-		_top.draw_string(FONT, at + Vector2(size * 0.8, size * 1.05), tr("NEW"), HORIZONTAL_ALIGNMENT_LEFT, -1, int(clampf(r * 0.6, 14.0, 28.0)), Color(INK, _lamp))
+		var fade := Color(INK, _lamp * 0.7 * (1.0 - beat))
+		var corner := Vector2(r * 0.8, r * 1.05)
+		if is_dept(id):
+			var box := plate(id, at, r)
+			_draw_plate(_top, box.grow(r * 0.35 * beat), Color.TRANSPARENT, fade, 3.0)
+			corner = box.end - at + Vector2(4.0, 0.0)
+		else:
+			_top.draw_arc(at, r * (1.15 + 0.35 * beat), 0.0, TAU, 40, fade, 3.0, true)
+		_top.draw_string(FONT, at + corner, tr("NEW"), HORIZONTAL_ALIGNMENT_LEFT, -1, int(clampf(r * 0.6, 14.0, 28.0)), Color(INK, _lamp))
 	if _hovered != "":
 		var at: Vector2 = wheel[0] + node_data(_hovered).at * wheel[1]
-		var size := _size(_hovered, r)
-		_top.draw_circle(at, size, Color(BEAM.lerp(Color.WHITE, 0.3), _lamp * 0.25))
-		_draw_popup(node_data(_hovered), at, size, save, _lamp, area)
+		var glow := Color(BEAM.lerp(Color.WHITE, 0.3), _lamp * 0.25)
+		var reach := r
+		if is_dept(_hovered):
+			var box := plate(_hovered, at, r)
+			_draw_plate(_top, box, glow, Color.TRANSPARENT, 0.0)
+			reach = box.size.x / 2.0
+		else:
+			_top.draw_circle(at, r, glow)
+		_draw_popup(node_data(_hovered), at, reach, save, _lamp, area)
 
 
-## A node's radius: departments are drawn DEPT_SIZE times bigger.
+## Where an edge stops short of node `id`: its circle's rim, or (under a department's plate) nowhere.
 static func _size(id: String, r: float) -> float:
-	return r * DEPT_SIZE if is_dept(id) else r
+	return 0.0 if is_dept(id) else r
 
 
 func _draw_node(node: Dictionary, at: Vector2, r: float, save: SaveGame) -> void:
 	if node.get("dept", false):
-		_draw_dept(node, at, r * DEPT_SIZE, save)
+		_draw_dept(node, at, r, save)
 		return
-	var bought: bool = save.tree_bought.has(node.id)
+	var bought := is_bought(node.id, save)
 	var reachable := is_reachable(node.id, save)
 	var locked := reachable and locked_by(node.id, save) != ""
-	var alpha := 0.16 if not reachable else 0.3 if locked else 1.0 if bought or save.coins >= node.price else 0.35
+	var alpha := 0.16 if not reachable else 0.3 if locked else 1.0 if bought or save.coins >= price_of(node.id, save) else 0.35
 	var ink := Color(INK, alpha)
 	if bought:
 		_layer.draw_circle(at, r, ink)
@@ -1376,25 +1483,46 @@ func _draw_node(node: Dictionary, at: Vector2, r: float, save: SaveGame) -> void
 	_layer.draw_string(FONT, at + Vector2(-200.0, -r - 8.0), tr(node.title), HORIZONTAL_ALIGNMENT_CENTER, 400.0, font_size, ink)
 
 
-## A department: a big tinted disc in a double rim, its name in large type, never filled as bought.
-## Closed (its cards or research missing) it is faint with a broken rim, a padlock for research.
+## A department: info only, so a rounded plate in the hub's green with its glyph and name, never
+## a circle (circles are bought). Closed (its cards or research missing) it is faded, a padlock for research.
 func _draw_dept(node: Dictionary, at: Vector2, r: float, save: SaveGame) -> void:
 	var open := is_open(node.id, save)
 	var locked := is_reachable(node.id, save) and not open
-	var ink := Color(INK, 1.0 if open else 0.3 if locked else 0.2)
-	_layer.draw_circle(at, r, Color(INK, ink.a * 0.14))
-	if open:
-		_layer.draw_circle(at, r, ink, false, 5.0, true)
-	else:
-		var rim := PackedVector2Array()
-		for i in 16:
-			rim.append(at + Vector2.from_angle(TAU * i / 16.0) * r)
-			rim.append(at + Vector2.from_angle(TAU * (i + 0.6) / 16.0) * r)
-		_layer.draw_multiline(rim, ink, 5.0)
-	_layer.draw_arc(at, r * 0.84, 0.0, TAU, 32, ink, 1.5, true)
-	_draw_icon("padlock" if locked else node.icon, at, r * 0.5, ink)
-	var font_size := int(clampf(r * 0.5, 12.0, 46.0))
-	_layer.draw_string(FONT, at + Vector2(-250.0, -r - 10.0), tr(node.title), HORIZONTAL_ALIGNMENT_CENTER, 500.0, font_size, ink)
+	var alpha := 1.0 if open else 0.45 if locked else 0.3
+	var ink := Color(INK, alpha)
+	var box := plate(node.id, at, r)
+	# Opaque (faded toward the fabric, not see-through) so the edges under it stay hidden.
+	_draw_plate(_layer, box, FABRIC.lerp(CABBAGE, alpha), ink, 4.0 if open else 2.0)
+	var font_size := _plate_font(r)
+	var icon_at := Vector2(box.position.x + box.size.y * 0.55, at.y)
+	_draw_icon("padlock" if locked else node.icon, icon_at, box.size.y * 0.3, ink)
+	_layer.draw_string(FONT, Vector2(box.position.x + box.size.y, at.y + font_size * 0.36), tr(node.title),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink)
+
+
+## A department plate's type size for node radius `r`.
+static func _plate_font(r: float) -> int:
+	return int(clampf(r * 0.7, 12.0, 32.0))
+
+
+## A department's plate around `at`, sized to its translated name with room for the glyph on its left.
+static func plate(id: String, at: Vector2, r: float) -> Rect2:
+	var font_size := _plate_font(r)
+	var title := TranslationServer.translate(node_data(id).get("title", ""))
+	var height := font_size * 2.0
+	var dims := Vector2(FONT.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + height * 1.45, height)
+	return Rect2(at - dims / 2.0, dims)
+
+
+## A rounded box on `canvas`: `fill` inside, a `border` rim `width` wide.
+static func _draw_plate(canvas: CanvasItem, box: Rect2, fill: Color, border: Color, width: float) -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = border
+	style.set_border_width_all(int(width))
+	style.set_corner_radius_all(int(box.size.y * 0.25))
+	style.anti_aliasing = true
+	style.draw(canvas.get_canvas_item(), box)
 
 
 ## Simple line glyphs, centred on `at`, about `s` from the centre to the edge.
@@ -1480,8 +1608,10 @@ func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, light:
 	if node.get("dept", false):
 		_top.draw_string(FONT, pos + Vector2(16, height - 16), tr("DEPARTMENT"), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, paper)
 		return
-	var bought: bool = save.tree_bought.has(node.id)
-	var price := tr("APPROVED") if bought else tr("COST $%d") % node.price
-	var short: bool = not bought and save.coins < node.price
+	var bought := is_bought(node.id, save)
+	var price := tr("APPROVED") if bought else tr("COST $%d") % price_of(node.id, save)
+	if node.id == MAT:
+		price += "   " + tr("MAT %d / %d") % [save.desk_capacity, MAT_MAX]
+	var short: bool = not bought and save.coins < price_of(node.id, save)
 	_top.draw_string(FONT, pos + Vector2(16, height - 16), price, HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24,
 			Color(0.85, 0.35, 0.3, light) if short else paper)

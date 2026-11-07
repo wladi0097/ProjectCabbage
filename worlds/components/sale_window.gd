@@ -28,6 +28,9 @@ const SUCK_TO_Z := -1.9
 const GAP_MID_Y := 0.92
 ## Selling a rotten unit costs this many times the chalked price.
 const FINE := 10
+## Secret: the street takes a mini this many times as often as a full cabbage at the same price
+## (clamped to a sure sale). Never shown on the slate's needle or anywhere else.
+const MINI_ACCEPTANCE := 1.35
 
 ## A refused cabbage stays out for AWAY_TIME (seconds, min..max), then is thrown from just outside
 ## the window (x follows it) to somewhere in REFUSE_TO, taking REFUSE_TIME. It passes the window wall
@@ -74,6 +77,11 @@ static func payout(price: float, factors: Dictionary) -> int:
 	for factor: float in factors.values():
 		total *= factor
 	return maxi(1, roundi(total))
+
+
+## The chance the street buys a unit when a full cabbage sells with `chance` (a mini: MINI_ACCEPTANCE more).
+static func acceptance_for(chance: float, is_mini: bool) -> float:
+	return minf(1.0, chance * MINI_ACCEPTANCE) if is_mini else chance
 
 
 ## Coins taken for selling a rotten unit at `price`, out of `available`: FINE times the price, at most all.
@@ -139,7 +147,7 @@ func _judge(cabbage: Cabbage) -> void:
 		save.fines += 1
 		fined.emit(cabbage, fine)
 		return
-	if not _buys(Slate.acceptance(save)):
+	if not _buys(acceptance_for(Slate.acceptance(save), cabbage.mini)):
 		save.refusals += 1
 		cabbage.send_away(out, SUCK_TIME)
 		refused.emit(cabbage)

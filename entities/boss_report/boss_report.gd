@@ -1,10 +1,11 @@
+class_name BossReport
 extends CanvasLayer
 ## The boss's reports: the WELCOME note on a new game, and one for each big event when it starts
 ## (GameEvents.EVENTS, `due`; its `report`: a headline `re` and a `body`). It drops in from the top
 ## to the middle of the screen, big, gets stamped and stays until signed: the mouse is a pen over the signature field
 ## and draws ink there; once SIGN_INK px are drawn an OK button shows, and clicked the report flies
-## into the FILES folder (the memo's) and the next one, if any, comes. The game keeps running; only
-## the paper takes the mouse. Signed ids go into save.reports (one up or queued at quit comes again).
+## into the FILES folder (the memo's) and the next one, if any, comes. The game keeps running, but
+## only the paper takes the mouse: a grey Backdrop under it blocks the rest of the screen. Signed ids go into save.reports (one up or queued at quit comes again).
 ## In a save from before the reports, what had already happened is filed without the paper.
 
 const Events := preload("res://globalScripts/game_events.gd")
@@ -12,6 +13,15 @@ const Memo := preload("res://entities/milestone/milestone_memo.gd")
 
 const WELCOME := {re = "WELCOME TO DESK 4", stamp = "",
 	body = "You have been assigned a desk, a window and a supply of cabbages (units). Throw units out of the window to sell them: the street pays in coins. Sweep the coins off the mat to bank them. Further instructions will follow in writing. Sign below to confirm you have understood."}
+## The demo's last report, Demo.END_AFTER seconds of farming after the family farm (save.farm_seconds).
+## No signature (`buttons`): WISHLIST opens the store page (STORE_URL), DONE files it.
+const DEMO_END := {re = "END OF THE TRIAL PERIOD", buttons = true,
+	body = "You have reached the end of the demo. Your performance has been noted. Go and wishlist the game on Steam now: the full version continues your career at Desk 4."}
+## The game's Steam store page (the app id goes here once the page exists).
+const STORE_URL := "https://store.steampowered.com/"
+const WISH_BOX := Rect2(30, 318, 260, 50)
+const STEAM_GREEN := Color(0.4, 0.6, 0.1)
+const STEAM_TEXT := Color(0.84, 0.94, 0.66)
 const SIZE := Vector2(640, 400)
 ## The signature field and the OK button (paper px), and how much ink (px of stroke) counts as signed.
 const SIGN_BOX := Rect2(30, 300, 330, 74)
@@ -27,9 +37,23 @@ const FLY_SCALE := 0.08
 const TILT := -1.5
 ## The paper's size on screen, × SIZE: big, in the middle of the screen.
 const ZOOM := 1.45
+## The text's room: from TEXT_TOP (under the header rule) to TEXT_GAP above the signature or the
+## buttons. The headline shrinks from RE_SIZE to fit RE_LINES lines, then the body from BODY_SIZE
+## down to BODY_MIN to fit what is left.
+const TEXT_TOP := 78.0
+const TEXT_GAP := 10.0
+const RE_SIZE := 34
+const RE_LINES := 2
+const BODY_SIZE := 18
+const BODY_MIN := 13
+## The grey veil behind an open report (its alpha at full; it fades in with the drop, out with the flight).
+const VEIL := 0.55
 
 ## The memo layer: its FILES folder is where filed reports fly.
 @export var memo: CanvasLayer
+
+## Whether a report is up (FarmTv lets the mouse through to it then).
+static var up := false
 
 var _queue: Array[String] = []
 var _id := ""
@@ -43,9 +67,12 @@ var _strokes: Array[PackedVector2Array] = []
 var _pen_down := false
 
 @onready var _paper: Control = $Paper
+## Behind the paper, over the whole screen: nothing in the game takes the mouse while a report is up.
+@onready var _backdrop: ColorRect = $Backdrop
 
 
 func _ready() -> void:
+	up = false
 	_paper.size = SIZE
 	_paper.pivot_offset = SIZE / 2.0
 	_paper.visible = false
@@ -77,6 +104,8 @@ func _process(delta: float) -> void:
 		_strokes.clear()
 		_pen_down = false
 		_paper.visible = true
+		_backdrop.visible = true
+		up = true
 		$Land.play()
 	_t += delta
 	if not _stamped and _t >= STAMP_AT:
@@ -91,6 +120,7 @@ func _process(delta: float) -> void:
 		_leaving += delta
 		p = clampf(_leaving / FLY_TIME, 0.0, 1.0)
 		centre = Memo.fly_at(p, rest, _folder_at(view))
+	_backdrop.color.a = VEIL * clampf(_t / IN_TIME, 0.0, 1.0) * (1.0 - p)
 	var size := lerpf(ZOOM, FLY_SCALE, ease(p, 2.0))
 	_paper.scale = Vector2(size, size)
 	_paper.rotation = deg_to_rad(lerpf(TILT, 14.0, p))
@@ -101,6 +131,8 @@ func _process(delta: float) -> void:
 		SaveManager.save.reports.append(_id)  # Filed only once signed: quit before, it comes again.
 		_id = ""
 		_paper.visible = false
+		_backdrop.visible = false
+		up = false
 		$Rustle.play()
 
 
@@ -112,12 +144,37 @@ static func due(save: SaveGame) -> Array[String]:
 	for id: String in Events.EVENTS:
 		if not save.reports.has(id) and Events.due(id, save):
 			out.append(id)
+	if Events.Demo.active() and save.farm_seconds >= Events.Demo.END_AFTER and not save.reports.has("demo_end"):
+		out.append("demo_end")
 	return out
 
 
-## The report with id `id`: the welcome or an event's.
+## The report with id `id`: the welcome, the demo's end or an event's.
 static func report(id: String) -> Dictionary:
-	return WELCOME if id == "welcome" else Events.EVENTS[id].report
+	if id == "welcome":
+		return WELCOME
+	return DEMO_END if id == "demo_end" else Events.EVENTS[id].report
+
+
+## How report `r`'s text fits its paper in the current language: {re, body} font sizes and `body_y`,
+## the top of the body. `fits` is false only if the body overflows even at BODY_MIN.
+static func layout(r: Dictionary) -> Dictionary:
+	var width := SIZE.x - 60.0
+	var re := TranslationServer.translate(r.re) + "!"
+	var body := TranslationServer.translate(r.body)
+	var re_size := RE_SIZE
+	while re_size > BODY_SIZE and _height(Memo.FONT, re, width, re_size) > RE_LINES * Memo.FONT.get_height(re_size) + 0.5:
+		re_size -= 1
+	var body_y := TEXT_TOP + _height(Memo.FONT, re, width, re_size) + 6.0
+	var room := (WISH_BOX if r.get("buttons", false) else SIGN_BOX).position.y - TEXT_GAP - body_y
+	var body_size := BODY_SIZE
+	while body_size > BODY_MIN and _height(Memo.BODY_FONT, body, width, body_size) > room:
+		body_size -= 1
+	return {re = re_size, body = body_size, body_y = body_y, fits = _height(Memo.BODY_FONT, body, width, body_size) <= room}
+
+
+static func _height(font: Font, text: String, width: float, size: int) -> float:
+	return font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, width, size).y
 
 
 ## The ink a stroke through `points` adds: its length in px.
@@ -152,6 +209,8 @@ func _folder_at(view: Vector2) -> Vector2:
 
 
 func _signed() -> bool:
+	if report(_id).get("buttons", false):
+		return true  # Nothing to sign: DONE shows at once.
 	return _strokes.reduce(func(ink: float, stroke: PackedVector2Array) -> float: return ink + ink_of(stroke), 0.0) >= SIGN_INK
 
 
@@ -162,11 +221,15 @@ func _on_paper_input(event: InputEvent) -> void:
 	if mouse == null:
 		return
 	var at := mouse.position
-	var in_box := SIGN_BOX.grow(-4.0).has_point(at)
+	var buttons: bool = report(_id).get("buttons", false)
+	var in_box := not buttons and SIGN_BOX.grow(-4.0).has_point(at)
 	var on_ok := _signed() and OK_BOX.has_point(at)
-	_paper.mouse_default_cursor_shape = Control.CURSOR_CROSS if in_box else (Control.CURSOR_POINTING_HAND if on_ok else Control.CURSOR_ARROW)
+	var on_wish := buttons and WISH_BOX.has_point(at)
+	_paper.mouse_default_cursor_shape = Control.CURSOR_CROSS if in_box else (Control.CURSOR_POINTING_HAND if on_ok or on_wish else Control.CURSOR_ARROW)
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
+		if button.pressed and on_wish:
+			OS.shell_open(STORE_URL)
 		if button.pressed and on_ok:
 			_leaving = 0.0
 			$Stamp.play()
@@ -196,9 +259,30 @@ func _draw_paper() -> void:
 	_paper.draw_string(Memo.FONT, Vector2(30, 50), tr("OFFICE OF THE DIRECTOR"), HORIZONTAL_ALIGNMENT_LEFT, -1, 30, ink)
 	_paper.draw_line(Vector2(30, 64), Vector2(w - 30, 64), ink, 3.0)
 	_paper.draw_line(Vector2(30, 70), Vector2(w - 30, 70), ink, 1.0)
-	_paper.draw_multiline_string(Memo.FONT, Vector2(30, 112), tr(r.re) + "!", HORIZONTAL_ALIGNMENT_LEFT, w - 60, 34, 2, ink)
-	_paper.draw_multiline_string(Memo.BODY_FONT, Vector2(30, 158), tr(r.body), HORIZONTAL_ALIGNMENT_LEFT, w - 60, 18, 6, Color(ink, 0.9))
-	# The signature field: a line to sign on, the ink, and OK once signed.
+	var fit := layout(r)
+	_paper.draw_multiline_string(Memo.FONT, Vector2(30, TEXT_TOP + Memo.FONT.get_ascent(fit.re)), tr(r.re) + "!", HORIZONTAL_ALIGNMENT_LEFT, w - 60, fit.re, RE_LINES, ink)
+	_paper.draw_multiline_string(Memo.BODY_FONT, Vector2(30, fit.body_y + Memo.BODY_FONT.get_ascent(fit.body)), tr(r.body), HORIZONTAL_ALIGNMENT_LEFT, w - 60, fit.body, -1, Color(ink, 0.9))
+	if r.get("buttons", false):
+		# WISHLIST and DONE instead of a signature.
+		# Steam's own green button (the one deliberate break from the palette: it is Steam's, not ours).
+		_paper.draw_rect(WISH_BOX, STEAM_GREEN)
+		_paper.draw_rect(Rect2(WISH_BOX.position, Vector2(WISH_BOX.size.x, WISH_BOX.size.y * 0.5)), Color(1, 1, 1, 0.08))
+		_paper.draw_string(Memo.FONT, Vector2(WISH_BOX.position.x, WISH_BOX.position.y + 35), tr("WISHLIST ON STEAM"), HORIZONTAL_ALIGNMENT_CENTER, WISH_BOX.size.x, 24, STEAM_TEXT)
+		_paper.draw_rect(OK_BOX, Color(ink, 0.9))
+		_paper.draw_string(Memo.FONT, Vector2(OK_BOX.position.x, OK_BOX.position.y + 35), tr("DONE"), HORIZONTAL_ALIGNMENT_CENTER, OK_BOX.size.x, 28, Memo.PAPER)
+	else:
+		_draw_signature(ink)
+	var word: String = r.get("stamp", "URGENT")
+	if _stamped and not word.is_empty():
+		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - (_t - STAMP_AT) / 0.12)
+		_paper.draw_set_transform(Vector2(w - 120, 38), deg_to_rad(-8.0), Vector2(pop, pop))
+		_paper.draw_rect(Rect2(-80, -26, 160, 48), Color(Memo.STAMP, 0.85), false, 3.0)
+		_paper.draw_string(Memo.FONT, Vector2(-80, 12), tr(word), HORIZONTAL_ALIGNMENT_CENTER, 160, 30, Color(Memo.STAMP, 0.85))
+		_paper.draw_set_transform(Vector2.ZERO)
+
+
+## The signature field: a line to sign on, the ink, and OK once signed.
+func _draw_signature(ink: Color) -> void:
 	_paper.draw_rect(SIGN_BOX, Color(ink, 0.06))
 	_paper.draw_line(Vector2(SIGN_BOX.position.x + 10, SIGN_BOX.end.y - 14), Vector2(SIGN_BOX.end.x - 10, SIGN_BOX.end.y - 14), Color(ink, 0.5), 1.5)
 	_paper.draw_string(Memo.FONT, Vector2(SIGN_BOX.position.x + 10, SIGN_BOX.end.y - 2), tr("SIGNATURE OF EMPLOYEE"), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(ink, 0.55))
@@ -210,10 +294,3 @@ func _draw_paper() -> void:
 	if _signed():
 		_paper.draw_rect(OK_BOX, Color(ink, 0.9))
 		_paper.draw_string(Memo.FONT, Vector2(OK_BOX.position.x, OK_BOX.position.y + 35), "OK", HORIZONTAL_ALIGNMENT_CENTER, OK_BOX.size.x, 28, Memo.PAPER)
-	var word: String = r.get("stamp", "URGENT")
-	if _stamped and not word.is_empty():
-		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - (_t - STAMP_AT) / 0.12)
-		_paper.draw_set_transform(Vector2(w - 120, 38), deg_to_rad(-8.0), Vector2(pop, pop))
-		_paper.draw_rect(Rect2(-80, -26, 160, 48), Color(Memo.STAMP, 0.85), false, 3.0)
-		_paper.draw_string(Memo.FONT, Vector2(-80, 12), tr(word), HORIZONTAL_ALIGNMENT_CENTER, 160, 30, Color(Memo.STAMP, 0.85))
-		_paper.draw_set_transform(Vector2.ZERO)

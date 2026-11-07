@@ -13,7 +13,8 @@ extends Node3D
 ## are refused: the chamber spits them back onto the mat (they are the bin's business). Units still
 ## being analysed and slips not filed yet are counted when the game quits. The coin vacuums leave
 ## slips alone. A research unit yields research_mult times the Findings, a mini unit a share
-## (findings_for); minis are no stock. The tube's minis are filed straight into the lab (file_direct).
+## (findings_for); minis are no stock. The tube's research minis appear in the mouth as if thrown in,
+## or are thrown back onto the mat when every bench is busy (file_direct).
 
 const FLAP_TIME := 0.18
 ## Where the cabbage is sucked to (bay space, behind the back wall) and how long that takes; the
@@ -129,6 +130,11 @@ func _on_entered(body: Node3D) -> void:
 		cabbage.linear_velocity = global_basis.z * SPIT.x + Vector3.UP * SPIT.y
 		$FlapShut.cue(cabbage.global_position)
 		return
+	_admit(cabbage)
+
+
+## A unit taken onto a free bench: sucked in through the back, scanned, a slip once qa_time is up.
+func _admit(cabbage: Cabbage) -> void:
 	_jobs.append(0.0)
 	_yields.append(_take(cabbage))
 	# Off the mat for good: the feeder rolls the next one in while this one is analysed.
@@ -168,12 +174,17 @@ func _take(cabbage: Cabbage) -> int:
 	return findings_for(cabbage, save)
 
 
-## Delivered by the tube straight into the lab: no bench, no slip, its Findings are filed at once.
+## Delivered by the tube (hidden, frozen, out of the physics): it appears in the chamber's mouth and
+## is taken like one thrown in. With every bench busy the street throws it back onto the mat, as
+## after a refused sale.
 func file_direct(cabbage: Cabbage) -> void:
-	SaveManager.save.findings += _take(cabbage)
-	$ScanSound.cue(cabbage.global_position)
-	$Out.cue(cabbage.global_position)
-	cabbage.queue_free()
+	cabbage.global_position = mouth()
+	cabbage.visible = true
+	if has_room():
+		_admit(cabbage)
+		return
+	cabbage.away = true
+	window._send_back(cabbage, 0.0)
 
 
 func _finish() -> void:

@@ -39,7 +39,7 @@ const SWITCH_AT := Vector3(0.088, 0.008, 0.0)
 const AUTO_COOLDOWN := 1.0
 const AUTO_OFF := Color(0.3, 0.27, 0.22, 1)
 ## Stage 2 crate prices as a share of the full-sale price (crate_share): after the shock; during the
-## squeeze after the farm is bought (SQUEEZE_TIME s), then easing back over EASE_TIME s.
+## squeeze once both the shock and the farm are in (SQUEEZE_TIME s), then easing back over EASE_TIME s.
 const SHOCK_SHARE := 0.6
 const SQUEEZE_SHARE := 1.25
 const SQUEEZE_TIME := 300.0
