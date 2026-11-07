@@ -8,19 +8,23 @@
 transparency = 1
 blend_mode = 1
 shading_mode = 0
-albedo_color = Color(0.9, 0.92, 0.95, 0.1)
+albedo_color = Color(0.9, 0.94, 1, 0.24)
 
 [sub_resource type="BoxMesh" id="FaceMesh"]
 material = SubResource("Lit")
-size = Vector3(0.32, 0.2, 0.02)
+size = Vector3(0.48, 0.18, 0.02)
 
 [sub_resource type="StandardMaterial3D" id="Rim"]
 shading_mode = 0
-albedo_color = Color(1, 0.94, 0.8, 1)
+albedo_color = Color(0.92, 0.96, 1, 1)
 
 [sub_resource type="BoxMesh" id="EdgeMesh"]
 material = SubResource("Rim")
-size = Vector3(0.32, 0.014, 0.014)
+size = Vector3(0.5, 0.028, 0.028)
+
+[sub_resource type="BoxMesh" id="PostMesh"]
+material = SubResource("Rim")
+size = Vector3(0.028, 0.22, 0.028)
 
 [node name="WindowTargets" type="Node3D"]
 script = ExtResource("1_script")
@@ -29,28 +33,38 @@ script = ExtResource("1_script")
 visible = false
 
 [node name="Face" type="MeshInstance3D" parent="Glow"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -1.17)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, -1.145)
 cast_shadow = 0
 mesh = SubResource("FaceMesh")
 
 [node name="Edge" type="MeshInstance3D" parent="Glow"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, -1.16)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.735, -1.14)
 cast_shadow = 0
 mesh = SubResource("EdgeMesh")
 
+[node name="PostL" type="MeshInstance3D" parent="Glow/Edge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.236, -0.11, 0)
+cast_shadow = 0
+mesh = SubResource("PostMesh")
+
+[node name="PostR" type="MeshInstance3D" parent="Glow/Edge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.236, -0.11, 0)
+cast_shadow = 0
+mesh = SubResource("PostMesh")
+
 [node name="Light" type="SpotLight3D" parent="Glow"]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 1.7, -1.45)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 1.7, -1.32)
 light_color = Color(0.92, 0.94, 1, 1)
-light_energy = 6.0
+light_energy = 14.0
 spot_range = 1.6
-spot_angle = 9.0
+spot_angle = 14.0
 spot_angle_attenuation = 0.5
 
 [node name="Spill" type="OmniLight3D" parent="Glow"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74, -1.02)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74, -1.04)
 light_color = Color(0.92, 0.94, 1, 1)
-light_energy = 3.0
-omni_range = 0.45
+light_energy = 4.0
+omni_range = 0.5
 omni_attenuation = 1.5
 
 [node name="On" type="AudioStreamPlayer3D" parent="."]

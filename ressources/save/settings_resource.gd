@@ -54,7 +54,7 @@ enum ShadowQuality { LOW, MEDIUM, HIGH }
 		if screen_mode == ScreenMode.WINDOWED:
 			Engine.get_main_loop().root.move_to_center()
 
-@export var fidelity_fx := 2:
+@export var fidelity_fx := 0:
 	set(new_f):
 		fidelity_fx = new_f
 		map_specific_settings_changed.emit()

@@ -254,6 +254,12 @@ Give the flow link for re-picking takes. Never claim it sounds right.
 
 QA bay (2026-10-31): `qa_flap_shut_1..3` (−5 dB, three takes in a randomizer), `qa_flap_open` (−7), `qa_scan` (−6, a rising hum timed to the 0.45 s scan sweep), `qa_done` (−5, brass bell when a Finding is filed). The arrival reuses `console_drop`, the suck-in reuses `cabbage_suck`. A 5 s "quiet analyser whirr" prompt gave four near-silent takes (−50 dB): ask for something audible ("steady electric motor hum") rather than "quiet". `peaks.py` under-reads short transients by 10–15 dB; check a finished wav with `ffmpeg -af volumedetect`.
 
+Findings slip (2026-11-07): `findings_slip_1..2` (−5 dB, 0.85 s, randomizer pitch 1.06), cued when a collected slip starts its 0.5 s flight to the Findings counter: paper flutter (`slip_flutter_mPCX` / `hUAm`, −3, cut ~0.45 s) then the counter clack (`slip_clack_yLtp` / `PAEt`) landing at 0.50 s. The slip's desk landing reuses `card_land_1..3` (node −3 dB). 8 takes, ~15 credits.
+
+Fine notice (2026-11-07): `fine_notice_1..2` (−2 dB, 1.0 s, randomizer pitch 1.04) on the notice of penalty's one `Penalty` player, replacing card_land + press_stamp: paper slap (`fine_slap_6BNc` / `aeM0`, −2) landing at 0.17 s where the paper's 0.18 s drop ends, the stern stamp `fine_stamp_xHov` (0) at 0.35 s with the FINED pop, then a low intercom buzz (`fine_buzz_pUE9` / `B8yv`, −8, cut 0.4 s) from 0.42 s. Three of four "rubber stamp slammed down angrily" takes came out near-silent (−34 to −38 dB). 12 takes, ~27 credits.
+
+Approval stamp (2026-11-07): `press_stamp_1..2` rebuilt as stamp + success sting (−1 dB, 1.0/1.1 s): old `press_stamp_take_4` thunk and `approve_thunk_vRsR` (−2) both hitting at 0.02 s, then a cash-register cha-ching (`approve_register_YGgN` / `ag1l`, −5/−6) at 0.13 s, a beat after the head lands. The "service bell ... firmly" prompt still came out quiet (true peaks −9 to −21 dB).
+
 Projector screen (2026-10-31): `projector_roll_down` (−2 dB, 1.0 s: unroll whirr 0–0.2 s, bar thud at 0.145 s where TRANS_BOUNCE first lands, lamp clunk/buzz at 0.40 s when the flicker starts), `projector_roll_up` (−4, whirr then the spare `qa_flap_shut_yKhq` clank at 0.35 s; the roll-up takes peaked at their start, not on the end clack), `projector_approve` (−3, small rubber stamp), `projector_denied` (−8, reuses `console_denied_4` pitched down 10 %). 20 takes, ~40 credits.
 
 Stage 1 (2026-10-30), 8 sounds, 32 takes, ~90 credits. One file per variation

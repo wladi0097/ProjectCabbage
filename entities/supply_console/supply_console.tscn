@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://entities/supply_console/supply_console.gd" id="1_console"]
 [ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
-[ext_resource type="Texture2D" path="res://assets/sprites/icons/pack_crate.svg" id="4_icon"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/pack_buy.svg" id="4_icon"]
 [ext_resource type="PackedScene" path="res://assets/meshes/Machines/supply_console.blend" id="5_model"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_console_drop"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/console_press_1.wav" id="sfx_console_press_1"]
@@ -71,7 +71,7 @@ bone_name = "Plunger"
 
 [node name="Icon" type="Sprite3D" parent="Model/Armature/Skeleton3D/IconMount"]
 transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, 0, 0.0342, 0.0103)
-pixel_size = 0.00055
+pixel_size = 0.00032
 modulate = Color(0.16, 0.16, 0.15, 1)
 texture = ExtResource("4_icon")
 

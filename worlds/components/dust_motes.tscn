@@ -28,7 +28,7 @@ alpha_curve = SubResource("FadeInOut")
 [sub_resource type="StandardMaterial3D" id="Mote"]
 transparency = 1
 vertex_color_use_as_albedo = true
-albedo_color = Color(0.82, 0.8, 0.74, 0.34)
+albedo_color = Color(0.82, 0.8, 0.74, 0.22)
 roughness = 1.0
 billboard_mode = 3
 billboard_keep_scale = true
@@ -43,7 +43,7 @@ size = Vector2(0.0045, 0.0045)
 [node name="DustMotes" type="GPUParticles3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.5, 0.25)
 cast_shadow = 0
-amount = 260
+amount = 110
 lifetime = 18.0
 preprocess = 18.0
 randomness = 0.5

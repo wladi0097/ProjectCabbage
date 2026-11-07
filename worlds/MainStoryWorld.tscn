@@ -18,6 +18,18 @@
 [ext_resource type="PackedScene" uid="uid://cyemby4epomiq" path="res://entities/price_slate/price_slate.tscn" id="17_slate"]
 [ext_resource type="Script" uid="uid://dmue1m4brycav" path="res://worlds/components/debug_keys.gd" id="18_debug"]
 [ext_resource type="PackedScene" uid="uid://wp2fpr54kw2c" path="res://entities/upgrade_desk/upgrade_desk.tscn" id="19_upgrades"]
+[ext_resource type="PackedScene" path="res://entities/qa_bay/qa_bay.tscn" id="30_qa"]
+[ext_resource type="PackedScene" path="res://entities/tally_machine/findings_counter.tscn" id="31_findings"]
+[ext_resource type="PackedScene" path="res://entities/associate/associate.tscn" id="32_associate"]
+[ext_resource type="PackedScene" path="res://entities/projector/projector.tscn" id="33_projector"]
+[ext_resource type="PackedScene" path="res://entities/ledger/ledger.tscn" id="34_ledger"]
+[ext_resource type="PackedScene" path="res://entities/milestone/milestone_memo.tscn" id="34_milestone"]
+[ext_resource type="PackedScene" path="res://entities/consultant/consultant.tscn" id="mgr_consultant"]
+[ext_resource type="PackedScene" path="res://entities/manager/manager.tscn" id="mgr_manager"]
+[ext_resource type="PackedScene" path="res://entities/rotten_bin/rotten_bin.tscn" id="sales_bin"]
+[ext_resource type="PackedScene" path="res://entities/catch_combo/catch_combo.tscn" id="sales_combo"]
+[ext_resource type="PackedScene" path="res://entities/golden_lamp/golden_lamp.tscn" id="sales_lamp"]
+[ext_resource type="PackedScene" path="res://entities/window_targets/window_targets.tscn" id="sales_targets"]
 [ext_resource type="AudioStream" uid="uid://bvegj1jwuv651" path="res://assets/audio/effects/cabbage_refused_1.wav" id="sfx_cabbage_refused_1"]
 [ext_resource type="AudioStream" uid="uid://ccccks88k3uru" path="res://assets/audio/effects/cabbage_refused_2.wav" id="sfx_cabbage_refused_2"]
 [ext_resource type="AudioStream" uid="uid://eixral3a7hwg" path="res://assets/audio/effects/cabbage_refused_3.wav" id="sfx_cabbage_refused_3"]
@@ -41,18 +53,6 @@
 [ext_resource type="AudioStream" uid="uid://dc4ljvl6l0dq2" path="res://assets/audio/effects/tally_tick_1.wav" id="sfx_tally_tick_1"]
 [ext_resource type="AudioStream" uid="uid://bbbo22sd4tyyy" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tally_tick_2"]
 [ext_resource type="AudioStream" uid="uid://bgi2p7dr0c3b" path="res://assets/audio/effects/tally_tick_3.wav" id="sfx_tally_tick_3"]
-[ext_resource type="PackedScene" path="res://entities/qa_bay/qa_bay.tscn" id="30_qa"]
-[ext_resource type="PackedScene" path="res://entities/tally_machine/findings_counter.tscn" id="31_findings"]
-[ext_resource type="PackedScene" path="res://entities/associate/associate.tscn" id="32_associate"]
-[ext_resource type="PackedScene" path="res://entities/projector/projector.tscn" id="33_projector"]
-[ext_resource type="PackedScene" path="res://entities/ledger/ledger.tscn" id="34_ledger"]
-[ext_resource type="PackedScene" path="res://entities/milestone/milestone_memo.tscn" id="34_milestone"]
-[ext_resource type="PackedScene" path="res://entities/manager/manager.tscn" id="mgr_manager"]
-[ext_resource type="PackedScene" path="res://entities/consultant/consultant.tscn" id="mgr_consultant"]
-[ext_resource type="PackedScene" path="res://entities/golden_lamp/golden_lamp.tscn" id="sales_lamp"]
-[ext_resource type="PackedScene" path="res://entities/catch_combo/catch_combo.tscn" id="sales_combo"]
-[ext_resource type="PackedScene" path="res://entities/rotten_bin/rotten_bin.tscn" id="sales_bin"]
-[ext_resource type="PackedScene" path="res://entities/window_targets/window_targets.tscn" id="sales_targets"]
 [ext_resource type="PackedScene" path="res://entities/vacuum/vacuum.tscn" id="supply_vacuums"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
@@ -307,7 +307,7 @@ coins = NodePath("../Coins")
 [node name="DustMotes" parent="." unique_id=1402536112 instance=ExtResource("15_dust")]
 
 [node name="PriceSlate" parent="." unique_id=1047906906 instance=ExtResource("17_slate")]
-transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, -0.8, 0.75, -0.38161275)
+transform = Transform3D(0.79053783, -0.0023870962, 0.12265411, 0.009796036, 0.79852265, -0.047597174, -0.12228559, 0.048536126, 0.7891074, -0.814262, 0.75, -0.3019072)
 
 [node name="UpgradeDesk" parent="." unique_id=613601056 instance=ExtResource("19_upgrades")]
 
@@ -365,46 +365,46 @@ bus = &"SFX"
 script = ExtResource("13_cue")
 
 [node name="TallyMachine" parent="." unique_id=1271739406 instance=ExtResource("12_tally")]
-transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, -1.14, 0.76, -0.67)
+transform = Transform3D(1.2931938, 0, 0.13285097, 0, 1.3, 0, -0.13285097, 0, 1.2931938, -1.1312298, 0.76, -0.63562363)
 
-[node name="FindingsCounter" parent="." instance=ExtResource("31_findings")]
-transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, -1.14, 0.76, -0.67)
+[node name="FindingsCounter" parent="." unique_id=2132685960 instance=ExtResource("31_findings")]
+transform = Transform3D(1.2931938, 0, 0.13285097, 0, 1.3, 0, -0.13285097, 0, 1.2931938, -1.1312298, 0.76, -0.63562363)
 
-[node name="QaBay" parent="." node_paths=PackedStringArray("window", "counter") instance=ExtResource("30_qa")]
+[node name="QaBay" parent="." unique_id=1531293658 node_paths=PackedStringArray("window", "counter") instance=ExtResource("30_qa")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.75, -0.8)
 window = NodePath("../SaleWindow")
 counter = NodePath("../FindingsCounter")
 
-[node name="Associate" parent="." instance=ExtResource("32_associate")]
+[node name="Associate" parent="." unique_id=1970673942 instance=ExtResource("32_associate")]
 
-[node name="MilestoneMemo" parent="." instance=ExtResource("34_milestone")]
+[node name="MilestoneMemo" parent="." unique_id=129412619 instance=ExtResource("34_milestone")]
 
-[node name="Projector" parent="." instance=ExtResource("33_projector")]
+[node name="Projector" parent="." unique_id=1393187320 instance=ExtResource("33_projector")]
 
-[node name="Ledger" parent="." instance=ExtResource("34_ledger")]
+[node name="Ledger" parent="." unique_id=825113695 instance=ExtResource("34_ledger")]
 
-[node name="CoinVacuums" parent="." node_paths=PackedStringArray("coins") instance=ExtResource("supply_vacuums")]
+[node name="CoinVacuums" parent="." unique_id=1464062775 node_paths=PackedStringArray("coins") instance=ExtResource("supply_vacuums")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.38, 0.76, 0.55)
 coins = NodePath("../Coins")
 
-[node name="Manager" parent="." node_paths=PackedStringArray("coins", "memo") instance=ExtResource("mgr_manager")]
+[node name="Manager" parent="." unique_id=114688732 node_paths=PackedStringArray("coins", "memo") instance=ExtResource("mgr_manager")]
 coins = NodePath("../Coins")
 memo = NodePath("../MilestoneMemo")
 
-[node name="Consultant" parent="." node_paths=PackedStringArray("slate") instance=ExtResource("mgr_consultant")]
+[node name="Consultant" parent="." unique_id=1828805438 node_paths=PackedStringArray("slate") instance=ExtResource("mgr_consultant")]
 slate = NodePath("../PriceSlate")
 
-[node name="GoldenLamp" parent="." node_paths=PackedStringArray("desk_light") instance=ExtResource("sales_lamp")]
-transform = Transform3D(1.323, 0, 0.4578, 0, 1.4, 0, -0.4578, 0, 1.323, 2.0, 0.76, -0.68)
+[node name="GoldenLamp" parent="." unique_id=701713720 node_paths=PackedStringArray("desk_light") instance=ExtResource("sales_lamp")]
+transform = Transform3D(1.323, 0, 0.4578, 0, 1.4, 0, -0.4578, 0, 1.323, 2, 0.76, -0.68)
 desk_light = NodePath("../DeskLamp")
 
-[node name="CatchCombo" parent="." instance=ExtResource("sales_combo")]
+[node name="CatchCombo" parent="." unique_id=1336101039 instance=ExtResource("sales_combo")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 1.25, 0.3)
 
-[node name="RottenBin" parent="." instance=ExtResource("sales_bin")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.76, 1.24)
+[node name="RottenBin" parent="." unique_id=1814032041 instance=ExtResource("sales_bin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.76, 1.04)
 
-[node name="WindowTargets" parent="." instance=ExtResource("sales_targets")]
+[node name="WindowTargets" parent="." unique_id=660965086 instance=ExtResource("sales_targets")]
 
 [node name="Overlay" type="CanvasLayer" parent="." unique_id=1259288364]
 
@@ -427,7 +427,7 @@ layer = 2
 [node name="DebugKeys" type="Node" parent="." unique_id=1045444223]
 script = ExtResource("18_debug")
 
-[connection signal="refused" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]
+[connection signal="thrown_back" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]
 [connection signal="bounced" from="Coins" to="Coins/Bounce" method="cue"]
 [connection signal="collected" from="Coins" to="Coins/Collect" method="cue"]
 [connection signal="deposited" from="Coins" to="Coins/Deposit" method="cue"]

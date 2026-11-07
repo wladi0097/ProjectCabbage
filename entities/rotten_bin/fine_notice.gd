@@ -2,7 +2,8 @@ class_name FineNotice
 extends CanvasLayer
 ## The fine for selling a rotten unit: a notice of penalty drops onto the left desk, is
 ## stamped FINED in red, and fades away after HOLD seconds. It never takes the mouse. A new fine
-## replaces the one showing.
+## replaces the one showing. One sound (Penalty) covers it all: the paper slap as it lands
+## (IN_TIME), the stamp at STAMP_AT and a low buzzer after it.
 
 const FONT := preload("res://assets/fonts/Oswald.ttf")
 const PAPER := Color(0.72, 0.73, 0.69)
@@ -42,7 +43,7 @@ func show_fine(taken: int) -> void:
 	_stamped = false
 	_paper.rotation = deg_to_rad(randf_range(-4.0, 2.0))
 	_paper.visible = true
-	$Land.play()
+	$Penalty.play()
 
 
 func _process(delta: float) -> void:
@@ -51,7 +52,6 @@ func _process(delta: float) -> void:
 	_t += delta
 	if not _stamped and _t >= STAMP_AT:
 		_stamped = true
-		$Stamp.play()
 	if _t >= HOLD + OUT_TIME:
 		_paper.visible = false
 		return

@@ -1,9 +1,9 @@
 class_name SupplyConsole
 extends Node3D
 ## The supply chain's console: an amber ticker with the current pack price and the buy-pack button
-## (a crate icon, no text). Pressing it pays the price from the tally and adds pack_size to the stock.
-## A pack's cabbage costs PACK_SHARE of the full-sale price (PriceSlate.BASE_REF_PRICE × marketing),
-## so packs stay a steady share of what a sale brings as marketing grows.
+## (a "$" and a green cabbage, no text). Pressing it pays the price from the tally and adds pack_size to the stock.
+## A pack's cabbage costs UNIT_COST times the price factor. Marketing does not touch it: it only
+## raises what a sale brings, so every marketing upgrade is pure margin (see pack_price).
 ## Every minute the price moves: around the base, ±50%, pushed up by the packs bought in the
 ## minute before, plus noise. It drops onto the desk once the first UNLOCK_SALES are sold.
 ## Sold out and unable to pay for a pack for BAILOUT_WAIT seconds, the price drops to the coins
@@ -14,7 +14,8 @@ extends Node3D
 const Slate := preload("res://entities/price_slate/price_slate.gd")
 
 const UNLOCK_SALES := 10
-const PACK_SHARE := 0.35
+## A pack cabbage at price factor 1: 35% of the textbook $3 sale, before any marketing.
+const UNIT_COST := 1.05
 const PRICE_PERIOD := 60.0
 const PRESSURE_PER_PACK := 0.12
 ## Share of the pressure left after each price change.
@@ -97,7 +98,7 @@ func _process(delta: float) -> void:
 		_press()
 		_push(true)
 		get_tree().create_timer(0.12).timeout.connect(_push.bind(false))
-	# Marketing and pack size change between ticks; the ticker follows at once.
+	# Pack size and discount change between ticks; the ticker follows at once.
 	if _cost() != _shown_cost:
 		_shown_cost = _cost()
 		_price.text = "$%d" % _shown_cost
@@ -105,7 +106,7 @@ func _process(delta: float) -> void:
 
 func _cost() -> int:
 	var save := SaveManager.save
-	return _bailout if _bailout >= 0 else pack_price(save.price_factor, save.pack_size, save.marketing, save.pack_discount)
+	return _bailout if _bailout >= 0 else pack_price(save.price_factor, save.pack_size, save.pack_discount)
 
 
 func _tick_price() -> void:
@@ -213,8 +214,11 @@ static func is_broke(stock: int, money: int, cost: int) -> bool:
 	return stock <= 0 and money < cost
 
 
-static func pack_price(factor: float, size: int, marketing: float, discount := 1.0) -> int:
-	return maxi(roundi(factor * PACK_SHARE * Slate.BASE_REF_PRICE * marketing * size * discount), 1)
+## What a pack costs: `size` cabbages at UNIT_COST, times the minute's price factor and the
+## cheaper-pack discount; never under $1. Later events that should make supply dearer (shortages,
+## tariffs) multiply in here, not through marketing.
+static func pack_price(factor: float, size: int, discount := 1.0) -> int:
+	return maxi(roundi(factor * UNIT_COST * size * discount), 1)
 
 
 ## Automatic buying: stock is down to the reserve and the tally can pay; while stock is left it

@@ -3,7 +3,6 @@
 [ext_resource type="Script" path="res://entities/qa_bay/qa_bay.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://assets/meshes/Machines/qa_bay.blend" id="2_model"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
-[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="4_font"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_drop"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/qa_flap_shut_1.wav" id="sfx_shut_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/qa_flap_shut_2.wav" id="sfx_shut_2"]
@@ -13,6 +12,15 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/qa_done.wav" id="sfx_done"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_1.wav" id="sfx_out_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_suck_2.wav" id="sfx_out_2"]
+[ext_resource type="Mesh" path="res://assets/meshes/Tokens/findings_token.obj" id="4_token"]
+[ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_albedo.png" id="4_token_albedo"]
+[ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_normal.png" id="4_token_normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_orm.png" id="4_token_orm"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/findings_slip_1.wav" id="sfx_slip_filed_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/findings_slip_2.wav" id="sfx_slip_filed_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_1.wav" id="sfx_slip_land_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_2.wav" id="sfx_slip_land_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_3.wav" id="sfx_slip_land_3"]
 
 [sub_resource type="BoxShape3D" id="Panel"]
 size = Vector3(0.3, 0.3, 0.4)
@@ -89,6 +97,44 @@ streams_count = 2
 stream_0/stream = ExtResource("sfx_out_1")
 stream_1/stream = ExtResource("sfx_out_2")
 
+[sub_resource type="ORMMaterial3D" id="Token1"]
+albedo_texture = ExtResource("4_token_albedo")
+orm_texture = ExtResource("4_token_orm")
+normal_enabled = true
+normal_texture = ExtResource("4_token_normal")
+uv1_scale = Vector3(0.32, 0.96, 1)
+uv1_offset = Vector3(0.0067, 0.02, 0)
+
+[sub_resource type="ORMMaterial3D" id="Token5"]
+albedo_texture = ExtResource("4_token_albedo")
+orm_texture = ExtResource("4_token_orm")
+normal_enabled = true
+normal_texture = ExtResource("4_token_normal")
+uv1_scale = Vector3(0.32, 0.96, 1)
+uv1_offset = Vector3(0.3400, 0.02, 0)
+
+[sub_resource type="ORMMaterial3D" id="Token10"]
+albedo_texture = ExtResource("4_token_albedo")
+orm_texture = ExtResource("4_token_orm")
+normal_enabled = true
+normal_texture = ExtResource("4_token_normal")
+uv1_scale = Vector3(0.32, 0.96, 1)
+uv1_offset = Vector3(0.6733, 0.02, 0)
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_slip_land"]
+random_pitch = 1.08
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_slip_land_1")
+stream_1/stream = ExtResource("sfx_slip_land_2")
+stream_2/stream = ExtResource("sfx_slip_land_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_slip_filed"]
+random_pitch = 1.06
+streams_count = 2
+stream_0/stream = ExtResource("sfx_slip_filed_1")
+stream_1/stream = ExtResource("sfx_slip_filed_2")
+
 [node name="QaBay" type="Node3D"]
 script = ExtResource("1_script")
 
@@ -143,17 +189,6 @@ transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.13, 0
 cast_shadow = 0
 mesh = SubResource("LampDome")
 
-[node name="Plate" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.2625, 0.2125, 0.1216)
-pixel_size = 0.0004
-modulate = Color(0.1, 0.08, 0.05, 1)
-text = "QUALITY
-ASSURANCE"
-font = ExtResource("4_font")
-font_size = 60
-line_spacing = -8.0
-outline_size = 0
-
 [node name="Thud" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_drop")
 bus = &"SFX"
@@ -186,3 +221,36 @@ script = ExtResource("3_cue")
 stream = SubResource("Rand_out")
 bus = &"SFX"
 script = ExtResource("3_cue")
+
+[node name="Slip1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.8, 0, 0, 0, 0.9, 0, 0, 0)
+visible = false
+mesh = ExtResource("4_token")
+surface_material_override/0 = SubResource("Token1")
+
+[node name="Slip5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+visible = false
+mesh = ExtResource("4_token")
+surface_material_override/0 = SubResource("Token5")
+
+[node name="Slip10" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.15, 0, 0, 0, 1.25, 0, 0, 0, 1.15, 0, 0, 0)
+visible = false
+mesh = ExtResource("4_token")
+surface_material_override/0 = SubResource("Token10")
+
+[node name="SlipLand" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_slip_land")
+volume_db = -3.0
+bus = &"SFX"
+max_polyphony = 2
+script = ExtResource("3_cue")
+min_interval = 0.05
+
+[node name="SlipFiled" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_slip_filed")
+bus = &"SFX"
+max_polyphony = 3
+script = ExtResource("3_cue")
+min_interval = 0.05

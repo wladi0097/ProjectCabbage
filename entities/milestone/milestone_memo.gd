@@ -3,6 +3,8 @@ extends CanvasLayer
 ## to the save once (its id goes into save.milestones), logged, and a paper memo slides up from the
 ## bottom edge, gets stamped, and slides away after HOLD seconds or on a click. Several due at once
 ## queue up. The game keeps running; only the paper's own rect takes the mouse.
+## Once a memo has gone, a small folded memo tab waits in the bottom-right corner: clicking it slides
+## the latest memo up again (nothing re-applied).
 
 const FONT := preload("res://assets/fonts/Oswald.ttf")
 const PAPER := Color(0.72, 0.73, 0.69)
@@ -12,7 +14,7 @@ const STAMP := Color(0.55, 0.12, 0.1)
 ## at = units sold; key = the save number multiplied by mul (times-only, so it stacks with upgrades).
 const MILESTONES := [
 	{id = "units_25", at = 25, key = "marketing", mul = 1.25, re = "25 UNITS MOVED",
-		note = "Your output has been observed.", bonus = "Units are 25% more desirable."},
+		note = "Your output has been observed.", bonus = "The street accepts prices 25% higher."},
 	{id = "units_100", at = 100, key = "findings_per_cabbage", mul = 2, re = "100 UNITS MOVED",
 		note = "Management notes your contribution.", bonus = "Quality Assurance files twice the Findings."},
 	{id = "units_250", at = 250, key = "associate_speed", mul = 1.5, re = "250 UNITS MOVED",
@@ -22,7 +24,7 @@ const MILESTONES := [
 	{id = "units_2500", at = 2500, key = "associate_speed", mul = 1.5, re = "2,500 UNITS MOVED",
 		note = "Your figures have been laminated.", bonus = "Hired hands move 50% faster."},
 	{id = "units_10000", at = 10000, key = "marketing", mul = 2.0, re = "10,000 UNITS MOVED",
-		note = "A plaque is under consideration.", bonus = "Units are twice as desirable."},
+		note = "A plaque is under consideration.", bonus = "The street accepts prices twice as high."},
 ]
 const SIZE := Vector2(560, 250)
 const IN_TIME := 0.35
@@ -35,8 +37,11 @@ var _memo := {}
 var _t := 0.0
 var _out_at := HOLD
 var _stamped := false
+## The latest memo shown, which the corner tab brings back.
+var _last := {}
 
 @onready var _paper: Control = $Paper
+@onready var _tab: Control = $Tab
 
 
 func _ready() -> void:
@@ -46,6 +51,14 @@ func _ready() -> void:
 	_paper.visible = false
 	_paper.draw.connect(_draw_paper)
 	_paper.gui_input.connect(_on_paper_input)
+	_tab.visible = false
+	_tab.draw.connect(_draw_tab)
+	_tab.gui_input.connect(_on_tab_input)
+	# After a reload the tab already holds the last milestone reached.
+	var reached := SaveManager.save.milestones
+	for m: Dictionary in MILESTONES:
+		if not reached.is_empty() and m.id == reached[-1]:
+			_last = m
 
 
 func _process(delta: float) -> void:
@@ -58,8 +71,11 @@ func _process(delta: float) -> void:
 	if _memo.is_empty():
 		if _queue.is_empty():
 			_paper.visible = false
+			_tab.visible = not _last.is_empty()
 			return
 		_memo = _queue.pop_front()
+		_last = _memo
+		_tab.visible = false
 		_t = 0.0
 		_out_at = HOLD
 		_stamped = false
@@ -88,6 +104,13 @@ func _on_paper_input(event: InputEvent) -> void:
 	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 		_out_at = minf(_out_at, _t)
 		_paper.accept_event()
+
+
+func _on_tab_input(event: InputEvent) -> void:
+	var button := event as InputEventMouseButton
+	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
+		_queue.push_front(_last)
+		_tab.accept_event()
 
 
 ## The first milestone reached at `sold` units and not yet in `reached`, or {} if none.
@@ -132,3 +155,14 @@ func _draw_paper() -> void:
 		_paper.draw_rect(Rect2(-62, -24, 124, 46), Color(STAMP, 0.8), false, 3.0)
 		_paper.draw_string(FONT, Vector2(-62, 12), "NOTED", HORIZONTAL_ALIGNMENT_CENTER, 124, 30, Color(STAMP, 0.8))
 		_paper.draw_set_transform(Vector2.ZERO)
+
+
+## The corner tab: a small folded memo slip.
+func _draw_tab() -> void:
+	var r := Rect2(Vector2.ZERO, _tab.size)
+	_tab.draw_rect(Rect2(r.position + Vector2(4, 4), r.size), Color(0, 0, 0, 0.4))
+	_tab.draw_rect(r, PAPER)
+	_tab.draw_colored_polygon(PackedVector2Array([Vector2(r.size.x - 14, 0), Vector2(r.size.x, 14), Vector2(r.size.x - 14, 14)]), PAPER.darkened(0.25))
+	_tab.draw_string(FONT, Vector2(0, 26), "MEMO", HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 18, INK)
+	_tab.draw_line(Vector2(10, 34), Vector2(r.size.x - 10, 34), Color(INK, 0.4), 1.0)
+	_tab.draw_line(Vector2(10, 40), Vector2(r.size.x - 18, 40), Color(INK, 0.4), 1.0)

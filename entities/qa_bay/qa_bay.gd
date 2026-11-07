@@ -3,13 +3,16 @@ extends Node3D
 ## Quality Assurance (card 5): an inspection cabinet in the left third of the window gap. A cabbage
 ## flicked into its open chamber is taken off the mat (one unit of stock) and sucked straight in
 ## through the back to the lab, a cold scan line sweeping across it left to right as it goes. The
-## needle sweeps on for the rest of the save's qa_time, then its Findings go up by findings_per_cabbage. While busy the
+## needle sweeps on for the rest of the save's qa_time, then it ejects a report slip (worth
+## findings_per_cabbage) onto the desk in front. Sweeping the empty hand over a slip, like coins,
+## sends it into the Findings counter, and only then are its Findings counted. While busy the
 ## front flap is up and shuts the mouth. Slides in from the street side once the card is stamped, the
 ## Findings drum row drops into the empty slot above the tally machine's money drums, and from then
 ## on the SaleWindow only sells through the other two thirds. With more benches (save.qa_slots) it takes
 ## a new unit while others are analysed; the flap only shuts once every bench is busy. Rotten units
 ## are refused: the chamber spits them back onto the mat (they are the bin's business). Units still
-## being analysed when the game quits are filed at once.
+## being analysed and slips not filed yet are counted when the game quits. The coin vacuums leave
+## slips alone.
 
 const FLAP_TIME := 0.18
 ## Where the cabbage is sucked to (bay space, behind the back wall) and how long that takes; the
@@ -30,12 +33,28 @@ const DELIVER_FROM := Vector3(0.0, 0.0, -0.6)
 const DELIVER_TIME := 0.5
 const COUNTER_DROP := 1.0
 const COUNTER_DROP_TIME := 0.4
+## Report slips: square bakelite Findings tokens (one mesh, a material per denomination, each
+## template's scale sets its size and thickness), thrown out of the mouth onto this patch of desk
+## (bay space, in front of the flap), arcing SLIP_LIFT high in SLIP_EJECT_TIME, then flying into the
+## machine's hopper (the counter's Intake) exactly like a coin. A payout comes as the fewest ¶1, ¶5
+## and ¶10 tokens (CoinPile.coin_values: a huge one as ¶100s and up, drawn as the ¶10 token like coins).
+## SLIP_HALF is the token mesh's half thickness at scale 1; layers stack SLIP_LAYER apart.
+const SLIP_AREA := AABB(Vector3(-0.1, 0.0, 0.46), Vector3(0.47, 0.0, 0.16))
+const SLIP_LIFT := 0.18
+## Slips land side by side, this many in a row.
+const SLIP_ROW := 3
+const SLIP_EJECT_TIME := 0.45
+const SLIP_HALF := 0.008
+const SLIP_LAYER := 0.022
+const DESK_Y := 0.76
 
 @export var window: SaleWindow
 @export var counter: Node3D
 
 ## Seconds each unit on a bench has been analysed, oldest first.
 var _jobs: Array[float] = []
+## Slips out of the bay and not filed yet (on their way out, on the desk or homing); value in meta.
+var _slips: Array[Node3D] = []
 var _progress := 0.0
 var _flap := 0.0
 var _flapping: Tween
@@ -76,6 +95,8 @@ func _process(delta: float) -> void:
 		if SaveManager.save.stamped.has("quality_assurance"):
 			_deliver()
 		return
+	if Hand.held == null:
+		_sweep(Hand.point_on_height(DESK_Y))
 	if _jobs.is_empty():
 		return
 	for i in _jobs.size():
@@ -126,7 +147,7 @@ func _on_entered(body: Node3D) -> void:
 
 func _finish() -> void:
 	_jobs.pop_front()
-	SaveManager.save.findings += SaveManager.save.findings_per_cabbage
+	_eject(SaveManager.save.findings_per_cabbage)
 	$Done.cue($Done.global_position)
 	if not _jobs.is_empty():
 		# A bench came free: the flap opens again, the lamp stays on.
@@ -141,10 +162,91 @@ func _finish() -> void:
 	reset.tween_callback(_swing_flap.bind(0.0))
 
 
-## Quitting: the units on the benches yield their Findings now instead of being lost.
+## Quitting: the units on the benches and the slips not filed yet yield their Findings now.
 func _file_pending() -> void:
-	SaveManager.save.findings += _jobs.size() * SaveManager.save.findings_per_cabbage
+	SaveManager.save.findings += _jobs.size() * SaveManager.save.findings_per_cabbage + pending_findings()
 	_jobs.clear()
+	for slip in _slips:
+		slip.queue_free()
+	_slips.clear()
+
+
+## Findings in slips not filed yet.
+func pending_findings() -> int:
+	var total := 0
+	for slip in _slips:
+		total += slip.get_meta(&"value")
+	return total
+
+
+## A finished unit's report slips (`amount` in the fewest ¶1/¶5/¶10) fly out onto the desk in front.
+func _eject(amount: int) -> void:
+	var delay := 0.0
+	for value in CoinPile.coin_values(amount):
+		_eject_slip(value, delay)
+		delay += CoinPile.THROW_STAGGER * 2.0
+
+
+func _eject_slip(value: int, delay: float) -> void:
+	var slip: Node3D = (get_node("Slip10") if value >= 10 else get_node("Slip%d" % value)).duplicate()
+	var size := Basis.from_scale(slip.scale)
+	slip.top_level = true
+	slip.set_meta(&"value", value)
+	slip.set_meta(&"resting", false)
+	add_child(slip)
+	_slips.append(slip)
+	var from := to_global(Vector3(0.135, 0.08, 0.15))
+	# Side by side across the patch, then a layer on top of them.
+	var n := _slips.size() - 1
+	var spot := to_global(SLIP_AREA.position + Vector3((n % SLIP_ROW + randf_range(0.2, 0.8)) / SLIP_ROW, 0.0, randf()) * SLIP_AREA.size)
+	@warning_ignore("integer_division")
+	spot.y = DESK_Y + SLIP_HALF * slip.scale.y + (n / SLIP_ROW) * SLIP_LAYER + (n % SLIP_ROW) * 0.002
+	var turn := randf_range(-0.6, 0.6)
+	slip.global_position = from
+	slip.visible = false
+	var tween := slip.create_tween()
+	tween.tween_interval(delay)
+	tween.tween_callback(slip.show)
+	tween.tween_method(func(t: float) -> void:
+		slip.global_position = from.lerp(spot, t) + Vector3.UP * SLIP_LIFT * 4.0 * t * (1.0 - t)
+		slip.global_basis = global_basis * Basis(Vector3.UP, turn * t) * Basis(Vector3.RIGHT, TAU * (1.0 - t)) * size,
+		0.0, 1.0, SLIP_EJECT_TIME)
+	tween.tween_callback(func() -> void:
+		slip.set_meta(&"resting", true)
+		$SlipLand.cue(slip.global_position))
+
+
+## Resting slips under the empty hand fly into the Findings counter.
+func _sweep(point: Vector3) -> void:
+	var order := 0
+	for slip in _slips:
+		if slip.get_meta(&"resting") and Vector2(slip.global_position.x - point.x, slip.global_position.z - point.z).length() <= CoinPile.PICKUP_RADIUS:
+			slip.set_meta(&"resting", false)
+			_home(slip, order * CoinPile.HOME_STAGGER)
+			order += 1
+
+
+func _home(slip: Node3D, delay: float) -> void:
+	var from := slip.global_position
+	var start := slip.global_basis
+	var intake: Node3D = counter.get_node("Intake")
+	var tween := slip.create_tween()
+	tween.tween_interval(delay)
+	# findings_slip_* is a flutter with the hopper's clack at 0.5 s, when the slip drops in.
+	tween.tween_callback(func() -> void: $SlipFiled.cue(intake.global_position))
+	# The coins' flight (CoinPile._home): up, over the hopper, straight down into it, spinning,
+	# shrinking only inside the funnel.
+	tween.tween_method(func(t: float) -> void:
+		slip.global_position = CoinPile.home_point(from, intake.global_position, t * t)
+		slip.global_basis = (Basis(Vector3.RIGHT, t * CoinPile.HOME_TIME * 18.0) * start).orthonormalized() 				.scaled(Vector3.ONE * maxf(1.0 - smoothstep(0.88, 1.0, t), 0.01)),
+		0.0, 1.0, CoinPile.HOME_TIME)
+	tween.tween_callback(_file.bind(slip))
+
+
+func _file(slip: Node3D) -> void:
+	_slips.erase(slip)
+	SaveManager.save.findings += slip.get_meta(&"value")
+	slip.queue_free()
 
 
 ## Slides in through the gap from the street side; the window gives up its left third once it is in.

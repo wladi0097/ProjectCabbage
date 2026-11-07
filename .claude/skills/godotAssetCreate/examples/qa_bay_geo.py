@@ -9,14 +9,15 @@
 # flat on the desk as a lip, -90 deg stands it up); Needle (turns about the console face normal,
 # bone-local NEEDLE_AXIS = Godot (0, 0.7615, 0.648): (120 - 240 p) deg for p 0..1); ScanHead (slides
 # along bone X = world X, 0 at the chamber's left end, SCAN_RUN at the right).
-# The busy lamp's glowing lens and the plate's text live in the Godot scene (see the GODOT prints).
+# The busy lamp's glowing lens lives in the Godot scene (see the GODOT prints). No name plate: the
+# dial sits centred on the face, the lamp in its lower right corner.
 # Surfaces: machine_paint, machine_metal (vertex colour tinted), qa_glass (the chamber's top pane).
 from mathutils import Quaternion
 ASSET = "qa_bay"
-E, K, H, G, F, P, B = range(7)         # enamel, bakelite/rubber, chrome, glass, dark flap enamel, dial face, brass
+E, K, H, G, F, P = range(6)            # enamel, bakelite/rubber, chrome, glass, dark flap enamel, dial face
 COLOURS = {E: (0.15, 0.19, 0.16), K: (0.025, 0.025, 0.024), H: (0.62, 0.63, 0.65), G: (1, 1, 1),
-           F: (0.075, 0.095, 0.085), P: (0.78, 0.77, 0.71), B: (0.62, 0.42, 0.14)}
-SURFACE = {E: 0, K: 0, H: 1, G: 2, F: 0, P: 0, B: 1}
+           F: (0.075, 0.095, 0.085), P: (0.78, 0.77, 0.71)}
+SURFACE = {E: 0, K: 0, H: 1, G: 2, F: 0, P: 0}
 X0, X1, XC = -0.37, 0.37, -0.09       # outer x, chamber's left wall (console on the left of it)
 Y0, Y1 = -0.17, 0.24                   # front (room side), back (outside)
 TOP = 0.30
@@ -69,7 +70,7 @@ for k in range(4):                                                              
     y = 0.11 + k * 0.03
     part_box(body, (X0 + 0.04, y, TOP - 0.004), (XC - 0.04, y + 0.012, TOP + 0.002), 0.002, K)
 # Dial: pale face, chrome bezel, black tick studs; the needle is its own bone.
-DIAL, DIAL_R = (-0.23, 0.045), 0.085
+DIAL, DIAL_R = (-0.23, 0.01), 0.085
 spin(body, [(0, 0), (DIAL_R + 0.012, 0), (DIAL_R + 0.012, 0.01), (DIAL_R + 0.004, 0.014), (DIAL_R, 0.006), (0, 0.006)], H,
      FACE_M @ at(DIAL[0], DIAL[1], 0), 40)
 spin(body, [(0, 0), (DIAL_R, 0), (DIAL_R, 0.007), (0, 0.007)], P, FACE_M @ at(DIAL[0], DIAL[1], 0), 40)
@@ -78,11 +79,9 @@ for a in range(-120, 121, 30):
     x, s = DIAL[0] + math.sin(math.radians(a)) * r, DIAL[1] + math.cos(math.radians(a)) * r
     w = 0.006 if a % 120 else 0.01
     part_box(body, (x - w / 2, s - w / 2, 0.006), (x + w / 2, s + w / 2, 0.009), 0.0, K, FACE_M)
-# Busy lamp bezel (the glowing lens is a mesh in the Godot scene) and the brass plate (Label3D text).
+# Busy lamp bezel (the glowing lens is a mesh in the Godot scene).
 LAMP = (-0.13, -0.095)
 spin(body, [(0, 0), (0.03, 0), (0.03, 0.008), (0.024, 0.014), (0.02, 0.006), (0, 0.006)], H, FACE_M @ at(LAMP[0], LAMP[1], 0), 24)
-PLATE = (-0.345, -0.18, -0.13, -0.065)
-part_box(body, (PLATE[0], PLATE[2], -0.002), (PLATE[1], PLATE[3], 0.006), 0.002, B, FACE_M)
 
 # Chamber: enamel cheeks and back, dark liners inside, a black rubber floor and a suction port.
 part_box(body, (MOUTH[1], Y0 + 0.01, 0.014), (X1, Y1, TOP), 0.005, E)             # right cheek
@@ -148,7 +147,6 @@ for poly in me.polygons:
 # Godot placements for the scene (Godot (x, y, z) = Blender (x, z, -y)).
 def g(v): return "(%.4f, %.4f, %.4f)" % (v.x, v.z, -v.y)
 print("GODOT face normal", g(NF), "slope up", g(SD))
-print("GODOT plate centre", g(face((PLATE[0] + PLATE[1]) / 2, (PLATE[2] + PLATE[3]) / 2, 0.0075)))
 print("GODOT lamp", g(face(LAMP[0], LAMP[1], 0.006)), "scan x0", SCAN0, "run", SCAN_RUN)
 
 

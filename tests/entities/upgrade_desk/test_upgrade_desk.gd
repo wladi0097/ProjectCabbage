@@ -28,9 +28,9 @@ func _ready() -> void:
 		failed = true
 		push_error("inspection, consultant and combo should leave the review and the bin: %s" % [UpgradeDesk.next_cards(early, 3)])
 	early.append_array(["performance_review", "rotten_bin"])
-	if UpgradeDesk.next_cards(early, 3) != ["managerial_oversight", "regional_billboard", "window_targets"]:
+	if UpgradeDesk.next_cards(early, 3) != ["spoilage_memo", "managerial_oversight", "window_targets"]:
 		failed = true
-		push_error("the review should open the manager, the billboard and the targets: %s" % [UpgradeDesk.next_cards(early, 3)])
+		push_error("the review and the bin should open the memo, the manager and the targets: %s" % [UpgradeDesk.next_cards(early, 3)])
 	# Every `needs` names a card earlier in the queue, so the queue order is a valid stamping order.
 	for i in UpgradeDesk.CARDS.size():
 		for need: String in UpgradeDesk.CARDS[i].get("needs", []):
@@ -38,7 +38,7 @@ func _ready() -> void:
 				failed = true
 				push_error("%s needs %s, which is not before it" % [UpgradeDesk.CARDS[i].id, need])
 	if UpgradeDesk.card_data("junior_associate").get("currency", "coins") != "coins" or UpgradeDesk.card_data("projector").price != 75 \
-			or UpgradeDesk.card_data("regional_billboard").get("currency") != "findings":
+			or UpgradeDesk.card_data("window_targets").get("currency") != "findings" or not UpgradeDesk.card_data("regional_billboard").is_empty():
 		failed = true
 		push_error("card currencies or prices wrong")
 	if not UpgradeDesk.card_data("bulk_procurement").is_empty() or not UpgradeDesk.card_data("hire_associate").is_empty():
@@ -49,7 +49,7 @@ func _ready() -> void:
 	for card: Dictionary in UpgradeDesk.CARDS:
 		UpgradeDesk.apply(card.id, save)
 	if not save.slate_unlocked or save.desk_capacity != 2 or save.pack_size != 10 or save.hands != 1 \
-			or not is_equal_approx(save.marketing, 1.2 * 1.5 * 1.5) or not is_equal_approx(save.associate_interval, interval * 0.5):
+			or not is_equal_approx(save.marketing, 1.2 * 1.5) or not is_equal_approx(save.associate_interval, interval * 0.5):
 		failed = true
 		push_error("card effects wrong: slate %s, desk %d, pack %d, hands %d, marketing %.2f, interval %.1f" % [save.slate_unlocked, save.desk_capacity, save.pack_size, save.hands, save.marketing, save.associate_interval])
 	Associate.add_hand(save)
@@ -95,5 +95,10 @@ func _ready() -> void:
 			"quality_assurance", "projector", "street_posters"]), 3).has("research_inspection"):
 		failed = true
 		push_error("the projector should open the inspection research")
+	# The spike pile: one real top paper on a stack of a few / some / many sheets.
+	if [1, 2, 4, 5, 11, 12, 40].map(UpgradeDesk.sheets_under) != [0, 2, 2, 5, 5, 10, 10] \
+			or UpgradeDesk.stack_mesh(0) != null or UpgradeDesk.stack_mesh(5) != UpgradeDesk.stack_mesh(5):
+		failed = true
+		push_error("spike stack wrong: %s" % [[1, 2, 4, 5, 11, 12, 40].map(UpgradeDesk.sheets_under)])
 	print("upgrade desk tests failed" if failed else "upgrade desk tests passed")
 	get_tree().quit(1 if failed else 0)

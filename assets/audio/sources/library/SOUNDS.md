@@ -183,10 +183,10 @@ Prompt: "A heavy cabbage tossed hard back in through an open window from outside
 | `press_lever_take_2.wav` | iron press lever creak | 0.80s | -4 dB | 0.03s | — |
 | `press_lever_take_3.wav` | iron press lever creak | 0.80s | 0 dB | 0.19s | press_lever_1 |
 | `press_lever_take_4.wav` | iron press lever creak | 0.80s | -18 dB | 0.41s | — |
-| `press_stamp_take_1.wav` | press stamp thunk on paper | 0.68s | -3 dB | 0.06s | press_stamp_2 |
+| `press_stamp_take_1.wav` | press stamp thunk on paper | 0.68s | -3 dB | 0.06s | — (old press_stamp_2, replaced 2026-11-07) |
 | `press_stamp_take_2.wav` | press stamp thunk on paper | 0.68s | -8 dB | 0.02s | — |
 | `press_stamp_take_3.wav` | press stamp thunk on paper | 0.68s | -2 dB | 0.19s | — |
-| `press_stamp_take_4.wav` | press stamp thunk on paper | 0.68s | -1 dB | 0.06s | press_stamp_1 |
+| `press_stamp_take_4.wav` | press stamp thunk on paper | 0.68s | -1 dB | 0.06s | press_stamp_1, press_stamp_2 (new mix) |
 | `press_denied_take_1.wav` | press on empty felt, dry thud | 0.48s | -7 dB | 0.03s | press_denied_2 |
 | `press_denied_take_2.wav` | press on empty felt, dry thud | 0.48s | -2 dB | 0.06s | press_denied_1 |
 | `press_denied_take_3.wav` | press on empty felt, dry thud | 0.48s | -24 dB | 0.07s | — |
@@ -398,3 +398,77 @@ All four near-silent (true peaks -28 to -39 dB; "muted" in the prompt is likely 
 | `target_bell2_UEF5.wav` | (above) | 1.00s | -20.4 dB | 0.00s | target_bell (low-pass 3.5 kHz) |
 | `target_bell2_mgeh.wav` | (above) | 1.00s | -24.2 dB | 0.00s | — |
 
+
+### approve_thunk (2026-11-07)
+> A heavy cast-iron office rubber stamp press slamming down onto a paper form on a thick wooden desk, one deep solid punchy thunk with a short wooden body, no ring, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `approve_thunk_vRsR.wav` | (above) | 0.60s | -8.0 dB | 0.03s | press_stamp_1, press_stamp_2 |
+| `approve_thunk_oXsg.wav` | (above) | 0.60s | -14.5 dB | 0.00s | — |
+| `approve_thunk_axdL.wav` | (above) | 0.60s | -25.4 dB | 0.00s | — (quiet) |
+| `approve_thunk_q99B.wav` | (above) | 0.60s | -32.0 dB | 0.01s | — (near-silent) |
+
+### approve_register
+> An old mechanical brass cash register, the drawer bell ringing once, a bright clean cha-ching with a short metallic ring out, no music, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `approve_register_YGgN.wav` | (above) | 1.00s | -3.6 dB | 0.01s | press_stamp_1 |
+| `approve_register_ag1l.wav` | (above) | 1.00s | -4.1 dB | 0.01s | press_stamp_2 |
+| `approve_register_h3Lj.wav` | (above) | 1.00s | -4.8 dB | 0.04s | — |
+| `approve_register_uDyl.wav` | (above) | 1.00s | -7.0 dB | 0.05s | — |
+
+### approve_bell
+> A reception desk service bell struck once firmly, one clear bright loud metallic ding with a clean ring out, no music, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `approve_bell_gyNb.wav` | (above) | 1.20s | -25.8 dB (true -9.4) | 0.00s | — (spare sting) |
+| `approve_bell_qWbl.wav` | (above) | 1.20s | -29.3 dB (true -15.6) | 0.00s | — |
+| `approve_bell_KpVS.wav` | (above) | 1.20s | -32.4 dB (true -20.7) | 0.00s | — |
+| `approve_bell_yKDa.wav` | (above) | 1.20s | -36.0 dB (true -21.4) | 0.01s | — |
+
+### slip_flutter (2026-11-07)
+> A small stiff paper report slip flicked quickly through the air, short crisp paper flutter and flap, no impact, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `slip_flutter_mPCX.wav` | (above) | 0.60s | -5.7 dB (true -5.6) | 0.14s | findings_slip_1 |
+| `slip_flutter_hUAm.wav` | (above) | 0.60s | -10.9 dB (true -9.9) | 0.19s | findings_slip_2 |
+| `slip_flutter_jGQI.wav` | (above) | 0.60s | -10.5 dB (true -10.5) | 0.05s | — |
+| `slip_flutter_inqW.wav` | (above) | 0.60s | -13.5 dB (true -12.0) | 0.42s | — |
+
+### slip_clack (2026-11-07)
+> A paper card slotted into a vintage steel filing counter machine, one crisp solid mechanical clack with a short ratchet click, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `slip_clack_yLtp.wav` | (above) | 0.48s | -13.2 dB (true -1.0) | 0.02s | findings_slip_1 |
+| `slip_clack_PAEt.wav` | (above) | 0.48s | -20.9 dB (true -3.7) | 0.11s | findings_slip_2 |
+| `slip_clack_Fqyv.wav` | (above) | 0.48s | -20.7 dB (true -5.1) | 0.09s | — |
+| `slip_clack_K58f.wav` | (above) | 0.48s | -16.7 dB (true -5.2) | 0.21s | — |
+
+### fine_slap
+> A stiff official paper form slapped down hard flat onto a wooden office desk, one sharp crisp paper slap, short, close-mic, dry
+
+| `fine_slap_6BNc.wav` | (above) | 0.48s | -0.8 dB | 0.02s | fine_notice_1 |
+| `fine_slap_aeM0.wav` | (above) | 0.48s | -4.3 dB | 0.14s | fine_notice_2 |
+| `fine_slap_HlOo.wav` | (above) | 0.48s | -8.5 dB | 0.02s | — |
+| `fine_slap_XBfc.wav` | (above) | 0.48s | -17.0 dB | 0.01s | — |
+
+### fine_stamp
+> A heavy rubber office stamp slammed down angrily onto a paper form on a thick wooden desk, one hard punchy stern thump with a wooden knock, no ring, close-mic, dry
+
+| `fine_stamp_xHov.wav` | (above) | 0.60s | -1.9 dB | 0.01s | fine_notice_1, fine_notice_2 |
+| `fine_stamp_4nDX.wav` | (above) | 0.60s | -33.7 dB | 0.01s | — (near-silent) |
+| `fine_stamp_E16z.wav` | (above) | 0.60s | -35.3 dB | 0.01s | — (near-silent) |
+| `fine_stamp_rbP2.wav` | (above) | 0.60s | -37.7 dB | 0.00s | — (near-silent) |
+
+### fine_buzz
+> An old office intercom error buzzer, two low flat disapproving electric buzzes, dull and stern, no music, close-mic, dry
+
+| `fine_buzz_pUE9.wav` | (above) | 0.88s | -0.6 dB | 0.57s | fine_notice_1 (cut 0.4 s) |
+| `fine_buzz_B8yv.wav` | (above) | 0.88s | -2.7 dB | 0.48s | fine_notice_2 (cut 0.4 s) |
+| `fine_buzz_27oD.wav` | (above) | 0.88s | -2.8 dB | 0.54s | — |
+| `fine_buzz_f1Z4.wav` | (above) | 0.88s | -9.9 dB | 0.21s | — |

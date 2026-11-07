@@ -1,13 +1,16 @@
 class_name WindowTargets
 extends Node3D
 ## Window targets, there once the "window_targets" card is stamped. About every save.target_every
-## seconds a work lamp lights one of the crates in the street behind the window gap for LIT_TIME
+## seconds a work lamp lights one of the three crates in the street behind the window gap for LIT_TIME
 ## seconds. A sale that goes out through the gap within its x span lands in it: the street
 ## throws save.target_shower times that sale's coins back on top, the bell rings and the lamp goes
-## out. The span is WIDTH × save.target_size wide, somewhere in the SaleWindow's sell span.
+## out. The span is WIDTH × save.target_size wide, centred on the lit crate.
 
 const CARD := "window_targets"
-const WIDTH := 0.32
+## The street crates' centres (x) and width: the CRATES in room_geo.py (0.6 m × CS 0.8), all in the
+## sell span right of the QA bay.
+const CRATE_X: Array[float] = [0.60, 1.11, 1.62]
+const WIDTH := 0.48
 const LIT_TIME := 15.0
 ## The first target after it arrives (or after loading) comes sooner.
 const FIRST_WAIT := 15.0
@@ -15,11 +18,9 @@ const FIRST_WAIT := 15.0
 const BLINK_LEFT := 3.0
 ## Shower coins come in this long after the sale's own coins.
 const SHOWER_DELAY := 0.75
-const GLOW_ENERGY := 6.0
-const SPILL_ENERGY := 3.0
+const GLOW_ENERGY := 14.0
+const SPILL_ENERGY := 4.0
 const PULSE := 1.5
-## Targets stay this far inside the sell span, clear of the window frame.
-const MARGIN := 0.12
 
 var lit := false
 ## The lit span's centre x.
@@ -69,10 +70,9 @@ static func next_wait(every: float, roll: float) -> float:
 	return every * (0.6 + 0.8 * roll)
 
 
-## A random centre for a `width` wide target inside `span` (x from..to) for `roll` (0..1).
-static func pick_centre(span: Vector2, width: float, roll: float) -> float:
-	var half := minf(width / 2.0, (span.y - span.x) / 2.0)
-	return lerpf(span.x + half, span.y - half, roll)
+## The centre of the crate a `roll` (0..1) lights.
+static func pick_centre(roll: float) -> float:
+	return CRATE_X[mini(floori(roll * CRATE_X.size()), CRATE_X.size() - 1)]
 
 
 ## A sale out through the gap at `x` lands in the target centred on `at`, `width` wide.
@@ -81,9 +81,7 @@ static func hits(x: float, at: float, width: float) -> bool:
 
 
 func _light_up(save: SaveGame) -> void:
-	var width := WIDTH * save.target_size
-	var span := _window.sell_span()
-	centre = pick_centre(Vector2(span.x + MARGIN, span.y - MARGIN), width, randf())
+	centre = pick_centre(randf())
 	lit = true
 	_left = LIT_TIME
 	_glow.position.x = centre

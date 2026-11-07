@@ -1,6 +1,6 @@
 # Generates the coin texture: <out>/coin_albedo|normal|orm.png   (python coin_tex.py <out dir>)
 # Top projection: the coin face fills the UV square (centre 0.5, radius 0.5). The stamp is a
-# heavy serif numeral 1 inside a ring of 12 dots and a
+# heavy serif numeral (1, 5 or 10, one face each in a 3-wide atlas) inside a ring of 12 dots and a
 # raised rim. Worn brass: raised bits bright and smooth, recesses dark and rough.
 import numpy as np, sys
 from PIL import Image, ImageDraw, ImageFilter
@@ -8,30 +8,35 @@ from PIL import Image, ImageDraw, ImageFilter
 N = 256
 OUT = sys.argv[1]
 S = 4 * N  # draw supersampled, then shrink
-img = Image.new("L", (S, S), 0)
-d = ImageDraw.Draw(img)
-c = S / 2
-def circ(r, fill=None, outline=None, width=0):
-    d.ellipse((c - r, c - r, c + r, c + r), fill=fill, outline=outline, width=width)
-R = S / 2
-circ(R * 0.99, fill=105)                      # field
-circ(R * 0.99, outline=255, width=int(R * 0.13))  # rim
-for k in range(12):                            # dot ring
-    a = k * np.pi / 6
-    x, y = c + np.cos(a) * R * 0.71, c + np.sin(a) * R * 0.71
-    d.ellipse((x - R * 0.05, y - R * 0.05, x + R * 0.05, y + R * 0.05), fill=235)
-# Stamp: a heavy serif numeral 1, raised, centred in the dot ring.
-from PIL import ImageFont
-font = ImageFont.truetype('C:/Windows/Fonts/georgiab.ttf', int(R * 1.35))
-d.text((c, c + R * 0.05), '1', font=font, fill=245, anchor='mm', stroke_width=int(R * 0.05), stroke_fill=20)
-h = np.array(img.filter(ImageFilter.GaussianBlur(S / 300)).resize((N, N), Image.LANCZOS)) / 255.0
+def height(num):
+    img = Image.new("L", (S, S), 0)
+    d = ImageDraw.Draw(img)
+    c = S / 2
+    def circ(r, fill=None, outline=None, width=0):
+        d.ellipse((c - r, c - r, c + r, c + r), fill=fill, outline=outline, width=width)
+    R = S / 2
+    circ(R * 0.99, fill=105)                      # field
+    circ(R * 0.99, outline=255, width=int(R * 0.13))  # rim
+    for k in range(12):                            # dot ring
+        a = k * np.pi / 6
+        x, y = c + np.cos(a) * R * 0.71, c + np.sin(a) * R * 0.71
+        d.ellipse((x - R * 0.05, y - R * 0.05, x + R * 0.05, y + R * 0.05), fill=235)
+    # Stamp: the heavy serif numeral, raised, centred in the dot ring.
+    from PIL import ImageFont
+    font = ImageFont.truetype('C:/Windows/Fonts/georgiab.ttf', int(R * (1.35 if len(num) == 1 else 0.95)))
+    d.text((c, c + R * 0.05), num, font=font, fill=245, anchor='mm', stroke_width=int(R * 0.05), stroke_fill=20)
+    return np.array(img.filter(ImageFilter.GaussianBlur(S / 300)).resize((N, N), Image.LANCZOS)) / 255.0
+
+
+# One coin face per denomination side by side ($1, $5, $10): the coin shader picks the column.
+h = np.hstack([height(num) for num in ('1', '5', '10')])
 gy, gx = np.gradient(h)
 k = 9.0
 n = np.dstack((-gx * k, gy * k, np.ones_like(h)))
 n /= np.linalg.norm(n, axis=2, keepdims=True)
 Image.fromarray(((n * 0.5 + 0.5) * 255).astype(np.uint8)).save(OUT + "/coin_normal.png")
 rng = np.random.default_rng(3)
-grain = np.array(Image.fromarray((rng.random((32, 32)) * 255).astype(np.uint8)).resize((N, N), Image.BICUBIC)) / 255.0
+grain = np.array(Image.fromarray((rng.random((32, 32)) * 255).astype(np.uint8)).resize((h.shape[1], N), Image.BICUBIC)) / 255.0
 wear = np.clip(h * 0.9 + grain * 0.1, 0, 1)
 # Neutral greys: the coin's metal colour (silver or gold) is a per-instance tint in Godot.
 brass_dark = np.array([0.24, 0.24, 0.24]); brass = np.array([0.7, 0.7, 0.7]); brass_hi = np.array([0.97, 0.97, 0.97])

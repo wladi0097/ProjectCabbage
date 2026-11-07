@@ -18,7 +18,7 @@ func _ready() -> void:
 		push_error("skill 1 should read the mood: got %d" % Con.target_price(save, 1))
 	var smart := Con.target_price(save, 2)
 	var ref := Slate.ref_price(save.marketing, save.demand_mood)
-	var cost := SupplyConsole.pack_price(save.price_factor, save.pack_size, save.marketing) / float(save.pack_size)
+	var cost := SupplyConsole.pack_price(save.price_factor, save.pack_size) / float(save.pack_size)
 	for price in range(Slate.MIN_PRICE, Slate.max_price(save.marketing) + 1):
 		if Con.income(price, ref, cost) > Con.income(smart, ref, cost) + 0.001:
 			failed = true

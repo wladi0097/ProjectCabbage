@@ -6,16 +6,20 @@
 # empty slot above, where the Findings row (findings_counter_geo.py, built by this same script with
 # COUNTER = "findings") drops in once Quality Assurance is bought.
 # Blender Z-up, front = -Y (Godot +Z). Origin: floor centre of the drum shell. Both assets share it.
-# Footprint x -0.38..0.385, y -0.1..0.095; slope from 0.105 (front) to 0.2 (back).
+# Footprint x -0.38..0.385, y -0.13..0.095; the face rises at 50 deg from 0.075 (front) to 0.23, then a
+# flat top: steep enough that the drums face the game camera (it sees the machine from ~40 deg up)
+# nearly head-on. The drum faces get their own unshaded surface (machine_digits) so lamp and
+# shadow never wash out the numbers.
 # One skinned mesh: bone Body (static) + Drum0..Drum8, each pivoting on the drum axis (X).
 #   Drum k shows digit d at rotation +d*36 deg about X (Blender and Godot alike).
 # Surfaces: machine_paint (enamel / bakelite by vertex colour), machine_metal (chrome / brass by
-# vertex colour), machine_dial (atlas: drum digits + plates), see machine_tex.py.
+# vertex colour), machine_dial (atlas: plates), machine_digits (same atlas, unshaded: the drum
+# faces), see machine_tex.py.
 from mathutils import Quaternion
 COUNTER = globals().get("COUNTER", "money")
-E, K, H, B, D = range(5)               # logical parts: enamel, bakelite, chrome, brass, dial
-COLOURS = {E: (0.15, 0.19, 0.16), K: (0.025, 0.025, 0.024), H: (0.62, 0.63, 0.65), B: (0.62, 0.42, 0.14), D: (1, 1, 1)}
-SURFACE = {E: 0, K: 0, H: 1, B: 1, D: 2}
+E, K, H, B, D, G = range(6)            # logical parts: enamel, bakelite, chrome, brass, dial, digits
+COLOURS = {E: (0.15, 0.19, 0.16), K: (0.025, 0.025, 0.024), H: (0.62, 0.63, 0.65), B: (0.62, 0.42, 0.14), D: (1, 1, 1), G: (1, 1, 1)}
+SURFACE = {E: 0, K: 0, H: 1, B: 1, D: 2, G: 3}
 PITCH, DRUM_W, DRUM_R = 0.049, 0.045, 0.06
 DRUM_U = 0.12                      # drum face width in the atlas (keeps digits unstretched)
 WIN = 0.022                        # half height of a drum window: one digit row shows
@@ -46,6 +50,8 @@ paint = vc_textured("machine_paint", 0.45, 0.0, 4.0)
 metal = vc_textured("machine_metal", 0.3, 1.0, 4.0)
 dial = material("machine_dial", (1, 1, 1), 0.0, 0.5)
 textured(dial, "machine_dial", 1.0)
+digits = material("machine_digits", (1, 1, 1), 0.0, 0.5)
+textured(digits, "machine_dial", 1.0)
 
 
 def prism(bm, pts, x0, x1, mat, bevel, segs):
@@ -64,7 +70,8 @@ def prism(bm, pts, x0, x1, mat, bevel, segs):
 
 # Slope frame (x, s up the slope, n out of it), facing up toward the camera; each row has its own
 # frame shifted to its window centre.
-LO, HI = Vector((0, -0.09, 0.105)), Vector((0, 0.09, 0.2))
+FRONT, TOP = -0.12, 0.23                            # shell front face y, flat top z
+LO, HI = Vector((0, FRONT, 0.075)), Vector((0, 0.01, 0.23))
 SD = (HI - LO).normalized(); N_ = Vector((0, -SD.z, SD.y)); P = (LO + HI) / 2
 FRAME_M = Matrix((( 1, 0, 0, P.x), (0, SD.y, N_.y, P.y), (0, SD.z, N_.z, P.z), (0, 0, 0, 1)))
 ROW_M = FRAME_M @ at(CX, ROW, 0)
@@ -75,10 +82,10 @@ def row_point(x, n):
 
 body = bmesh.new()
 if COUNTER == "money":
-    part_box(body, (LEFT - 0.01, -0.1, 0), (0.385, 0.095, 0.03), 0.012, K)           # bakelite plinth
+    part_box(body, (LEFT - 0.01, FRONT - 0.01, 0), (0.385, 0.095, 0.03), 0.012, K)           # bakelite plinth
     # Enamel drum shell with both window recesses cut in.
     shell = bmesh.new()
-    prism(shell, [(-0.09, 0.03), (0.09, 0.03), (0.09, 0.2), (-0.09, 0.105)], LEFT, 0.245, 0, 0.018, 4)
+    prism(shell, [(FRONT, 0.03), (0.09, 0.03), (0.09, TOP), (HI.y, TOP), (FRONT, LO.z)], LEFT, 0.245, 0, 0.018, 4)
     shell_ob = finish("shell_tmp", shell, [paint])
     for row, drums in ROWS.values():
         wx = half_width(drums)
@@ -89,21 +96,21 @@ if COUNTER == "money":
         part_box(body, (-wx, -WIN, -0.085), (wx, WIN, -0.08), 0.0, K, FRAME_M @ at(WIN_LEFT + wx, row, 0))
     absorb(body, shell_ob)
     # Hopper pedestal at the right end, flush with the back top of the shell.
-    part_box(body, (0.235, -0.09, 0.03), (0.375, 0.09, 0.2), 0.016, E)
+    part_box(body, (0.235, FRONT, 0.03), (0.375, 0.09, TOP), 0.016, E)
     # Chrome waist trim around shell and pedestal.
-    X0, X1, Y0, Y1 = LEFT - 0.007, 0.382, -0.097, 0.092
+    X0, X1, Y0, Y1 = LEFT - 0.007, 0.382, FRONT - 0.007, 0.092
     part_box(body, (X0, Y0, 0.048), (X1, Y0 + 0.007, 0.058), 0.003, H)
     part_box(body, (X0, Y1 - 0.007, 0.048), (X1, Y1, 0.058), 0.003, H)
     part_box(body, (X0, Y0, 0.048), (X0 + 0.007, Y1, 0.058), 0.003, H)
     part_box(body, (X1 - 0.007, Y0, 0.048), (X1, Y1, 0.058), 0.003, H)
     # Brass coin hopper on the pedestal: rolled rim, chrome collar.
-    hop = at(0.305, 0.0, 0.198)
+    hop = at(0.305, 0.0, TOP - 0.002)
     spin(body, [(0, 0), (0.024, 0), (0.026, 0.012), (0.052, 0.058), (0.06, 0.066), (0.064, 0.072), (0.06, 0.077),
                 (0.054, 0.072), (0.022, 0.016), (0, 0.016)], B, hop, 40)
     spin(body, [(0, -0.002), (0.034, -0.002), (0.034, 0.012), (0.03, 0.016), (0, 0.016)], H, hop, 32)
     # Rubber feet peeking out under the plinth corners.
     for x in (LEFT + 0.025, 0.35):
-        for y in (-0.07, 0.065):
+        for y in (FRONT + 0.03, 0.065):
             spin(body, [(0, 0), (0.018, 0), (0.02, 0.006), (0, 0.006)], K, at(x, y, -0.004), 16)
 
 # The row itself: chrome bezel round its window, a divider every three drums, the brass plate.
@@ -135,7 +142,7 @@ def drum(k):
             v.co.y, v.co.z = math.sin(a) * r, math.cos(a) * r   # a = 0 faces the window (local +Z)
     for r0, r1 in zip(rings, rings[1:]):
         for j in range(len(across) - 1):
-            part.faces.new((r0[j], r1[j], r1[j + 1], r0[j + 1])).material_index = D
+            part.faces.new((r0[j], r1[j], r1[j + 1], r0[j + 1])).material_index = G
     for j in (0, len(across) - 1):
         cap = part.faces.new([r[j] for r in rings[:-1]] if j else [r[j] for r in rings[:-1]][::-1])
         cap.material_index = K
@@ -148,7 +155,7 @@ def drum(k):
 parts = [("Body", (0, 0, 0), body)]
 for k in range(DRUMS):
     parts.append(("Drum%d" % k, tuple(row_point(x_of(k), -DRUM_R - 0.004)), drum(k)))
-ob, arm = rig(ASSET, parts, [paint, metal, dial])
+ob, arm = rig(ASSET, parts, [paint, metal, dial, digits])
 
 # Vertex colours per logical part, drum and plate UVs into the dial atlas, then 3 real surfaces.
 me = ob.data
@@ -161,9 +168,9 @@ for poly in me.polygons:
     part = poly.material_index
     for li in poly.loop_indices:
         col.data[li].color = (*COLOURS[part], 1)
-    if part == D:
+    if part in (D, G):
         c = poly.center
-        if (ROW_INV @ c).z > 0:                              # nameplate (above the slope)
+        if part == D:                                        # nameplate
             for li in poly.loop_indices:
                 lo = ROW_INV @ me.vertices[me.loops[li].vertex_index].co
                 uv.data[li].uv = (u0 + (lo.x - px0) / (px1 - px0) * du, v0 + (lo.y - ps0) / (ps1 - ps0) * dv)

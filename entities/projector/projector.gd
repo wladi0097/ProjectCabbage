@@ -1,400 +1,415 @@
 class_name Projector
 extends Control
-## The projector screen (coin upgrades), there once the "projector" desk card is stamped. A roller
-## hangs at the top of the screen with a pull tab; drag the tab down (heavy, like the press lever)
-## and the screen unrolls, past half it drops the rest of the way and the projector lamp flickers
-## on, showing the upgrade tree (NODES). A click on the tab, or dragging it back up, rolls it up.
-## The game keeps running behind it. Each node: a circle with a glyph and its name above; hovered,
-## a block with name, description and cost; held for HOLD_TIME, it is bought with coins. A node
-## shows once its parent is bought and the desk cards it `needs` are stamped. A node with `research`
-## (a research card on the desk) shows locked until that card is stamped: greyed, a padlock, its
-## popup naming the research, and a hold is refused. Its children stay hidden until it is bought. Like a phone map, a
-## held press dragged across the slide pans the tree (kept on the slide) and the wheel zooms it; a double-click recentres.
+## The projector screen (coin upgrades), there once the "projector" desk card is stamped. Rolled up
+## it is out of sight: only its pull shows, a PULL pennant dangling on a cord from the top of the
+## view (a real 3D object, a pendulum, that the hand pinches). Pulled down, a sheet 70% of the view
+## wide unrolls under the hand; past LET_GO it unrolls the rest by itself, the pull goes, and the
+## projector lamp warms up, showing the upgrade tree (NODES) over a grey overlay. The X in its corner,
+## a click on the overlay, or Esc rolls it away. The game keeps running behind it.
+## Round the hub sit the departments (`dept`): bigger double-rimmed sub-hubs, free, never bought,
+## greyed until their own `needs` / `research` are stamped; every upgrade hangs under one of them.
+## Each node: a circle with a glyph and its name above; hovered, a block with name, description and
+## cost; held for HOLD_TIME, it is bought with coins. Every node is drawn; one not yet reachable
+## (parent not bought or its department closed, a desk card it `needs` not stamped) is greyed and
+## can't be held, its popup naming what it waits for. A node with `research` (a research card on the desk) is reachable but
+## locked until that card is stamped: a padlock, and a hold is refused. Like a phone map, a held
+## press dragged across the slide pans the tree (kept on the slide) and the wheel zooms it; a
+## double-click recentres.
 ##
-## Drawn in 2D on a full-screen Control rather than a 3D quad: the camera looks steeply down on the
-## desk, so a hanging 3D screen would shrink to a thin strip, and a 2D overlay gets mouse hover and
-## hold for free. _has_point keeps the rest of the screen clicking through to the desk.
-
-enum Size { SMALL, FULL }
+## The sheet is drawn in 2D on a full-screen Control rather than a 3D quad: the camera looks steeply
+## down on the desk, so a hanging 3D screen would shrink to a thin strip, and a 2D overlay gets mouse
+## hover and hold for free. _has_point lets the pull and the rest of the desk click through.
 
 ## Every node, in one list for retuning (prices from reports/economy_rework_2026-10-31.md). A bought
 ## node multiplies each save number in `mul`, raises each in `add`, and `hire` adds one hand.
 ## `research` names the desk card that unlocks it (see locked_by).
-## `at` is the spot on the wheel (centre 0,0), laid out radially by the supply agent's layout script
-## (each first-ring node a sector, chains run straight out): slogans and campaigns up, the consultant,
-## associate speed and seating, window targets, manager and bin round the right, the hired hands
-## and QA down, coin vacuums down-left, supply and auto-buy left, the combo and lamp up-left.
+## `at` is the spot on the wheel (centre 0,0; x is drawn 1.6 times wider than y): marketing up, QA
+## down, manual handling right (procurement and desk space, sales events, management fanning out),
+## automation left (consultancy, supply chain, coin units, associates, headcount); THEMES names the
+## fans. Generated, with no overlaps or crossing edges, by tools/projector_layout/layout.py from its
+## sectors.json.
 const NODES := [
-	{id = "slogan_1", parent = "", at = Vector2(0.00, -0.75), icon = "megaphone", price = 25,
+	# Departments: free sub-hubs around the hub, one per direction, never bought (`dept`). Greyed until
+	# their own `needs` / `research` are met; every upgrade hangs under exactly one of them.
+	{id = "dept_marketing", parent = "", at = Vector2(0.12, -0.60), icon = "megaphone", price = 0,
+		dept = true, needs = ["street_posters"], title = "MARKETING",
+		body = "The street is told what it wants.
+Slogans and campaigns: the street accepts higher prices."},
+	{id = "dept_manual", parent = "", at = Vector2(0.84, 0.00), icon = "hand", price = 0,
+		dept = true, title = "MANUAL HANDLING",
+		body = "Work you still do yourself.
+Packs, desk space, catches, the bin, targets,
+the lamp and the manager's quotas."},
+	{id = "dept_qa", parent = "", at = Vector2(0.00, 0.77), icon = "lens", price = 0,
+		dept = true, needs = ["quality_assurance"], research = "research_inspection", title = "QUALITY ASSURANCE",
+		body = "Every unit is a lesson.
+Faster analysis, more Findings, more benches."},
+	{id = "dept_automation", parent = "", at = Vector2(-0.61, 0.00), icon = "belt", price = 0,
+		dept = true, needs = ["junior_associate"], title = "AUTOMATION",
+		body = "Work that no longer needs you.
+Headcount, walking speed, conveyors, auto-buy,
+coin units and the consultant."},
+	{id = "slogan_1", parent = "dept_marketing", at = Vector2(0.12, -1.03), icon = "megaphone", price = 35,
 		mul = {marketing = 1.25}, title = "SLOGAN I",
 		body = "\"Cabbage. Because you have to eat.\"
-The street pays 25% more per unit."},
-	{id = "slogan_2", parent = "slogan_1", at = Vector2(0.00, -1.11), icon = "megaphone", price = 30,
+The street accepts prices 25% higher."},
+	{id = "slogan_2", parent = "slogan_1", at = Vector2(0.12, -1.46), icon = "megaphone", price = 120,
 		mul = {marketing = 1.25}, title = "SLOGAN II",
 		body = "\"Cabbage. Compliance tastes green.\"
-The street pays 25% more per unit."},
-	{id = "slogan_3", parent = "slogan_2", at = Vector2(-0.17, -1.48), icon = "megaphone", price = 1000,
+The street accepts prices 25% higher."},
+	{id = "slogan_3", parent = "slogan_2", at = Vector2(-0.24, -1.89), icon = "megaphone", price = 900,
 		mul = {marketing = 1.25}, title = "SLOGAN III",
 		body = "\"Cabbage. You were expecting something else?\"
-The street pays 25% more per unit."},
-	{id = "slogan_4", parent = "slogan_3", at = Vector2(-0.44, -1.85), icon = "megaphone", price = 5000,
+The street accepts prices 25% higher."},
+	{id = "slogan_4", parent = "slogan_3", at = Vector2(-0.49, -2.32), icon = "megaphone", price = 5500,
 		research = "research_sentiment", mul = {marketing = 1.25}, title = "SLOGAN IV",
 		body = "\"Cabbage. It has been decided.\"
-The street pays 25% more per unit."},
-	{id = "slogan_5", parent = "slogan_4", at = Vector2(-0.53, -2.23), icon = "megaphone", price = 18000,
+The street accepts prices 25% higher."},
+	{id = "slogan_5", parent = "slogan_4", at = Vector2(-0.49, -2.75), icon = "megaphone", price = 22500,
 		mul = {marketing = 1.25}, title = "SLOGAN V",
 		body = "\"Cabbage. Your household quota is attached.\"
-The street pays 25% more per unit."},
-	{id = "slogan_6", parent = "slogan_5", at = Vector2(-0.62, -2.60), icon = "megaphone", price = 65000,
+The street accepts prices 25% higher."},
+	{id = "slogan_6", parent = "slogan_5", at = Vector2(-0.49, -3.18), icon = "megaphone", price = 105000,
 		mul = {marketing = 1.25}, title = "SLOGAN VI",
 		body = "\"Cabbage.\"
-The street pays 25% more per unit."},
-	{id = "pack_1", parent = "", at = Vector2(-0.74, 0.13), icon = "crate", price = 25,
+The street accepts prices 25% higher."},
+	{id = "pack_1", parent = "dept_manual", at = Vector2(1.54, -0.18), icon = "crate", price = 400,
 		add = {pack_size = 3}, title = "BULK PROCUREMENT",
-		body = "Three more units in every pack.
-Volume is policy."},
-	{id = "pack_2", parent = "pack_1", at = Vector2(-0.96, 0.71), icon = "crate", price = 500,
-		research = "research_materials", add = {pack_size = 5}, title = "PACK +5",
-		body = "Five more units in every pack.
-The supplier has been informed."},
-	{id = "conveyor_1", parent = "pack_1", at = Vector2(-1.13, 0.43), icon = "belt", price = 500,
+		body = "Volume is policy.
+3 more units in every pack (10 to 13)."},
+	{id = "pack_2", parent = "pack_1", at = Vector2(1.98, -0.52), icon = "crate", price = 875,
+		research = "research_materials", add = {pack_size = 40}, title = "CONTAINER ORDERS",
+		body = "A container is parked in the street.
+40 more units in every pack (13 to 53)."},
+	{id = "conveyor_1", parent = "dept_automation", at = Vector2(-0.99, -0.87), icon = "belt", price = 775,
 		research = "research_materials", mul = {dispense_interval = 0.5}, add = {desk_capacity = 2}, title = "CONVEYOR RETROFIT",
 		body = "The ramp is motorised.
-Units arrive twice as fast, two more fit on the mat."},
-	{id = "conveyor_2", parent = "conveyor_1", at = Vector2(-1.50, 0.73), icon = "belt", price = 11000,
+Units roll down the ramp twice as often.
+2 more units fit on the mat."},
+	{id = "conveyor_2", parent = "conveyor_1", at = Vector2(-1.47, -1.51), icon = "belt", price = 13500,
 		mul = {dispense_interval = 0.67}, add = {desk_capacity = 2}, title = "CONVEYOR II",
 		body = "A second motor, same belt.
-Units arrive 50% faster, two more fit on the mat."},
-	{id = "conveyor_3", parent = "conveyor_2", at = Vector2(-1.91, 0.93), icon = "belt", price = 45000,
+Units roll down the ramp 50% more often.
+2 more units fit on the mat."},
+	{id = "conveyor_3", parent = "conveyor_2", at = Vector2(-1.95, -2.15), icon = "belt", price = 67500,
 		mul = {dispense_interval = 0.67}, add = {desk_capacity = 2}, title = "CONVEYOR III",
 		body = "Safety guards removed.
-Units arrive 50% faster, two more fit on the mat."},
-	{id = "associate_1", parent = "", at = Vector2(0.65, -0.37), icon = "clock", price = 25,
+Units roll down the ramp 50% more often.
+2 more units fit on the mat."},
+	{id = "associate_1", parent = "dept_automation", at = Vector2(-1.50, 0.75), icon = "clock", price = 180,
 		needs = ["junior_associate"], mul = {associate_speed = 1.5}, title = "BRISK WALK I",
 		body = "A stopwatch on every associate's desk.
 Associates move 50% faster."},
-	{id = "associate_2", parent = "associate_1", at = Vector2(0.94, -0.74), icon = "clock", price = 65,
+	{id = "associate_2", parent = "associate_1", at = Vector2(-2.03, 0.94), icon = "clock", price = 525,
 		research = "performance_review", mul = {associate_speed = 1.5}, title = "BRISK WALK II",
 		body = "Lunch is now a standing meeting.
 Associates move 50% faster."},
-	{id = "associate_3", parent = "associate_2", at = Vector2(1.29, -1.01), icon = "clock", price = 2250,
-		mul = {associate_speed = 1.5}, title = "BRISK WALK III",
-		body = "Chairs have been removed from the floor.
-Associates move 50% faster."},
-	{id = "hire_associate_2", parent = "", at = Vector2(0.10, 0.74), icon = "hand", price = 25,
+	{id = "hire_associate_2", parent = "dept_automation", at = Vector2(-1.10, 0.58), icon = "hand", price = 150,
 		needs = ["junior_associate"], hire = true, title = "HIRE ASSOCIATE II",
 		body = "Headcount approved.
-One more hand at the mat."},
-	{id = "hire_associate_3", parent = "hire_associate_2", at = Vector2(0.16, 1.11), icon = "hand", price = 35,
+One more associate selling units off the mat."},
+	{id = "hire_associate_3", parent = "hire_associate_2", at = Vector2(-1.19, 0.97), icon = "hand", price = 400,
 		hire = true, title = "HIRE ASSOCIATE III",
 		body = "Another sleeve, same grey.
-One more hand at the mat."},
-	{id = "hire_associate_4", parent = "hire_associate_3", at = Vector2(0.69, 1.41), icon = "hand", price = 55,
+One more associate selling units off the mat."},
+	{id = "hire_associate_4", parent = "hire_associate_3", at = Vector2(-1.29, 1.36), icon = "hand", price = 1100,
 		hire = true, title = "HIRE ASSOCIATE IV",
 		body = "Interviews were waived.
-One more hand at the mat."},
-	{id = "hire_associate_5", parent = "hire_associate_4", at = Vector2(0.86, 1.77), icon = "hand", price = 75,
+One more associate selling units off the mat."},
+	{id = "hire_associate_5", parent = "hire_associate_4", at = Vector2(-1.39, 1.75), icon = "hand", price = 3000,
 		research = "performance_review", hire = true, title = "HIRE ASSOCIATE V",
 		body = "The desk is now a department.
-One more hand at the mat."},
-	{id = "hire_associate_6", parent = "hire_associate_5", at = Vector2(1.04, 2.14), icon = "hand", price = 120,
+One more associate selling units off the mat."},
+	{id = "hire_associate_6", parent = "hire_associate_5", at = Vector2(-1.49, 2.14), icon = "hand", price = 12000,
 		hire = true, title = "HIRE ASSOCIATE VI",
 		body = "Names are no longer collected.
-One more hand at the mat."},
-	{id = "hire_associate_7", parent = "hire_associate_6", at = Vector2(1.22, 2.50), icon = "hand", price = 750,
+One more associate selling units off the mat."},
+	{id = "hire_associate_7", parent = "hire_associate_6", at = Vector2(-1.59, 2.53), icon = "hand", price = 35000,
 		hire = true, title = "HIRE ASSOCIATE VII",
 		body = "A second coat rack is requisitioned.
-One more hand at the mat."},
-	{id = "hire_associate_8", parent = "hire_associate_7", at = Vector2(1.40, 2.87), icon = "hand", price = 3250,
+One more associate selling units off the mat."},
+	{id = "hire_associate_8", parent = "hire_associate_7", at = Vector2(-1.69, 2.92), icon = "hand", price = 100000,
 		hire = true, title = "HIRE ASSOCIATE VIII",
 		body = "Full complement. Morale is not tracked.
-One more hand at the mat."},
-	{id = "qa_time", parent = "hire_associate_3", at = Vector2(0.05, 1.48), icon = "lens", price = 50,
+One more associate selling units off the mat."},
+	{id = "qa_time", parent = "dept_qa", at = Vector2(0.00, 1.33), icon = "lens", price = 425,
 		needs = ["quality_assurance"], research = "research_inspection", mul = {qa_time = 0.75}, title = "FASTER ANALYSIS",
 		body = "The scan line is told to hurry.
-QA analyses a unit 25% faster."},
-	{id = "qa_findings", parent = "qa_time", at = Vector2(0.46, 1.85), icon = "pilcrow", price = 60,
+QA takes 25% less time per unit (5 s to 3.75 s)."},
+	{id = "qa_findings", parent = "qa_time", at = Vector2(0.15, 1.89), icon = "pilcrow", price = 575,
 		add = {findings_per_cabbage = 1}, title = "MORE FINDINGS",
 		body = "Standards are revised.
 One more Finding per unit analysed."},
-	{id = "qa_fast_track", parent = "qa_findings", at = Vector2(0.56, 2.23), icon = "lens", price = 4750,
+	{id = "qa_fast_track", parent = "qa_findings", at = Vector2(0.15, 2.45), icon = "lens", price = 5000,
 		mul = {qa_time = 0.5}, title = "QA FAST TRACK",
 		body = "Analysis is now a formality.
-QA analyses a unit twice as fast."},
-	{id = "double_findings", parent = "qa_fast_track", at = Vector2(0.65, 2.60), icon = "pilcrow", price = 16000,
+QA takes half the time per unit."},
+	{id = "double_findings", parent = "qa_fast_track", at = Vector2(0.15, 3.01), icon = "pilcrow", price = 20000,
 		mul = {findings_per_cabbage = 2}, title = "DOUBLE FINDINGS",
 		body = "Every finding is filed twice.
 Twice the Findings per unit analysed."},
 	# Supply + automation (desk space, packs, auto-buy, hands, seating, campaigns, vacuums, QA rest):
 	# entities/supply_console/, entities/associate/, entities/vacuum/, entities/qa_bay/.
-	{id = "desk_1", parent = "conveyor_1", at = Vector2(-1.62, 0.44), icon = "desk", price = 1200,
-		add = {desk_capacity = 2}, title = "HOT-DESKING",
+	{id = "desk_1", parent = "pack_2", at = Vector2(2.16, -1.18), icon = "desk", price = 1000,
+		add = {desk_capacity = 4}, title = "HOT-DESKING",
 		body = "Units now share the mat.
-Two more units fit on the mat."},
-	{id = "desk_2", parent = "desk_1", at = Vector2(-2.07, 0.57), icon = "desk", price = 4500,
-		add = {desk_capacity = 2}, title = "CLEAR-DESK POLICY",
+Four more units fit on the mat."},
+	{id = "desk_2", parent = "desk_1", at = Vector2(2.26, -1.57), icon = "desk", price = 5000,
+		add = {desk_capacity = 4}, title = "CLEAR-DESK POLICY",
 		body = "Personal items have been binned.
-Two more units fit on the mat."},
-	{id = "desk_3", parent = "desk_2", at = Vector2(-2.51, 0.69), icon = "desk", price = 15000,
-		add = {desk_capacity = 2}, title = "MAT EXTENSION",
-		body = "The mat is lengthened by memo.
-Two more units fit on the mat."},
-	{id = "desk_4", parent = "desk_3", at = Vector2(-2.96, 0.81), icon = "desk", price = 30000,
-		add = {desk_capacity = 2}, title = "DENSITY TARGETS",
-		body = "Units are asked to sit closer.
-Two more units fit on the mat."},
-	{id = "desk_5", parent = "desk_4", at = Vector2(-3.41, 0.93), icon = "desk", price = 60000,
-		add = {desk_capacity = 2}, title = "OPEN-PLAN MAT",
-		body = "Partitions between units are removed.
-Two more units fit on the mat."},
-	{id = "desk_6", parent = "desk_5", at = Vector2(-3.86, 1.06), icon = "desk", price = 70000,
-		add = {desk_capacity = 2}, title = "MAXIMUM OCCUPANCY",
+Four more units fit on the mat."},
+	{id = "desk_3", parent = "desk_2", at = Vector2(2.36, -1.96), icon = "desk", price = 18000,
+		add = {desk_capacity = 4}, title = "MAXIMUM OCCUPANCY",
 		body = "The fire code has been reinterpreted.
-Two more units fit on the mat."},
-	{id = "pack_3", parent = "pack_2", at = Vector2(-1.32, 0.98), icon = "crate", price = 2750,
-		add = {pack_size = 10}, title = "PALLET ORDERS",
-		body = "Units now arrive on pallets.
-Ten more units in every pack."},
-	{id = "pack_4", parent = "pack_3", at = Vector2(-1.68, 1.25), icon = "crate", price = 27500,
-		add = {pack_size = 25}, title = "CONTAINER ORDERS",
-		body = "A container is parked in the street.
-25 more units in every pack."},
-	{id = "discount_1", parent = "pack_1", at = Vector2(-1.21, 0.10), icon = "crate", price = 30,
+Four more units fit on the mat."},
+	{id = "discount_1", parent = "pack_1", at = Vector2(2.03, -0.07), icon = "crate", price = 400,
 		mul = {pack_discount = 0.85}, title = "SUPPLIER REVIEW",
 		body = "The supplier is reminded of alternatives.
 Packs cost 15% less."},
-	{id = "discount_2", parent = "discount_1", at = Vector2(-1.68, 0.14), icon = "crate", price = 2750,
-		mul = {pack_discount = 0.85}, title = "VOLUME REBATE",
-		body = "A rebate form is filed in triplicate.
-Packs cost 15% less."},
-	{id = "discount_3", parent = "discount_2", at = Vector2(-2.15, 0.18), icon = "crate", price = 30000,
-		mul = {pack_discount = 0.8}, title = "EXCLUSIVITY CLAUSE",
+	{id = "discount_2", parent = "discount_1", at = Vector2(2.49, -0.18), icon = "crate", price = 2500,
+		mul = {pack_discount = 0.68}, title = "EXCLUSIVITY CLAUSE",
 		body = "The supplier has no other customers now.
-Packs cost 20% less."},
-	{id = "auto_reserve_1", parent = "pack_1", at = Vector2(-1.19, -0.24), icon = "clock", price = 1600,
+Packs cost 32% less."},
+	{id = "auto_reserve_1", parent = "dept_automation", at = Vector2(-1.21, -0.44), icon = "clock", price = 1500,
 		needs = ["auto_procurement"], add = {auto_reserve = 7}, title = "SAFETY STOCK",
 		body = "The order is placed earlier.
-Auto-buy reorders at 10 units left."},
-	{id = "auto_reserve_2", parent = "auto_reserve_1", at = Vector2(-1.68, -0.18), icon = "clock", price = 14000,
-		add = {auto_reserve = 15}, title = "STRATEGIC RESERVE",
-		body = "A second shelf is approved.
-Auto-buy reorders at 25 units left."},
-	{id = "auto_smart_1", parent = "auto_reserve_1", at = Vector2(-1.61, -0.48), icon = "lens", price = 3250,
+Auto-buy reorders at 10 units left, not 3."},
+	{id = "auto_reserve_2", parent = "auto_smart_1", at = Vector2(-2.17, -1.73), icon = "clock", price = 17500,
+		add = {auto_reserve = 15, auto_max_factor = -0.2}, title = "STRATEGIC PROCUREMENT",
+		body = "A second shelf is approved. Procurement watches the ticker.
+Auto-buy reorders at 25 units left, not 10,
+and waits for 20% below base pack price unless stock runs out."},
+	{id = "auto_smart_1", parent = "auto_reserve_1", at = Vector2(-1.69, -1.09), icon = "lens", price = 3000,
 		add = {auto_max_factor = -0.5}, title = "PRICE DISCIPLINE",
 		body = "The order waits for a fair price.
-While stock lasts, auto-buy skips prices over base."},
-	{id = "auto_smart_2", parent = "auto_smart_1", at = Vector2(-2.05, -0.61), icon = "lens", price = 37500,
-		add = {auto_max_factor = -0.2}, title = "FORWARD BUYING",
-		body = "Procurement watches the ticker all day.
-While stock lasts, auto-buy waits for -20% dips."},
-	{id = "hire_associate_9", parent = "hire_associate_8", at = Vector2(1.58, 3.24), icon = "hand", price = 10000,
+Auto-buy waits for the base pack price or lower,
+unless stock runs out."},
+	{id = "hire_associate_9", parent = "hire_associate_8", at = Vector2(-1.78, 3.31), icon = "hand", price = 250000,
 		hire = true, title = "HIRE ASSOCIATE IX",
 		body = "Desks are now shared in shifts.
-One more hand at the mat."},
-	{id = "hire_associate_10", parent = "hire_associate_9", at = Vector2(1.76, 3.60), icon = "hand", price = 25000,
+One more associate selling units off the mat."},
+	{id = "hire_associate_10", parent = "hire_associate_9", at = Vector2(-1.88, 3.70), icon = "hand", price = 400000,
 		hire = true, title = "HIRE ASSOCIATE X",
 		body = "Headcount is final. For now.
-One more hand at the mat."},
-	{id = "associate_4", parent = "associate_3", at = Vector2(1.64, -1.28), icon = "clock", price = 12000,
-		mul = {associate_speed = 1.3}, title = "BRISK WALK IV",
-		body = "Elevators are reserved for units.
-Associates move 30% faster."},
-	{id = "associate_5", parent = "associate_4", at = Vector2(1.99, -1.56), icon = "clock", price = 40000,
-		mul = {associate_speed = 1.3}, title = "BRISK WALK V",
-		body = "Breathing is now scheduled.
-Associates move 30% faster."},
-	{id = "seating_1", parent = "associate_1", at = Vector2(1.12, -0.45), icon = "chair", price = 30,
+One more associate selling units off the mat."},
+	{id = "seating_1", parent = "associate_1", at = Vector2(-1.89, 1.36), icon = "chair", price = 500,
 		mul = {hand_output = 1.5}, title = "OPEN-PLAN SEATING I",
 		body = "The walls between associates come down.
 Associates make 50% more trips."},
-	{id = "seating_2", parent = "seating_1", at = Vector2(1.55, -0.63), icon = "chair", price = 11000,
+	{id = "seating_2", parent = "seating_1", at = Vector2(-2.36, 1.76), icon = "chair", price = 13500,
 		mul = {hand_output = 1.5}, title = "OPEN-PLAN SEATING II",
 		body = "Chairs are replaced with a bench.
 Associates make 50% more trips."},
-	{id = "campaign_1", parent = "slogan_2", at = Vector2(0.35, -1.48), icon = "megaphone", price = 35,
+	{id = "campaign_1", parent = "slogan_2", at = Vector2(0.49, -1.89), icon = "megaphone", price = 220,
 		mul = {marketing = 1.25}, title = "SYNERGY JINGLE",
 		body = "Four notes. Staff are asked to hum them.
-The street pays 25% more per unit."},
-	{id = "campaign_2", parent = "campaign_1", at = Vector2(0.44, -1.85), icon = "megaphone", price = 425,
+The street accepts prices 25% higher."},
+	{id = "campaign_2", parent = "campaign_1", at = Vector2(0.49, -2.32), icon = "megaphone", price = 1500,
 		mul = {marketing = 1.25}, title = "LEAF IT TO US",
 		body = "Legal approved the pun.
-The street pays 25% more per unit."},
-	{id = "campaign_3", parent = "campaign_2", at = Vector2(0.53, -2.23), icon = "megaphone", price = 2250,
+The street accepts prices 25% higher."},
+	{id = "campaign_3", parent = "campaign_2", at = Vector2(0.49, -2.75), icon = "megaphone", price = 2500,
 		mul = {marketing = 1.25}, title = "CRUCIFEROUS EXCELLENCE",
 		body = "Nobody knows the word. Everyone trusts it.
-The street pays 25% more per unit."},
-	{id = "campaign_4", parent = "slogan_3", at = Vector2(0.00, -1.83), icon = "megaphone", price = 2500,
+The street accepts prices 25% higher."},
+	{id = "campaign_4", parent = "slogan_3", at = Vector2(0.00, -2.32), icon = "megaphone", price = 2500,
 		research = "research_sentiment", mul = {marketing = 1.25}, title = "BRASSICA FOR THE MASSES",
 		body = "Posters in every stairwell.
-The street pays 25% more per unit."},
-	{id = "campaign_5", parent = "campaign_4", at = Vector2(0.00, -2.19), icon = "megaphone", price = 16000,
+The street accepts prices 25% higher."},
+	{id = "campaign_5", parent = "campaign_4", at = Vector2(0.00, -2.75), icon = "megaphone", price = 20000,
 		mul = {marketing = 1.25}, title = "TRUSTED BY THE MINISTRY",
 		body = "The Ministry has not denied it.
-The street pays 25% more per unit."},
-	{id = "campaign_6", parent = "campaign_5", at = Vector2(0.00, -2.55), icon = "megaphone", price = 45000,
+The street accepts prices 25% higher."},
+	{id = "campaign_6", parent = "campaign_5", at = Vector2(0.00, -3.18), icon = "megaphone", price = 67500,
 		mul = {marketing = 1.25}, title = "THE ONLY VEGETABLE",
 		body = "Other vegetables are under review.
-The street pays 25% more per unit."},
-	{id = "vacuum_speed_1", parent = "", at = Vector2(-0.40, 0.64), icon = "puck", price = 1000,
+The street accepts prices 25% higher."},
+	{id = "vacuum_speed_1", parent = "dept_automation", at = Vector2(-1.20, 0.05), icon = "puck", price = 900,
 		needs = ["coin_collector"], mul = {vacuum_speed = 1.5}, title = "FIRMWARE UPDATE",
 		body = "The unit is told to hurry.
 Coin units move 50% faster."},
-	{id = "vacuum_bag_1", parent = "vacuum_speed_1", at = Vector2(-0.47, 1.05), icon = "puck", price = 3000,
-		add = {vacuum_capacity = 12}, title = "LARGER BAG",
-		body = "The bag is replaced with a bigger bag.
-Coin units carry 12 more coins per trip."},
-	{id = "vacuum_suction", parent = "vacuum_bag_1", at = Vector2(-0.63, 1.42), icon = "puck", price = 11000,
-		mul = {vacuum_reach = 1.5}, title = "STRONGER SUCTION",
-		body = "The unit is louder now. This is progress.
-Coin units reach 50% further."},
-	{id = "vacuum_2", parent = "vacuum_speed_1", at = Vector2(-0.76, 0.90), icon = "puck", price = 5000,
-		add = {vacuums = 1}, title = "SECOND UNIT",
-		body = "A second unit is unboxed.
-One more coin unit on the mat."},
-	{id = "vacuum_speed_2", parent = "vacuum_2", at = Vector2(-1.03, 1.23), icon = "puck", price = 16000,
-		mul = {vacuum_speed = 1.5}, title = "FIRMWARE UPDATE II",
-		body = "Obstacle detection is disabled.
-Coin units move 50% faster."},
-	{id = "vacuum_bag_2", parent = "vacuum_suction", at = Vector2(-0.80, 1.79), icon = "puck", price = 37500,
-		add = {vacuum_capacity = 30}, title = "INDUSTRIAL BAG",
-		body = "The bag is now a sack.
-Coin units carry 30 more coins per trip."},
-	{id = "vacuum_3", parent = "vacuum_speed_2", at = Vector2(-1.31, 1.56), icon = "puck", price = 55000,
-		add = {vacuums = 1}, title = "THIRD UNIT",
-		body = "The units have formed a department.
-One more coin unit on the mat."},
-	{id = "qa_slot_2", parent = "qa_time", at = Vector2(0.06, 1.84), icon = "lens", price = 1000,
+	{id = "vacuum_2", parent = "vacuum_speed_1", at = Vector2(-1.75, 0.10), icon = "puck", price = 5500,
+		add = {vacuums = 1, vacuum_capacity = 12}, title = "SECOND UNIT",
+		body = "A second unit is unboxed, with a bigger bag.
+One more coin unit on the mat.
+Coin units carry 12 more coins per trip (8 to 20)."},
+	{id = "vacuum_speed_2", parent = "vacuum_2", at = Vector2(-2.31, 0.14), icon = "puck", price = 20000,
+		mul = {vacuum_speed = 1.5, vacuum_reach = 1.5}, title = "FIRMWARE UPDATE II",
+		body = "Obstacle detection is disabled. The unit is louder now.
+Coin units move 50% faster and reach 50% further."},
+	{id = "vacuum_3", parent = "vacuum_speed_2", at = Vector2(-2.87, 0.19), icon = "puck", price = 87500,
+		add = {vacuums = 1, vacuum_capacity = 30}, title = "THIRD UNIT",
+		body = "The units have formed a department. The bag is now a sack.
+One more coin unit on the mat.
+Coin units carry 30 more coins per trip (20 to 50)."},
+	{id = "qa_slot_2", parent = "qa_time", at = Vector2(-0.15, 1.89), icon = "lens", price = 900,
 		add = {qa_slots = 1}, title = "SECOND BENCH",
 		body = "A second bench in the bay.
 QA analyses two units at once."},
-	{id = "qa_slot_3", parent = "qa_slot_2", at = Vector2(0.08, 2.20), icon = "lens", price = 27500,
+	{id = "qa_slot_3", parent = "qa_slot_2", at = Vector2(-0.15, 2.45), icon = "lens", price = 35000,
 		add = {qa_slots = 1}, title = "THIRD BENCH",
 		body = "The bay is now a lab.
 QA analyses three units at once."},
-	{id = "qa_feed_1", parent = "qa_time", at = Vector2(-0.33, 1.86), icon = "hand", price = 200,
-		add = {qa_feed_every = 6}, title = "INTAKE ROTA",
-		body = "Associates take turns feeding QA.
-Every 6th associate trip goes to QA."},
-	{id = "qa_feed_2", parent = "qa_feed_1", at = Vector2(-0.39, 2.23), icon = "hand", price = 13000,
-		add = {qa_feed_every = -2}, title = "INTAKE ROTA II",
-		body = "The rota is laminated.
-Every 4th associate trip goes to QA."},
-	{id = "qa_feed_3", parent = "qa_feed_2", at = Vector2(-0.46, 2.60), icon = "hand", price = 47500,
-		add = {qa_feed_every = -1}, title = "INTAKE ROTA III",
-		body = "QA is now everyone's job.
-Every 3rd associate trip goes to QA."},
 	# Manager (down-right) and pricing consultant (up-right): entities/manager/, entities/consultant/.
-	{id = "manager_time", parent = "", at = Vector2(0.70, 0.28), icon = "clock", price = 60,
+	{id = "manager_time", parent = "dept_manual", at = Vector2(1.01, 0.92), icon = "clock", price = 200,
 		needs = ["managerial_oversight"], add = {manager_time = 15.0}, title = "EXTENDED DEADLINES",
 		body = "The manager is shown a calendar.
-Quotas allow 15 more seconds."},
-	{id = "manager_reward_1", parent = "manager_time", at = Vector2(1.12, 0.45), icon = "crate", price = 300,
+Quotas give 60 s instead of 45 s."},
+	{id = "manager_reward_1", parent = "manager_time", at = Vector2(1.11, 1.48), icon = "crate", price = 875,
 		mul = {manager_reward = 1.5}, title = "PERFORMANCE BONUS",
 		body = "Bonuses are now discussed openly.
 Met quotas pay 50% more."},
-	{id = "manager_raise", parent = "manager_reward_1", at = Vector2(1.55, 0.63), icon = "lens", price = 2000,
+	{id = "manager_raise", parent = "manager_reward_1", at = Vector2(1.21, 2.04), icon = "lens", price = 2000,
 		add = {manager_raise = -0.1}, title = "REALISTIC TARGETS",
 		body = "Ambition is capped by memo.
-Quotas ask 10% less over your pace."},
-	{id = "manager_reward_2", parent = "manager_raise", at = Vector2(1.98, 0.80), icon = "crate", price = 5500,
+Quotas ask 115% of your recent pace, not 125%."},
+	{id = "manager_reward_2", parent = "manager_raise", at = Vector2(1.31, 2.60), icon = "crate", price = 6250,
 		mul = {manager_reward = 1.5}, title = "EMPLOYEE OF THE QUARTER",
 		body = "A frame is purchased. It stays empty.
 Met quotas pay 50% more."},
-	{id = "consultant_speed_1", parent = "", at = Vector2(0.40, -0.64), icon = "clock", price = 25,
+	{id = "consultant_speed_1", parent = "dept_automation", at = Vector2(-0.86, -1.47), icon = "clock", price = 200,
 		needs = ["pricing_consultant"], mul = {consultant_interval = 0.5}, title = "BILLABLE HOURS",
 		body = "The consultant bills by the tap.
-It adjusts the price twice as often."},
-	{id = "consultant_mood", parent = "consultant_speed_1", at = Vector2(0.62, -0.99), icon = "lens", price = 200,
+It adjusts the price every 2 s instead of 4 s."},
+	{id = "consultant_mood", parent = "consultant_speed_1", at = Vector2(-0.94, -1.96), icon = "lens", price = 725,
 		add = {consultant_skill = 1}, title = "READS THE ROOM",
 		body = "The consultant looks out of the window.
-It follows the street's mood, not the textbook."},
-	{id = "consultant_smart", parent = "consultant_mood", at = Vector2(0.84, -1.34), icon = "crate", price = 2000,
+Its target price follows the street's mood
+(±25%), not the textbook."},
+	{id = "consultant_smart", parent = "consultant_mood", at = Vector2(-1.02, -2.45), icon = "crate", price = 2000,
 		add = {consultant_skill = 1}, title = "YIELD OPTIMISATION",
 		body = "Some units may now be refused.
-It aims for the most money per unit after pack costs."},
-	{id = "consultant_speed_2", parent = "consultant_smart", at = Vector2(1.06, -1.70), icon = "clock", price = 15000,
+It aims for the most profit per unit after
+pack costs, even if some units are refused."},
+	{id = "consultant_speed_2", parent = "consultant_smart", at = Vector2(-1.11, -2.95), icon = "clock", price = 18000,
 		mul = {consultant_interval = 0.5}, title = "RETAINER",
 		body = "The consultant no longer leaves.
-It adjusts the price twice as often."},
+It adjusts the price twice as often (every 1 s)."},
 	# Sales events (golden lamp up-left, catch combo far up-left, waste bin down, window targets far
 	# right): entities/golden_lamp/, catch_combo/, rotten_bin/, window_targets/.
-	{id = "lamp_mult", parent = "", at = Vector2(-0.40, -0.64), icon = "crate", price = 22500,
+	{id = "lamp_mult", parent = "dept_manual", at = Vector2(1.90, 0.38), icon = "crate", price = 32500,
 		needs = ["golden_lamp"], add = {lamp_mult = 3.0}, title = "GILDED FILAMENT",
 		body = "The bulb is replaced with a better bulb.
 The golden lamp pays ×8 instead of ×5."},
-	{id = "lamp_time", parent = "lamp_mult", at = Vector2(-0.62, -0.99), icon = "clock", price = 30000,
+	{id = "lamp_time", parent = "lamp_mult", at = Vector2(2.37, 0.90), icon = "clock", price = 42500,
 		mul = {lamp_time = 1.5}, title = "EXTENDED BURN",
 		body = "The lamp's timer is taped down.
-It glows 50% longer."},
-	{id = "lamp_every", parent = "lamp_time", at = Vector2(-0.84, -1.34), icon = "clock", price = 47500,
+It glows for 30 s instead of 20 s."},
+	{id = "lamp_every", parent = "lamp_time", at = Vector2(2.83, 1.42), icon = "clock", price = 67500,
 		mul = {lamp_every = 0.6}, title = "LOOSE WIRING",
 		body = "Maintenance has been told not to look.
-The lamp glows much more often."},
-	{id = "combo_window", parent = "", at = Vector2(-0.62, -0.42), icon = "clock", price = 25,
+It glows about every 90 s instead of 150 s."},
+	{id = "combo_window", parent = "dept_manual", at = Vector2(1.74, 0.74), icon = "clock", price = 150,
 		needs = ["catch_combo"], mul = {combo_window = 1.5}, title = "GRACE PERIOD",
 		body = "Interceptions are counted generously.
-The combo holds 50% longer between catches."},
-	{id = "combo_cap", parent = "combo_window", at = Vector2(-0.99, -0.67), icon = "crate", price = 200,
+The combo holds 6 s after a catch, not 4 s."},
+	{id = "combo_cap", parent = "combo_window", at = Vector2(2.21, 1.26), icon = "crate", price = 725,
 		add = {combo_cap = 0.5}, title = "UNCAPPED ENTHUSIASM",
 		body = "The ceiling is raised by memo.
-The combo can reach ×2 instead of ×1.5."},
-	{id = "combo_step", parent = "combo_cap", at = Vector2(-1.37, -0.92), icon = "hand", price = 4250,
+The combo tops out at +100% instead of +50%."},
+	{id = "combo_step", parent = "combo_cap", at = Vector2(2.67, 1.78), icon = "hand", price = 4250,
 		mul = {combo_step = 2.0}, title = "REFLEX TRAINING",
 		body = "A mandatory seminar on catching things.
-Each catch adds twice as much."},
-	{id = "bin_mouth", parent = "", at = Vector2(0.52, 0.54), icon = "lens", price = 35,
+Each catch adds +20% to sales instead of +10%."},
+	{id = "bin_mouth", parent = "dept_manual", at = Vector2(1.43, 1.46), icon = "lens", price = 120,
 		needs = ["rotten_bin"], mul = {bin_mouth = 1.35}, title = "WIDER RECEPTACLE",
 		body = "A larger bin is requisitioned.
 Its mouth is 35% wider."},
-	{id = "bin_rebate", parent = "bin_mouth", at = Vector2(0.82, 0.85), icon = "crate", price = 225,
-		add = {bin_rebate = 1.0}, title = "DISPOSAL REBATE",
+	{id = "bin_rebate", parent = "bin_mouth", at = Vector2(1.89, 1.98), icon = "crate", price = 575,
+		add = {bin_rebate = 0.2}, title = "DISPOSAL REBATE",
 		body = "Waste is now a revenue stream.
-Each binned unit refunds one unit's price."},
-	{id = "hands_bin", parent = "bin_rebate", at = Vector2(1.13, 1.17), icon = "hand", price = 700,
-		needs = ["junior_associate"], add = {hands_bin = 1}, title = "WASTE HANDLING PROTOCOL",
+Each binned unit pays 20% of your chalked price."},
+	{id = "bin_rebate_2", parent = "bin_rebate", at = Vector2(2.36, 2.50), icon = "crate", price = 775,
+		add = {bin_rebate = 0.25}, title = "SALVAGE CREDIT",
+		body = "Rot is reclassified as inventory.
+Each binned unit pays 45% of your chalked price, not 20%."},
+	{id = "bin_rebate_3", parent = "bin_rebate_2", at = Vector2(2.82, 3.02), icon = "crate", price = 3500,
+		add = {bin_rebate = 0.25}, title = "COMPOST CONTRACT",
+		body = "The Ministry buys it by the tonne. Nobody asks for what.
+Each binned unit pays 70% of your chalked price, not 45%."},
+	{id = "bin_rebate_4", parent = "bin_rebate_3", at = Vector2(3.29, 3.55), icon = "crate", price = 13000,
+		add = {bin_rebate = 0.25}, title = "WASTE MONETISATION",
+		body = "Spoilage now has its own quarterly target.
+Each binned unit pays 95% of your chalked price, not 70%."},
+	{id = "bin_rebate_5", parent = "bin_rebate_4", at = Vector2(3.76, 4.07), icon = "crate", price = 40000,
+		add = {bin_rebate = 0.25}, title = "SPOILAGE PREMIUM",
+		body = "A rotten unit is worth more than a fresh one. This is fine.
+Each binned unit pays 120% of your chalked price, not 95%."},
+	{id = "hands_bin", parent = "dept_automation", at = Vector2(-0.52, 0.96), icon = "hand", price = 400,
+		needs = ["junior_associate", "rotten_bin"], add = {hands_bin = 1}, title = "WASTE HANDLING PROTOCOL",
 		body = "Associates are shown where the bin is.
-Hired hands bin rotten units instead of leaving them."},
-	{id = "target_size", parent = "", at = Vector2(0.75, -0.03), icon = "lens", price = 200,
+Associates throw rotten units in the bin
+instead of selling or leaving them."},
+	{id = "target_size", parent = "dept_manual", at = Vector2(1.58, 1.10), icon = "lens", price = 575,
 		needs = ["window_targets"], mul = {target_size = 1.5}, title = "BROADER FLOODLIGHT",
 		body = "The street lamp is pointed less carefully.
 Lit targets are 50% wider."},
-	{id = "target_every", parent = "target_size", at = Vector2(1.22, -0.04), icon = "clock", price = 800,
+	{id = "target_every", parent = "target_size", at = Vector2(2.05, 1.62), icon = "clock", price = 575,
 		mul = {target_every = 0.6}, title = "STREET COOPERATION",
 		body = "The street has been asked to stand still.
-Targets are lit much more often."},
-	{id = "target_shower", parent = "target_every", at = Vector2(1.68, -0.06), icon = "crate", price = 5000,
+A target lights about every 36 s, not 60 s."},
+	{id = "target_shower", parent = "target_every", at = Vector2(2.52, 2.14), icon = "crate", price = 5500,
 		mul = {target_shower = 2}, title = "PRIZE CRATES",
 		body = "The crates are lined with coin.
-A hit pays twenty times the sale instead of ten."},
+A hit adds +20× the sale's coins instead of +10×."},
 ]
-## The screen's rect as fractions of the view. SMALL leaves the mat and the window gap free.
-const RECTS := {Size.SMALL: Rect2(0.02, 0.0, 0.444, 0.95), Size.FULL: Rect2(0.03, 0.0, 0.94, 0.97)}
+## Each theme's faint heading on the slide, where its branch ends (same units as a node's `at`).
+const THEMES := [
+	["PROCUREMENT", Vector2(3.26, -0.51)],
+	["DESK SPACE", Vector2(2.58, -2.66)],
+	["SALES EVENTS", Vector2(4.34, 4.02)],
+	["MANAGEMENT", Vector2(1.53, 3.91)],
+	["CONSULTANCY", Vector2(-1.33, -4.18)],
+	["SUPPLY CHAIN", Vector2(-2.40, -2.30)],
+	["COIN UNITS", Vector2(-3.10, 0.31)],
+	["ASSOCIATES", Vector2(-3.10, 2.21)],
+	["HEADCOUNT", Vector2(-1.66, 4.26)],
+]
+## The screen's rect as fractions of the view: centred, 70% wide, unrolled down to 88% of the height.
+const SCREEN := Rect2(0.15, 0.0, 0.7, 0.88)
 const HOLD_TIME := 0.6
-const ZOOM_MIN := 0.6
+## A department's radius, in normal nodes'.
+const DEPT_SIZE := 1.5
+## Zoomed right out, the whole tree with its theme headings fits on the slide.
+const ZOOM_MIN := 0.27
 const ZOOM_MAX := 2.5
 ## One wheel notch zooms by this factor, about the cursor.
 const ZOOM_STEP := 1.15
 const WIDEN := 1.6
-## The screen follows the tab at most this fast (screens per second): the roller spring is heavy.
-const PULL_SPEED := 4.0
-## A press on the tab that moves less than this (px) is a click: it rolls the screen down or up.
+## Pulled this far (of the whole drop) from where it rested, the screen goes the rest of the way itself.
+const LET_GO := 0.3
+## A press on the pull that moves less than this (px) is a click: it rolls the screen down.
 const CLICK_PX := 8.0
-const ROLLER_H := 18.0
-const BAR_H := 10.0
-const TAB_SIZE := Vector2(84, 58)
-const CORD := 30.0
-## Where the tab hangs along the bottom bar (0 left .. 1 right): clear of the tally machine's drums.
-const TAB_AT := 0.1
+const ROLLER_H := 26.0
+const BAR_H := 12.0
+## The close button in the open sheet's top-right corner (px).
+const CLOSE := 40.0
+## Where the cord is tied along the bottom bar (0 left .. 1 right).
+const TAB_AT := 0.94
+## The pull, a pendulum: cord length (m), gravity (stylised, stiffer than real), the velocity kept
+## per STEP, and the height (m) the cord is tied at, so the tab hangs at about the hand's height.
+const CORD := 0.15
+const GRAVITY := 20.0
+const DAMP := 0.98
+const STEP := 1.0 / 120.0
+const TIE_HEIGHT := 1.6
+## The pennant's width and height (m), and how far its face is tipped back toward the camera (rad):
+## at rest, and lifted nearly flat while the hand pinches it.
+const TAB := Vector2(0.13, 0.11)
+const TAB_TILT := -0.7
+const TAB_PINCHED := -1.3
+## The tab's collision layer: nothing masks it, only the hand's pick ray (all layers) sees it.
+const PULL_LAYER := 1 << 19
 const FONT := preload("res://assets/fonts/Oswald.ttf")
 const FABRIC := Color(0.36, 0.39, 0.36)
 const BEAM := Color(0.78, 0.84, 0.84)
 const INK := Color(0.13, 0.15, 0.14)
 const STEEL := Color(0.16, 0.17, 0.17)
+const TUBE := Color(0.3, 0.32, 0.31)
 const DENIED := Color(0.55, 0.12, 0.1)
 const CABBAGE := Color(0.42, 0.72, 0.24)
+const SHADE := Color(0.07, 0.08, 0.08, 0.62)
 
-## SMALL (~45% of the view, the mat and window stay free) or FULL (the whole desk).
-@export var size_mode := Size.SMALL
 @export var roll_down_sound: AudioStream
 @export var roll_up_sound: AudioStream
 @export var approve_sound: AudioStream
@@ -403,19 +418,25 @@ const CABBAGE := Color(0.42, 0.72, 0.24)
 ## How far the screen is unrolled, 0 (up) to 1 (down), and how far the projector lamp is on.
 var _drop := 0.0
 var _lamp := 0.0
-var _flick := 1.0
+## The hand holds the pull and the screen follows it; where the press started.
 var _dragging := false
 var _press_y := 0.0
 var _press_drop := 0.0
+## Where the screen is headed: down (open) or up.
+var _down := false
 var _settling: Tween
 var _hovered := ""
 var _holding := ""
 var _hold := 0.0
 var _denied := 0.0
-## The roller's slide down from above the screen when it first turns up (px of offset).
+var _close_hot := false
+## The pull's slide down from above when the projector first turns up (px of offset).
 var _arrive := 0.0
+## The bottom bar's sideways lag behind the swinging pull while it rolls (px).
+var _sway := 0.0
 var _sfx := AudioStreamPlayer.new()
 var _beam := GradientTexture2D.new()
+var _overlay := ColorRect.new()
 ## The tree's pan (px) and zoom; a press on the slide pans once it moves past CLICK_PX.
 var _pan := Vector2.ZERO
 var _zoom := 1.0
@@ -423,18 +444,53 @@ var _panning := false
 var _panned := false
 var _pan_press := Vector2.ZERO
 var _pan_start := Vector2.ZERO
-## The tree is drawn on this child, which clips it to the slide below the heading.
+## The tree, clipped to the slide below the heading. Its nodes and edges are drawn once on _layer,
+## around its own origin, and only redrawn when they change (_layer_key); panning just moves it.
+## Hover, hold and the popup go on _top, redrawn each frame (a few calls), and the lamp's pulse dims
+## _layer only. _layer is a Node2D, not a Control: a Control is culled by its own (here empty) rect,
+## so the whole tree vanished once the hub was panned out of the slide.
 var _tree := Control.new()
-## shown_nodes() for the current save, rebuilt only when a stamp, a purchase or a new save changes it.
-var _shown := {}
-var _shown_key := []
+var _layer := Node2D.new()
+var _top := Control.new()
+var _layer_key := []
+## Node prices sorted, to count the affordable ones cheaply (they change the drawing).
+static var _prices := PackedInt32Array()
+## The pull in the 3D world: its body, the tipping tab, the cord, its handle and material.
+var _grip: StaticBody3D
+var _tab := Node3D.new()
+var _cord := MeshInstance3D.new()
+var _handle: Interactable
+var _enamel := StandardMaterial3D.new()
+var _tab_hot := false
+var _tilt := TAB_TILT
+## Where the cord is tied (under the bar) and the tab's Verlet point, now and one STEP ago.
+var _tie := Vector3.ZERO
+var _bob := Vector3.ZERO
+var _bob_last := Vector3.ZERO
+var _step_left := 0.0
+## While dragged, the tab keeps this offset from the mouse's point under it (no lag, no jump).
+var _grab_offset := Vector3.ZERO
+## The tab on screen (px) and its reach there, for the click-through.
+var _grip_px := Vector2(-1000.0, -1000.0)
+var _grip_r := 40.0
 
 
 func _ready() -> void:
+	# Before the Hand autoload, so the hand sits on where the tab is this frame, not the last.
+	process_priority = -1
 	set_anchors_preset(PRESET_FULL_RECT)
+	_overlay.set_anchors_preset(PRESET_FULL_RECT)
+	_overlay.show_behind_parent = true
+	_overlay.mouse_filter = MOUSE_FILTER_IGNORE
+	_overlay.color = Color(SHADE, 0.0)
+	add_child(_overlay)
 	_tree.clip_contents = true
 	_tree.mouse_filter = MOUSE_FILTER_IGNORE
-	_tree.draw.connect(_draw_tree)
+	_top.mouse_filter = MOUSE_FILTER_IGNORE
+	_tree.add_child(_layer)
+	_tree.add_child(_top)
+	_layer.draw.connect(_draw_layer)
+	_top.draw.connect(_draw_top)
 	add_child(_tree)
 	_sfx.bus = &"SFX"
 	# The projector's hot spot: a soft cold wash, fading out toward the screen's edges.
@@ -445,19 +501,24 @@ func _ready() -> void:
 	_beam.gradient.set_color(0, Color(BEAM, 0.42))
 	_beam.gradient.set_color(1, Color(BEAM, 0.04))
 	add_child(_sfx)
-	visible = unlocked(SaveManager.save)
+	visible = false
+	if unlocked(SaveManager.save):
+		_show(false)
 
 
 func _process(delta: float) -> void:
 	var save: SaveGame = SaveManager.save
 	if not visible:
 		if unlocked(save):
-			_arrive_now()
+			_show(true)
 		return
 	if _dragging:
-		var target := clampf(_press_drop + (get_local_mouse_position().y - _press_y) / _span(), 0.0, 1.0)
-		_drop = move_toward(_drop, target, PULL_SPEED * delta)
-	_flick = 1.0 - (randf() * 0.12 if randf() < 0.08 else randf() * 0.03)
+		# The sheet follows the hand exactly.
+		_drop = clampf(_press_drop + (get_local_mouse_position().y - _press_y) / _span(), 0.0, 1.0)
+		if absf(_drop - _press_drop) >= LET_GO:
+			# Far enough: the roller spring takes over, the hand may keep hold of the tab.
+			_dragging = false
+			_settle(_press_drop < 0.5)
 	_denied = maxf(_denied - delta, 0.0)
 	if _holding != "" and _lamp > 0.9:
 		if can_buy(_holding, save):
@@ -471,12 +532,85 @@ func _process(delta: float) -> void:
 		elif _denied == 0.0:
 			_denied = 0.5
 			_play(denied_sound)
+	_move_pull(delta)
+	# The bar trails the swinging pull a little while the sheet is loose; lit, the sheet hangs flat.
+	_sway = lerpf(_sway, clampf((_grip_px.x - _tie_px().x) * 0.4, -24.0, 24.0) * (1.0 - _lamp) * minf(_drop * 4.0, 1.0),
+			1.0 - exp(-8.0 * delta))
+	_overlay.color = Color(SHADE, SHADE.a * smoothstep(0.55, 1.0, _drop))
 	var area := _tree_rect()
 	_tree.position = area.position
 	_tree.size = area.size
-	_tree.visible = _drop > 0.0
+	_tree.visible = _lamp > 0.0
+	if _tree.visible:
+		var wheel := _wheel()
+		_layer.position = wheel[0] - area.position
+		_layer.modulate.a = _lamp * pulse(Time.get_ticks_msec() / 1000.0)
+		_top.size = area.size
+		var key := [_zoom, area.size, save.get_instance_id(), save.stamped.size(), save.tree_bought.size(), affordable(save.coins)]
+		if key != _layer_key:
+			_layer_key = key
+			_layer.queue_redraw()
+		_top.queue_redraw()
 	queue_redraw()
-	_tree.queue_redraw()
+
+
+## The pull: while dragged it sits under the mouse; otherwise it swings on its cord, in fixed STEPs.
+## Shown only while the screen is not fully down (open, the overlay, X and Esc close it).
+func _move_pull(delta: float) -> void:
+	if _grip == null:
+		return
+	var shown := _drop < 1.0 or _dragging
+	_grip.visible = shown
+	_cord.visible = shown
+	_handle.enabled = shown
+	_grip.collision_layer = PULL_LAYER if shown else 0
+	_tie = _on_plane(_tie_px(), TIE_HEIGHT)
+	if _bob == Vector3.ZERO:
+		# First frame: hanging straight, with a small nudge so it is seen to dangle.
+		_bob = _tie + Vector3.DOWN * CORD
+		_bob_last = _bob + Vector3(0.012, 0.0, 0.0)
+	if _dragging:
+		var before := _bob
+		_bob = rope(_tie, _on_plane(get_local_mouse_position(), TIE_HEIGHT - CORD) + _grab_offset, CORD)
+		# Its last STEP's worth of the drag's motion, so a let-go flings it on.
+		_bob_last = _bob - (_bob - before) * (STEP / maxf(delta, STEP))
+	else:
+		_step_left = minf(_step_left + delta, 0.1)
+		while _step_left >= STEP:
+			_step_left -= STEP
+			var next := swing(_bob, _bob_last, _tie, STEP)
+			_bob_last = _bob
+			_bob = next
+	var up := _bob.direction_to(_tie)
+	var turn := Basis(Quaternion(Vector3.UP, up)) if up.dot(Vector3.UP) > -0.99 else Basis()
+	_grip.global_transform = Transform3D(turn, _bob)
+	_cord.global_transform = Transform3D(turn * Basis.from_scale(Vector3(1.0, _bob.distance_to(_tie), 1.0)), (_bob + _tie) / 2.0)
+	# Touched, the tab lifts nearly flat, the way a pinched pull tab does, and the hand pinches its tip.
+	var touched := _tab_hot or _dragging
+	_tilt = lerpf(_tilt, TAB_PINCHED if touched else TAB_TILT, 1.0 - exp(-14.0 * delta))
+	_tab.rotation.x = _tilt
+	var tip := _tab.global_transform * Vector3(0.0, -TAB.y * 0.95, 0.0)
+	_handle.carry_offset = tip - _bob
+	var camera := get_viewport().get_camera_3d()
+	if camera != null:
+		var middle := _tab.global_transform * Vector3(0.0, -TAB.y / 2.0, 0.0)
+		_grip_px = camera.unproject_position(middle)
+		_grip_r = _grip_px.distance_to(camera.unproject_position(middle + camera.global_basis.x * TAB.x * 0.6))
+
+
+## The lamp's slow, gentle shimmer (about 0.95..1): two slow waves, never a per-frame flicker.
+static func pulse(time: float) -> float:
+	return 1.0 - 0.03 * (0.5 + 0.5 * sin(time * 1.3)) - 0.02 * (0.5 + 0.5 * sin(time * 3.1 + 1.0))
+
+
+## How many upgrades (not departments) cost `coins` or less (the drawing greys the rest).
+static func affordable(coins: int) -> int:
+	if _prices.is_empty():
+		for node: Dictionary in NODES:
+			if not node.get("dept", false):
+				_prices.append(node.price)
+		_prices.sort()
+	return _prices.bsearch(coins, false)
 
 
 ## Whether the projector has been bought (desk card "projector").
@@ -495,20 +629,22 @@ static func node_data(id: String) -> Dictionary:
 	return _by_id.get(id, {})
 
 
-## The nodes on the screen for `save`, in NODES order: id -> the research it waits for ("" if open).
-static func shown_nodes(save: SaveGame) -> Dictionary:
-	var shown := {}
-	for node: Dictionary in NODES:
-		if is_shown(node.id, save):
-			shown[node.id] = locked_by(node.id, save)
-	return shown
-
-
-## Shown on the screen: the parent is bought and every desk card it needs is stamped.
-static func is_shown(id: String, save: SaveGame) -> bool:
+## Reachable (drawn full, not greyed): the parent is open and every desk card it needs is stamped.
+static func is_reachable(id: String, save: SaveGame) -> bool:
 	var node := node_data(id)
-	return not node.is_empty() and (node.parent == "" or save.tree_bought.has(node.parent)) \
+	return not node.is_empty() and (node.parent == "" or is_open(node.parent, save)) \
 			and node.get("needs", []).all(func(card: String) -> bool: return save.stamped.has(card))
+
+
+static func is_dept(id: String) -> bool:
+	return node_data(id).get("dept", false)
+
+
+## Its children may show: a bought node, or a department whose cards and research are stamped.
+static func is_open(id: String, save: SaveGame) -> bool:
+	if is_dept(id):
+		return is_reachable(id, save) and locked_by(id, save) == ""
+	return save.tree_bought.has(id)
 
 
 ## The research card node `id` still waits for, or "" (none, stamped, or the node already bought).
@@ -517,9 +653,29 @@ static func locked_by(id: String, save: SaveGame) -> String:
 	return "" if card == "" or save.stamped.has(card) or save.tree_bought.has(id) else card
 
 
+## Reachable, not bought and not waiting for research: a hold on it buys it (if the coins are there).
+## Departments are never bought.
+static func can_hold(id: String, save: SaveGame) -> bool:
+	return not is_dept(id) and is_reachable(id, save) and not save.tree_bought.has(id) and locked_by(id, save) == ""
+
+
 static func can_buy(id: String, save: SaveGame) -> bool:
-	return is_shown(id, save) and not save.tree_bought.has(id) and locked_by(id, save) == "" \
-			and save.coins >= node_data(id).price
+	return can_hold(id, save) and save.coins >= node_data(id).price
+
+
+## What node `id` waits for, as [heading, name] for its popup, or [] if nothing: its parent, then a
+## desk card it needs, then its research. Under a closed department: what the department waits for.
+static func requirement(id: String, save: SaveGame) -> Array:
+	var node := node_data(id)
+	if node.parent != "" and not is_open(node.parent, save):
+		return requirement(node.parent, save) if is_dept(node.parent) else ["REQUIRES:", node_data(node.parent).title]
+	for card: String in node.get("needs", []):
+		if not save.stamped.has(card):
+			return ["REQUIRES DESK CARD:", UpgradeDesk.card_data(card).get("title", card)]
+	var research := locked_by(id, save)
+	if research != "":
+		return ["REQUIRES RESEARCH:", UpgradeDesk.card_data(research).get("title", research).trim_prefix("RESEARCH: ")]
+	return []
 
 
 ## Pays for node `id` and applies it; false (and nothing changes) if it can't be bought.
@@ -544,12 +700,77 @@ static func apply(id: String, save: SaveGame) -> void:
 		Associate.add_hand(save)
 
 
+## What the merged chains' nodes did before the merge (save.migration 2): per chain, each old id's
+## effect. Removed ids stay in an old save's tree_bought (nothing reads them) with their numbers.
+const MERGED := [
+	{desk_1 = {add = {desk_capacity = 2}}, desk_2 = {add = {desk_capacity = 2}}, desk_3 = {add = {desk_capacity = 2}},
+		desk_4 = {add = {desk_capacity = 2}}, desk_5 = {add = {desk_capacity = 2}}, desk_6 = {add = {desk_capacity = 2}}},
+	{pack_2 = {add = {pack_size = 5}}, pack_3 = {add = {pack_size = 10}}, pack_4 = {add = {pack_size = 25}}},
+	{discount_2 = {mul = {pack_discount = 0.85}}, discount_3 = {mul = {pack_discount = 0.8}}},
+	{vacuum_2 = {add = {vacuums = 1}}, vacuum_bag_1 = {add = {vacuum_capacity = 12}}, vacuum_suction = {mul = {vacuum_reach = 1.5}},
+		vacuum_speed_2 = {mul = {vacuum_speed = 1.5}}, vacuum_bag_2 = {add = {vacuum_capacity = 30}}, vacuum_3 = {add = {vacuums = 1}}},
+	{auto_reserve_2 = {add = {auto_reserve = 15}}, auto_smart_2 = {add = {auto_max_factor = -0.2}}},
+	{associate_3 = {mul = {associate_speed = 1.5}}, associate_4 = {mul = {associate_speed = 1.3}}, associate_5 = {mul = {associate_speed = 1.3}}},
+]
+
+
+## An old save's merged chains: where the nodes it kept now do more than what it got from the old
+## ones it bought (an old Hot-Desking alone: +2, now +4), the difference is added. Never takes away.
+static func migrate_merged(save: SaveGame) -> void:
+	for chain: Dictionary in MERGED:
+		var had := {}
+		var now := {}
+		for id: String in chain:
+			if not save.tree_bought.has(id):
+				continue
+			_sum(had, chain[id])
+			if not node_data(id).is_empty():
+				_sum(now, node_data(id))
+		for stat: String in now:
+			var old: float = had.get(stat, 0.0 if stat.begins_with("+") else 1.0)
+			var key := stat.substr(1)
+			if stat.begins_with("+") and absf(now[stat]) > absf(old):
+				var sum: Variant = save.get(key) + (now[stat] - old)
+				save.set(key, roundi(sum) if save.get(key) is int else sum)
+			elif stat.begins_with("*") and absf(log(now[stat])) > absf(log(old)):
+				var value: Variant = save.get(key) * now[stat] / old
+				save.set(key, roundi(value) if save.get(key) is int else value)
+
+
+## Adds an effect ({mul, add}) into a running total keyed "+stat" / "*stat".
+static func _sum(into: Dictionary, effect: Dictionary) -> void:
+	for stat: String in effect.get("add", {}):
+		into["+" + stat] = into.get("+" + stat, 0.0) + effect.add[stat]
+	for stat: String in effect.get("mul", {}):
+		into["*" + stat] = into.get("*" + stat, 1.0) * effect.mul[stat]
+
+
+## One STEP of the pull's tab, a Verlet point on a rope of CORD from `tie`: it keeps DAMP of its
+## velocity (`bob` - `last`), falls, and the rope stops it going further than CORD.
+static func swing(bob: Vector3, last: Vector3, tie: Vector3, delta: float) -> Vector3:
+	return rope(tie, bob + (bob - last) * DAMP + Vector3.DOWN * GRAVITY * delta * delta, CORD)
+
+
+## `point` pulled back to within `length` of `tie` (a rope: slack is fine, never longer).
+static func rope(tie: Vector3, point: Vector3, length: float) -> Vector3:
+	return point if tie.distance_to(point) <= length else tie + tie.direction_to(point) * length
+
+
+## The screen is fully down and nobody pulls it: the overlay is up and a click on it rolls it away.
+func _open() -> bool:
+	return _drop >= 1.0 and not _dragging
+
+
 func _has_point(point: Vector2) -> bool:
-	return visible and (_tab_rect().grow(6.0).has_point(point) or (_drop > 0.0 and _fabric_rect().has_point(point)))
+	# The pull (and the screen while it is pulled) clicks through to the 3D world, where the hand grabs it.
+	if not visible or _dragging or (_drop < 1.0 and point.distance_to(_grip_px) < _grip_r):
+		return false
+	return _open() or (_drop > 0.0 and _fabric_rect().has_point(point))
 
 
 func _gui_input(event: InputEvent) -> void:
 	var button := event as InputEventMouseButton
+	var save: SaveGame = SaveManager.save
 	var on_slide := _lamp > 0.9 and _tree_rect().has_point(event.position if event is InputEventMouse else Vector2.INF)
 	if button != null and button.pressed and on_slide and button.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 		_zoom_at(button.position, ZOOM_STEP if button.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / ZOOM_STEP)
@@ -557,13 +778,8 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 	elif button != null and button.button_index == MOUSE_BUTTON_LEFT:
 		if button.pressed:
-			if _tab_rect().grow(6.0).has_point(button.position):
-				_dragging = true
-				_press_y = button.position.y
-				_press_drop = _drop
-				_lamp_off()
-				if _settling != null:
-					_settling.kill()
+			if _open() and (_close_rect().has_point(button.position) or not _fabric_rect().has_point(button.position)):
+				_settle(false)  # The X, or a click on the overlay.
 			elif on_slide:
 				# A press on a node starts buying it; moved past CLICK_PX it pans instead.
 				_panning = true
@@ -571,16 +787,12 @@ func _gui_input(event: InputEvent) -> void:
 				_pan_press = button.position
 				_pan_start = _pan
 				_hovered = _node_at(button.position)
-				# A bought node does nothing on press (no denied blink and sound).
-				_holding = _hovered if not SaveManager.save.tree_bought.has(_hovered) else ""
+				# Only a node that can be held reacts (bought or out of reach: no denied blink and sound).
+				_holding = _hovered if can_hold(_hovered, save) else ""
 				_hold = 0.0
 				if button.double_click and _hovered == "":
 					_recentre()
 		else:
-			if _dragging:
-				_dragging = false
-				var clicked := absf(button.position.y - _press_y) < CLICK_PX
-				_settle(_press_drop < 0.5 if clicked else _drop > 0.5)
 			_panning = false
 			_panned = false
 			_holding = ""
@@ -593,26 +805,141 @@ func _gui_input(event: InputEvent) -> void:
 			_panned = true
 			_pan = _clamp_pan(_pan_start + at - _pan_press)
 		_hovered = _node_at(at) if _lamp > 0.9 and not _panned else ""
+		_close_hot = _lamp > 0.9 and _close_rect().has_point(at)
 		if _holding != "" and _hovered != _holding:
 			_holding = ""
 			_hold = 0.0
-		mouse_default_cursor_shape = CURSOR_DRAG if _dragging or _panned or _tab_rect().grow(6.0).has_point(at) \
-				else CURSOR_POINTING_HAND if _hovered != "" else CURSOR_ARROW
+		mouse_default_cursor_shape = CURSOR_DRAG if _panned else CURSOR_POINTING_HAND if _close_hot or can_hold(_hovered, save) \
+				else CURSOR_ARROW
+
+
+## Esc rolls the screen away, taken before the pause menu sees it (unless that menu is already open).
+func _input(event: InputEvent) -> void:
+	if visible and (_down or _dragging) and event.is_action_pressed("ui_cancel") and not _menu_open():
+		_dragging = false
+		_settle(false)
+		get_viewport().set_input_as_handled()
+
+
+func _menu_open() -> bool:
+	var scene := get_tree().current_scene
+	var menu := scene.get_node_or_null(^"UI/InGameMenu") as CanvasItem if scene != null else null
+	return menu != null and menu.visible
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_MOUSE_EXIT:
 		_hovered = ""
 		_holding = ""
+		_close_hot = false
 
 
-func _arrive_now() -> void:
+## Turns up: the pull (dropping in from above when `arrive`), built here.
+func _show(arrive: bool) -> void:
 	visible = true
-	_arrive = -80.0
-	create_tween().tween_property(self, "_arrive", 0.0, 0.5).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	if arrive:
+		_arrive = -80.0
+		create_tween().tween_property(self, "_arrive", 0.0, 0.5).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	_build_pull()
+
+
+## The pull: a grey enamel pennant, a downward-pointing triangle stamped PULL, hanging by its top edge
+## from a steel eyelet on a dark cord. Its face is tipped back toward the camera so the word reads from
+## above. Hovered it glows faintly and lifts; the hand pinches its tip (Interactable reach + carried).
+func _build_pull() -> void:
+	_grip = StaticBody3D.new()
+	_grip.collision_mask = 0
+	_enamel.albedo_color = Color(0.6, 0.63, 0.59)
+	_enamel.roughness = 0.45
+	_enamel.emission_enabled = true
+	_enamel.emission = BEAM
+	_enamel.emission_energy_multiplier = 0.0
+	var steel := StandardMaterial3D.new()
+	steel.albedo_color = Color(0.55, 0.58, 0.57)
+	steel.metallic = 0.8
+	steel.roughness = 0.3
+	# The tab hangs from the cord's end by its top edge, tipped back about that edge.
+	_tab.rotation.x = TAB_TILT
+	_grip.add_child(_tab)
+	var prism := PrismMesh.new()
+	prism.size = Vector3(TAB.x, TAB.y, 0.018)
+	prism.material = _enamel
+	var pennant := MeshInstance3D.new()
+	pennant.mesh = prism
+	pennant.rotation.z = PI  # Point down.
+	pennant.position.y = -TAB.y / 2.0
+	_tab.add_child(pennant)
+	var word := Label3D.new()
+	word.text = "PULL"
+	word.font = FONT
+	word.font_size = 64
+	word.pixel_size = 0.0006
+	word.outline_size = 0
+	word.modulate = INK
+	word.position = Vector3(0.0, -TAB.y * 0.3, 0.0095)
+	_tab.add_child(word)
+	var eye := CylinderMesh.new()
+	eye.top_radius = 0.008
+	eye.bottom_radius = 0.012
+	eye.height = 0.025
+	eye.material = steel
+	var eyelet := MeshInstance3D.new()
+	eyelet.mesh = eye
+	_grip.add_child(eyelet)
+	var shape := CollisionShape3D.new()
+	shape.shape = SphereShape3D.new()
+	(shape.shape as SphereShape3D).radius = TAB.x * 0.6
+	shape.position.y = -TAB.y / 2.0
+	_grip.add_child(shape)
+	_handle = Interactable.new()
+	_handle.reach = true
+	_handle.carried = true
+	_handle.hovered.connect(_touch_tab.bind(true))
+	_handle.unhovered.connect(_touch_tab.bind(false))
+	_handle.grabbed.connect(_grab)
+	_handle.released.connect(_let_go)
+	_grip.add_child(_handle)
+	var cord := CylinderMesh.new()
+	cord.top_radius = 0.005
+	cord.bottom_radius = 0.005
+	cord.height = 1.0
+	cord.radial_segments = 6
+	var dark := StandardMaterial3D.new()
+	dark.albedo_color = INK
+	cord.material = dark
+	_cord.mesh = cord
+	add_child(_grip)
+	add_child(_cord)
+
+
+func _touch_tab(hot: bool) -> void:
+	_tab_hot = hot
+	_enamel.emission_energy_multiplier = 0.35 if hot else 0.0
+
+
+func _grab() -> void:
+	_dragging = true
+	_press_y = get_local_mouse_position().y
+	_press_drop = _drop
+	_grab_offset = _bob - _on_plane(get_local_mouse_position(), TIE_HEIGHT - CORD)
+	_lamp_off()
+	if _settling != null:
+		_settling.kill()
+
+
+## Let go of the pull: a click opens the screen, a short pull springs back to where it was.
+func _let_go() -> void:
+	if not _dragging:
+		return  # The screen already took over (LET_GO).
+	_dragging = false
+	var clicked := absf(get_local_mouse_position().y - _press_y) < CLICK_PX
+	_settle(_press_drop < 0.5 if clicked else _drop > 0.5)
 
 
 func _settle(down: bool) -> void:
+	_down = down
+	if _settling != null:
+		_settling.kill()
 	_settling = create_tween()
 	if down:
 		_play(roll_down_sound)
@@ -621,6 +948,7 @@ func _settle(down: bool) -> void:
 		for level: float in [0.6, 0.1, 0.8, 0.3, 1.0]:
 			_settling.tween_property(self, "_lamp", level, 0.05)
 	else:
+		_lamp_off()
 		_play(roll_up_sound)
 		_settling.tween_property(self, "_drop", 0.0, 0.3 * _drop + 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
@@ -629,6 +957,7 @@ func _lamp_off() -> void:
 	_lamp = 0.0
 	_hovered = ""
 	_holding = ""
+	_close_hot = false
 
 
 func _play(stream: AudioStream) -> void:
@@ -640,8 +969,7 @@ func _play(stream: AudioStream) -> void:
 # --- Layout ---
 
 func _screen_rect() -> Rect2:
-	var frac: Rect2 = RECTS[size_mode]
-	return Rect2(size * frac.position, size * frac.size)
+	return Rect2(size * SCREEN.position, size * SCREEN.size)
 
 
 ## How far the fabric can unroll (px).
@@ -651,12 +979,35 @@ func _span() -> float:
 
 func _fabric_rect() -> Rect2:
 	var screen := _screen_rect()
-	return Rect2(screen.position.x + 10.0, ROLLER_H + _arrive, screen.size.x - 20.0, _drop * _span() + BAR_H)
+	return Rect2(screen.position.x + 12.0, ROLLER_H, screen.size.x - 24.0, _drop * _span() + BAR_H)
 
 
-func _tab_rect() -> Rect2:
+## The weighted bar at the fabric's foot (before the sway).
+func _bar_rect() -> Rect2:
 	var fabric := _fabric_rect()
-	return Rect2(Vector2(lerpf(fabric.position.x, fabric.end.x, TAB_AT) - TAB_SIZE.x / 2.0, fabric.end.y + CORD), TAB_SIZE)
+	return Rect2(fabric.position.x - 4.0, fabric.end.y - BAR_H, fabric.size.x + 8.0, BAR_H)
+
+
+## Where the cord is tied, on screen: under the bar, or just above the view while the screen is up
+## (then only the pull shows, hanging in from the top).
+func _tie_px() -> Vector2:
+	var bar := _bar_rect()
+	var y := lerpf(-12.0, bar.end.y, minf(_drop * 10.0, 1.0)) + _arrive
+	return Vector2(lerpf(bar.position.x, bar.end.x, TAB_AT) + _sway, y)
+
+
+func _close_rect() -> Rect2:
+	var fabric := _fabric_rect()
+	return Rect2(fabric.end.x - CLOSE - 18.0, fabric.position.y + 16.0, CLOSE, CLOSE)
+
+
+## Where the camera ray through `point` (px) crosses the horizontal plane at `height`.
+func _on_plane(point: Vector2, height: float) -> Vector3:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return Vector3(0.0, height, 0.0)
+	var hit: Variant = Plane(Vector3.UP, height).intersects_ray(camera.project_ray_origin(point), camera.project_ray_normal(point))
+	return hit if hit != null else Vector3(0.0, height, 0.0)
 
 
 ## The part of the slide under the heading where the tree is drawn, panned and zoomed.
@@ -695,8 +1046,8 @@ func _zoom_at(point: Vector2, factor: float) -> void:
 		_zoom = old
 
 
-## `pan` if a shown node (or the hub) stays well inside the slide with it, else the closest move
-## along one axis that does, else the current pan: the tree can't be lost off the slide.
+## `pan` if a node (or the hub) stays well inside the slide with it, else the closest move along one
+## axis that does, else the current pan: the tree can't be lost off the slide.
 func _clamp_pan(pan: Vector2) -> Vector2:
 	for option: Vector2 in [pan, Vector2(pan.x, _pan.y), Vector2(_pan.x, pan.y)]:
 		if _keeps_tree(option):
@@ -708,19 +1059,12 @@ func _keeps_tree(pan: Vector2) -> bool:
 	var wheel := _wheel()
 	var centre: Vector2 = wheel[0] - _pan + pan
 	var inside := _tree_rect().grow(-wheel[2] * 1.5)
-	return _visible_nodes().keys().any(func(id: String) -> bool: \
-			return inside.has_point(centre + node_data(id).at * wheel[1])) or inside.has_point(centre)
-
-
-## shown_nodes() of the current save, cached: stamps and purchases only ever grow, so their counts
-## (and the save's identity, for a reset) tell when it is stale.
-func _visible_nodes() -> Dictionary:
-	var save: SaveGame = SaveManager.save
-	var key := [save.get_instance_id(), save.stamped.size(), save.tree_bought.size()]
-	if key != _shown_key:
-		_shown_key = key
-		_shown = shown_nodes(save)
-	return _shown
+	if inside.has_point(centre):
+		return true
+	for node: Dictionary in NODES:
+		if inside.has_point(centre + node.at * wheel[1]):
+			return true
+	return false
 
 
 ## Eases the view back to the start: no pan, zoom 1.
@@ -735,198 +1079,299 @@ func _node_at(point: Vector2) -> String:
 		return ""
 	var wheel := _wheel()
 	var r: float = wheel[2]
-	for id: String in _visible_nodes():
-		if point.distance_to(wheel[0] + node_data(id).at * wheel[1]) < r * 1.2:
-			return id
+	for node: Dictionary in NODES:
+		if point.distance_to(wheel[0] + node.at * wheel[1]) < _size(node.id, r) * 1.2:
+			return node.id
 	return ""
 
 
 # --- Drawing ---
 
 func _draw() -> void:
+	if _drop <= 0.0:
+		return  # Rolled up out of sight: only the pull shows.
 	var save: SaveGame = SaveManager.save
 	var screen := _screen_rect()
 	var fabric := _fabric_rect()
-	if _drop > 0.0:
-		draw_rect(Rect2(fabric.position + Vector2(8, 6), fabric.size), Color(0, 0, 0, 0.35))
-		draw_rect(fabric, FABRIC)
-		_draw_content(save, fabric)
-	# Roller at the top, weighted bar at the fabric's foot, the cord and the pull tab.
-	draw_rect(Rect2(screen.position.x, _arrive, screen.size.x, ROLLER_H), STEEL)
-	draw_rect(Rect2(screen.position.x, _arrive + ROLLER_H * 0.65, screen.size.x, ROLLER_H * 0.35), Color(0, 0, 0, 0.4))
-	var bar := Rect2(fabric.position.x - 4.0, fabric.end.y - BAR_H, fabric.size.x + 8.0, BAR_H)
-	draw_rect(bar, STEEL)
-	var tab := _tab_rect()
-	draw_line(Vector2(tab.get_center().x, bar.end.y), Vector2(tab.get_center().x, tab.position.y), INK, 3.0)
-	draw_rect(Rect2(tab.position + Vector2(4, 4), tab.size), Color(0, 0, 0, 0.4))
-	draw_rect(tab, Color(0.62, 0.65, 0.6))
-	draw_rect(tab, INK, false, 2.0)
-	draw_circle(tab.get_center() + Vector2(0, -9), 9.0, INK)
-	var label := "PULL" if _drop < 0.5 else "STOW"
-	draw_string(FONT, Vector2(tab.position.x, tab.end.y - 7.0), label, HORIZONTAL_ALIGNMENT_CENTER, tab.size.x, 17, INK)
+	var bar := _bar_rect()
+	# The sheet: its foot trails the swing; a lit left edge and a dark right edge give it thickness.
+	var sheet := PackedVector2Array([fabric.position, Vector2(fabric.end.x, fabric.position.y),
+			fabric.end + Vector2(_sway, 0.0), Vector2(fabric.position.x + _sway, fabric.end.y)])
+	var shadow := sheet.duplicate()
+	for i in shadow.size():
+		shadow[i] += Vector2(10.0, 8.0)
+	draw_colored_polygon(shadow, Color(0, 0, 0, 0.35))
+	draw_colored_polygon(sheet, FABRIC)
+	_draw_content(save, fabric)
+	draw_line(sheet[0], sheet[3], Color(1, 1, 1, 0.14), 2.0)
+	draw_line(sheet[1], sheet[2], Color(0, 0, 0, 0.5), 3.0)
+	# The roller's shadow on the sheet just under it.
+	for i in 6:
+		draw_rect(Rect2(fabric.position.x, fabric.position.y + i * 4.0, fabric.size.x, 4.0), Color(0, 0, 0, 0.28 * (1.0 - i / 6.0)))
+	# The roller: the rolled sheet (thinner the more is down) under a steel tube in end brackets.
+	_draw_tube(Rect2(fabric.position.x, ROLLER_H - 6.0, fabric.size.x, lerpf(16.0, 7.0, _drop)), FABRIC)
+	_draw_tube(Rect2(screen.position.x, 0.0, screen.size.x, ROLLER_H), TUBE)
+	for x: float in [screen.position.x - 12.0, screen.end.x - 6.0]:
+		draw_rect(Rect2(x, -6.0, 18.0, ROLLER_H + 12.0), STEEL)
+		draw_circle(Vector2(x + 9.0, ROLLER_H / 2.0), 4.0, TUBE)
+	# The weighted bar, and the latch on its right where the pull's cord is tied.
+	_draw_tube(Rect2(bar.position + Vector2(_sway, 0.0), bar.size), TUBE)
+	var tie := _tie_px()
+	draw_rect(Rect2(tie + Vector2(-9.0, -BAR_H - 4.0), Vector2(18.0, BAR_H + 8.0)), STEEL)
+	draw_circle(tie + Vector2(0.0, -BAR_H / 2.0), 3.5, TUBE)
+
+
+## A cylinder seen from the side: horizontal bands, lit from above, dark underneath.
+func _draw_tube(rect: Rect2, color: Color) -> void:
+	const BANDS := 8
+	for i in BANDS:
+		var t := (i + 0.5) / BANDS
+		var light := 0.45 + 0.75 * sin(PI * t) * (1.2 - t)
+		draw_rect(Rect2(rect.position.x, rect.position.y + rect.size.y * i / BANDS, rect.size.x, rect.size.y / BANDS + 0.5),
+				Color(color.r * light, color.g * light, color.b * light))
 
 
 func _draw_content(save: SaveGame, fabric: Rect2) -> void:
-	var light := _lamp * _flick
-	if light <= 0.0:
+	if _lamp <= 0.0:
 		return
+	var light := _lamp * pulse(Time.get_ticks_msec() / 1000.0)
 	# The beam: a cold, uneven wash brightest in the middle.
 	draw_texture_rect(_beam, fabric, false, Color(1, 1, 1, light))
-	var ink := Color(INK, light)
+	var ink := Color(INK, _lamp)
 	var top := fabric.position.y + fabric.size.y * 0.04
-	var head := clampf(fabric.size.x * 0.05, 22.0, 44.0)
+	var head := clampf(fabric.size.x * 0.035, 22.0, 44.0)
 	draw_string(FONT, Vector2(fabric.position.x, top + head), "GROWTH INITIATIVES", HORIZONTAL_ALIGNMENT_CENTER, fabric.size.x, int(head), ink)
-	draw_string(FONT, Vector2(fabric.position.x, top + head * 1.6), "FORM GW-7   |   BUDGET AVAILABLE $%d   |   HOLD TO APPROVE" % save.coins,
-			HORIZONTAL_ALIGNMENT_CENTER, fabric.size.x, int(head * 0.42), Color(INK, light * 0.75))
+	draw_string(FONT, Vector2(fabric.position.x, top + head * 1.6), "FORM GW-7   |   HOLD TO APPROVE",
+			HORIZONTAL_ALIGNMENT_CENTER, fabric.size.x, int(head * 0.42), Color(INK, _lamp * 0.75))
+	# What there is to spend, live, in the sheet's top-left corner.
+	var stat := int(head * 0.62)
+	var corner := Vector2(fabric.position.x + 22.0, top + stat)
+	draw_string(FONT, corner, "BUDGET  $%d" % save.coins, HORIZONTAL_ALIGNMENT_LEFT, -1, stat, ink)
+	draw_string(FONT, corner + Vector2(0.0, stat * 1.2), "FINDINGS  ¶%d" % save.findings, HORIZONTAL_ALIGNMENT_LEFT, -1, stat, ink)
+	# The close button: a dark stamped square with an X, top right.
+	var close := _close_rect()
+	draw_rect(close, Color(INK, _lamp * (1.0 if _close_hot else 0.8)))
+	var x := close.grow(-12.0)
+	var paper := Color(BEAM, _lamp)
+	draw_line(x.position, x.end, paper, 3.0, true)
+	draw_line(Vector2(x.end.x, x.position.y), Vector2(x.position.x, x.end.y), paper, 3.0, true)
 
 
-## The tree, on the clipped child. Coordinates stay the projector's own (the transform undoes the
-## child's offset), so hit tests and drawing share _wheel().
-func _draw_tree() -> void:
+## The tree's nodes and edges on _layer, around its origin (the hub). Drawn at full strength; the
+## lamp and its pulse dim the layer (modulate). Only redrawn when _layer_key changes.
+func _draw_layer() -> void:
 	var save: SaveGame = SaveManager.save
-	var light := _lamp * _flick
-	if light <= 0.0 or _drop <= 0.0:
-		return
-	_tree.draw_set_transform(-_tree.position)
-	var ink := Color(INK, light)
 	var wheel := _wheel()
-	var centre: Vector2 = wheel[0]
 	var unit: Vector2 = wheel[1]
 	var r: float = wheel[2]
-	var shown := _visible_nodes()
-	for id: String in shown:
-		var node := node_data(id)
+	var faint := PackedVector2Array()
+	var locked := PackedVector2Array()
+	for node: Dictionary in NODES:
 		# Edge to edge: the line stops at both circles instead of running into them.
-		var from: Vector2 = centre if node.parent == "" else centre + node_data(node.parent).at * unit
-		var to: Vector2 = centre + node.at * unit
+		var from: Vector2 = Vector2.ZERO if node.parent == "" else node_data(node.parent).at * unit
+		var to: Vector2 = node.at * unit
 		var dir := from.direction_to(to)
-		var gap := r + (6.0 if id == _holding else 0.0)
-		if from.distance_to(to) > r * 2.2 + gap:
-			var start := from + dir * r * (1.1 if node.parent == "" else 1.0)
-			if shown[id] != "":
-				_tree.draw_dashed_line(start, to - dir * gap, Color(INK, light * 0.35), 3.0, 9.0)
+		var from_r := r * 1.1 if node.parent == "" else _size(node.parent, r)
+		var to_r := _size(node.id, r)
+		if from.distance_to(to) > from_r + to_r + r:
+			var start := from + dir * from_r
+			var end := to - dir * to_r
+			if not is_reachable(node.id, save):
+				_dashes(faint, start, end, 7.0)
+			elif locked_by(node.id, save) != "":
+				_dashes(locked, start, end, 9.0)
 			else:
-				_tree.draw_line(start, to - dir * gap, Color(INK, light * 0.6), 3.0, true)
+				_layer.draw_line(start, end, Color(INK, 0.6), 3.0, true)
+	if not faint.is_empty():
+		_layer.draw_multiline(faint, Color(INK, 0.15), 2.0)
+	if not locked.is_empty():
+		_layer.draw_multiline(locked, Color(INK, 0.35), 3.0)
+	# Each theme's faint heading past the end of its branch.
+	var heading := int(clampf(r * 0.8, 12.0, 44.0))
+	for theme: Array in THEMES:
+		_layer.draw_string(FONT, theme[1] * unit - Vector2(300.0, 0.0), theme[0], HORIZONTAL_ALIGNMENT_CENTER, 600.0, heading, Color(INK, 0.22))
 	# The hub: a cabbage cross-section, the one green thing on the slide.
-	_tree.draw_circle(centre, r * 1.1, Color(CABBAGE, light))
-	_tree.draw_circle(centre, r * 1.1, ink, false, 3.0, true)
+	_layer.draw_circle(Vector2.ZERO, r * 1.1, CABBAGE)
+	_layer.draw_circle(Vector2.ZERO, r * 1.1, INK, false, 3.0, true)
 	for i in 3:
-		_tree.draw_arc(centre + Vector2(r * 0.15, 0), r * (0.3 + i * 0.25), PI * 0.6, PI * 1.9, 16, Color(0.9, 1.0, 0.8, light * 0.8), 2.0, true)
-	for id: String in shown:
-		_draw_node(node_data(id), centre + node_data(id).at * unit, r, shown[id] != "", save, light)
+		_layer.draw_arc(Vector2(r * 0.15, 0), r * (0.3 + i * 0.25), PI * 0.6, PI * 1.9, 16, Color(0.9, 1.0, 0.8, 0.8), 2.0, true)
+	for node: Dictionary in NODES:
+		_draw_node(node, node.at * unit, r, save)
+
+
+## Dash segments from `from` to `to` (`dash` long, same gap) added to a multiline batch.
+static func _dashes(into: PackedVector2Array, from: Vector2, to: Vector2, dash: float) -> void:
+	var length := from.distance_to(to)
+	var dir := from.direction_to(to)
+	var at := 0.0
+	while at < length:
+		into.append(from + dir * at)
+		into.append(from + dir * minf(at + dash, length))
+		at += dash * 2.0
+
+
+## What moves per frame, on _top (projector coordinates): the hint, the hovered node's ring, the hold
+## arc and the popup. Steady: the lamp's pulse doesn't reach it.
+func _draw_top() -> void:
+	var save: SaveGame = SaveManager.save
+	_top.draw_set_transform(-_tree.position)
+	var wheel := _wheel()
+	var r: float = wheel[2]
 	var area := _tree_rect()
 	var hint := "DRAG TO MOVE   |   WHEEL TO ZOOM" if _pan == Vector2.ZERO and is_equal_approx(_zoom, 1.0) else "DOUBLE-CLICK TO RECENTRE"
-	_tree.draw_string(FONT, area.end - Vector2(area.size.x, 12.0), hint, HORIZONTAL_ALIGNMENT_RIGHT, area.size.x - 14.0, 15, Color(INK, light * 0.55))
+	_top.draw_string(FONT, area.end - Vector2(area.size.x, 12.0), hint, HORIZONTAL_ALIGNMENT_RIGHT, area.size.x - 14.0, 15, Color(INK, _lamp * 0.55))
+	if _holding != "":
+		var at: Vector2 = wheel[0] + node_data(_holding).at * wheel[1]
+		if _denied > 0.0:
+			_top.draw_arc(at, r + 4.0, 0.0, TAU, 32, Color(DENIED, _lamp), 4.0, true)
+		elif _hold > 0.0:
+			_top.draw_arc(at, r + 6.0, -PI / 2.0, -PI / 2.0 + TAU * _hold, 40, Color(INK, _lamp), 5.0, true)
 	if _hovered != "":
-		_draw_popup(node_data(_hovered), centre + node_data(_hovered).at * unit, r, save, light, _tree_rect())
+		var at: Vector2 = wheel[0] + node_data(_hovered).at * wheel[1]
+		var size := _size(_hovered, r)
+		_top.draw_circle(at, size, Color(BEAM.lerp(Color.WHITE, 0.3), _lamp * 0.25))
+		_draw_popup(node_data(_hovered), at, size, save, _lamp, area)
 
 
-func _draw_node(node: Dictionary, at: Vector2, r: float, locked: bool, save: SaveGame, light: float) -> void:
+## A node's radius: departments are drawn DEPT_SIZE times bigger.
+static func _size(id: String, r: float) -> float:
+	return r * DEPT_SIZE if is_dept(id) else r
+
+
+func _draw_node(node: Dictionary, at: Vector2, r: float, save: SaveGame) -> void:
+	if node.get("dept", false):
+		_draw_dept(node, at, r * DEPT_SIZE, save)
+		return
 	var bought: bool = save.tree_bought.has(node.id)
-	var alpha := light * (0.3 if locked else 1.0 if bought or save.coins >= node.price else 0.35)
+	var reachable := is_reachable(node.id, save)
+	var locked := reachable and locked_by(node.id, save) != ""
+	var alpha := 0.16 if not reachable else 0.3 if locked else 1.0 if bought or save.coins >= node.price else 0.35
 	var ink := Color(INK, alpha)
-	if node.id == _holding and _denied > 0.0:
-		ink = Color(DENIED, alpha)
-	var face := Color(BEAM.lerp(Color.WHITE, 0.3), alpha * (0.5 if node.id == _hovered else 0.0))
-	_tree.draw_circle(at, r, ink if bought else face)
-	if locked:
-		# A broken rim and a padlock: on the plan, not yet approved.
+	if bought:
+		_layer.draw_circle(at, r, ink)
+	if locked or not reachable:
+		# A broken rim: on the plan, not yet approved (a padlock when research holds it).
+		var rim := PackedVector2Array()
 		for i in 12:
-			_tree.draw_arc(at, r, TAU * i / 12.0, TAU * (i + 0.6) / 12.0, 6, ink, 3.0, true)
+			for j in 3:
+				rim.append(at + Vector2.from_angle(TAU * (i + 0.2 * j) / 12.0) * r)
+				rim.append(at + Vector2.from_angle(TAU * (i + 0.2 * (j + 1)) / 12.0) * r)
+		_layer.draw_multiline(rim, ink, 3.0)
 	else:
-		_tree.draw_circle(at, r, ink, false, 3.0, true)
+		_layer.draw_circle(at, r, ink, false, 3.0, true)
 	_draw_icon("padlock" if locked else node.icon, at, r * 0.55, Color(BEAM, alpha) if bought else ink)
-	if node.id == _holding and _hold > 0.0:
-		_tree.draw_arc(at, r + 6.0, -PI / 2.0, -PI / 2.0 + TAU * _hold, 40, Color(INK, light), 5.0, true)
 	# Bought shows as the filled disc (the popup says APPROVED): a word under it would run into
 	# the next node's title in the vertical chains.
-	var font_size := int(clampf(r * 0.6, 14.0, 34.0))
-	_tree.draw_string(FONT, at + Vector2(-200.0, -r - 8.0), node.title, HORIZONTAL_ALIGNMENT_CENTER, 400.0, font_size, ink)
+	var font_size := int(clampf(r * 0.6, 9.0, 34.0))
+	_layer.draw_string(FONT, at + Vector2(-200.0, -r - 8.0), node.title, HORIZONTAL_ALIGNMENT_CENTER, 400.0, font_size, ink)
+
+
+## A department: a big tinted disc in a double rim, its name in large type, never filled as bought.
+## Closed (its cards or research missing) it is faint with a broken rim, a padlock for research.
+func _draw_dept(node: Dictionary, at: Vector2, r: float, save: SaveGame) -> void:
+	var open := is_open(node.id, save)
+	var locked := is_reachable(node.id, save) and not open
+	var ink := Color(INK, 1.0 if open else 0.3 if locked else 0.2)
+	_layer.draw_circle(at, r, Color(INK, ink.a * 0.14))
+	if open:
+		_layer.draw_circle(at, r, ink, false, 5.0, true)
+	else:
+		var rim := PackedVector2Array()
+		for i in 16:
+			rim.append(at + Vector2.from_angle(TAU * i / 16.0) * r)
+			rim.append(at + Vector2.from_angle(TAU * (i + 0.6) / 16.0) * r)
+		_layer.draw_multiline(rim, ink, 5.0)
+	_layer.draw_arc(at, r * 0.84, 0.0, TAU, 32, ink, 1.5, true)
+	_draw_icon("padlock" if locked else node.icon, at, r * 0.5, ink)
+	var font_size := int(clampf(r * 0.5, 12.0, 46.0))
+	_layer.draw_string(FONT, at + Vector2(-250.0, -r - 10.0), node.title, HORIZONTAL_ALIGNMENT_CENTER, 500.0, font_size, ink)
 
 
 ## Simple line glyphs, centred on `at`, about `s` from the centre to the edge.
 func _draw_icon(icon: String, at: Vector2, s: float, color: Color) -> void:
 	match icon:
 		"megaphone":
-			_tree.draw_colored_polygon(PackedVector2Array([at + Vector2(-s * 0.6, -s * 0.3), at + Vector2(s * 0.7, -s * 0.8),
+			_layer.draw_colored_polygon(PackedVector2Array([at + Vector2(-s * 0.6, -s * 0.3), at + Vector2(s * 0.7, -s * 0.8),
 					at + Vector2(s * 0.7, s * 0.8), at + Vector2(-s * 0.6, s * 0.3)]), color)
-			_tree.draw_rect(Rect2(at + Vector2(-s, -s * 0.3), Vector2(s * 0.4, s * 0.6)), color)
+			_layer.draw_rect(Rect2(at + Vector2(-s, -s * 0.3), Vector2(s * 0.4, s * 0.6)), color)
 		"crate":
 			var box := Rect2(at - Vector2(s, s) * 0.8, Vector2(s, s) * 1.6)
-			_tree.draw_rect(box, color, false, 2.5)
-			_tree.draw_line(box.position, box.end, color, 2.0)
-			_tree.draw_line(Vector2(box.end.x, box.position.y), Vector2(box.position.x, box.end.y), color, 2.0)
+			_layer.draw_rect(box, color, false, 2.5)
+			_layer.draw_line(box.position, box.end, color, 2.0)
+			_layer.draw_line(Vector2(box.end.x, box.position.y), Vector2(box.position.x, box.end.y), color, 2.0)
 		"clock":
-			_tree.draw_arc(at, s * 0.85, 0.0, TAU, 24, color, 2.5, true)
-			_tree.draw_line(at, at + Vector2(0, -s * 0.6), color, 2.5)
-			_tree.draw_line(at, at + Vector2(s * 0.45, 0), color, 2.5)
+			_layer.draw_arc(at, s * 0.85, 0.0, TAU, 24, color, 2.5, true)
+			_layer.draw_line(at, at + Vector2(0, -s * 0.6), color, 2.5)
+			_layer.draw_line(at, at + Vector2(s * 0.45, 0), color, 2.5)
 		"lens":
-			_tree.draw_arc(at + Vector2(-s * 0.2, -s * 0.2), s * 0.55, 0.0, TAU, 20, color, 2.5, true)
-			_tree.draw_line(at + Vector2(s * 0.2, s * 0.2), at + Vector2(s * 0.85, s * 0.85), color, 4.0)
+			_layer.draw_arc(at + Vector2(-s * 0.2, -s * 0.2), s * 0.55, 0.0, TAU, 20, color, 2.5, true)
+			_layer.draw_line(at + Vector2(s * 0.2, s * 0.2), at + Vector2(s * 0.85, s * 0.85), color, 4.0)
 		"hand":
 			# A mitten-like office hand: palm, four fingers, a thumb.
-			_tree.draw_rect(Rect2(at + Vector2(-s * 0.5, -s * 0.15), Vector2(s, s * 0.85)), color)
+			_layer.draw_rect(Rect2(at + Vector2(-s * 0.5, -s * 0.15), Vector2(s, s * 0.85)), color)
 			for i in 4:
 				var tall := s * (0.55 if i in [0, 3] else 0.7)
-				_tree.draw_rect(Rect2(at + Vector2(-s * 0.5 + i * s * 0.26, -s * 0.15 - tall), Vector2(s * 0.2, tall)), color)
-			_tree.draw_colored_polygon(PackedVector2Array([at + Vector2(-s * 0.5, s * 0.05), at + Vector2(-s * 0.95, -s * 0.3),
+				_layer.draw_rect(Rect2(at + Vector2(-s * 0.5 + i * s * 0.26, -s * 0.15 - tall), Vector2(s * 0.2, tall)), color)
+			_layer.draw_colored_polygon(PackedVector2Array([at + Vector2(-s * 0.5, s * 0.05), at + Vector2(-s * 0.95, -s * 0.3),
 					at + Vector2(-s * 0.8, -s * 0.45), at + Vector2(-s * 0.5, -s * 0.2)]), color)
 		"belt":
 			for x: float in [-0.55, 0.55]:
-				_tree.draw_arc(at + Vector2(s * x, 0), s * 0.3, 0.0, TAU, 14, color, 2.5, true)
-			_tree.draw_line(at + Vector2(-s * 0.55, -s * 0.3), at + Vector2(s * 0.55, -s * 0.3), color, 2.5)
-			_tree.draw_line(at + Vector2(-s * 0.55, s * 0.3), at + Vector2(s * 0.55, s * 0.3), color, 2.5)
-			_tree.draw_rect(Rect2(at + Vector2(-s * 0.25, -s * 0.75), Vector2(s * 0.5, s * 0.4)), color)
+				_layer.draw_arc(at + Vector2(s * x, 0), s * 0.3, 0.0, TAU, 14, color, 2.5, true)
+			_layer.draw_line(at + Vector2(-s * 0.55, -s * 0.3), at + Vector2(s * 0.55, -s * 0.3), color, 2.5)
+			_layer.draw_line(at + Vector2(-s * 0.55, s * 0.3), at + Vector2(s * 0.55, s * 0.3), color, 2.5)
+			_layer.draw_rect(Rect2(at + Vector2(-s * 0.25, -s * 0.75), Vector2(s * 0.5, s * 0.4)), color)
 		"padlock":
-			_tree.draw_arc(at + Vector2(0, -s * 0.15), s * 0.42, PI, TAU, 12, color, 3.0, true)
+			_layer.draw_arc(at + Vector2(0, -s * 0.15), s * 0.42, PI, TAU, 12, color, 3.0, true)
 			for x: float in [-0.42, 0.42]:
-				_tree.draw_line(at + Vector2(s * x, -s * 0.15), at + Vector2(s * x, s * 0.1), color, 3.0)
-			_tree.draw_rect(Rect2(at + Vector2(-s * 0.7, s * 0.05), Vector2(s * 1.4, s * 0.85)), color)
-			_tree.draw_circle(at + Vector2(0, s * 0.4), s * 0.13, Color(FABRIC, color.a))
+				_layer.draw_line(at + Vector2(s * x, -s * 0.15), at + Vector2(s * x, s * 0.1), color, 3.0)
+			_layer.draw_rect(Rect2(at + Vector2(-s * 0.7, s * 0.05), Vector2(s * 1.4, s * 0.85)), color)
+			_layer.draw_circle(at + Vector2(0, s * 0.4), s * 0.13, Color(FABRIC, color.a))
 		"pilcrow":
-			_tree.draw_string(FONT, at + Vector2(-s, s * 0.6), "¶+", HORIZONTAL_ALIGNMENT_CENTER, s * 2.0, int(s * 1.5), color)
+			_layer.draw_string(FONT, at + Vector2(-s, s * 0.6), "¶+", HORIZONTAL_ALIGNMENT_CENTER, s * 2.0, int(s * 1.5), color)
 		"desk":
 			# A desk top seen from above, with two units on it.
-			_tree.draw_rect(Rect2(at - Vector2(s * 0.9, s * 0.6), Vector2(s * 1.8, s * 1.2)), color, false, 2.5)
+			_layer.draw_rect(Rect2(at - Vector2(s * 0.9, s * 0.6), Vector2(s * 1.8, s * 1.2)), color, false, 2.5)
 			for x: float in [-0.4, 0.4]:
-				_tree.draw_circle(at + Vector2(s * x, 0), s * 0.28, color)
+				_layer.draw_circle(at + Vector2(s * x, 0), s * 0.28, color)
 		"puck":
 			# The coin unit: a disc with its lamp, and a coin beside it.
-			_tree.draw_arc(at + Vector2(-s * 0.15, 0), s * 0.7, 0.0, TAU, 20, color, 2.5, true)
-			_tree.draw_circle(at + Vector2(-s * 0.15, -s * 0.4), s * 0.14, color)
-			_tree.draw_circle(at + Vector2(s * 0.75, s * 0.55), s * 0.22, color)
+			_layer.draw_arc(at + Vector2(-s * 0.15, 0), s * 0.7, 0.0, TAU, 20, color, 2.5, true)
+			_layer.draw_circle(at + Vector2(-s * 0.15, -s * 0.4), s * 0.14, color)
+			_layer.draw_circle(at + Vector2(s * 0.75, s * 0.55), s * 0.22, color)
 		"chair":
-			_tree.draw_rect(Rect2(at + Vector2(-s * 0.5, -s * 0.8), Vector2(s * 0.25, s * 1.0)), color)
-			_tree.draw_rect(Rect2(at + Vector2(-s * 0.5, 0), Vector2(s * 1.0, s * 0.22)), color)
+			_layer.draw_rect(Rect2(at + Vector2(-s * 0.5, -s * 0.8), Vector2(s * 0.25, s * 1.0)), color)
+			_layer.draw_rect(Rect2(at + Vector2(-s * 0.5, 0), Vector2(s * 1.0, s * 0.22)), color)
 			for x: float in [-0.45, 0.4]:
-				_tree.draw_line(at + Vector2(s * x, s * 0.2), at + Vector2(s * x, s * 0.85), color, 2.5)
+				_layer.draw_line(at + Vector2(s * x, s * 0.2), at + Vector2(s * x, s * 0.85), color, 2.5)
 
 
 func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, light: float, fabric: Rect2) -> void:
-	var width := 330.0
+	var width := 430.0
 	var lines: PackedStringArray = node.body.split("\n")
-	var research := locked_by(node.id, save)
-	var height := 82.0 + lines.size() * 22.0 + (26.0 if research != "" else 0.0)
+	var needs := requirement(node.id, save)
+	var height := 100.0 + lines.size() * 27.0 + (32.0 if not needs.is_empty() else 0.0)
 	var pos := at + Vector2(r + 14.0, -height / 2.0)
 	if pos.x + width > fabric.end.x:
 		pos.x = at.x - r - 14.0 - width
 	pos.x = clampf(pos.x, fabric.position.x + 6.0, fabric.end.x - width - 6.0)
 	pos.y = clampf(pos.y, fabric.position.y + 6.0, fabric.end.y - height - 6.0)
 	var box := Rect2(pos, Vector2(width, height))
-	_tree.draw_rect(box, Color(INK, light * 0.92))
+	_top.draw_rect(box, Color(INK, light * 0.92))
 	var paper := Color(BEAM, light)
-	_tree.draw_string(FONT, pos + Vector2(14, 32), node.title, HORIZONTAL_ALIGNMENT_LEFT, width - 28.0, 24, paper)
+	_top.draw_string(FONT, pos + Vector2(16, 38), node.title, HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 30, paper)
 	for i in lines.size():
-		_tree.draw_string(FONT, pos + Vector2(14, 58 + i * 22), lines[i], HORIZONTAL_ALIGNMENT_LEFT, width - 28.0, 17, Color(paper, light * 0.8))
-	if research != "":
-		# REQUIRES RESEARCH: on one line, the study's name (without its RESEARCH: prefix) under it.
-		var study: String = UpgradeDesk.card_data(research).get("title", research).trim_prefix("RESEARCH: ")
+		_top.draw_string(FONT, pos + Vector2(16, 70 + i * 27), lines[i], HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 21, Color(paper, light * 0.8))
+	if not needs.is_empty():
+		# What it waits for, on one line, its name under it.
 		var red := Color(0.85, 0.35, 0.3, light)
-		_tree.draw_string(FONT, pos + Vector2(14, height - 40), "REQUIRES RESEARCH:", HORIZONTAL_ALIGNMENT_LEFT, width - 28.0, 18, red)
-		_tree.draw_string(FONT, pos + Vector2(14, height - 14), study, HORIZONTAL_ALIGNMENT_LEFT, width - 28.0, 20, red)
+		_top.draw_string(FONT, pos + Vector2(16, height - 48), needs[0], HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 21, red)
+		_top.draw_string(FONT, pos + Vector2(16, height - 16), needs[1], HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, red)
+		return
+	if node.get("dept", false):
+		_top.draw_string(FONT, pos + Vector2(16, height - 16), "DEPARTMENT", HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, paper)
 		return
 	var bought: bool = save.tree_bought.has(node.id)
 	var price := "APPROVED" if bought else "COST $%d" % node.price
 	var short: bool = not bought and save.coins < node.price
-	_tree.draw_string(FONT, pos + Vector2(14, height - 14), price, HORIZONTAL_ALIGNMENT_LEFT, width - 28.0, 20,
+	_top.draw_string(FONT, pos + Vector2(16, height - 16), price, HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24,
 			Color(0.85, 0.35, 0.3, light) if short else paper)

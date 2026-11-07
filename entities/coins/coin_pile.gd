@@ -1,8 +1,8 @@
 class_name CoinPile
 extends MultiMeshInstance3D
 ## Every loose coin, drawn as one MultiMesh. Coins are animated, not simulated: they arc in,
-## bounce once and land on a height grid. One payout comes as gold (GOLD_VALUE each) and silver
-## (1 each) coins that all aim at one spot and stack there, at most MAX_STACK high; extra coins
+## bounce once and land on a height grid. One payout comes as silver ($1), gold ($5) and big
+## bronze ($10, bigger and thicker) coins that all aim at one spot and stack there, at most MAX_STACK high; extra coins
 ## start a stack right beside it. Sweeping an empty hand over them sends them into the deposit.
 
 signal thrown(origin: Vector3, count: int)
@@ -17,14 +17,18 @@ const MAX_COINS := 4096
 const CELL := 0.054
 const THICKNESS := 0.014
 const MAX_STACK := 10
-const GOLD_VALUE := 10
+const GOLD_VALUE := 5
+const BIG_VALUE := 10
 const MAX_THROW := 30
 const SILVER := Color(0.8, 0.82, 0.86)
 const GOLD := Color(1.0, 0.72, 0.32)
+## The $10 coin (and the rare $100+ ones a huge payout is made of): dark bronze, wider and thicker.
+const BRONZE := Color(0.62, 0.42, 0.26)
+const BIG_SCALE := Vector3(1.2, 1.5, 1.2)
 ## How far (in cells) a payout's coins scatter around its spot, and sit off a stack's centre.
 const AIM_JITTER := 0.25
 const STACK_JITTER := 0.12
-const FLOATS := 16  # per instance: 12 transform + 4 colour
+const FLOATS := 20  # per instance: 12 transform + 4 colour + 4 custom (x: the coin face, 0/1/2 = $1/$5/$10)
 const GRAVITY := 9.8
 const SETTLE_TIME := 0.12
 const HOME_TIME := 0.5
@@ -81,6 +85,7 @@ func _ready() -> void:
 	multimesh.instance_count = 0
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.use_colors = true
+	multimesh.use_custom_data = true
 	multimesh.instance_count = MAX_COINS
 	multimesh.visible_instance_count = 0
 	_buffer.resize(MAX_COINS * FLOATS)
@@ -174,7 +179,7 @@ func _fly(coin: Coin, delta: float) -> void:
 		return
 	if _stacks.get(coin.cell, []).size() >= MAX_STACK:
 		coin.cell = stack_cell(_stacks, coin.cell, MAX_STACK)
-	var floor_y := _top(coin.cell) + THICKNESS * 0.5
+	var floor_y := _top(coin.cell) + thickness(coin.value) * 0.5
 	if coin.xf.origin.y > floor_y or coin.velocity.y > 0.0:
 		return
 	coin.xf.origin.y = floor_y
@@ -190,12 +195,13 @@ func _fly(coin: Coin, delta: float) -> void:
 func _land(coin: Coin) -> void:
 	var cell := stack_cell(_stacks, coin.cell, MAX_STACK)
 	var stack: Array = _stacks.get_or_add(cell, [])
+	var below := _top(cell)
 	stack.append(coin)
 	var centre := cell_centre(cell) + Vector2(randf_range(-1, 1), randf_range(-1, 1)) * STACK_JITTER * CELL
 	var tilt := Basis(Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized(), randf_range(0, 0.12))
 	coin.from = coin.xf
 	coin.to = Transform3D(tilt * Basis(Vector3.UP, randf() * TAU),
-			Vector3(centre.x, desk_height + (stack.size() - 0.5) * THICKNESS, centre.y))
+			Vector3(centre.x, below + thickness(coin.value) * 0.5, centre.y))
 	coin.state = State.SETTLING
 	coin.t = 0.0
 	landed.emit(coin.to.origin)
@@ -327,12 +333,21 @@ func _deposit_now(value: int) -> void:
 
 
 func _top(cell: Vector2i) -> float:
-	return desk_height + _stacks.get(cell, []).size() * THICKNESS
+	var top := desk_height
+	for coin: Coin in _stacks.get(cell, []):
+		top += thickness(coin.value)
+	return top
+
+
+static func thickness(value: int) -> float:
+	return THICKNESS * BIG_SCALE.y if value >= BIG_VALUE else THICKNESS
 
 
 func _upload() -> void:
 	for i in _coins.size():
 		var xf := _coins[i].xf
+		if _coins[i].value >= BIG_VALUE:
+			xf.basis = xf.basis * Basis.from_scale(BIG_SCALE)
 		if _coins[i].state == State.FLYING and _coins[i].delay > 0.0:
 			xf = Transform3D(Basis.from_scale(Vector3.ZERO), xf.origin)
 		var o := i * FLOATS
@@ -348,13 +363,23 @@ func _upload() -> void:
 		_buffer[o + 9] = xf.basis.y.z
 		_buffer[o + 10] = xf.basis.z.z
 		_buffer[o + 11] = xf.origin.z
-		var colour := GOLD if _coins[i].value >= GOLD_VALUE else SILVER
+		var colour := coin_colour(_coins[i].value)
 		_buffer[o + 12] = colour.r
 		_buffer[o + 13] = colour.g
 		_buffer[o + 14] = colour.b
 		_buffer[o + 15] = 1.0
+		_buffer[o + 16] = coin_face(_coins[i].value)
 	multimesh.buffer = _buffer
 	multimesh.visible_instance_count = _coins.size()
+
+
+## Which face of the coin atlas (assets/shaders/coin.gdshader) the coin shows.
+static func coin_face(value: int) -> float:
+	return 2.0 if value >= BIG_VALUE else 1.0 if value >= GOLD_VALUE else 0.0
+
+
+static func coin_colour(value: int) -> Color:
+	return BRONZE if value >= BIG_VALUE else GOLD if value >= GOLD_VALUE else SILVER
 
 
 static func cell_of(point: Vector3) -> Vector2i:
@@ -365,11 +390,12 @@ static func cell_centre(cell: Vector2i) -> Vector2:
 	return (Vector2(cell) + Vector2(0.5, 0.5)) * CELL
 
 
-## Silver for the change, then a gold coin for every full GOLD_VALUE of `amount`: thrown in this
-## order, the gold ends up on top of the stack where the camera sees it. A big amount comes as gold
-## worth ten times more, and again, so one payout never throws much more than MAX_THROW coins.
+## The fewest coins: silver for the change, a gold $5, then a bronze $10 for every full ten of
+## `amount`: thrown in this order, the biggest end up on top of the stack where the camera sees
+## them. A big amount comes as bronze worth ten times more, and again, so one payout never throws
+## much more than MAX_THROW coins.
 static func coin_values(amount: int) -> Array[int]:
-	var big := GOLD_VALUE
+	var big := BIG_VALUE
 	@warning_ignore("integer_division")
 	while amount / big > MAX_THROW:
 		big *= 10
@@ -377,8 +403,11 @@ static func coin_values(amount: int) -> Array[int]:
 	for i in amount % GOLD_VALUE:
 		out.append(1)
 	@warning_ignore("integer_division")
-	for i in (amount % big) / GOLD_VALUE:
+	for i in (amount % BIG_VALUE) / GOLD_VALUE:
 		out.append(GOLD_VALUE)
+	@warning_ignore("integer_division")
+	for i in (amount % big) / BIG_VALUE:
+		out.append(BIG_VALUE)
 	@warning_ignore("integer_division")
 	for i in amount / big:
 		out.append(big)

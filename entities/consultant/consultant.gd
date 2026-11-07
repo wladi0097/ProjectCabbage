@@ -111,7 +111,7 @@ static func target_price(save: SaveGame, skill: int) -> int:
 	var top := Slate.max_price(save.marketing)
 	if skill < 2:
 		return clampi(floori(ref + 0.0001), Slate.MIN_PRICE, top)
-	var cost := Console.pack_price(save.price_factor, save.pack_size, save.marketing, save.pack_discount) / float(save.pack_size)
+	var cost := Console.pack_price(save.price_factor, save.pack_size, save.pack_discount) / float(save.pack_size)
 	var best := Slate.MIN_PRICE
 	for price in range(Slate.MIN_PRICE, top + 1):
 		if income(price, ref, cost) > income(best, ref, cost) + 0.0001:

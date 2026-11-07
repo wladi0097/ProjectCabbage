@@ -15,9 +15,15 @@ func _ready() -> void:
 	for cell: Vector2i in stacks:
 		_check(stacks[cell].size() <= CoinPile.MAX_STACK, "stack too tall at %s" % cell)
 		_check(maxi(absi(cell.x), absi(cell.y)) <= 1, "overflow should land right beside the stack: %s" % cell)
-	# A payout is silver for the change, then gold for every full 10 (on top).
+	# A payout is the fewest coins: silver $1 change, a gold $5, then bronze $10s (on top).
 	_check(CoinPile.coin_values(23) == [1, 1, 1, 10, 10], "coin_values(23) = %s" % [CoinPile.coin_values(23)])
 	_check(CoinPile.coin_values(4) == [1, 1, 1, 1], "coin_values(4) = %s" % [CoinPile.coin_values(4)])
+	_check(CoinPile.coin_values(17) == [1, 1, 5, 10], "coin_values(17) = %s" % [CoinPile.coin_values(17)])
+	_check(CoinPile.coin_values(5) == [5], "coin_values(5) = %s" % [CoinPile.coin_values(5)])
+	# Each denomination looks different; the $10 (and bigger) is the thick one the stacks allow for.
+	_check(CoinPile.coin_colour(1) != CoinPile.coin_colour(5) and CoinPile.coin_colour(5) != CoinPile.coin_colour(10)
+			and CoinPile.coin_colour(100) == CoinPile.coin_colour(10), "coin colours")
+	_check(CoinPile.thickness(10) > CoinPile.thickness(5) and CoinPile.thickness(5) == CoinPile.thickness(1), "coin thickness")
 	var big := CoinPile.coin_values(1848)
 	_check(big.size() <= CoinPile.MAX_THROW + 18 and big.reduce(func(a: int, b: int) -> int: return a + b, 0) == 1848,
 			"coin_values(1848) stays few and adds up: %s" % [big])

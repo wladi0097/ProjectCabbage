@@ -25,7 +25,7 @@ const HOLD_REPEAT := 0.12
 const CHALK := Color(0.9, 0.89, 0.84, 0.75)
 const CHALK_LIT := Color(1.0, 1.0, 0.96, 1.0)
 const HOVER_SCALE := 1.35
-## A refused cabbage makes the price wiggle: this many radians at first, dying out over WIGGLE_TIME.
+## A refused cabbage thrown back makes the price wiggle: this many radians at first, dying out over WIGGLE_TIME.
 const WIGGLE := 0.18
 const WIGGLE_TIME := 0.5
 ## The price flushes this red when it wiggles, fading back to chalk.
@@ -188,7 +188,7 @@ func _rewrite(step: int) -> void:
 	$Tap.cue(_price.global_position)
 
 
-## The street threw a cabbage back: the price shakes a little and blushes red, as if it knows, and
+## The street threw a refused cabbage back onto the desk: the price shakes a little and blushes red, as if it knows, and
 ## the gauge needle twitches down.
 func wiggle() -> void:
 	_needle_speed -= NEEDLE_KICK

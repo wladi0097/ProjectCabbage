@@ -134,8 +134,26 @@ func throw_in(from: Vector3, velocity: Vector3, clear: float, landed: float) -> 
 	steps.tween_callback(func() -> void: away = false).set_delay(landed)
 
 
-## Torn from the hand, out of reach and out of the physics, pulled to `to` over `time`.
-func _pull_out(to: Vector3, time: float) -> Tween:
+## Binned: like suck_out, but hopped in from the top: lifted to `over_y` (over the rim), across,
+## then dropped straight down to `to` (hop_at).
+func drop_into(to: Vector3, over_y: float, time: float) -> void:
+	sold = true
+	_pull_out(to, time, over_y).chain().tween_callback(queue_free)
+
+
+## The hop from `from` over `over_y` down into `to`, `t` (0..1) of the way: it rises first and
+## moves across while high, so the last part is a straight drop.
+static func hop_at(from: Vector3, to: Vector3, over_y: float, t: float) -> Vector3:
+	var flat := from.lerp(to, smoothstep(0.1, 0.7, t))
+	var rise := 1.0 - pow(1.0 - minf(t / 0.45, 1.0), 2.0)
+	var fall := pow(maxf(t - 0.45, 0.0) / 0.55, 2.0)
+	flat.y = lerpf(lerpf(from.y, maxf(over_y, from.y), rise), to.y, fall)
+	return flat
+
+
+## Torn from the hand, out of reach and out of the physics, pulled to `to` over `time` (hopped over
+## `over_y` when given).
+func _pull_out(to: Vector3, time: float, over_y := -INF) -> Tween:
 	_held = false
 	$Interactable.enabled = false
 	freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
@@ -143,7 +161,11 @@ func _pull_out(to: Vector3, time: float) -> Tween:
 	collision_layer = 0
 	collision_mask = 0
 	var tween := create_tween().set_parallel()
-	tween.tween_property(self, "global_position", to, time).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	var from := global_position
+	if over_y > -INF:
+		tween.tween_method(func(t: float) -> void: global_position = hop_at(from, to, over_y, t), 0.0, 1.0, time)
+	else:
+		tween.tween_property(self, "global_position", to, time).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_property(self, "rotation", rotation + Vector3(-TAU, randf_range(-1, 1), 0), time)
 	return tween
 

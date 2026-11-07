@@ -9,7 +9,7 @@
 # Steel sill: top 0.75 flat from y 0.75 (desk back edge, fills the 5 cm gap) to 0.86, then slopes out and down
 #   to 0.57 at y 1.10 (5 cm past the outer face); x -0.61..2.01.
 # Lower sash pushed up: clear gap 0.75..1.07 between the jambs (x -0.47..1.87). Upper fixed grid + blinds above.
-# Street (pavement) at height 0.5 (ground floor: just below the 0.75 sill), y 1.0..3.0; crates on it at y 1.4..1.8; plain wall across the street at y 3.0.
+# Street (pavement) at height 0.5 (ground floor: just below the 0.75 sill), y 1.0..3.0; three crates on it at y 1.16..1.49; plain wall across the street at y 3.0.
 from bpy_extras.object_utils import world_to_camera_view
 import random
 random.seed(3)
@@ -56,6 +56,12 @@ prism(bm, [(0.75, SB), (0.75, Z0), (0.86, Z0), (1.10, 0.57), (1.10, SB)], X0 - 0
 part_box(bm, (X0, FY0, 0.60), (X0 + F, FY1, Z1), B, 0)                                # jambs (feet in the sill)
 part_box(bm, (X1 - F, FY0, 0.60), (X1, FY1, Z1), B, 0)
 part_box(bm, (X0, FY0, Z1 - F), (X1, FY1, Z1), B, 0)                                  # head
+# steel lining over the brick reveal (user: no brick inside the opening), full wall depth, 8 mm proud of both
+# faces; no bottom piece (the sill covers it), the sides run down into the sill block
+LT, LP = 0.015, 0.008
+part_box(bm, (X0, Y0 - LP, SB), (X0 + LT, Y1 + LP, Z1), 0, 0)
+part_box(bm, (X1 - LT, Y0 - LP, SB), (X1, Y1 + LP, Z1), 0, 0)
+part_box(bm, (X0, Y0 - LP, Z1 - LT), (X1, Y1 + LP, Z1), 0, 0)
 IX0, IX1 = X0 + F, X1 - F
 COLS = [IX0 + (IX1 - IX0) * k / 6 for k in range(1, 6)]                               # 6 columns; 2 and 4 heavy
 U0 = 1.30                                                                              # upper fixed grid
@@ -103,10 +109,11 @@ bm = bmesh.new()
 bm.faces.new([bm.verts.new(c) for c in [(-SX, SY0_, SZ), (SX, SY0_, SZ), (SX, SY1_, SZ), (-SX, SY1_, SZ)]])
 finish("street", bm, [m_st])
 
-# ---------- crates: slatted 0.60 x 0.40 x 0.30, empty, no label (user: lumps and text looked bad) ----------
+# ---------- crates: slatted 0.60 x 0.40 x 0.30 scaled by CS (user: a bit smaller), empty, no label (user: lumps and text looked bad) ----------
 CL, CD, CH = 0.60, 0.40, 0.30
+CS = 0.8
 def crate(bm, cx, cy, cz, deg):
-    M = at(cx, cy, cz) @ Matrix.Rotation(math.radians(deg), 4, "Z")
+    M = at(cx, cy, cz) @ Matrix.Rotation(math.radians(deg), 4, "Z") @ Matrix.Scale(CS, 4)
     hx, hy, p, t = CL / 2, CD / 2, 0.04, 0.02
     for sx in (-1, 1):
         for sy in (-1, 1):
@@ -119,8 +126,9 @@ def crate(bm, cx, cy, cz, deg):
             part_box(bm, (sx * hx - (t if sx > 0 else 0), -hy + p, z0), (sx * hx + (0 if sx > 0 else t), hy - p, z1), 0, 0, M)
     for y in (-0.13, 0.0, 0.13):
         part_box(bm, (-hx + p, y - 0.055, 0.0), (hx - p, y + 0.055, 0.02), 0, 0, M)
-CRATES = [(0.10, 1.42, SZ, 6), (0.82, 1.36, SZ, -7), (1.55, 1.45, SZ, 3), (1.53, 1.46, SZ + CH, -4),
-          (-0.40, 1.82, SZ, 24)]   # x, y, base z, yaw deg
+# Exactly three, in the sell part of the gap right of the QA bay (x 0.33..1.87), side by side and pulled close to
+# the sill (front y ~1.16) so the game camera sees them whole through the gap. x = WindowTargets.CRATE_X.
+CRATES = [(0.60, 1.32, SZ, 3), (1.11, 1.32, SZ, -2), (1.62, 1.33, SZ, 2)]   # x, y, base z, yaw deg
 bm = bmesh.new()
 for c in CRATES:
     crate(bm, *c)
@@ -186,7 +194,7 @@ def shoot(tag, loc, target, fov, res=(1280, 720)):
     cam.data.angle_y = math.radians(fov)
     bpy.context.view_layer.update()
     pts = {"sill_edge": (0.7, 0.86, Z0), "sill_out": (0.7, 1.10, 0.57), "sash_rail": (0.7, SY0, GAP),
-           "crateA_top": (0.1, 1.42, SZ + CH), "stack_top": (1.53, 1.46, SZ + 2 * CH)}
+           "crateA_top": (0.6, 1.16, SZ + CS * CH), "crateC_top": (1.62, 1.17, SZ + CS * CH)}
     print("VIEW", tag, {k: round(world_to_camera_view(scene, cam, Vector(p)).y, 3) for k, p in pts.items()})
     scene.render.filepath = PNG + "/room_" + tag + ".png"
     bpy.ops.render.render(write_still=True)

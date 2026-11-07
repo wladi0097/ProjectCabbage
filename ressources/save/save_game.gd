@@ -105,14 +105,13 @@ extends Resource
 @export var vacuum_speed := 1.0
 @export var vacuum_capacity := 8
 @export var vacuum_reach := 0.07
-## Cabbages the QA bay analyses at once, and every how many hired-hand trips one goes to QA (0 off).
+## Cabbages the QA bay analyses at once.
 @export var qa_slots := 1
-@export var qa_feed_every := 0
 ## For playtests: every purchase, session start and a snapshot every SaveManager.LOG_EVERY seconds,
 ## each with the play time and the state after it (log_entry). Also written as playtest_log.csv.
 @export var playtest_log: Array[Dictionary] = []
 
-const MIGRATION := 1
+const MIGRATION := 2
 ## Snapshots older than THIN_AFTER play seconds are kept one per THIN_EVERY seconds (thin_log).
 const THIN_AFTER := 3600
 const THIN_EVERY := 300

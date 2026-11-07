@@ -10,6 +10,8 @@ extends Area3D
 ## `coins`: what the street throws back for it, every boost included.
 signal sold(cabbage: Cabbage, coins: int)
 signal refused(cabbage: Cabbage)
+## A refused cabbage is thrown back in through the window (AWAY_TIME after `refused`).
+signal thrown_back(cabbage: Cabbage)
 ## A rotten unit went out: `fine` coins were taken from the tally (all of it if it was short).
 signal fined(cabbage: Cabbage, fine: int)
 
@@ -35,9 +37,10 @@ const REFUSE_TO := AABB(Vector3(0.0, 0.9, -0.2), Vector3(1.2, 0.0, 0.6))
 const REFUSE_TIME := 0.7
 const CLEAR_TIME := 0.25
 ## Past OUTSIDE_Z a cabbage is out of the window. Where it may be (x, z): over the mat, minus the
-## corner behind the press and the ramp; anywhere else for STRAY_TIME it is thrown back in.
+## corner behind the press and the ramp; anywhere else for STRAY_TIME it is thrown back in. MAT reaches
+## past the PlayArea's LeftBar (x -0.564) and ScreenBottom (z 1.22), so one resting against a bar stays.
 const OUTSIDE_Z := -0.95
-const MAT := Rect2(-0.45, -0.6, 2.3, 1.7)
+const MAT := Rect2(-0.6, -0.6, 2.45, 1.85)
 const HIDDEN := Rect2(1.45, -0.8, 1.0, 1.45)
 const STRAY_TIME := 1.5
 
@@ -52,10 +55,15 @@ var _gap_x := GAP_X
 ## Every sale multiplier running now, by who set it (the golden lamp, the catch combo): each
 ## effect sets and erases its own entry, payout() multiplies them all into the price.
 var boosts := {}
+var _bubble: RefusalBubble
 
 
 func _ready() -> void:
 	add_to_group(&"sale_window")
+	var layer := CanvasLayer.new()
+	add_child(layer)
+	_bubble = RefusalBubble.new()
+	layer.add_child(_bubble)
 
 
 ## Coins for one sale at `price` with every factor in `boosts`; never below 1.
@@ -132,7 +140,8 @@ func _judge(cabbage: Cabbage) -> void:
 	if not _buys(Slate.acceptance(save)):
 		cabbage.send_away(out, SUCK_TIME)
 		refused.emit(cabbage)
-		_send_back(cabbage, SUCK_TIME + randf_range(AWAY_TIME.x, AWAY_TIME.y))
+		_bubble.say(price, out)
+		_send_back(cabbage, SUCK_TIME + randf_range(AWAY_TIME.x, AWAY_TIME.y), true)
 		return
 	cabbage.suck_out(out, SUCK_TIME)
 	SaveManager.save.stock -= 1
@@ -142,8 +151,8 @@ func _judge(cabbage: Cabbage) -> void:
 	coins.throw_in_after(THROW_DELAY, Vector3(x, throw_from.y, throw_from.z), paid)
 
 
-## After `wait` seconds the street throws `cabbage` back in through the window.
-func _send_back(cabbage: Cabbage, wait: float) -> void:
+## After `wait` seconds the street throws `cabbage` back in through the window (`refused`: emits thrown_back).
+func _send_back(cabbage: Cabbage, wait: float, refused_unit := false) -> void:
 	get_tree().create_timer(wait, false).timeout.connect(func() -> void:
 		if not is_instance_valid(cabbage):
 			return
@@ -151,7 +160,9 @@ func _send_back(cabbage: Cabbage, wait: float) -> void:
 		var from := Vector3(x, REFUSE_FROM.x, REFUSE_FROM.y)
 		var to := REFUSE_TO.position + REFUSE_TO.size * Vector3(randf(), 0.0, randf())
 		cabbage.throw_in(from, Feeder.ballistic_velocity(from, to, REFUSE_TIME), CLEAR_TIME, REFUSE_TIME)
-		$Refuse.cue(from))
+		$Refuse.cue(from)
+		if refused_unit:
+			thrown_back.emit(cabbage))
 
 
 func _buys(chance: float) -> bool:

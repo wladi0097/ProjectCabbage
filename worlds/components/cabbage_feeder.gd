@@ -4,8 +4,8 @@ extends Node3D
 ## it rolls the next cabbage down the ramp every dispense_interval and flings it off the lip
 ## onto the bottom half of the mat; after a sale the next one waits restock_wait first. The drum bar
 ## on its front rail rolls to the stock. Once rotten units are in (save.rotten_unlocked), one in
-## ROTTEN_EVERY comes down rotten. Rotten units don't take up desk_capacity (the hired hands leave
-## them until hands_bin, they must not stall the chute); while MAX_ROTTEN lie on the mat the chute
+## ROTTEN_EVERY comes down rotten. Rotten units don't take up desk_capacity (the player may leave
+## them on the mat, they must not stall the chute); while MAX_ROTTEN lie on the mat the chute
 ## sends fresh ones only, so they never pile up.
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")

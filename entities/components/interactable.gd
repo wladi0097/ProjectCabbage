@@ -23,7 +23,7 @@ signal released
 ## While true, the hand also grabs it by sweeping into it with the button already held (catching
 ## something in the air), not only by pressing over it.
 var catchable := false
-## Carried from below like a sheet of paper: hovered or held, the hand turns palm up and sits
+## Carried from below like a sheet of paper: held, the hand turns palm up and sits
 ## carry_offset from the parent (the parent keeps it current, e.g. under a lifted card).
 @export var carried := false
 var carry_offset := Vector3.ZERO
