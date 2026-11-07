@@ -2,12 +2,13 @@ class_name ManagerBubble
 extends Control
 ## The manager's speech bubble: a paper bubble hanging from the top screen edge over the window,
 ## its tail pointing up at him. It says the quota, counts down and fills a bar with the units moved;
-## at the verdict it is stamped MET or NOT MET. Drawn only while he is there; never takes the mouse.
+## at the verdict it pops again with his praise or scorn. Drawn only while he is there; never takes the mouse.
 
 const FONT := preload("res://assets/fonts/Oswald.ttf")
 const PAPER := Color(0.72, 0.73, 0.69)
 const INK := Color(0.13, 0.15, 0.14)
-const STAMP := Color(0.55, 0.12, 0.1)
+## The countdown's colour in its last seconds.
+const URGENT := Color(0.55, 0.12, 0.1)
 const SIZE := Vector2(480, 150)
 ## The bubble's centre as a fraction of the view's width (over the sale part of the window).
 const AT_X := 0.62
@@ -51,7 +52,7 @@ func _draw() -> void:
 	draw_string(FONT, Vector2(x, 30), tr("MANAGEMENT  |  UNIT QUOTA"), HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color(ink, alpha * 0.6))
 	var secs := ceili(manager.left)
 	var urgent := manager.phase == Manager.Phase.QUOTA and secs <= Manager.TICK_FROM
-	draw_string(FONT, Vector2(x, 38), "0:%02d" % secs, HORIZONTAL_ALIGNMENT_RIGHT, w, 34, Color(STAMP, alpha) if urgent else ink)
+	draw_string(FONT, Vector2(x, 38), "0:%02d" % secs, HORIZONTAL_ALIGNMENT_RIGHT, w, 34, Color(URGENT, alpha) if urgent else ink)
 	draw_string(FONT, Vector2(x, 76), manager.line, HORIZONTAL_ALIGNMENT_LEFT, w, 22, ink)
 	# Units moved against the quota: a ruled bar filling in ink.
 	var moved := mini(SaveManager.save.sold - manager.sold_at, manager.quota)
@@ -63,10 +64,4 @@ func _draw() -> void:
 	# The time left as a thin rule along the bottom edge.
 	var time_left := manager.left / maxf(SaveManager.save.manager_time, 1.0)
 	draw_line(Vector2(x, 132), Vector2(x + w * time_left, 132), Color(ink, alpha * 0.5), 3.0)
-	if manager.phase == Manager.Phase.VERDICT:
-		var thump := 1.0 + 0.3 * (1.0 - ease(_pop, 0.3))
-		draw_set_transform(Vector2(view.x * AT_X, TOP) + Vector2(140, 70) * scale_by, deg_to_rad(-8.0), Vector2.ONE * thump * scale_by)
-		var word := tr("MET") if manager.met else tr("NOT MET")
-		draw_rect(Rect2(-74, -26, 148, 50), Color(STAMP, 0.85), false, 3.0)
-		draw_string(FONT, Vector2(-74, 13), word, HORIZONTAL_ALIGNMENT_CENTER, 148, 32, Color(STAMP, 0.85))
 	draw_set_transform(Vector2.ZERO)

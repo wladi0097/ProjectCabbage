@@ -152,7 +152,6 @@ func _verdict(save: SaveGame, success: bool) -> void:
 		SaveManager.log_event("quota_missed", "", quota)
 		memo.post({re = "PERFORMANCE CONCERN", note = tr("A quota of %d units was set. %d were moved.") % [quota, moved],
 				bonus = "Nothing. This memo is the consequence."})
-	$Stamp.play()
 	_bubble.pop()
 
 

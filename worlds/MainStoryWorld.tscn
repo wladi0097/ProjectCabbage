@@ -450,7 +450,7 @@ script = ExtResource("18_debug")
 
 [connection signal="thrown_back" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]
 [connection signal="refused" from="SaleWindow" to="CatchCombo" method="hold" unbinds=1]
-[connection signal="thrown_back" from="SaleWindow" to="CatchCombo" method="hold" unbinds=1]
+[connection signal="thrown_back" from="SaleWindow" to="CatchCombo" method="unhold" unbinds=1]
 [connection signal="bounced" from="Coins" to="Coins/Bounce" method="cue"]
 [connection signal="collected" from="Coins" to="Coins/Collect" method="cue"]
 [connection signal="deposited" from="Coins" to="Coins/Deposit" method="cue"]

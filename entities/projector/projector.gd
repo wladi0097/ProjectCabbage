@@ -36,18 +36,16 @@ const Events := preload("res://globalScripts/game_events.gd")
 ## management fanning out), automation left (consultancy, supply chain, coin units, associates,
 ## headcount); THEMES names the fans. Generated, with no overlaps or crossing edges, by tools/projector_layout/layout.py from its
 ## sectors.json.
-## The mat allowance (MAT): bought once per extra unit on the mat, up to MAT_MAX; the step to the
-## mat's next unit costs MAT_BASE × MAT_GROWTH per unit already past 2 (mat_price).
-const MAT := "mat_space"
+## The mat allowance: the desk card gives the 3rd unit, then a chain of nodes "mat_%d", one per
+## unit from MAT_FIRST up to MAT_MAX (migrate_mat files an old save's units as bought).
+const MAT_FIRST := 4
 const MAT_MAX := 20
-const MAT_BASE := 1500
-const MAT_GROWTH := 1.4
 const NODES := [
 	# Departments: free sub-hubs around the hub, one per direction, never bought (`dept`). Greyed until
 	# their own `needs` / `research` are met; every upgrade hangs under exactly one of them.
 	{id = "dept_marketing", parent = "", at = Vector2(0.12, -0.60), icon = "megaphone", price = 0,
 		dept = true, needs = ["street_posters"], title = "MARKETING",
-		body = "The street is told what it wants.\nSlogans and campaigns: each raises the price the\nstreet pays before it starts refusing units."},
+		body = "The street is told what it wants.\nSlogans and campaigns: each raises the price up\nto which every unit still sells."},
 	{id = "dept_manual", parent = "", at = Vector2(0.84, 0.00), icon = "hand", price = 0,
 		dept = true, title = "MANUAL HANDLING",
 		body = "Work you still do yourself.\nPacks, desk space, minis, catches, the bin,\ntargets, the lamp and the manager's quotas."},
@@ -59,27 +57,27 @@ const NODES := [
 		body = "Work that no longer needs you.\nHired hands, conveyors, auto-buy, coin robots,\nthe consultant and the waste protocol."},
 	{id = "slogan_1", parent = "dept_marketing", at = Vector2(0.12, -1.03), icon = "megaphone", price = 35,
 		mul = {marketing = 1.25}, title = "SLOGAN I",
-		body = "\"Cabbage. Because you have to eat.\"\nThe street pays 25% more before it refuses units."},
+		body = "\"Cabbage. Because you have to eat.\"\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "slogan_2", parent = "slogan_1", at = Vector2(0.12, -1.46), icon = "megaphone", price = 120,
 		mul = {marketing = 1.25}, title = "SLOGAN II",
-		body = "\"Cabbage. Compliance tastes green.\"\nThe street pays 25% more before it refuses units."},
+		body = "\"Cabbage. Compliance tastes green.\"\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "slogan_3", parent = "slogan_2", at = Vector2(-0.24, -1.89), icon = "megaphone", price = 900,
 		mul = {marketing = 1.25}, title = "SLOGAN III",
-		body = "\"Cabbage. You were expecting something else?\"\nThe street pays 25% more before it refuses units."},
+		body = "\"Cabbage. You were expecting something else?\"\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "slogan_4", parent = "slogan_3", at = Vector2(-0.49, -2.32), icon = "megaphone", price = 5500,
 		research = "research_sentiment", mul = {marketing = 1.25}, title = "SLOGAN IV",
-		body = "\"Cabbage. It has been decided.\"\nThe street pays 25% more before it refuses units."},
+		body = "\"Cabbage. It has been decided.\"\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "slogan_5", parent = "slogan_4", at = Vector2(-0.49, -2.75), icon = "megaphone", price = 22500,
 		mul = {marketing = 1.25}, title = "SLOGAN V",
-		body = "\"Cabbage. Your household quota is attached.\"\nThe street pays 25% more before it refuses units."},
+		body = "\"Cabbage. Your household quota is attached.\"\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "slogan_6", parent = "slogan_5", at = Vector2(-0.49, -3.18), icon = "megaphone", price = 105000,
 		mul = {marketing = 1.25}, title = "SLOGAN VI",
-		body = "\"Cabbage.\"\nThe street pays 25% more before it refuses units."},
-	{id = "pack_1", parent = "dept_manual", at = Vector2(1.54, -0.18), icon = "crate", price = 400,
+		body = "\"Cabbage.\"\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
+	{id = "pack_1", parent = "dept_manual", at = Vector2(1.54, -0.18), icon = "crate", price = 250,
 		add = {pack_size = 3}, title = "BULK PROCUREMENT",
 		body = "Volume is policy.\nEvery pack from the supply console holds 3 more\nunits: 13 instead of 10."},
-	{id = "pack_2", parent = "pack_1", at = Vector2(1.98, -0.52), icon = "crate", price = 875,
-		research = "research_materials", add = {pack_size = 40}, title = "CONTAINER ORDERS",
+	{id = "pack_2", parent = "pack_1", at = Vector2(1.98, -0.52), icon = "crate", price = 600,
+		add = {pack_size = 40}, title = "CONTAINER ORDERS",
 		body = "A container is parked in the street.\nEvery pack holds 40 more units: 53 instead of 13."},
 	{id = "conveyor_1", parent = "dept_automation", at = Vector2(-0.99, -0.87), icon = "belt", price = 775,
 		research = "research_materials", mul = {dispense_interval = 0.5}, title = "CONVEYOR RETROFIT",
@@ -122,8 +120,7 @@ const NODES := [
 		body = "The scan line is told to hurry.\nThe research lab analyses a unit in 3.75 s, not 5 s."},
 	{id = "qa_findings", parent = "qa_time", at = Vector2(0.15, 1.89), icon = "pilcrow", price = 575,
 		add = {findings_per_cabbage = 1}, title = "MORE FINDINGS",
-		body = "Standards are revised.\nEach unit analysed gives 1 more Finding:
-1 to 2, or 2 to 3 after the 100-units memo."},
+		body = "Standards are revised.\nEach unit analysed gives 1 more Finding:\n1 to 2, or 2 to 3 after the 100-units memo."},
 	{id = "qa_fast_track", parent = "qa_findings", at = Vector2(0.15, 2.45), icon = "lens", price = 5000,
 		mul = {qa_time = 0.5}, title = "LAB FAST TRACK",
 		body = "Analysis is now a formality.\nThe research lab analyses a unit in 1.9 s, not 3.75 s."},
@@ -132,24 +129,66 @@ const NODES := [
 		body = "Every finding is filed twice.\nEach unit analysed gives twice the Findings."},
 	# Supply + automation (desk space, packs, auto-buy, hands, seating, campaigns, vacuums, QA rest):
 	# entities/supply_console/, entities/associate/, entities/vacuum/, entities/qa_bay/.
-	# The one upgrade bought again and again (MAT): each buy fits one more unit, up to MAT_MAX, at
-	# mat_price. Its `price` is the first step's.
-	{id = "mat_space", parent = "dept_manual", at = Vector2(2.26, -1.57), icon = "desk", price = MAT_BASE,
-		needs = ["mat_allowance"], add = {desk_capacity = 1}, title = "MAT ALLOWANCE",
-		body = "Floor space is leased by the unit.\nOne more unit fits on the mat (the chute keeps it full),\nup to 20. Each allowance costs more than the last."},
-	{id = "discount_1", parent = "pack_1", at = Vector2(2.03, -0.07), icon = "crate", price = 400,
-		mul = {pack_discount = 0.85}, title = "SUPPLIER REVIEW",
-		body = "The supplier is reminded of alternatives.\nPacks cost 15% less. The ticker shows the cut price."},
-	{id = "discount_2", parent = "discount_1", at = Vector2(2.49, -0.18), icon = "crate", price = 2500,
-		mul = {pack_discount = 0.68}, title = "EXCLUSIVITY CLAUSE",
-		body = "The supplier has no other customers now.\nPacks cost 32% less again: 58% of the full price,\nnot 85%."},
-	{id = "auto_reserve_1", parent = "dept_automation", at = Vector2(-1.21, -0.44), icon = "clock", price = 1500,
+	# The mat allowance: one node per unit on the mat past the 3 the card gives (MAT_FIRST..MAT_MAX),
+	# each the child of the last, 1.4 times dearer each.
+	{id = "mat_4", parent = "dept_manual", at = Vector2(2.26, -1.57), icon = "desk", price = 2100,
+		needs = ["mat_allowance"], add = {desk_capacity = 1}, title = "4-UNIT MAT",
+		body = "Floor space is leased by the unit.\nOne more unit fits on the mat\n(the chute keeps it full): 3 to 4."},
+	{id = "mat_5", parent = "mat_4", at = Vector2(2.26, -2.00), icon = "desk", price = 2950,
+		add = {desk_capacity = 1}, title = "5-UNIT MAT",
+		body = "The mat is measured again, generously.\nOne more unit fits on the mat\n(the chute keeps it full): 4 to 5."},
+	{id = "mat_6", parent = "mat_5", at = Vector2(2.26, -2.43), icon = "desk", price = 4100,
+		add = {desk_capacity = 1}, title = "6-UNIT MAT",
+		body = "A corner of the mat is reclaimed from a stapler.\nOne more unit fits on the mat\n(the chute keeps it full): 5 to 6."},
+	{id = "mat_7", parent = "mat_6", at = Vector2(2.26, -2.86), icon = "desk", price = 5750,
+		add = {desk_capacity = 1}, title = "7-UNIT MAT",
+		body = "The mat is now billed by the square inch.\nOne more unit fits on the mat\n(the chute keeps it full): 6 to 7."},
+	{id = "mat_8", parent = "mat_7", at = Vector2(2.26, -3.29), icon = "desk", price = 8050,
+		add = {desk_capacity = 1}, title = "8-UNIT MAT",
+		body = "Elbow room is reclassified as storage.\nOne more unit fits on the mat\n(the chute keeps it full): 7 to 8."},
+	{id = "mat_9", parent = "mat_8", at = Vector2(2.26, -3.72), icon = "desk", price = 11300,
+		add = {desk_capacity = 1}, title = "9-UNIT MAT",
+		body = "The mat's edges are moved by memo.\nOne more unit fits on the mat\n(the chute keeps it full): 8 to 9."},
+	{id = "mat_10", parent = "mat_9", at = Vector2(2.76, -3.72), icon = "desk", price = 15800,
+		add = {desk_capacity = 1}, title = "10-UNIT MAT",
+		body = "A second mat is taped under the first.\nOne more unit fits on the mat\n(the chute keeps it full): 9 to 10."},
+	{id = "mat_11", parent = "mat_10", at = Vector2(2.76, -3.29), icon = "desk", price = 22150,
+		add = {desk_capacity = 1}, title = "11-UNIT MAT",
+		body = "Coffee is no longer permitted on the mat.\nOne more unit fits on the mat\n(the chute keeps it full): 10 to 11."},
+	{id = "mat_12", parent = "mat_11", at = Vector2(2.76, -2.86), icon = "desk", price = 31000,
+		add = {desk_capacity = 1}, title = "12-UNIT MAT",
+		body = "The mat is extended into the margin.\nOne more unit fits on the mat\n(the chute keeps it full): 11 to 12."},
+	{id = "mat_13", parent = "mat_12", at = Vector2(2.76, -2.43), icon = "desk", price = 43400,
+		add = {desk_capacity = 1}, title = "13-UNIT MAT",
+		body = "The in-tray is relocated. It did not object.\nOne more unit fits on the mat\n(the chute keeps it full): 12 to 13."},
+	{id = "mat_14", parent = "mat_13", at = Vector2(2.76, -2.00), icon = "desk", price = 60750,
+		add = {desk_capacity = 1}, title = "14-UNIT MAT",
+		body = "The desk lamp now sits on the floor.\nOne more unit fits on the mat\n(the chute keeps it full): 13 to 14."},
+	{id = "mat_15", parent = "mat_14", at = Vector2(2.76, -1.57), icon = "desk", price = 85050,
+		add = {desk_capacity = 1}, title = "15-UNIT MAT",
+		body = "The mat is issued a serial number.\nOne more unit fits on the mat\n(the chute keeps it full): 14 to 15."},
+	{id = "mat_16", parent = "mat_15", at = Vector2(3.26, -1.57), icon = "desk", price = 119050,
+		add = {desk_capacity = 1}, title = "16-UNIT MAT",
+		body = "Personal items are removed from the desk.\nOne more unit fits on the mat\n(the chute keeps it full): 15 to 16."},
+	{id = "mat_17", parent = "mat_16", at = Vector2(3.26, -2.00), icon = "desk", price = 166700,
+		add = {desk_capacity = 1}, title = "17-UNIT MAT",
+		body = "The telephone is mounted on the wall.\nOne more unit fits on the mat\n(the chute keeps it full): 16 to 17."},
+	{id = "mat_18", parent = "mat_17", at = Vector2(3.26, -2.43), icon = "desk", price = 233350,
+		add = {desk_capacity = 1}, title = "18-UNIT MAT",
+		body = "The desk is now mostly mat.\nOne more unit fits on the mat\n(the chute keeps it full): 17 to 18."},
+	{id = "mat_19", parent = "mat_18", at = Vector2(3.26, -2.86), icon = "desk", price = 326700,
+		add = {desk_capacity = 1}, title = "19-UNIT MAT",
+		body = "The mat reaches the window sill.\nOne more unit fits on the mat\n(the chute keeps it full): 18 to 19."},
+	{id = "mat_20", parent = "mat_19", at = Vector2(3.26, -3.29), icon = "desk", price = 457350,
+		add = {desk_capacity = 1}, title = "20-UNIT MAT",
+		body = "There is no more desk. There is only the mat.\nOne more unit fits on the mat\n(the chute keeps it full): 19 to 20."},
+	{id = "discount_1", parent = "pack_1", at = Vector2(2.03, -0.07), icon = "crate", price = 350,
+		mul = {pack_discount = 0.7}, title = "SUPPLIER REVIEW",
+		body = "The supplier is reminded of alternatives.\nPacks cost 30% less. The ticker shows the cut price."},
+	{id = "auto_reserve_1", parent = "dept_automation", at = Vector2(-1.21, -0.44), icon = "clock", price = 600,
 		needs = ["auto_procurement"], add = {auto_reserve = 7}, title = "SAFETY STOCK",
 		body = "The order is placed earlier.\nAuto-buy orders a pack at 10 units left, not 3."},
-	{id = "auto_reserve_2", parent = "auto_smart_1", at = Vector2(-2.17, -1.73), icon = "clock", price = 17500,
-		add = {auto_reserve = 15, auto_max_factor = -0.2}, title = "STRATEGIC PROCUREMENT",
-		body = "A second shelf is approved.\nAuto-buy orders at 25 units left, not 10, and waits\nfor 20% below base pack price unless stock is out."},
-	{id = "auto_smart_1", parent = "auto_reserve_1", at = Vector2(-1.69, -1.09), icon = "lens", price = 3000,
+	{id = "auto_smart_1", parent = "auto_reserve_1", at = Vector2(-1.69, -1.09), icon = "lens", price = 700,
 		add = {auto_max_factor = -0.5}, title = "PRICE DISCIPLINE",
 		body = "The order waits for a fair price.\nAuto-buy waits for the base pack price or lower\n(it used to pay up to 150%), unless stock runs out."},
 	{id = "hire_associate_9", parent = "hire_associate_8", at = Vector2(-1.78, 3.31), icon = "hand", price = 250000,
@@ -166,22 +205,22 @@ const NODES := [
 		body = "Chairs are replaced with a bench.\nHired hands and lab hands set off 50% more often\nagain (e.g. every 1.8 s, not 2.7 s)."},
 	{id = "campaign_1", parent = "slogan_2", at = Vector2(0.49, -1.89), icon = "megaphone", price = 220,
 		mul = {marketing = 1.25}, title = "SYNERGY JINGLE",
-		body = "Four notes. Staff are asked to hum them.\nThe street pays 25% more before it refuses units."},
+		body = "Four notes. Staff are asked to hum them.\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "campaign_2", parent = "campaign_1", at = Vector2(0.49, -2.32), icon = "megaphone", price = 1500,
 		mul = {marketing = 1.25}, title = "LEAF IT TO US",
-		body = "Legal approved the pun.\nThe street pays 25% more before it refuses units."},
+		body = "Legal approved the pun.\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "campaign_3", parent = "campaign_2", at = Vector2(0.49, -2.75), icon = "megaphone", price = 2500,
 		mul = {marketing = 1.25}, title = "CRUCIFEROUS EXCELLENCE",
-		body = "Nobody knows the word. Everyone trusts it.\nThe street pays 25% more before it refuses units."},
+		body = "Nobody knows the word. Everyone trusts it.\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "campaign_4", parent = "slogan_3", at = Vector2(0.00, -2.32), icon = "megaphone", price = 2500,
 		research = "research_sentiment", mul = {marketing = 1.25}, title = "BRASSICA FOR THE MASSES",
-		body = "Posters in every stairwell.\nThe street pays 25% more before it refuses units."},
+		body = "Posters in every stairwell.\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "campaign_5", parent = "campaign_4", at = Vector2(0.00, -2.75), icon = "megaphone", price = 20000,
 		mul = {marketing = 1.25}, title = "TRUSTED BY THE MINISTRY",
-		body = "The Ministry has not denied it.\nThe street pays 25% more before it refuses units."},
+		body = "The Ministry has not denied it.\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "campaign_6", parent = "campaign_5", at = Vector2(0.00, -3.18), icon = "megaphone", price = 67500,
 		mul = {marketing = 1.25}, title = "THE ONLY VEGETABLE",
-		body = "Other vegetables are under review.\nThe street pays 25% more before it refuses units."},
+		body = "Other vegetables are under review.\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "vacuum_speed_1", parent = "dept_automation", at = Vector2(-1.20, 0.05), icon = "puck", price = 900,
 		needs = ["coin_collector"], mul = {vacuum_speed = 1.5}, title = "FIRMWARE UPDATE",
 		body = "The unit is told to hurry.\nCoin robots drive 50% faster."},
@@ -198,7 +237,7 @@ const NODES := [
 	{id = "vacuum_gyro", parent = "vacuum_speed_1", at = Vector2(-1.78, -0.33), icon = "puck", price = 1000,
 		title = "GYROSCOPIC STABILISER",
 		body = "A lead plate is bolted underneath. Falling over\nis now a disciplinary matter.\nCoin robots no longer tip onto their backs."},
-	{id = "qa_slot_2", parent = "qa_time", at = Vector2(-0.15, 1.89), icon = "lens", price = 900,
+	{id = "qa_slot_2", parent = "qa_time", at = Vector2(-0.15, 1.89), icon = "lens", price = 700,
 		add = {qa_slots = 1}, title = "SECOND BENCH",
 		body = "A second bench in the lab.\nThe research lab analyses 2 units at once, not 1."},
 	{id = "qa_slot_3", parent = "qa_slot_2", at = Vector2(-0.15, 2.45), icon = "lens", price = 35000,
@@ -213,7 +252,7 @@ const NODES := [
 		body = "Bonuses are now discussed openly.\nMet quotas pay quota × price × 1.5, not × 1."},
 	{id = "manager_raise", parent = "manager_reward_1", at = Vector2(1.21, 2.04), icon = "lens", price = 2000,
 		add = {manager_raise = -0.1}, title = "REALISTIC TARGETS",
-		body = "Ambition is capped by memo.\nQuotas ask 115% of your recent pace, not 125%."},
+		body = "Ambition is capped by memo.\nQuotas ask your pace plus 15%, not plus 25%."},
 	{id = "manager_reward_2", parent = "manager_raise", at = Vector2(1.31, 2.60), icon = "crate", price = 6250,
 		mul = {manager_reward = 1.5}, title = "EMPLOYEE OF THE QUARTER",
 		body = "A frame is purchased. It stays empty.\nMet quotas pay quota × price × 2.25, not × 1.5."},
@@ -222,10 +261,10 @@ const NODES := [
 		body = "The consultant bills by the tap.\nIt taps the slate every 2 s instead of 4 s."},
 	{id = "consultant_mood", parent = "consultant_speed_1", at = Vector2(-0.94, -1.96), icon = "lens", price = 725,
 		add = {consultant_skill = 1}, title = "READS THE ROOM",
-		body = "The consultant looks out of the window.\nIt reads the street's mood (it drifts up to ±25%),\nso ~90% of units still sell when the mood turns."},
+		body = "The consultant looks out of the window.\nThe street's mood shifts its prices by up to ±25%\nevery minute. The consultant now follows it,\nso ~90% of units keep selling."},
 	{id = "consultant_smart", parent = "consultant_mood", at = Vector2(-1.02, -2.45), icon = "crate", price = 2000,
 		add = {consultant_skill = 1}, title = "YIELD OPTIMISATION",
-		body = "Some units may now be refused.\nIt aims for the most coins per unit after pack costs.\nWhile hired hands find no unit, it asks $1 more a tap\n(up to 1.6× the price at which every unit sells)."},
+		body = "Some units may now be refused.\nIt picks the price with the most profit per unit\n(sale minus pack cost). While hired hands find the\nmat empty, it adds $1 a tap (up to 1.6× the price\nevery unit sells at)."},
 	{id = "consultant_speed_2", parent = "consultant_smart", at = Vector2(-1.11, -2.95), icon = "clock", price = 18000,
 		mul = {consultant_interval = 0.5}, title = "RETAINER",
 		body = "The consultant no longer leaves.\nIt taps the slate every 1 s instead of 2 s."},
@@ -329,13 +368,13 @@ const NODES := [
 ]
 ## Each theme's faint heading on the slide, where its branch ends (same units as a node's `at`).
 const THEMES := [
-	["PROCUREMENT", Vector2(3.26, -0.51)],
-	["DESK SPACE", Vector2(2.26, -2.05)],
+	["PROCUREMENT", Vector2(2.70, -0.30)],
+	["DESK SPACE", Vector2(2.76, -4.20)],
 	["SALES EVENTS", Vector2(4.34, 4.02)],
 	["MANAGEMENT", Vector2(1.53, 3.91)],
 	["CONSULTANCY", Vector2(-1.33, -4.18)],
 	["SUPPLY CHAIN", Vector2(-2.40, -2.30)],
-	["COIN UNITS", Vector2(-3.10, 0.31)],
+	["COIN UNITS", Vector2(-3.30, 0.48)],
 	["ASSOCIATES", Vector2(-3.10, 2.21)],
 	["HEADCOUNT", Vector2(-1.66, 4.26)],
 	["MINI UNITS", Vector2(1.25, -2.31)],
@@ -359,8 +398,8 @@ const ROLLER_H := 26.0
 const BAR_H := 12.0
 ## The close button in the open sheet's top-right corner (px).
 const CLOSE := 40.0
-## Where the cord is tied along the bottom bar (0 left .. 1 right): the middle, where it is seen.
-const TAB_AT := 0.5
+## Where the cord is tied along the bottom bar (0 left .. 1 right): a little right of the middle.
+const TAB_AT := 0.6
 ## The pull, a pendulum: cord length (m), gravity (stylised, stiffer than real), the velocity kept
 ## per STEP, and the height (m) the cord is tied at, so the tab hangs at about the hand's height.
 const CORD := 0.15
@@ -400,6 +439,15 @@ const TUBE := Color(0.3, 0.32, 0.31)
 const DENIED := Color(0.55, 0.12, 0.1)
 const CABBAGE := Color(0.42, 0.72, 0.24)
 const SHADE := Color(0.07, 0.08, 0.08, 0.62)
+## A node's popup: its width, the body's font size and line step (px), and the room for a line.
+const POPUP_WIDTH := 430.0
+const POPUP_BODY := 21
+const POPUP_STEP := 27.0
+const POPUP_TEXT := POPUP_WIDTH - 32.0
+## The PULL word on the pennant: its font size and the most it may be wide (m), shrunk to fit.
+const PULL_SIZE := 64
+const PULL_PIXEL := 0.0006
+const PULL_WIDTH := 0.08
 
 @export var roll_down_sound: AudioStream
 @export var roll_up_sound: AudioStream
@@ -454,6 +502,7 @@ var _shown := {}
 var _sheet_drawn := true
 ## Node prices sorted, to count the affordable ones cheaply (they change the drawing).
 static var _prices := PackedInt32Array()
+static var _plate_style: StyleBoxFlat
 ## The pull in the 3D world: its body, the tipping tab, the cord, its handle and material.
 var _grip: StaticBody3D
 var _tab := Node3D.new()
@@ -741,20 +790,22 @@ static func locked_by(id: String, save: SaveGame) -> String:
 	return "" if card == "" or save.stamped.has(card) or save.tree_bought.has(id) else card
 
 
-## Bought for good: in tree_bought, or for the mat allowance (MAT), the mat at MAT_MAX.
 static func is_bought(id: String, save: SaveGame) -> bool:
-	return save.tree_bought.has(id) or (id == MAT and save.desk_capacity >= MAT_MAX)
+	return save.tree_bought.has(id)
 
 
-## What node `id` costs now: its price, or for the mat allowance the next unit's (mat_price).
-static func price_of(id: String, save: SaveGame) -> int:
-	return mat_price(save.desk_capacity) if id == MAT else node_data(id).get("price", 0)
+static func price_of(id: String, _save: SaveGame) -> int:
+	return node_data(id).get("price", 0)
 
 
-## The mat allowance's price with `capacity` units fitting on the mat now: MAT_BASE for the third
-## unit, MAT_GROWTH times more for each after it, rounded to $50.
-static func mat_price(capacity: int) -> int:
-	return roundi(MAT_BASE * pow(MAT_GROWTH, maxi(capacity - 2, 0)) / 50.0) * 50
+## An old save's mat: with the allowance card stamped it holds at least 3 (the card's free unit), and
+## each chain node up to its capacity counts as bought. Never takes a unit away; safe to rerun.
+static func migrate_mat(save: SaveGame) -> void:
+	if save.stamped.has("mat_allowance"):
+		save.desk_capacity = maxi(save.desk_capacity, MAT_FIRST - 1)
+	for unit in range(MAT_FIRST, mini(save.desk_capacity, MAT_MAX) + 1):
+		if not save.tree_bought.has("mat_%d" % unit):
+			save.tree_bought.append("mat_%d" % unit)
 
 
 ## Reachable, not bought and not waiting for research: a hold on it buys it (if the coins are there).
@@ -784,20 +835,22 @@ static func requirement(id: String, save: SaveGame) -> Array:
 	return []
 
 
-## Pays for node `id` and applies it; false (and nothing changes) if it can't be bought. The mat
-## allowance is never filed in tree_bought: it is bought again until the mat is full (is_bought).
+## Pays for node `id` and applies it; false (and nothing changes) if it can't be bought.
 static func buy(id: String, save: SaveGame) -> bool:
 	if not can_buy(id, save):
 		return false
 	save.coins -= price_of(id, save)
-	if id != MAT:
-		save.tree_bought.append(id)
+	save.tree_bought.append(id)
 	apply(id, save)
 	return true
 
 
-## What node `id` does to the save. The mat never holds more than MAT_MAX.
+## What node `id` does to the save.
 static func apply(id: String, save: SaveGame) -> void:
+	if id.begins_with("mat_"):
+		# Its +1 lands the mat on its own unit, never under what an old save's mat already holds.
+		save.desk_capacity = maxi(save.desk_capacity, id.trim_prefix("mat_").to_int())
+		return
 	var node := node_data(id)
 	for stat in node.get("mul", {}):
 		var value: Variant = save.get(stat) * node.mul[stat]
@@ -806,8 +859,6 @@ static func apply(id: String, save: SaveGame) -> void:
 		save.set(stat, save.get(stat) + node.add[stat])
 	if node.get("hire", false):
 		Associate.add_hand(save)
-	if id == MAT:
-		save.desk_capacity = mini(save.desk_capacity, MAT_MAX)
 
 
 ## What the merged chains' nodes did before the merge (save.migration 2): per chain, each old id's
@@ -816,18 +867,24 @@ const MERGED := [
 	{desk_1 = {add = {desk_capacity = 2}}, desk_2 = {add = {desk_capacity = 2}}, desk_3 = {add = {desk_capacity = 2}},
 		desk_4 = {add = {desk_capacity = 2}}, desk_5 = {add = {desk_capacity = 2}}, desk_6 = {add = {desk_capacity = 2}}},
 	{pack_2 = {add = {pack_size = 5}}, pack_3 = {add = {pack_size = 10}}, pack_4 = {add = {pack_size = 25}}},
-	{discount_2 = {mul = {pack_discount = 0.85}}, discount_3 = {mul = {pack_discount = 0.8}}},
+	# Measured against today's discount_1, which holds the whole branch (so MERGED_PACKS is skipped after it).
+	{discount_1 = {mul = {pack_discount = 0.85}}, discount_2 = {mul = {pack_discount = 0.85}}, discount_3 = {mul = {pack_discount = 0.8}}},
 	{vacuum_2 = {add = {vacuums = 1}}, vacuum_bag_1 = {add = {vacuum_capacity = 12}}, vacuum_suction = {mul = {vacuum_reach = 1.5}},
 		vacuum_speed_2 = {mul = {vacuum_speed = 1.5}}, vacuum_bag_2 = {add = {vacuum_capacity = 30}}, vacuum_3 = {add = {vacuums = 1}}},
 	{auto_reserve_2 = {add = {auto_reserve = 15}}, auto_smart_2 = {add = {auto_max_factor = -0.2}}},
 	{associate_3 = {mul = {associate_speed = 1.5}}, associate_4 = {mul = {associate_speed = 1.3}}, associate_5 = {mul = {associate_speed = 1.3}}},
 ]
+## The slimmed pack branch (save.migration 3): the two discounts merged into discount_1. The dropped
+## auto_reserve_2 needs no entry: what it gave is simply kept.
+const MERGED_PACKS := [
+	{discount_1 = {mul = {pack_discount = 0.85}}, discount_2 = {mul = {pack_discount = 0.68}}},
+]
 
 
 ## An old save's merged chains: where the nodes it kept now do more than what it got from the old
 ## ones it bought (an old Hot-Desking alone: +2, now +4), the difference is added. Never takes away.
-static func migrate_merged(save: SaveGame) -> void:
-	for chain: Dictionary in MERGED:
+static func migrate_merged(save: SaveGame, chains: Array = MERGED) -> void:
+	for chain: Dictionary in chains:
 		var had := {}
 		var now := {}
 		for id: String in chain:
@@ -1029,8 +1086,8 @@ func _build_pull() -> void:
 	var word := Label3D.new()
 	word.text = "PULL"
 	word.font = FONT
-	word.font_size = 64
-	word.pixel_size = 0.0006
+	word.font_size = pull_size(TranslationServer.translate("PULL"))
+	word.pixel_size = PULL_PIXEL
 	word.outline_size = 0
 	word.modulate = INK
 	word.position = Vector3(0.0, -TAB.y * 0.3, 0.0095)
@@ -1380,13 +1437,16 @@ func _draw_layer() -> void:
 		_layer.draw_multiline(faint, Color(INK, 0.15), 2.0)
 	if not locked.is_empty():
 		_layer.draw_multiline(locked, Color(INK, 0.35), 3.0)
-	# Each theme's faint heading past the end of its branch.
-	var heading := int(clampf(r * 0.8, 12.0, 44.0))
+	# Each theme's heading past the end of its branch: a green label plate like a department's (info
+	# only: no glyph, a thin rim, never hovered or held).
+	var heading := _plate_font(r)
 	for i in THEMES.size():
 		if i >= _themes_shown.size() or not _themes_shown[i]:
 			continue
-		var named: Array = THEMES[i]
-		_layer.draw_string(FONT, named[1] * unit - Vector2(300.0, 0.0), tr(named[0]), HORIZONTAL_ALIGNMENT_CENTER, 600.0, heading, Color(INK, 0.22))
+		var box := theme_plate(i, unit, r)
+		_draw_plate(_layer, box, CABBAGE, Color(INK, 0.6), 2.0)
+		_layer.draw_string(FONT, Vector2(box.position.x, box.get_center().y + heading * 0.36), tr(THEMES[i][0]),
+				HORIZONTAL_ALIGNMENT_CENTER, box.size.x, heading, INK)
 	# The hub: a cabbage cross-section, the one green thing on the slide.
 	_layer.draw_circle(Vector2.ZERO, r * 1.1, CABBAGE)
 	_layer.draw_circle(Vector2.ZERO, r * 1.1, INK, false, 3.0, true)
@@ -1514,14 +1574,50 @@ static func plate(id: String, at: Vector2, r: float) -> Rect2:
 	return Rect2(at - dims / 2.0, dims)
 
 
+## Theme `i`'s heading plate at wheel scale `unit` (px per unit) and node radius `r`, sized to its
+## translated name.
+static func theme_plate(i: int, unit: Vector2, r: float) -> Rect2:
+	var font_size := _plate_font(r)
+	var height := font_size * 2.0
+	var dims := Vector2(FONT.get_string_size(TranslationServer.translate(THEMES[i][0]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + height, height)
+	return Rect2(THEMES[i][1] * unit - dims / 2.0, dims)
+
+
+## The PULL word's font size: PULL_SIZE, shrunk until `shown` is at most PULL_WIDTH wide on the pennant.
+static func pull_size(shown: String) -> int:
+	var font_size := PULL_SIZE
+	while font_size > 24 and FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x * PULL_PIXEL > PULL_WIDTH:
+		font_size -= 2
+	return font_size
+
+
+## A popup body `text` (already translated) word-wrapped to POPUP_TEXT at POPUP_BODY: its own line
+## breaks kept, a word too long for a line left on one of its own.
+static func popup_lines(text: String) -> PackedStringArray:
+	var out := PackedStringArray()
+	for paragraph in text.split("\n"):
+		var line := ""
+		for word in paragraph.split(" ", false):
+			var longer := word if line.is_empty() else line + " " + word
+			if not line.is_empty() and FONT.get_string_size(longer, HORIZONTAL_ALIGNMENT_LEFT, -1, POPUP_BODY).x > POPUP_TEXT:
+				out.append(line)
+				longer = word
+			line = longer
+		out.append(line)
+	return out
+
+
 ## A rounded box on `canvas`: `fill` inside, a `border` rim `width` wide.
 static func _draw_plate(canvas: CanvasItem, box: Rect2, fill: Color, border: Color, width: float) -> void:
-	var style := StyleBoxFlat.new()
+	# One stylebox, re-set per plate: draw() records its polygons at once, so reuse is safe.
+	if _plate_style == null:
+		_plate_style = StyleBoxFlat.new()
+		_plate_style.anti_aliasing = true
+	var style := _plate_style
 	style.bg_color = fill
 	style.border_color = border
 	style.set_border_width_all(int(width))
 	style.set_corner_radius_all(int(box.size.y * 0.25))
-	style.anti_aliasing = true
 	style.draw(canvas.get_canvas_item(), box)
 
 
@@ -1584,10 +1680,10 @@ func _draw_icon(icon: String, at: Vector2, s: float, color: Color) -> void:
 
 
 func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, light: float, fabric: Rect2) -> void:
-	var width := 430.0
-	var lines: PackedStringArray = tr(node.body).split("\n")
+	var width := POPUP_WIDTH
+	var lines := popup_lines(tr(node.body))
 	var needs := requirement(node.id, save)
-	var height := 100.0 + lines.size() * 27.0 + (32.0 if not needs.is_empty() else 0.0)
+	var height := 100.0 + lines.size() * POPUP_STEP + (32.0 if not needs.is_empty() else 0.0)
 	var pos := at + Vector2(r + 14.0, -height / 2.0)
 	if pos.x + width > fabric.end.x:
 		pos.x = at.x - r - 14.0 - width
@@ -1598,7 +1694,7 @@ func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, light:
 	var paper := Color(BEAM, light)
 	_top.draw_string(FONT, pos + Vector2(16, 38), tr(node.title), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 30, paper)
 	for i in lines.size():
-		_top.draw_string(FONT, pos + Vector2(16, 70 + i * 27), lines[i], HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 21, Color(paper, light * 0.8))
+		_top.draw_string(FONT, pos + Vector2(16, 70 + i * POPUP_STEP), lines[i], HORIZONTAL_ALIGNMENT_LEFT, POPUP_TEXT, POPUP_BODY, Color(paper, light * 0.8))
 	if not needs.is_empty():
 		# What it waits for, on one line, its name under it.
 		var red := Color(0.85, 0.35, 0.3, light)
@@ -1610,8 +1706,6 @@ func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, light:
 		return
 	var bought := is_bought(node.id, save)
 	var price := tr("APPROVED") if bought else tr("COST $%d") % price_of(node.id, save)
-	if node.id == MAT:
-		price += "   " + tr("MAT %d / %d") % [save.desk_capacity, MAT_MAX]
 	var short: bool = not bought and save.coins < price_of(node.id, save)
 	_top.draw_string(FONT, pos + Vector2(16, height - 16), price, HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24,
 			Color(0.85, 0.35, 0.3, light) if short else paper)

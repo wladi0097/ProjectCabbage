@@ -87,9 +87,54 @@ func test_dearer_stage_two_crates_push_the_senior_consultants_price_up() -> void
 func test_during_the_squeeze_the_senior_consultant_ignores_crate_prices_since_none_are_bought() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
-	save.squeeze_left = 100.0
+	save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME
 
 	assert_int(Consultant.target_price(save, 2)).is_equal(3)
+
+
+func test_once_the_squeeze_eases_the_senior_consultant_counts_crate_prices_again() -> void:
+	var save := SaveGame.new()
+	save.supply_shock = true
+	save.squeeze_left = SupplyConsole.EASE_TIME - 1.0
+
+	assert_int(Consultant.target_price(save, 2)).is_greater(3)
+
+
+func test_a_senior_consultant_prices_crates_as_the_console_does_after_its_discount() -> void:
+	var save := SaveGame.new()
+	save.supply_shock = true
+	save.pack_discount = 0.7
+	save.price_factor = 0.5
+	var discounted := Consultant.target_price(save, 2)
+	save.pack_discount = 1.0
+	save.price_factor = 1.0
+
+	assert_int(discounted).is_equal(Consultant.target_price(save, 2))
+
+
+func test_with_hired_hands_the_senior_consultant_throttles_only_while_no_markup_is_set() -> void:
+	var save := SaveGame.new()
+	save.consultant_skill = 2
+	save.hands = 1
+	assert_bool(Consultant.throttles(save)).is_true()
+	save.consultant_markup = 0.2
+	assert_bool(Consultant.throttles(save)).is_false()
+
+
+func test_a_step_down_on_the_slate_never_comes_back_as_a_dearer_price() -> void:
+	var consultant := _desk()
+	var save := SaveManager.save
+	save.consultant_skill = 2
+	save.hands = 1
+	var target := Consultant.target_price(save, 2)
+	consultant._extra = 3
+	save.sale_price = target + 2
+	consultant.slate.player_rewrote.emit()
+
+	_run(consultant, Consultant.PLAYER_PAUSE + 30.0)
+
+	assert_int(save.sale_price).is_less_equal(target + 2)
+	assert_int(consultant._extra).is_equal(0)
 
 
 func test_income_per_unit_is_the_chance_of_a_sale_times_the_margin() -> void:

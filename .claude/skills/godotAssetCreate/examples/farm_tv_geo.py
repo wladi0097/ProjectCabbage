@@ -12,12 +12,15 @@ COLOURS[E] = (0.16, 0.18, 0.165)          # case: worn grey-sage enamel
 COLOURS[P] = (0.2, 0.215, 0.2)            # button plate: paler worn grey
 COLOURS[F] = (0.03, 0.032, 0.03)          # glass well
 COLOURS[K] = (0.055, 0.05, 0.045)         # bezel: dark worn bakelite, not black
-W, DEP, Z0, Z1 = 0.4175, 0.25, 0.025, 0.605    # case half width, half depth, bottom, top
-SX, SZ, GW, GH = -0.0525, 0.33, 0.25, 0.19  # screen centre and glass half size (4:3)
+SX, SZ, GW, GH = -0.025, 0.33, 0.320625, 0.19  # screen centre and glass half size (1296:768, playtest: wider)
+B = 0.028                                  # bezel width (playtest 2026-11-07: thinner, the glass gets the focus)
+RIM = 0.03                                 # enamel left round the bezel
+PW = 0.025                                 # narrow right panel half width (playtest: halved again)
+PX = SX + GW + B + 0.008 + PW              # its centre x
+XL, XR = SX - GW - B - RIM, PX + PW + 0.022  # case left and right
+DEP, Z0, Z1 = 0.25, 0.045, SZ + GH + B + RIM   # case half depth, bottom (on taller feet), top
 FRONT = -DEP
-PX = 0.3075                                # narrow right panel centre x (half width PW)
-PW = 0.05
-BZ, BHX, BHZ = SZ + 0.03, 0.036, 0.03     # back button centre z and half size
+BZ, BHX, BHZ = SZ + 0.04, 0.019, 0.04     # back button centre z and half size: a tall narrow plate
 
 
 def prism(bm, pts, y0, y1, mat):
@@ -34,14 +37,13 @@ def prism(bm, pts, y0, y1, mat):
 
 
 bm = bmesh.new()
-part_box(bm, (-W, -DEP, Z0), (W, DEP, Z1), 0.045, E)                               # case shell
+part_box(bm, (XL, -DEP, Z0), (XR, DEP, Z1), 0.035, E)                               # case shell
 part_box(bm, (-0.3, DEP - 0.05, Z0 + 0.06), (0.3, DEP + 0.17, Z1 - 0.09), 0.06, E)  # tube hump
 part_box(bm, (-0.17, DEP + 0.1, Z0 + 0.14), (0.17, DEP + 0.24, Z1 - 0.2), 0.04, E)
 # Bezel: one moulded dark bakelite surround, the opening's corners rounded like a tube face; a dark
 # well behind it.
-B = 0.045
 bz = bmesh.new()
-part_box(bz, (SX - GW - B, FRONT - 0.035, SZ - GH - B), (SX + GW + B, FRONT + 0.01, SZ + GH + B), 0.02, K)
+part_box(bz, (SX - GW - B, FRONT - 0.035, SZ - GH - B), (SX + GW + B, FRONT + 0.01, SZ + GH + B), 0.014, K)
 bezel = finish("Bezel", bz, [paint, metal])
 cut = bmesh.new()
 box(cut, (SX - GW - 0.004, FRONT - 0.06, SZ - GH - 0.004), (SX + GW + 0.004, FRONT + 0.03, SZ + GH + 0.004), 0.03, 4)
@@ -51,9 +53,9 @@ boolean(bezel, cut)
 absorb(bm, bezel)
 part_box(bm, (SX - GW - 0.005, FRONT - 0.002, SZ - GH - 0.005), (SX + GW + 0.005, FRONT + 0.005, SZ + GH + 0.005), 0.0, F)
 # Chrome strip under the bezel, across the whole front.
-part_box(bm, (-W + 0.03, FRONT - 0.012, Z0 + 0.045), (W - 0.03, FRONT + 0.005, Z0 + 0.07), 0.005, H)
+part_box(bm, (XL + 0.03, FRONT - 0.012, Z0 + 0.012), (XR - 0.03, FRONT + 0.005, Z0 + 0.035), 0.005, H)
 # Right panel: a dark inset; on it the BACK button (chrome rim, pale plate, corner rivets).
-part_box(bm, (PX - PW, FRONT - 0.008, Z0 + 0.1), (PX + PW, FRONT + 0.005, Z1 - 0.06), 0.012, K)
+part_box(bm, (PX - PW, FRONT - 0.008, Z0 + 0.07), (PX + PW, FRONT + 0.005, Z1 - 0.04), 0.012, K)
 part_box(bm, (PX - BHX - 0.005, FRONT - 0.018, BZ - BHZ - 0.005), (PX + BHX + 0.005, FRONT, BZ + BHZ + 0.005), 0.004, H)
 part_box(bm, (PX - BHX, FRONT - 0.03, BZ - BHZ), (PX + BHX, FRONT - 0.01, BZ + BHZ), 0.004, P)
 for rx in (-1, 1):
@@ -71,7 +73,7 @@ for side in (-1, 1):
     rod(bm, (AX + side * 0.012, 0.05, Z1 + 0.04), tip, 0.0075, H, I, 10)
     spin(bm, [(0, -0.013), (0.009, -0.011), (0.013, 0), (0.009, 0.011), (0, 0.013)], H, at(*tip), 12)
 # Rubber feet under the case.
-for fx in (-W + 0.08, W - 0.08):
+for fx in (XL + 0.08, XR - 0.08):
     for fy in (-DEP + 0.07, DEP - 0.07):
         spin(bm, [(0, 0), (0.03, 0), (0.028, Z0 + 0.01), (0, Z0 + 0.01)], K, at(fx, fy, 0), 12)
 case = finish("FarmTv", bm, [paint, metal])
@@ -104,7 +106,7 @@ finish("Led", led, [emissive("farm_tv_led", (0.5, 0.05, 0.03), 0.5, (0.2, 0.03, 
 
 arrow = bmesh.new()
 AF = FRONT - 0.03
-AZ, K8 = BZ + 0.006, 0.8 * BHX / 0.105                 # arrow centre (above the TO DESK stencil) and scale
+AZ, K8 = BZ + 0.014, 0.8 * BHX / 0.105                 # arrow centre (above the TO DESK stencil) and scale
 prism(arrow, [(PX + K8 * x, AZ + K8 * z) for x, z in [(-0.07, -0.022), (0.005, -0.022), (0.005, -0.055), (0.075, 0),
               (0.005, 0.055), (0.005, 0.022), (-0.07, 0.022)]], AF + 0.002, AF - 0.008, 0)
 finish("BackArrow", arrow, [emissive("farm_tv_arrow", (0.6, 0.65, 0.62), 0.0, (0.55, 0.58, 0.55))])

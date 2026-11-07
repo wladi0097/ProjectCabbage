@@ -9,7 +9,7 @@ extends Control
 ## bought: plots are cheap, the machines dear. The fields grow while the camera is at the desk.
 ## save.farm_growth holds each open square's seconds grown (EMPTY: unplanted).
 
-const SIZE := Vector2(1024, 768)
+const SIZE := Vector2(1296, 768)
 const START_PLOTS := 12
 const MAX_PLOTS := 24
 const COLUMNS := 6
@@ -27,7 +27,7 @@ const AUTO_EVERY := 1.0
 ## The farm's upgrades, bought once each (tools/pace.py reads the prices). Effects: apply-free,
 ## read where they matter (grow_time, yield_of, seed_price, auto).
 const UPGRADES := [
-	{id = "seed_contract", price = 2500, title = "SEED CONTRACT", body = "Seeds cost half."},
+	{id = "seed_contract", price = 2500, title = "SEED CONTRACT", body = "Seed packs in the shop cost half."},
 	{id = "fertiliser", price = 3000, title = "FERTILISER", body = "Squares ripen in 20 s instead of 30 s."},
 	{id = "farm_hand", price = 4000, title = "FARM HAND", body = "Plants an empty square every second (uses seeds)."},
 	{id = "irrigation", price = 12000, title = "IRRIGATION", body = "Every harvest gives 4 cabbages instead of 3."},
@@ -45,11 +45,11 @@ const SPROUT := Color(0.31, 0.42, 0.25)
 ## The only saturated thing: the cabbage.
 const CABBAGE := Color(0.48, 0.75, 0.26)
 ## Kept ~36 px off the edges: the CRT glass warps the corners (FarmTv.WARP).
-const FIELD := Rect2(36, 80, 686, 620)
-const SIDE := Rect2(740, 80, 248, 620)
+const FIELD := Rect2(36, 80, 846, 620)
+const SIDE := Rect2(900, 80, 360, 620)
 const GAP := 8.0
 
-var _font := SystemFont.new()
+var _font := screen_font()
 var _auto := 0.0
 var _hot := -1
 var _msg := "Click a square to plant a seed (1 seed). Ripe after 30 s: click it to harvest 3 cabbages."
@@ -60,8 +60,6 @@ var _clock := 0.0
 
 
 func _ready() -> void:
-	_font.font_names = PackedStringArray(["Consolas", "Lucida Console", "Courier New", "monospace"])
-	_font.font_weight = 600
 	size = SIZE
 	mouse_filter = MOUSE_FILTER_STOP
 	var scroll := ScrollContainer.new()
@@ -106,6 +104,14 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 
+## The screen's terminal font: a bold monospace.
+static func screen_font() -> SystemFont:
+	var font := SystemFont.new()
+	font.font_names = PackedStringArray(["Consolas", "Lucida Console", "Courier New", "monospace"])
+	font.font_weight = 600
+	return font
+
+
 ## Fits save.farm_growth to the open squares (new ones empty) and hands out the uncle's seeds once.
 static func ensure(save: SaveGame) -> void:
 	if save.farm_plots == 0:
@@ -146,6 +152,19 @@ static func upgrade_price(id: String, save: SaveGame) -> int:
 		if u.id == id:
 			return u.price
 	return 0
+
+
+## The price shown at the bottom right of upgrade `id`'s entry: "$2,500", or OWNED once bought.
+static func price_tag(id: String, save: SaveGame) -> String:
+	return "$%s" % _thousands(upgrade_price(id, save)) if on_offer(id, save) else "OWNED"
+
+
+## The font size the hint line `text` fits `width` px at: 22, smaller for long (German) hints.
+static func msg_size(font: Font, text: String, width: float) -> int:
+	var px := 22
+	while px > 14 and font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > width:
+		px -= 1
+	return px
 
 
 ## Whether upgrade `id` can still be bought (CLEAR A PLOT until MAX_PLOTS; the rest once).
@@ -291,6 +310,17 @@ func _add_upgrade(id: String) -> void:
 	var b := _button()
 	b.custom_minimum_size = Vector2(SIDE.size.x - 14, 100)
 	b.pressed.connect(_buy.bind(id))
+	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
+		(b.get_theme_stylebox(state) as StyleBoxFlat).content_margin_bottom = 32  # Room for the price below the text.
+	var price := _label("", 21, PHOSPHOR)
+	price.name = "Price"
+	price.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	price.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	price.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	price.offset_right = -10
+	price.offset_bottom = -5
+	price.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(price)
 	_list.add_child(b)
 	_buttons[id] = b
 
@@ -303,7 +333,8 @@ func _refresh(save: SaveGame) -> void:
 			if u.id == id:
 				body = tr(u.body)
 		var offer := on_offer(id, save)
-		b.text = "%s  %s\n%s" % [tr(_title(id)), ("$%s" % _thousands(upgrade_price(id, save))) if offer else tr("OWNED"), body]
+		b.text = "%s\n%s" % [tr(_title(id)), body]
+		(b.get_node("Price") as Label).text = tr(price_tag(id, save))
 		b.disabled = not offer
 		b.modulate.a = 1.0 if offer and save.coins >= upgrade_price(id, save) else 0.55
 	for i in _seed_buttons.size():
@@ -345,7 +376,8 @@ func _draw() -> void:
 			draw_circle(c + Vector2(-3, -3), r.size.x * 0.19, CABBAGE)
 			draw_string(_font, r.position + Vector2(0, 20), "x%d " % yield_of(save), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 4, 22, PHOSPHOR)
 	_draw_homestead(save, Rect2(SIDE.position, Vector2(SIDE.size.x, 160)))
-	draw_string(_font, Vector2(36, SIZE.y - 30), tr(_msg), HORIZONTAL_ALIGNMENT_LEFT, SIZE.x - 72, 22, PHOSPHOR)
+	var msg := tr(_msg)
+	draw_string(_font, Vector2(36, SIZE.y - 30), msg, HORIZONTAL_ALIGNMENT_LEFT, SIZE.x - 72, msg_size(_font, msg, SIZE.x - 72), PHOSPHOR)
 
 
 ## The homestead: a barn, a silo, the farm hand and the tractor once bought.

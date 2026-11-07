@@ -1,19 +1,17 @@
 class_name FineNotice
 extends CanvasLayer
-## The fine for selling a rotten unit: a notice of penalty drops onto the left desk, is
-## stamped FINED in red, and fades away after HOLD seconds. It never takes the mouse. A new fine
+## The fine for selling a rotten unit: a notice of penalty drops onto the left desk and
+## fades away after HOLD seconds. It never takes the mouse. A new fine
 ## replaces the one showing. One sound (Penalty) covers it all: the paper slap as it lands
-## (IN_TIME), the stamp at STAMP_AT and a low buzzer after it.
+## (IN_TIME), a thump and a low buzzer after it.
 
 const FONT := preload("res://assets/fonts/Oswald.ttf")
 const PAPER := Color(0.72, 0.73, 0.69)
 const INK := Color(0.13, 0.15, 0.14)
-const STAMP := Color(0.62, 0.1, 0.08)
 const SIZE := Vector2(420, 220)
 ## Where its centre lands, as a fraction of the view (on the left desk, off the mat).
 const AT := Vector2(0.15, 0.45)
 const IN_TIME := 0.18
-const STAMP_AT := 0.35
 const HOLD := 5.0
 const OUT_TIME := 0.8
 
@@ -21,7 +19,6 @@ var _t := HOLD + OUT_TIME
 var _price := 0
 var _owed := 0
 var _short := false
-var _stamped := true
 
 @onready var _paper: Control = $Paper
 
@@ -40,7 +37,6 @@ func show_fine(taken: int) -> void:
 	_owed = SaleWindow.FINE * _price
 	_short = taken < _owed
 	_t = 0.0
-	_stamped = false
 	_paper.rotation = deg_to_rad(randf_range(-4.0, 2.0))
 	_paper.visible = true
 	$Penalty.play()
@@ -50,8 +46,6 @@ func _process(delta: float) -> void:
 	if not _paper.visible:
 		return
 	_t += delta
-	if not _stamped and _t >= STAMP_AT:
-		_stamped = true
 	if _t >= HOLD + OUT_TIME:
 		_paper.visible = false
 		return
@@ -77,10 +71,4 @@ func _draw_paper() -> void:
 			HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
 	var line := tr("Tally insufficient. Balance set to zero.") if _short else tr("Deducted from your tally.")
 	_paper.draw_string(FONT, Vector2(24, 170), line, HORIZONTAL_ALIGNMENT_LEFT, w - 48, 17, Color(INK, 0.85))
-	_paper.draw_string(FONT, Vector2(24, 202), tr("Rotten units are to be disposed of, not sold."), HORIZONTAL_ALIGNMENT_LEFT, w - 160, 13, Color(INK, 0.55))
-	if _stamped:
-		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - (_t - STAMP_AT) / 0.12)
-		_paper.draw_set_transform(Vector2(w - 86, 186), deg_to_rad(-11.0), Vector2(pop, pop))
-		_paper.draw_rect(Rect2(-60, -24, 120, 46), Color(STAMP, 0.85), false, 3.0)
-		_paper.draw_string(FONT, Vector2(-60, 12), tr("FINED"), HORIZONTAL_ALIGNMENT_CENTER, 120, 30, Color(STAMP, 0.85))
-		_paper.draw_set_transform(Vector2.ZERO)
+	_paper.draw_string(FONT, Vector2(24, 202), tr("Rotten units are to be disposed of, not sold."), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 13, Color(INK, 0.55))

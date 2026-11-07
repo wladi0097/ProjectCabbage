@@ -10,7 +10,7 @@ extends Node3D
 ## 2 aims at the best income per unit after pack costs
 ## and, with hired hands, throttles: while no unit waits on the mat (the hands are starved, supply is
 ## the limit) it asks a step more each time, up to THROTTLE × the full-sale price, and gives a step
-## back whenever one waits.
+## back whenever one waits. Not while the player's markup (below) stands.
 ## The player's word stands: each player step on the slate records how far over (or under) the
 ## consultant's own target the price now is (save.consultant_markup), and from then on it aims that far
 ## over its target as the target moves (aim). Left on its target, the markup is 0 again.
@@ -137,9 +137,10 @@ static func target_price(save: SaveGame, skill: int) -> int:
 			if absf(Slate.demand(price, ref) - TARGET_ACCEPTANCE) < absf(Slate.demand(near, ref) - TARGET_ACCEPTANCE) - 0.0001:
 				near = price
 		return near
-	# Stage 2 crates cost more (unit_cost); during the wholesalers' squeeze none are bought (the farm feeds the desk).
-	var unit := Console.UNIT_COST if save.squeeze_left > 0.0 else Console.unit_cost(save)
-	var cost := Console.pack_price(save.price_factor, save.pack_size, save.pack_discount, unit) / float(save.pack_size)
+	# Stage 2 crates cost more (crate_floor); during the wholesalers' squeeze (before its ease) none are
+	# bought (the farm feeds the desk).
+	var least := 0.0 if save.squeeze_left > Console.EASE_TIME else Console.crate_floor(save)
+	var cost := Console.pack_price(save.price_factor, save.pack_size, save.pack_discount, Console.UNIT_COST, least) / float(save.pack_size)
 	var best := Slate.MIN_PRICE
 	for price in range(Slate.MIN_PRICE, top + 1):
 		if income(price, ref, cost) > income(best, ref, cost) + 0.0001:
@@ -165,6 +166,12 @@ static func throttle(extra: int, waiting: bool, base: int, ref: float) -> int:
 	return clampi(extra + 1, 0, maxi(ceili(ref * THROTTLE) - base, 0))
 
 
+## Skill 2 with hired hands throttles, unless the player set a markup: their price stands as set,
+## so a step down on the slate never comes back as a dearer price.
+static func throttles(save: SaveGame) -> bool:
+	return save.consultant_skill >= 2 and save.hands > 0 and is_zero_approx(save.consultant_markup)
+
+
 ## Coins per unit offered at `price` (sold with the street's chance) after the unit's `cost`.
 static func income(price: int, ref: float, cost: float) -> float:
 	return Slate.demand(price, ref) * (price - cost)
@@ -172,7 +179,7 @@ static func income(price: int, ref: float, cost: float) -> float:
 
 func _decide(save: SaveGame) -> void:
 	var target := aim(save, save.consultant_skill)
-	if save.consultant_skill >= 2 and save.hands > 0:
+	if throttles(save):
 		var waiting := Associate.pick_target(get_tree().get_nodes_in_group(&"cabbages"), Vector3.ZERO, Hand.held) != null
 		_extra = throttle(_extra, waiting, target, Slate.ref_price(save.marketing, save.demand_mood))
 		target = mini(target + _extra, Slate.max_price(save.marketing))
@@ -204,6 +211,7 @@ func _show_switch(animate := true) -> void:
 
 func _back_off() -> void:
 	_wait = PLAYER_PAUSE
+	_extra = 0
 	var save := SaveManager.save
 	# Before it is retained the player's pricing is no brief: it starts from its own target.
 	if save.stamped.has(CARD):

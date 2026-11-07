@@ -34,7 +34,6 @@ const RULE := Color(0.42, 0.5, 0.55, 0.35)
 const MARGIN := Color(0.55, 0.25, 0.22, 0.35)
 const INK := Color(0.13, 0.14, 0.14)
 const BOARD := Color(0.2, 0.23, 0.21)
-const STAMP := Color(0.55, 0.12, 0.1, 0.7)
 
 @export var latch_sound: AudioStream
 @export var thud_sound: AudioStream
@@ -380,8 +379,6 @@ func _draw_page(rect: Rect2, index: int, side: int) -> void:
 			for i in page.rows.size():
 				draw_string(_type, Vector2(x, row_y.call(i)), tr(page.rows[i][0]), HORIZONTAL_ALIGNMENT_LEFT, w, text, INK)
 				draw_string(_type, Vector2(x, row_y.call(i)), tr(page.rows[i][1]), HORIZONTAL_ALIGNMENT_RIGHT, w, text, INK)
-			if index == 0:
-				_draw_stamp(Vector2(x + w * 0.62, rect.position.y + line_h * 16.5), tr("AUDITED"), line_h)
 		"list":
 			if page.rows.is_empty():
 				draw_string(_type, Vector2(x, row_y.call(0)), tr("NO REQUISITIONS ON FILE."), HORIZONTAL_ALIGNMENT_LEFT, w, text, INK)
@@ -409,15 +406,6 @@ func _draw_page(rect: Rect2, index: int, side: int) -> void:
 			w * 0.3 - ear, int(line_h * 0.42), Color(INK, 0.55 if _hover_side == side else 0.35))
 
 
-func _draw_stamp(at: Vector2, word: String, line_h: float) -> void:
-	draw_set_transform(at, -0.18)
-	var box := Rect2(Vector2(-line_h * 2.6, -line_h * 0.75), Vector2(line_h * 5.2, line_h * 1.5))
-	draw_rect(box, STAMP, false, 4.0)
-	draw_rect(box.grow(-6.0), STAMP, false, 1.5)
-	draw_string(FONT, Vector2(box.position.x, line_h * 0.32), word, HORIZONTAL_ALIGNMENT_CENTER, box.size.x, int(line_h * 0.9), STAMP)
-	draw_set_transform(Vector2.ZERO)
-
-
 ## Coins over play time, pencilled in with a slightly unsteady hand.
 func _draw_chart(area: Rect2, points: PackedVector2Array, line_h: float) -> void:
 	var pencil := Color(INK, 0.8)
@@ -442,4 +430,3 @@ func _draw_chart(area: Rect2, points: PackedVector2Array, line_h: float) -> void
 		var wobble := Vector2(sin(i * 12.9898) , cos(i * 78.233)) * 1.5
 		line.append(area.position + Vector2(p.x / span * area.size.x, (1.0 - p.y / top) * area.size.y) + wobble)
 	draw_polyline(line, pencil, 2.5, true)
-	_draw_stamp(area.position + area.size * Vector2(0.75, 0.82), tr("NOTED"), line_h * 0.7)

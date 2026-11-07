@@ -11,7 +11,7 @@ extends Node3D
 ## Once the auto_procurement card is stamped an AUTO lamp lights on the screen with a light switch
 ## beside it: flicked (or the lamp pressed), it switches automatic buying on or off (save.auto_buy). On, a pack is bought whenever should_auto_buy says so.
 ## Stage 2 (GameEvents "supply_shock"): a pack unit costs at least crate_share of the street's
-## full-sale price (unit_cost). The standing order then skips packs that would sell at a loss, and
+## full-sale price (crate_floor), whatever the ticker or the pack discount. The standing order then skips packs that would sell at a loss, and
 ## while the family farm has seeds or crops the bailout is off (the farm on the TV feeds the desk).
 
 const Slate := preload("res://entities/price_slate/price_slate.gd")
@@ -54,6 +54,8 @@ var _broke_for := 0.0
 var _bailout := -1
 var _blinking: Tween
 var _auto_wait := 0.0
+## The auto_buy the lamp and switch show.
+var _auto_on := true
 ## The cost the ticker shows, so it is only reformatted when it changes.
 var _shown_cost := -1
 
@@ -106,7 +108,8 @@ func _process(delta: float) -> void:
 	if _broke_for >= BAILOUT_WAIT:
 		_bailout = save.coins
 		_show_price()
-	if _auto.visible != save.stamped.has("auto_procurement"):
+	# The shock switches the standing order off from the desk (UpgradeDesk.start_shock): the switch follows.
+	if _auto.visible != save.stamped.has("auto_procurement") or _auto_on != save.auto_buy:
 		_show_auto()
 	_auto_wait -= delta
 	if _auto.visible and save.auto_buy and save.buy_unlocked and _auto_wait <= 0.0 \
@@ -124,7 +127,7 @@ func _process(delta: float) -> void:
 
 func _cost() -> int:
 	var save := SaveManager.save
-	return _bailout if _bailout >= 0 else pack_price(save.price_factor, save.pack_size, save.pack_discount, unit_cost(save))
+	return _bailout if _bailout >= 0 else pack_price(save.price_factor, save.pack_size, save.pack_discount, UNIT_COST, crate_floor(save))
 
 
 func _tick_price() -> void:
@@ -173,6 +176,7 @@ func _show_auto(animate := true) -> void:
 	_auto.visible = save.stamped.has("auto_procurement")
 	_auto_switch.enabled = _auto.visible
 	_toggle.set_enabled(_auto.visible)
+	_auto_on = save.auto_buy
 	_auto.modulate = AMBER if save.auto_buy else AUTO_OFF
 	_toggle.show_on(save.auto_buy, animate)
 
@@ -235,17 +239,16 @@ static func is_broke(stock: int, money: int, cost: int) -> bool:
 	return stock <= 0 and money < cost
 
 
-## What a pack costs: `size` cabbages at UNIT_COST, times the minute's price factor and the
-## cheaper-pack discount; never under $1. Events that make supply dearer pass a dearer `unit`
-## (unit_cost), not through marketing.
-static func pack_price(factor: float, size: int, discount := 1.0, unit := UNIT_COST) -> int:
-	return maxi(roundi(factor * unit * size * discount), 1)
+## What a pack costs: `size` cabbages at `unit`, times the minute's price factor and the
+## cheaper-pack discount; never under $1, nor under `least` a cabbage (stage 2's crate_floor, which
+## neither the ticker nor the discount moves).
+static func pack_price(factor: float, size: int, discount := 1.0, unit := UNIT_COST, least := 0.0) -> int:
+	return maxi(maxi(roundi(factor * unit * size * discount), roundi(least * size)), 1)
 
 
-## A pack unit's cost at price factor 1: UNIT_COST, or in stage 2 crate_share of the full-sale price
-## (normal mood).
-static func unit_cost(save: SaveGame) -> float:
-	return maxf(UNIT_COST, crate_share(save.supply_shock, save.squeeze_left) * Slate.ref_price(save.marketing, 1.0))
+## Stage 2's least a crate unit costs: crate_share of the full-sale price (normal mood); 0 before the shock.
+static func crate_floor(save: SaveGame) -> float:
+	return crate_share(save.supply_shock, save.squeeze_left) * Slate.ref_price(save.marketing, 1.0)
 
 
 ## Stage 2's crate price as a share of the full-sale price: 0 before the shock, SHOCK_SHARE after;

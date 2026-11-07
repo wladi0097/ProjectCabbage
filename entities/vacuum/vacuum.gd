@@ -13,7 +13,8 @@ extends Node3D
 ## per bag slot) and, home, the slips fly from them into the Findings counter (QaBay.file_from).
 ## The hand can pick a unit up and set it down anywhere on the mat (never past it: on_mat). About every
 ## TIP_EVERY one unit out driving falls onto its back and stops, brush spinning, until the player
-## picks it up and sets it down; the projector's STABILISER node stops that.
+## picks it up and sets it down; the projector's STABILISER node stops that. While it lies there a
+## small stencilled HELP_TEXT hovers over it and shakes (asks_for_help).
 
 enum State { PARKED, ROAM, RETURN, TIPPED }
 
@@ -39,6 +40,9 @@ const RADIUS := 0.055
 const HEIGHT := 0.035
 ## Held, a unit hangs this far over the mat.
 const LIFT := 0.05
+## The units' own collision layer, and the cabbages' (a unit set down on one waits until it is clear).
+const SOLID_LAYER := 1
+const CABBAGE_LAYER := 4
 ## Seconds between tips (one unit of the fleet, random in this range) and the node that ends them.
 const TIP_EVERY := Vector2(240.0, 360.0)
 const STABILISER := "vacuum_gyro"
@@ -48,6 +52,11 @@ const TOKEN_CARD := "token_recovery"
 ## Strength of the beep when a unit empties at home (SoundCue level): a faint blip, the coins landing
 ## in the tally carry the moment. Tipping over and arriving still beep at full strength.
 const UNLOAD_BEEP := 0.15
+## A fallen unit's plea, HELP_HEIGHT over it, jittering up to HELP_SHAKE (m).
+const HELP_TEXT := "UNIT INVERTED
+PLEASE ASSIST"
+const HELP_HEIGHT := 0.11
+const HELP_SHAKE := 0.004
 
 @export var coins: CoinPile
 
@@ -69,8 +78,13 @@ class Unit:
 	var wait := 0.0
 	## In the player's hand.
 	var held := false
+	## Not solid (only on the hand's HOVER_LAYER, which nothing collides with): carried, or set down
+	## on a cabbage and not yet clear of it, so it never shoves resting units aside.
+	var ghost := false
 	## Which way it faced when it fell over (TIPPED).
 	var fallen_yaw := 0.0
+	## The plea over it while it lies on its back.
+	var help: Label3D
 
 
 var _units: Array[Unit] = []
@@ -116,6 +130,10 @@ func _physics_process(delta: float) -> void:
 			_tip(out.pick_random())
 	for unit in _units:
 		_drive(unit, _spots, save, delta)
+		unit.help.visible = asks_for_help(unit.state, unit.held)
+		if unit.help.visible:
+			unit.help.global_position = unit.body.global_position + Vector3(HELP_SHAKE * sin(_time * 47.0),
+					HELP_HEIGHT + HELP_SHAKE * 0.6 * sin(_time * 61.0), 0.0)
 		unit.dock_lamp.emission_energy_multiplier = LAMP_ON * 0.5 if unit.state == State.PARKED and unit.wait > 0.0 else 0.0
 
 
@@ -131,6 +149,11 @@ func _bay(save: SaveGame) -> QaBay:
 ## Whether a unit may fall over now: out driving, not in the hand, and no stabiliser bought.
 static func can_tip(state: State, held: bool, save: SaveGame) -> bool:
 	return not held and (state == State.ROAM or state == State.RETURN) and not save.tree_bought.has(STABILISER)
+
+
+## Whether a unit shows its plea: on its back and not yet picked up.
+static func asks_for_help(state: State, held: bool) -> bool:
+	return state == State.TIPPED and not held
 
 
 ## Whether a unit sucks up coins now: only out collecting, upright and not in the hand.
@@ -182,6 +205,8 @@ func _drive(unit: Unit, spots: Array[Vector3], save: SaveGame, delta: float) -> 
 	if unit.held:
 		_carry(unit)
 		return
+	if unit.ghost:
+		_settle(unit)
 	var at := unit.body.global_position
 	unit.wait -= delta
 	match unit.state:
@@ -261,7 +286,10 @@ func _steer(unit: Unit, save: SaveGame, delta: float) -> void:
 
 ## One drive step from `xf` toward `goal`: turns by at most `turn`, rolls forward up to `step` while
 ## facing it, and never into a unit at `others`. One in the way is driven round (on the side toward
-## the goal), not pushed against: a unit parked or fallen in the path used to block it for good.
+## the goal), not pushed against: a unit parked or fallen in the path used to block it for good. One
+## sitting on the goal itself is ignored (driven round, it would be circled forever), and a goal on
+## the mat keeps the step on it (on_mat): driving round never pushes a unit off the mat, it goes round
+## the other side.
 static func drive_step(xf: Transform3D, goal: Vector3, others: Array[Vector3], turn: float, step: float) -> Transform3D:
 	var yaw := turn_toward(xf.basis.get_euler().y, xf.origin, goal, turn)
 	var forward := Vector3(-sin(yaw), 0.0, -cos(yaw))
@@ -270,16 +298,44 @@ static func drive_step(xf: Transform3D, goal: Vector3, others: Array[Vector3], t
 	if absf(wrapf(atan2(-flat.x, -flat.z) - yaw, -PI, PI)) < FACING:
 		move = minf(step, flat.length())
 	var to := xf.origin + forward * move
+	var keep := on_mat(goal) == goal
 	for other in others:
 		var apart := Vector3(to.x - other.x, 0.0, to.z - other.z)
-		if apart.length() >= RADIUS * 2.0:
+		if apart.length() >= RADIUS * 2.0 or Vector2(goal.x - other.x, goal.z - other.z).length() < RADIUS * 2.0:
 			continue
 		var out := apart.normalized() if apart.length() > 0.001 else forward.cross(Vector3.UP)
 		var side := out.cross(Vector3.UP)
 		if side.dot(flat) < 0.0:
 			side = -side
+		# One too close to the mat's edge to pass between: always round it on the mat's side.
+		var edge := edge_out(other)
+		if keep and edge != Vector3.ZERO:
+			var sense := 1.0 if angle_from(edge, goal - other) >= angle_from(edge, out) else -1.0
+			side = Vector3(-out.z, 0.0, out.x) * sense
 		to = Vector3(other.x, to.y, other.z) + out * RADIUS * 2.0 + side * move
+	if keep:
+		to = on_mat(to)
 	return Transform3D(Basis(Vector3.UP, yaw), to)
+
+
+## The outward direction of the mat edge nearer to `at` than a unit fits through (2 × RADIUS); zero
+## when there is room all round.
+static func edge_out(at: Vector3) -> Vector3:
+	var gaps := {
+		Vector3.LEFT: at.x - AREA.position.x, Vector3.RIGHT: AREA.end.x - at.x,
+		Vector3.FORWARD: at.z - AREA.position.y, Vector3.BACK: AREA.end.y - at.z}
+	var best := Vector3.ZERO
+	var closest := RADIUS * 2.0
+	for way: Vector3 in gaps:
+		if gaps[way] < closest:
+			closest = gaps[way]
+			best = way
+	return best
+
+
+## The flat angle (0..TAU) from `from` to `to`, counted the way round that never wraps past `from`.
+static func angle_from(from: Vector3, to: Vector3) -> float:
+	return fposmod(atan2(from.x * to.z - from.z * to.x, from.x * to.x + from.z * to.z), TAU)
 
 
 ## Falls onto its back where it is: stops until the hand picks it up.
@@ -310,6 +366,18 @@ func _set_down(unit: Unit) -> void:
 	unit.body.global_transform = Transform3D(Basis(Vector3.UP, _yaw(unit)), at)
 	unit.state = set_down(unit.state)
 	unit.wait = 0.0
+	_settle(unit)
+
+
+## Solid again once no cabbage overlaps it (until then it stays a ghost, so none is blasted away).
+func _settle(unit: Unit) -> void:
+	var query := PhysicsShapeQueryParameters3D.new()
+	var shape := unit.body.get_child(0) as CollisionShape3D
+	query.shape = shape.shape
+	query.transform = unit.body.global_transform * shape.transform
+	query.collision_mask = CABBAGE_LAYER
+	unit.ghost = not get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty()
+	unit.body.collision_layer = Interactable.HOVER_LAYER if unit.ghost else SOLID_LAYER
 
 
 ## Home: backs into its spot, beeps, and the bag's coins fly to the tally.
@@ -335,7 +403,7 @@ static func on_mat(spot: Vector3) -> Vector3:
 func _add_unit() -> void:
 	var unit := Unit.new()
 	unit.body = AnimatableBody3D.new()
-	unit.body.collision_layer = 1
+	unit.body.collision_layer = SOLID_LAYER
 	unit.body.collision_mask = 0
 	# Moved by setting its transform, which must hold at once (synced, a set-down was undone by the
 	# next drive step reading the old one back).
@@ -351,8 +419,26 @@ func _add_unit() -> void:
 	grip.grip_height = HEIGHT + 0.02
 	grip.tooltip = "Coin robot: it collects the coins resting on the mat. If it falls over, pick it up and set it down."
 	unit.body.add_child(grip)
-	grip.grabbed.connect(func() -> void: unit.held = true)
+	grip.grabbed.connect(func() -> void:
+		unit.held = true
+		unit.ghost = true
+		unit.body.collision_layer = Interactable.HOVER_LAYER)
 	grip.released.connect(func() -> void: _set_down(unit))
+	unit.help = Label3D.new()
+	unit.help.text = HELP_TEXT
+	unit.help.font = preload("res://assets/fonts/Oswald.ttf")
+	unit.help.font_size = 40
+	unit.help.pixel_size = 0.0011
+	unit.help.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	unit.help.no_depth_test = true
+	unit.help.render_priority = 2
+	unit.help.outline_render_priority = 1
+	unit.help.modulate = Color(0.86, 0.84, 0.74)
+	unit.help.outline_modulate = Color(0.06, 0.07, 0.07, 0.85)
+	unit.help.outline_size = 10
+	unit.help.line_spacing = -6.0
+	unit.help.visible = false
+	add_child(unit.help)
 	var model := BODY.instantiate()
 	unit.body.add_child(model)
 	add_child(unit.body)

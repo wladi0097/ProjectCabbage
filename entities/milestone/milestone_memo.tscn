@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://entities/milestone/milestone_memo.gd" id="1_script"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_1.wav" id="2_land"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/press_stamp_1.wav" id="3_stamp"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_1.wav" id="4_rustle"]
 [ext_resource type="PackedScene" path="res://assets/meshes/Props/files_folder.blend" id="5_folder"]
 [ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="6_oswald"]
@@ -120,11 +119,6 @@ columns = 3
 
 [node name="Land" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_land")
-bus = &"SFX"
-
-[node name="Stamp" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("3_stamp")
-volume_db = -4.0
 bus = &"SFX"
 
 [node name="Rustle" type="AudioStreamPlayer" parent="."]

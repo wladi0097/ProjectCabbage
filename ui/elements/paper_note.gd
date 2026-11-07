@@ -35,12 +35,15 @@ const PRICE_RULE := Color(0.5, 0.5, 0.49)
 var _form := ""
 var _title := ""
 var _price := ""
+## The card paper's dye (UpgradeCard.paper_tint): a priority form is oxblood here too.
+var _tint := Color.WHITE
 var _body := TextParagraph.new()
 
 
 ## Shows card `card` (an UpgradeDesk.CARDS entry).
 func set_card(card: Dictionary) -> void:
 	_form = tr(UpgradeCard.form_of(card))
+	_tint = UpgradeCard.paper_tint(card)
 	_title = tr(card.title)
 	_price = UpgradeCard.price_text(card.price, card.get("currency", "coins"))
 	_body.clear()
@@ -77,5 +80,5 @@ func _draw() -> void:
 
 ## Draws texture piece `region` across the paper's width at height `y`; returns where it ends.
 func _piece(region: Rect2, y: float) -> float:
-	draw_texture_rect_region(PAPER, Rect2(Vector2(0.0, y), region.size * SCALE), region)
+	draw_texture_rect_region(PAPER, Rect2(Vector2(0.0, y), region.size * SCALE), region, _tint)
 	return y + region.size.y * SCALE

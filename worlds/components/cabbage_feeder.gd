@@ -122,7 +122,8 @@ func _roll() -> void:
 	var cabbage := CABBAGE.instantiate() as Cabbage
 	var save := SaveManager.save
 	cabbage.rotten = not _research_due and is_rotten(save.rotten_unlocked, randf(), _rotten_on_desk)
-	cabbage.research = _research_due or (not cabbage.rotten and is_research(save.stamped.has("research_cabbage"), randf(), save.research_chance))
+	var owed := _research_due
+	cabbage.research = owed or (not cabbage.rotten and is_research(save.stamped.has("research_cabbage"), randf(), save.research_chance))
 	_research_due = false
 	get_parent().add_child(cabbage)
 	_on_desk.append(cabbage)
@@ -135,15 +136,17 @@ func _roll() -> void:
 	roll.tween_property(cabbage, "global_position", global_position, ROLL_TIME) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	roll.tween_property(cabbage, "rotation", cabbage.rotation + Vector3(0, 0, TAU), ROLL_TIME)
-	roll.chain().tween_callback(_fling.bind(cabbage, interactable))
+	roll.chain().tween_callback(_fling.bind(cabbage, interactable, not owed))
 	$Roll.cue($Roll.global_position)
 
 
-func _fling(cabbage: Cabbage, interactable: Interactable) -> void:
+## `catchable`: false for a research unit owed by a purchase (the player was busy paying for it), so
+## it lands without counting as a miss.
+func _fling(cabbage: Cabbage, interactable: Interactable, catchable := true) -> void:
 	if not is_instance_valid(cabbage):
 		return
 	interactable.enabled = true
-	cabbage.in_flight = true
+	cabbage.in_flight = catchable
 	cabbage.collision_mask &= ~PLAY_AREA_LAYER
 	cabbage.freeze = false
 	var target := landing_area.position + Vector3(randf(), 0.0, randf()) * landing_area.size

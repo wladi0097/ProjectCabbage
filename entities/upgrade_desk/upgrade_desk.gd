@@ -4,7 +4,7 @@ extends Node3D
 ## reach TRAY_COINS an inbox tray drops onto the bottom-left desk and the next three cards sail
 ## into it. Drag one onto the approval press by the window, grab the press's red handle and crank
 ## it down: at the bottom the head comes down on the card. Paid from the tally, it is stamped
-## APPROVED and takes effect; once the head lifts it goes on the spike file and the next card is
+## approved and takes effect; once the head lifts it goes on the spike file and the next card is
 ## dealt. Too poor, the head thuds and the card's price blinks red. Cards with currency "findings"
 ## are paid in Findings (¶) instead of coins. A card let go anywhere else
 ## flies back. A card with `needs` is only dealt once all the cards it lists are stamped. Further
@@ -26,7 +26,7 @@ const CARDS := [
 	{id = "junior_associate", price = 35, title = "HIRE A JUNIOR ASSOCIATE", needs = ["radio"],
 		body = "Unpaid. Grateful.\nA hired hand rests at the bottom of the desk. Every 8 s it takes a unit off the mat and throws it out of the window to sell at your price."},
 	{id = "acceptance_meter", price = 40, title = "ACCEPTANCE METER", needs = ["radio"],
-		body = "Measured. Managed.\nA gauge on the slate shows the chance a unit sells at your price. The street also pays 20% more before it refuses units."},
+		body = "Measured. Managed.\nA gauge on the slate shows the chance a unit sells at your price. Also, every unit now sells even at a 20% higher price."},
 	{id = "quality_assurance", price = 55, title = "ESTABLISH A RESEARCH LAB", needs = ["junior_associate"],
 		body = "Every unit is a lesson.\nA research lab fills the window's left third. Flick a unit in (it is used up): 5 s later a 1 Finding (¶) token pops out. Sweep your hand over it."},
 	# Minis (entities/mini_drop/): free units, no stock, sold at mini_value of the chalked price; the
@@ -34,7 +34,7 @@ const CARDS := [
 	{id = "mini_cabbages", price = 45, title = "PILOT SCHEME: MINI UNITS", needs = ["junior_associate"],
 		body = "Smaller units. Same paperwork.\nAbout every 20 s a free mini unit falls onto the mat (6 at most). It uses no stock and sells for 1/4 of your price."},
 	{id = "street_posters", price = 10, currency = "findings", title = "STREET POSTER CAMPAIGN",
-		needs = ["quality_assurance"], body = "Findings show the street wants cabbage.\nThe street pays 50% more before it refuses units."},
+		needs = ["quality_assurance"], body = "Findings show the street wants cabbage.\nEvery unit now sells even at a 50% higher price: raise yours on the slate to cash in."},
 	{id = "projector", price = 75, title = "REQUISITION A PROJECTOR", needs = ["quality_assurance"],
 		body = "Attendance is mandatory.\nA PULL tab hangs from the top of the screen: drag it down to open the upgrade tree. Hold the mouse on an upgrade to buy it with coins."},
 	# Research directives (`research`): a projector node naming one in its own `research` is shown
@@ -57,19 +57,19 @@ const CARDS := [
 	{id = "mini_tube", price = 160, title = "PNEUMATIC DELIVERY TUBE", needs = ["mini_cabbages"],
 		body = "Minis no longer touch the desk.\nMinis fall into a tube instead and roll out of the window by themselves. Refused ones still land on the mat."},
 	{id = "performance_review", price = 25, currency = "findings", research = true, title = "RESEARCH: TIME-AND-MOTION STUDY",
-		needs = ["research_inspection", "pricing_consultant"], body = "Every motion is timed.\nHired hands set off every 4 s instead of 8 s. Unlocks Hire Associate V and Brisk Walk II on the projector."},
+		needs = ["research_inspection", "pricing_consultant"], body = "Every motion is timed.\nHired hands and lab hands set off every 4 s instead of 8 s. Unlocks Hire Associate V and Brisk Walk II on the projector."},
 	# Hired hands sell rotten units (fined) until this memo, then leave them on the mat until
 	# WASTE HANDLING PROTOCOL (projector) has them bin them: entities/associate/ (pick_target).
 	{id = "spoilage_memo", price = 40, title = "MEMO: DO NOT HANDLE SPOILED UNITS",
-		needs = ["catch_combo"], body = "Spoilage is not your concern.\nHired hands stop throwing rotten units out of the window (10× fines) and leave them on the mat."},
+		needs = ["catch_combo"], body = "Spoilage is not your concern.\nHired hands stop throwing rotten (grey) units out of the window, where each is fined 10× your price, and leave them on the mat."},
 	{id = "research_assistant", price = 250, title = "HIRE A LAB ASSISTANT", needs = ["research_cabbage"],
-		body = "The lab coat is deducted from pay.\nA lab hand (blue cuff) joins at the bottom left. On the hired hands' timer, when the research lab has room, it tosses a unit from the mat into it."},
+		body = "The lab coat is deducted from pay.\nA lab hand (blue cuff) joins at the bottom left. Each time the hired hands set off (every 8 s at first), it throws a unit from the mat into the research lab, if the lab has room."},
 	{id = "tube_lever", price = 350, title = "TUBE DIVERSION LEVER", needs = ["mini_tube"],
 		body = "Some units are worth more as data.\nA lever by the bin: SALES / SPLIT / RESEARCH (drag or click). RESEARCH drops tube minis into the research lab like a thrown unit (back onto the mat if the lab is full); SPLIT, every other one."},
 	{id = "lab_priority", price = 40, currency = "findings", title = "MEMO: LAB PRIORITY", needs = ["research_assistant"],
 		body = "Research units are not for sale.\nLab hands take blue research units first. Other hired hands stop selling them."},
 	{id = "managerial_oversight", price = 30, currency = "findings", title = "REQUEST MANAGERIAL OVERSIGHT",
-		needs = ["performance_review"], body = "Someone will be checking.\nEvery 2.5-4 min the manager asks for a quota of units in 45 s (125% of your recent pace). Met: quota × your price in coins. Missed: a memo."},
+		needs = ["performance_review"], body = "Someone will be checking.\nEvery 2.5-4 min a manager raps on the window and sets a quota: sell that many units in 45 s (your pace over the last 5 min, plus 25%). Met: quota × your price in coins. Missed: just a memo."},
 	{id = "window_targets", price = 40, currency = "findings", title = "STREET TARGET PRACTICE",
 		needs = ["catch_combo"], body = "The street is given a target.\nAbout every 60 s a lamp lights a crate in the street for 15 s. A unit sold out of the window in line with it pays 10× its coins on top."},
 	{id = "research_materials", price = 50, currency = "findings", research = true, title = "RESEARCH: MATERIALS HANDLING",
@@ -82,17 +82,17 @@ const CARDS := [
 		needs = ["research_materials"], body = "It does not ask why.\nA robot docks at the mat's left edge. It gathers up to 8 coins per trip off the mat and banks them, so you don't have to sweep."},
 	# No effect here: entities/vacuum/ takes the research lab's slips once it is stamped.
 	{id = "token_recovery", price = 600, title = "EXPANDED RECOVERY MANDATE",
-		needs = ["coin_collector"], body = "Paper is also money, eventually.\nThe robots also pick up Findings tokens in front of the research lab (one per coin slot) and file them when they dock."},
+		needs = ["coin_collector"], body = "Paper is also money, eventually.\nThe robots also pick up Findings tokens in front of the research lab (each takes up one coin's space in the bag) and bank them as Findings when they dock."},
 	# No effect here: entities/ledger/ shows the ledger once it is stamped.
 	{id = "stats_ledger", price = 120, currency = "findings", title = "REQUISITION A LEDGER",
 		needs = ["managerial_oversight"], body = "Someone may read it.\nA binder on the left of the desk: click it to read your sales, coins over time, staff and approvals. No other effect."},
 	{id = "research_sentiment", price = 400, currency = "findings", research = true, title = "RESEARCH: CONSUMER SENTIMENT",
-		needs = ["research_materials"], body = "The street is asked how it feels.\nUnlocks Slogan IV and Brassica for the Masses on the projector (each: the street pays 25% more)."},
+		needs = ["research_materials"], body = "The street is asked how it feels.\nUnlocks Slogan IV and Brassica for the Masses on the projector (each: every unit sells even at a 25% higher price)."},
 	{id = "golden_lamp", price = 3000, currency = "findings", title = "REQUISITION A DESK LAMP",
 		needs = ["coin_collector"], body = "Nobody knows why.\nA lamp at the back right. About every 150 s it glows gold for 20 s: meanwhile every sale pays 5×."},
-	# No effect here: opens the projector's MAT ALLOWANCE (Projector.MAT), the only way past 2 units on the mat.
+	# One more unit on the mat now (apply), and the projector's mat chain (Projector.MAT_FIRST..MAT_MAX) for the rest.
 	{id = "mat_allowance", price = 3000, title = "APPLY FOR AN EXTENDED MAT ALLOWANCE",
-		needs = ["coin_collector"], body = "Floor space is a privilege, not a right.\nOpens MAT ALLOWANCE on the projector: one more unit fits on the mat per allowance bought, up to 20. Each allowance costs more than the last."},
+		needs = ["coin_collector", "desk_space"], body = "Floor space is a privilege, not a right.\nOne more unit fits on the mat now (2 to 3). Then the projector offers one more unit at a time, up to 20, each dearer than the last."},
 	# Stage 2 (GameEvents "supply_warning"): only dealt once that event has started (`event`), into a
 	# free tray slot. entities/farm_tv/ shows the remote and the TV, entities/farm_screen/ the farm.
 	{id = "family_farm", price = 2500, title = "ACQUIRE THE FAMILY FARM", event = "supply_warning",
@@ -133,7 +133,7 @@ const RIFFLE_TIME := 0.2
 ## STACK_SIZES[i].x papers underneath show STACK_SIZES[i].y sheets.
 const STACK_SIZES: Array[Vector2i] = [Vector2i(3, 2), Vector2i(10, 5), Vector2i(1 << 30, 10)]
 const PAPER_NOTE := preload("res://ui/elements/paper_note.tscn")
-## Then it lies this long on the pad so the APPROVED can be read.
+## Then it lies this long on the pad before it goes on the spike.
 const SHOW_TIME := 0.45
 const SHOCK_CHECK := 0.5
 
@@ -212,6 +212,7 @@ func _process(delta: float) -> void:
 	_shock_in -= delta
 	if _shock_in <= 0.0 and Events.warning_due(save):
 		_start(save, "supply_warning")
+		_make_room()
 		_deal()
 	if _shock_in <= 0.0 and Events.shock_due(save):
 		_start(save, "supply_shock")
@@ -267,9 +268,12 @@ static func start_warning(save: SaveGame) -> void:
 	save.warning_sold = save.sold
 
 
-## Wholesale prices explode; with the farm already bought, the wholesalers' squeeze starts now.
+## Wholesale prices explode: the standing order is switched off (the player may switch it back on),
+## and with the farm already bought, the wholesalers' squeeze starts now.
 static func start_shock(save: SaveGame) -> void:
 	save.supply_shock = true
+	if save.stamped.has("auto_procurement"):  # Without the card there is no order to suspend: it starts on.
+		save.auto_buy = false
 	if save.stamped.has("family_farm"):
 		save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME
 
@@ -304,6 +308,9 @@ static func migrate(save: SaveGame) -> void:
 			save.reports.append("supply_warning")
 	if save.migration < 2:
 		Projector.migrate_merged(save)  # The projector's merged chains (desk space, packs, coin units...).
+	elif save.migration < 3:
+		Projector.migrate_merged(save, Projector.MERGED_PACKS)  # The slimmed pack branch (MERGED covers it before 2).
+	Projector.migrate_mat(save)  # The mat allowance, once one repeatable node, now a chain.
 	save.migration = SaveGame.MIGRATION
 	save.sale_price = mini(save.sale_price, PriceSlate.max_price(save.marketing))
 
@@ -326,6 +333,9 @@ static func apply(id: String, save: SaveGame) -> void:
 			save.slate_unlocked = true
 		"desk_space":
 			save.desk_capacity += 1
+		"mat_allowance":  # The mat to 3 (an old save's may hold more: its chain nodes count as bought).
+			save.desk_capacity = maxi(save.desk_capacity, Projector.MAT_FIRST - 1)
+			Projector.migrate_mat(save)
 		"junior_associate":
 			save.hands = maxi(save.hands, 1)
 		"acceptance_meter":
@@ -461,6 +471,19 @@ func _slot(index: int) -> Vector3:
 
 func _pad() -> Vector3:
 	return _press.transform * PAD
+
+
+## A full tray when the demo's warning starts (Events.warning_due): the last card not on the press
+## sinks out, so the farm card is dealt in its place (it comes back once a slot is free).
+func _make_room() -> void:
+	if _offered.size() < OFFERED:
+		return
+	for i in range(_offered.size() - 1, -1, -1):
+		var card := _offered[i]
+		if card != _on_press:
+			_offered.remove_at(i)
+			card.fly_to(Vector3(0, -10, 0), false).finished.connect(card.queue_free)
+			return
 
 
 ## Fills the free slots from the queue (new cards sail in one after another) and moves the cards

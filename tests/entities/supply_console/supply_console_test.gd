@@ -3,6 +3,16 @@ extends GdUnitTestSuite
 const Console := preload("res://entities/supply_console/supply_console.gd")
 const Slate := preload("res://entities/price_slate/price_slate.gd")
 
+var _real_save: SaveGame
+
+
+func before_test() -> void:
+	_real_save = SaveManager.save
+
+
+func after_test() -> void:
+	SaveManager.save = _real_save
+
 
 func test_the_pack_price_factor_is_base_one_plus_pressure_plus_noise() -> void:
 	assert_float(Console.next_factor(0.0, 0.0)).is_equal_approx(1.0, 0.0001)
@@ -34,29 +44,42 @@ func test_before_the_shock_a_pack_unit_costs_the_textbook_unit_cost_whatever_the
 	var save := SaveGame.new()
 	save.marketing = 4.0
 	assert_float(Console.crate_share(false, 600.0)).is_equal(0.0)
-	assert_float(Console.unit_cost(save)).is_equal_approx(Console.UNIT_COST, 0.0001)
+	assert_float(Console.crate_floor(save)).is_equal(0.0)
 
 
 func test_after_the_shock_a_crate_unit_costs_sixty_percent_of_the_street_price() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
-	assert_float(Console.unit_cost(save)).is_equal_approx(0.6 * Slate.ref_price(1.0, 1.0), 0.0001)
+	assert_float(Console.crate_floor(save)).is_equal_approx(0.6 * Slate.ref_price(1.0, 1.0), 0.0001)
 	save.marketing = 2.0
-	assert_float(Console.unit_cost(save)).is_equal_approx(0.6 * Slate.ref_price(2.0, 1.0), 0.0001)
+	assert_float(Console.crate_floor(save)).is_equal_approx(0.6 * Slate.ref_price(2.0, 1.0), 0.0001)
 
 
-func test_a_crate_unit_never_costs_less_than_the_textbook_unit_cost() -> void:
+func test_a_crate_unit_never_costs_less_than_the_textbook_pack_price() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
 	save.marketing = 0.1
-	assert_float(Console.unit_cost(save)).is_equal_approx(Console.UNIT_COST, 0.0001)
+	assert_int(Console.pack_price(1.0, 10, 1.0, Console.UNIT_COST, Console.crate_floor(save))).is_equal(Console.pack_price(1.0, 10))
+
+
+func test_neither_the_pack_discount_nor_a_low_ticker_cheapens_a_stage_two_crate() -> void:
+	var save := SaveGame.new()
+	save.supply_shock = true
+	save.marketing = 5.0
+	var street := Slate.ref_price(save.marketing, 1.0)
+	var shock := Console.pack_price(0.5, 10, 0.7, Console.UNIT_COST, Console.crate_floor(save)) / 10.0
+	assert_float(shock).is_equal_approx(Console.SHOCK_SHARE * street, 0.1)
+	save.squeeze_left = Console.SQUEEZE_TIME + Console.EASE_TIME
+	save.sale_price = roundi(street)
+	var squeeze := Console.pack_price(0.5, 10, 0.7, Console.UNIT_COST, Console.crate_floor(save)) / 10.0
+	assert_float(squeeze).is_greater(save.sale_price)
 
 
 func test_during_the_squeeze_a_crate_unit_costs_more_than_the_street_pays_for_it() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
 	save.squeeze_left = Console.SQUEEZE_TIME + Console.EASE_TIME
-	assert_float(Console.unit_cost(save)).is_greater(Slate.ref_price(save.marketing, 1.0))
+	assert_float(Console.crate_floor(save)).is_greater(Slate.ref_price(save.marketing, 1.0))
 	save.squeeze_left = Console.EASE_TIME
 	assert_float(Console.crate_share(true, save.squeeze_left)).is_equal_approx(Console.SQUEEZE_SHARE, 0.0001)
 
@@ -98,3 +121,21 @@ func test_a_made_up_history_walks_back_from_the_current_price_within_the_band() 
 	for i in 4:
 		assert_float(walked[i]).is_equal_approx([1.4, 1.5, 1.2, 1.4][i], 0.0001)
 	assert_float(Console.walk_back(1.45, PackedFloat32Array([-0.2]))[0]).is_equal_approx(1.5, 0.0001)
+
+
+func test_the_auto_lamp_and_switch_follow_the_standing_order_when_the_shock_switches_it_off() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["auto_procurement"])
+	SaveManager.save = save
+	var console: SupplyConsole = auto_free(load("res://entities/supply_console/supply_console.tscn").instantiate())
+	add_child(console)
+	assert_that(console._auto.modulate).is_equal(Console.AMBER)
+	assert_float(console._toggle._pivot.rotation.x).is_equal_approx(-LightSwitch.TILT, 0.001)
+
+	UpgradeDesk.start_shock(save)
+	console._process(0.0)
+	await await_millis(int(LightSwitch.FLICK_TIME * 1000.0) + 100)
+
+	assert_bool(save.auto_buy).is_false()
+	assert_that(console._auto.modulate).is_equal(Console.AUTO_OFF)
+	assert_float(console._toggle._pivot.rotation.x).is_equal_approx(LightSwitch.TILT, 0.001)

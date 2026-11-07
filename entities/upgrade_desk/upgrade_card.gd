@@ -5,6 +5,8 @@ extends StaticBody3D
 ## The hand pinches it by its near left corner; held, the card hangs from that pinch. Let go, it emits
 ## `dropped` and the UpgradeDesk decides where it goes. Every move is a short paper arc with a
 ## flutter, so cards never teleport. Cabbages pass through it (its own collision layer).
+## A stage-changing card (an UpgradeDesk.CARDS entry with an `event`, like the family farm) is a
+## priority form: the same stock dyed oxblood (PRIORITY_TINT), so it stands out in the tray.
 
 signal dropped(card: UpgradeCard)
 ## Hovered or not; `instant` when it was picked up, so its text goes at once instead of fading.
@@ -13,6 +15,8 @@ signal hover_changed(card: UpgradeCard, on: bool, instant: bool)
 const SIZE := Vector2(0.36, 0.2)
 const LAYER := 8
 const MATERIAL := preload("res://assets/materials/card_paper.tres")
+## The priority form's dye, multiplied into the card paper (above 1 to lift the dark stock).
+const PRIORITY_TINT := Color(1.3, 0.86, 0.8)
 const DRAG_HEIGHT := 0.9
 ## Hovered in the tray, the paper lifts this far off the stack over HOVER_TIME.
 const HOVER_LIFT := 0.035
@@ -31,10 +35,7 @@ const BLINK_TIME := 0.12
 const SHAKE := 0.012
 ## Off-white print on dark carbon stock.
 const INK := Color(0.9, 0.89, 0.84)
-const STAMP_RED := Color(0.85, 0.18, 0.12)
 const DENIED_RED := Color(0.9, 0.12, 0.08)
-## The impression lands this much oversized, then settles.
-const STAMP_SLAM := 1.35
 const TITLE_FONT := preload("res://assets/fonts/Oswald.ttf")
 ## Fine pixels and big font sizes keep the text crisp.
 const PIXEL := 0.0003
@@ -64,11 +65,12 @@ var _grip := Vector3.ZERO
 var _look := Node3D.new()
 var _heading: Label3D
 var _price: Label3D
-var _stamp: Node3D
 var _interactable := Interactable.new()
 var _lifting: Tween
 var _flying: Tween
 var _blinking: Tween
+## The card paper dyed PRIORITY_TINT, built once.
+static var _priority_material: StandardMaterial3D
 
 
 func _init(card: Dictionary) -> void:
@@ -85,7 +87,7 @@ func _init(card: Dictionary) -> void:
 	var paper := MeshInstance3D.new()
 	paper.mesh = PlaneMesh.new()
 	(paper.mesh as PlaneMesh).size = SIZE
-	paper.material_override = MATERIAL
+	paper.material_override = MATERIAL if paper_tint(card) == Color.WHITE else _priority()
 	_look.add_child(paper)
 	_text(form_of(card), Vector3(0, 0.002, -0.0825), fit_size(tr(form_of(card)), FORM_SIZE, FORM_BOX), TITLE_FONT)
 	# Long titles (German ones above all) print smaller so they stay between the form line and the price box.
@@ -93,7 +95,6 @@ func _init(card: Dictionary) -> void:
 	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var shown := price_text(price, currency)
 	_price = _text(shown, PRICE_AT, price_size(shown), TITLE_FONT)
-	_build_stamp()
 	_interactable.carried = true
 	add_child(_interactable)
 	_interactable.hovered.connect(func() -> void: hover_changed.emit(self, true, false))
@@ -179,47 +180,16 @@ static func flutter_at(p: float) -> float:
 	return FLUTTER * sin(p * TAU * 1.5) * (1.0 - p)
 
 
-## Stamped: a boxed red APPROVED slams onto the paper a little oversized and settles, and the
-## paper gives under the head.
+## Stamped: the paper gives under the head and the card is done (no more pinching).
 func stamp(animate := true) -> void:
-	_stamp.visible = true
 	_interactable.enabled = false
 	# Never picked up again: no hand pinch or drag to keep up with.
 	set_process(false)
 	if not animate:
 		return
-	var slam := create_tween()
-	_stamp.scale = Vector3.ONE * STAMP_SLAM
-	slam.tween_property(_stamp, "scale", Vector3.ONE * 0.95, 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	slam.tween_property(_stamp, "scale", Vector3.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	var squash := create_tween()
 	squash.tween_property(_look, "scale", Vector3(1.04, 1.0, 1.04), 0.04)
 	squash.tween_property(_look, "scale", Vector3.ONE, 0.3).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-
-
-## The rubber-stamp impression, hidden until stamped: APPROVED in a ruled box, turned on the paper.
-func _build_stamp() -> void:
-	_stamp = Node3D.new()
-	_stamp.position = Vector3(-0.02, 0.003, 0.045)
-	_stamp.rotation.y = 0.12
-	_stamp.visible = false
-	_look.add_child(_stamp)
-	var label := _text("APPROVED", Vector3.ZERO, 150, TITLE_FONT)
-	label.modulate = STAMP_RED
-	label.reparent(_stamp, false)
-	var ink := StandardMaterial3D.new()
-	ink.albedo_color = STAMP_RED
-	var text := TITLE_FONT.get_string_size(tr("APPROVED"), HORIZONTAL_ALIGNMENT_LEFT, -1, 150) * PIXEL
-	var box := Vector2(text.x + 0.024, text.y * 0.78)
-	const RULE := 0.005
-	for side in [Vector3(0, 0, -1), Vector3(0, 0, 1), Vector3(-1, 0, 0), Vector3(1, 0, 0)]:
-		var bar := MeshInstance3D.new()
-		bar.mesh = PlaneMesh.new()
-		(bar.mesh as PlaneMesh).size = Vector2(RULE, box.y + RULE) if side.x != 0 else Vector2(box.x + RULE, RULE)
-		bar.material_override = ink
-		bar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		bar.position = Vector3(side.x * box.x, 0.0, side.z * box.y) * 0.5
-		_stamp.add_child(bar)
 
 
 ## Too poor: the card shudders and its heading and prices flash red twice.
@@ -293,4 +263,19 @@ static func fits(shown: String, size: int, box: Vector2) -> bool:
 
 ## The form line printed across the top of card `card` (a CARDS entry).
 static func form_of(card: Dictionary) -> String:
+	if card.has("event"):
+		return "FORM 0-P  PRIORITY ACQUISITION"
 	return "FORM 7-R  RESEARCH DIRECTIVE" if card.get("research", false) else "FORM 7-B  REQUISITION"
+
+
+## What card `card`'s paper is dyed with: PRIORITY_TINT for a stage-changing card (with an `event`),
+## else white (the plain stock).
+static func paper_tint(card: Dictionary) -> Color:
+	return PRIORITY_TINT if card.has("event") else Color.WHITE
+
+
+static func _priority() -> StandardMaterial3D:
+	if _priority_material == null:
+		_priority_material = MATERIAL.duplicate()
+		_priority_material.albedo_color = PRIORITY_TINT
+	return _priority_material

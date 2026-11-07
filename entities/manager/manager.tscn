@@ -7,7 +7,6 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/manager_knock_2.wav" id="sfx_knock_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/manager_knock_3.wav" id="sfx_knock_3"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tick"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/press_stamp_1.wav" id="sfx_stamp"]
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_knock"]
 random_pitch = 1.05
@@ -46,9 +45,4 @@ bus = &"SFX"
 [node name="Tick" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("sfx_tick")
 volume_db = -6.0
-bus = &"SFX"
-
-[node name="Stamp" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("sfx_stamp")
-volume_db = -4.0
 bus = &"SFX"

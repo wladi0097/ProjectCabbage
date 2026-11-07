@@ -221,6 +221,61 @@ func test_a_flying_cabbage_that_hits_something_is_no_longer_catchable() -> void:
 	assert_bool((cabbage.get_node("Interactable") as Interactable).catchable).is_false()
 
 
+## Counts the misses reported to the "catch_combo" group.
+class MissLog:
+	extends Node
+	var misses := 0
+
+	func missed() -> void:
+		misses += 1
+
+	func caught(_at: Vector3) -> void:
+		pass
+
+
+func miss_log() -> MissLog:
+	var tally := MissLog.new()
+	tally.add_to_group(&"catch_combo")
+	add_child(auto_free(tally))
+	return tally
+
+
+func test_a_chute_unit_landing_uncaught_is_a_miss() -> void:
+	var tally := miss_log()
+	var cabbage := spawn()
+	cabbage.in_flight = true
+	cabbage.body_entered.emit(cabbage)
+
+	assert_int(tally.misses).is_equal(1)
+
+
+func test_a_caught_unit_is_no_miss_when_it_later_touches_something() -> void:
+	var tally := miss_log()
+	var cabbage := spawn()
+	cabbage.set_physics_process(false)
+	cabbage.in_flight = true
+	(cabbage.get_node("Interactable") as Interactable).grabbed.emit()
+	cabbage.body_entered.emit(cabbage)
+
+	assert_int(tally.misses).is_equal(0)
+
+
+func test_a_unit_bumping_about_on_the_mat_is_no_miss() -> void:
+	var tally := miss_log()
+	spawn().body_entered.emit(null)
+
+	assert_int(tally.misses).is_equal(0)
+
+
+func test_a_mini_falling_from_upstairs_never_breaks_the_streak() -> void:
+	var tally := miss_log()
+	var cabbage := spawn(func(c: Cabbage) -> void: c.mini = true)
+	cabbage.in_flight = true
+	cabbage.body_entered.emit(cabbage)
+
+	assert_int(tally.misses).is_equal(0)
+
+
 func test_a_held_cabbage_floats_and_falls_again_once_let_go() -> void:
 	var cabbage := spawn()
 	var interactable := cabbage.get_node("Interactable") as Interactable
@@ -262,3 +317,11 @@ func test_a_cabbage_thrown_back_in_falls_and_collides_again() -> void:
 	assert_int(cabbage.collision_layer).is_equal(layer)
 	assert_vector(cabbage.linear_velocity).is_equal(Vector3(0, 1, 2))
 	assert_bool(cabbage.away).is_true()
+
+
+func test_a_hidden_unit_thrown_back_in_shows_as_it_is_thrown() -> void:
+	var cabbage := spawn()
+	cabbage.visible = false
+	cabbage.throw_in(Vector3(0, 1, -1), Vector3(0, 1, 2), 0.2, 1.0)
+
+	assert_bool(cabbage.visible).is_true()

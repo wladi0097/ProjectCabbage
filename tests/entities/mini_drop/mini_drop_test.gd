@@ -2,6 +2,16 @@ extends GdUnitTestSuite
 
 const SCENE := preload("res://entities/mini_drop/mini_drop.tscn")
 
+var _real_save: SaveGame
+
+
+func before_test() -> void:
+	_real_save = SaveManager.save
+
+
+func after_test() -> void:
+	SaveManager.save = _real_save
+
 
 func _routes(split: float, count: int) -> String:
 	var owed := 0.0
@@ -81,7 +91,6 @@ func _lever_parts_shown(drop: MiniDrop) -> Array:
 
 
 func test_the_mini_levers_only_appear_once_the_switch_lever_is_bought() -> void:
-	var real_save := SaveManager.save
 	SaveManager.save = SaveGame.new()
 	SaveManager.save.stamped = PackedStringArray(["mini_tube"])
 	var drop: MiniDrop = auto_free(SCENE.instantiate())
@@ -93,14 +102,11 @@ func test_the_mini_levers_only_appear_once_the_switch_lever_is_bought() -> void:
 	await await_idle_frame()
 	await await_idle_frame()
 	assert_array(_lever_parts_shown(drop)).not_contains([false])
-	SaveManager.save = real_save
 
 
 func test_a_save_that_already_has_the_switch_lever_loads_with_the_lever_in_place() -> void:
-	var real_save := SaveManager.save
 	SaveManager.save = SaveGame.new()
 	SaveManager.save.stamped = PackedStringArray(["mini_tube", "tube_lever"])
 	var drop: MiniDrop = auto_free(SCENE.instantiate())
 	add_child(drop)
 	assert_array(_lever_parts_shown(drop)).not_contains([false])
-	SaveManager.save = real_save

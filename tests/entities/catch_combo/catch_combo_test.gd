@@ -125,10 +125,33 @@ func test_a_price_refusal_does_not_break_the_catch_streak() -> void:
 	catch_times(combo, 3)
 	combo._process(SaveManager.save.combo_window - 0.1)
 	combo.hold()
-	combo._process(SaveManager.save.combo_window - 0.1)
+	combo._process(Combo.HOLD_LIMIT - 0.1)
+	combo.unhold()
+	combo._process(0.05)
 
 	assert_int(combo.streak).is_equal(3)
 	assert_int(combo.steps).is_equal(3)
+
+
+func test_a_price_refusal_pauses_the_window_rather_than_refilling_it() -> void:
+	var combo := spawn()
+	catch_times(combo, 3)
+	combo._process(SaveManager.save.combo_window - 0.1)
+	combo.hold()
+	combo.unhold()
+	combo._process(0.2)
+
+	assert_int(combo.steps).is_equal(2)
+
+
+func test_a_refused_unit_never_thrown_back_pauses_the_window_only_so_long() -> void:
+	var combo := spawn()
+	catch_times(combo, 3)
+	combo.hold()
+	combo._process(Combo.HOLD_LIMIT + 0.1)
+	combo._process(SaveManager.save.combo_window + 0.05)
+
+	assert_int(combo.steps).is_equal(2)
 
 
 func test_the_streak_ends_once_the_combo_has_decayed_to_nothing() -> void:
@@ -141,11 +164,58 @@ func test_the_streak_ends_once_the_combo_has_decayed_to_nothing() -> void:
 	assert_int(combo.streak).is_equal(1)
 
 
-func test_the_world_wires_price_refusals_to_the_combo_hold() -> void:
+func test_the_world_wires_price_refusals_to_the_combo_hold_and_release() -> void:
 	var world := (load("res://worlds/MainStoryWorld.tscn") as PackedScene).get_state()
 	var wired := []
 	for i in world.get_connection_count():
 		if world.get_connection_target(i) == NodePath("CatchCombo"):
 			wired.append([world.get_connection_signal(i), world.get_connection_method(i)])
 
-	assert_array(wired).contains([[&"refused", &"hold"], [&"thrown_back", &"hold"]])
+	assert_array(wired).contains([[&"refused", &"hold"], [&"thrown_back", &"unhold"]])
+
+
+func test_a_missed_unit_resets_the_streak_and_the_multiplier() -> void:
+	var combo := spawn()
+	catch_times(combo, 4)
+	combo.missed()
+
+	assert_int(combo.streak).is_equal(0)
+	assert_int(combo.steps).is_equal(0)
+	assert_float(Combo.multiplier(combo.steps, SaveManager.save.combo_step, SaveManager.save.combo_cap)).is_equal(1.0)
+
+
+func test_after_a_miss_the_next_catch_starts_a_new_streak() -> void:
+	var combo := spawn()
+	catch_times(combo, 4)
+	combo.missed()
+	combo.caught(Vector3.ZERO)
+
+	assert_int(combo.streak).is_equal(1)
+	assert_int(combo.steps).is_equal(1)
+
+
+func test_the_combo_stencil_is_faded_paint_never_fully_opaque() -> void:
+	var combo := spawn()
+	combo.caught(Vector3.ZERO)
+
+	var label := combo.get_node("Label") as Label3D
+	assert_bool(label.visible).is_true()
+	assert_float(label.modulate.a).is_less_equal(Combo.PAINT + 0.001)
+	assert_float(Combo.PAINT).is_less(1.0)
+
+
+func test_a_miss_counts_only_when_the_player_could_have_caught_it() -> void:
+	assert_bool(Combo.missed_counts(false, false, false)).is_true()
+	assert_bool(Combo.missed_counts(true, false, false)).is_false()
+	assert_bool(Combo.missed_counts(false, true, false)).is_false()
+	assert_bool(Combo.missed_counts(false, false, true)).is_false()
+
+
+func test_a_unit_landing_while_the_camera_is_at_the_farm_tv_keeps_the_streak() -> void:
+	var combo := spawn()
+	catch_times(combo, 3)
+	FarmTv.away = true
+	combo.missed()
+	FarmTv.away = false
+
+	assert_int(combo.streak).is_equal(3)

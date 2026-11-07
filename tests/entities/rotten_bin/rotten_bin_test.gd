@@ -1,6 +1,36 @@
 extends GdUnitTestSuite
 
 const Bin := preload("res://entities/rotten_bin/rotten_bin.gd")
+const Report := preload("res://entities/boss_report/boss_report.gd")
+const BIN_SCENE := preload("res://entities/rotten_bin/rotten_bin.tscn")
+const BEFORE_COMBO: Array[String] = ["price_slate", "radio", "desk_space", "junior_associate", "acceptance_meter",
+		"mini_cabbages", "quality_assurance", "street_posters", "projector", "research_inspection",
+		"pricing_consultant", "research_cabbage", "mini_tube"]
+
+var _real_save: SaveGame
+
+
+func before_test() -> void:
+	_real_save = SaveManager.save
+
+
+func after_test() -> void:
+	SaveManager.save = _real_save
+
+
+func _dealt_up_to_combo() -> SaveGame:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(BEFORE_COMBO)
+	save.tray_unlocked = true
+	return save
+
+
+func test_a_cabbage_over_the_mouth_and_low_enough_falls_in() -> void:
+	assert_bool(Bin.in_mouth(Vector3(0.95, 0.76, 1.2), Vector3(1.0, 0.9, 1.1), 0.25)).is_true()
+
+
+func test_a_cabbage_beside_the_bin_does_not_fall_in() -> void:
+	assert_bool(Bin.in_mouth(Vector3(0.95, 0.76, 1.2), Vector3(0.5, 0.9, 1.1), 0.25)).is_false()
 
 
 func test_a_unit_lying_beside_the_mouth_drops_in_however_far_below_the_rim() -> void:
@@ -21,12 +51,60 @@ func test_a_rebate_is_a_rounded_share_of_the_chalked_price() -> void:
 	assert_int(Bin.rebate_for(2.0, 7)).is_equal(14)
 
 
+func test_binning_pays_no_rebate_until_one_is_bought() -> void:
+	assert_int(Bin.rebate_for(0.0, 4)).is_equal(0)
+
+
+func test_a_fresh_save_gets_no_rotten_units() -> void:
+	assert_bool(Bin.rotten_due(SaveGame.new())).is_false()
+
+
+func test_no_rotten_units_before_the_catch_combo_is_stamped() -> void:
+	assert_bool(Bin.rotten_due(_dealt_up_to_combo())).is_false()
+
+
+func test_stamping_the_catch_combo_starts_rot_and_its_boss_note() -> void:
+	var save := _dealt_up_to_combo()
+	save.stamped.append("catch_combo")
+
+	assert_bool(Bin.rotten_due(save)).is_true()
+	assert_array(Report.due(save)).contains(["rotten_units"])
+
+
+func test_the_bin_arrives_free_with_the_first_rotten_units() -> void:
+	var save := _dealt_up_to_combo()
+	save.stamped.append("catch_combo")
+	var coins := save.coins
+	var findings := save.findings
+	SaveManager.save = save
+	var bin: Node3D = auto_free(BIN_SCENE.instantiate())
+	add_child(bin)
+	assert_bool(bin.visible).is_false()
+
+	bin._process(0.0)
+
+	assert_bool(save.rotten_unlocked).is_true()
+	assert_bool(bin.visible).is_true()
+	assert_int(save.coins).is_equal(coins)
+	assert_int(save.findings).is_equal(findings)
+
+
+func test_a_save_with_rotten_units_already_on_loads_with_the_bin_on_the_desk() -> void:
+	var save := _dealt_up_to_combo()
+	save.rotten_unlocked = true
+	SaveManager.save = save
+	var bin: Node3D = auto_free(BIN_SCENE.instantiate())
+	add_child(bin)
+
+	assert_bool(bin.visible).is_true()
+
+
 func _bin_with_cabbage(setup: Callable) -> Array:
 	var save := SaveGame.new()
 	save.rotten_unlocked = true
 	save.stock = 5
 	SaveManager.save = save
-	var bin: RottenBin = auto_free(preload("res://entities/rotten_bin/rotten_bin.tscn").instantiate())
+	var bin: RottenBin = auto_free(BIN_SCENE.instantiate())
 	add_child(bin)
 	var cabbage := preload("res://entities/cabbage/cabbage.tscn").instantiate() as Cabbage
 	cabbage.rotten = true
@@ -38,33 +116,43 @@ func _bin_with_cabbage(setup: Callable) -> Array:
 
 
 func test_a_unit_rolled_or_bumped_into_the_mouth_is_popped_back_out_not_binned() -> void:
-	var was: SaveGame = SaveManager.save
 	var got := _bin_with_cabbage(func(_c: Cabbage) -> void: pass)
 	var cabbage: Cabbage = got[0]
 
 	assert_bool(cabbage.sold).is_false()
 	assert_int((got[1] as SaveGame).stock).is_equal(5)
 	assert_float(cabbage.linear_velocity.y).is_greater(0.0)
-	SaveManager.save = was
 
 
 func test_a_unit_the_player_lets_go_of_over_the_mouth_is_binned() -> void:
-	var was: SaveGame = SaveManager.save
 	var got := _bin_with_cabbage(func(c: Cabbage) -> void: c.get_node("Interactable").released.emit())
 
 	assert_bool((got[0] as Cabbage).sold).is_true()
 	assert_int((got[1] as SaveGame).stock).is_equal(4)
-	SaveManager.save = was
+
+
+func test_a_unit_let_go_away_from_the_bin_that_rolls_in_is_popped_back_out() -> void:
+	var got := _bin_with_cabbage(func(c: Cabbage) -> void:
+		var at := c.global_position
+		c.global_position = at + Vector3(0.6, 0.0, -0.3)
+		c.get_node("Interactable").released.emit()
+		c.global_position = at)
+
+	assert_bool((got[0] as Cabbage).sold).is_false()
+	assert_int((got[1] as SaveGame).stock).is_equal(5)
+
+
+func test_a_short_toss_just_past_the_mouth_still_counts_as_aimed_at_the_bin() -> void:
+	assert_bool(Bin.let_go_over(Vector3.ZERO, Vector3(0.25, 1.0, 0.0), 0.2)).is_true()
+	assert_bool(Bin.let_go_over(Vector3.ZERO, Vector3(0.5, 0.9, 0.0), 0.2)).is_false()
 
 
 func test_a_hired_hands_lob_is_binned_but_its_mark_runs_out() -> void:
-	var was: SaveGame = SaveManager.save
 	var lobbed := _bin_with_cabbage(func(c: Cabbage) -> void: c.aim_for_bin(0.5))
 	var stale := _bin_with_cabbage(func(c: Cabbage) -> void: c.aim_for_bin(-0.1))
 
 	assert_bool((lobbed[0] as Cabbage).sold).is_true()
 	assert_bool((stale[0] as Cabbage).sold).is_false()
-	SaveManager.save = was
 
 
 func test_a_rejected_unit_never_pops_toward_the_screen_bottom() -> void:

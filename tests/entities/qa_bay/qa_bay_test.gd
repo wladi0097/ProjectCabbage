@@ -174,7 +174,7 @@ func test_a_tube_mini_for_research_appears_in_the_mouth_and_takes_a_bench_like_a
 	assert_array((bay.window as FakeWindow).thrown).is_empty()
 
 
-func test_a_tube_mini_for_a_full_bay_is_thrown_back_onto_the_mat_like_a_refused_unit() -> void:
+func test_a_tube_mini_for_a_full_bay_is_thrown_back_onto_the_mat_like_a_refused_unit_unseen_until_thrown() -> void:
 	var bay := _bay_in_tree()
 	bay._jobs = [0.5] as Array[float]
 	var unit := _tube_mini()
@@ -182,7 +182,7 @@ func test_a_tube_mini_for_a_full_bay_is_thrown_back_onto_the_mat_like_a_refused_
 	bay.file_direct(unit)
 
 	assert_array((bay.window as FakeWindow).thrown).contains_exactly([unit])
-	assert_bool(unit.visible).is_true()
+	assert_bool(unit.visible).is_false()
 	assert_bool(unit.sold).is_false()
 	assert_bool(unit.away).is_true()
 	assert_array(bay._jobs).has_size(1)

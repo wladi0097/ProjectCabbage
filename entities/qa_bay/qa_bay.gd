@@ -176,11 +176,11 @@ func _take(cabbage: Cabbage) -> int:
 
 ## Delivered by the tube (hidden, frozen, out of the physics): it appears in the chamber's mouth and
 ## is taken like one thrown in. With every bench busy the street throws it back onto the mat, as
-## after a refused sale.
+## after a refused sale (hidden until thrown: throw_in shows it).
 func file_direct(cabbage: Cabbage) -> void:
 	cabbage.global_position = mouth()
-	cabbage.visible = true
 	if has_room():
+		cabbage.visible = true
 		_admit(cabbage)
 		return
 	cabbage.away = true

@@ -17,10 +17,10 @@ func test_the_tv_view_looks_down_a_little_at_the_glass_left_of_the_desk() -> voi
 	assert_float(tv.origin.x).is_less(desk.origin.x)
 
 
-func test_the_glass_fills_about_sixty_percent_of_the_tv_views_height() -> void:
+func test_the_glass_fills_about_two_thirds_of_the_tv_views_height() -> void:
 	var depth := (tv.origin - screen.origin).dot(tv.basis.z)
 	var seen := 2.0 * FarmTv.SCREEN_HALF.y / (2.0 * depth * tan(deg_to_rad(FarmTv.DESK_FOV) / 2.0))
-	assert_float(seen).is_between(0.5, 0.7)
+	assert_float(seen).is_between(0.6, 0.72)
 
 
 func test_the_pan_runs_from_the_desk_to_the_tv_and_clamps_beyond() -> void:
@@ -68,3 +68,21 @@ func test_the_crt_warp_keeps_the_centre_and_mid_edges_and_pushes_corners_out() -
 	assert_bool(FarmTv.screen_pixel(Vector2(0.5, 0.5)).is_equal_approx(FarmTv.SCREEN_PIXELS / 2.0)).is_true()
 	assert_bool(FarmTv.screen_pixel(Vector2(1.0, 0.5)).is_equal_approx(Vector2(FarmTv.SCREEN_PIXELS.x, FarmTv.SCREEN_PIXELS.y / 2.0))).is_true()
 	assert_float(FarmTv.screen_pixel(Vector2(1.0, 1.0)).x).is_greater(FarmTv.SCREEN_PIXELS.x)
+
+
+func test_the_back_button_sits_on_the_narrow_panel_right_of_the_glass() -> void:
+	assert_float(FarmTv.BACK_CENTRE.x - FarmTv.BACK_HALF.x).is_greater(FarmTv.SCREEN_CENTRE.x + FarmTv.SCREEN_HALF.x)
+	assert_float(FarmTv.BACK_HALF.x).is_less(0.03)
+
+
+func test_the_tv_lets_the_mouse_through_to_an_open_menu_or_a_boss_report() -> void:
+	assert_bool(FarmTv.takes_input(true, false, false)).is_true()
+	assert_bool(FarmTv.takes_input(true, false, true)).is_false()
+	assert_bool(FarmTv.takes_input(true, true, false)).is_false()
+	assert_bool(FarmTv.takes_input(false, false, false)).is_false()
+
+
+func test_the_back_to_the_desk_hint_hides_while_a_boss_report_is_up() -> void:
+	assert_bool(FarmTv.hint_shown(true, false)).is_true()
+	assert_bool(FarmTv.hint_shown(true, true)).is_false()
+	assert_bool(FarmTv.hint_shown(false, false)).is_false()

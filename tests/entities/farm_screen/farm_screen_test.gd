@@ -1,5 +1,18 @@
 extends GdUnitTestSuite
 
+var _real_save: SaveGame
+var _locale: String
+
+
+func before_test() -> void:
+	_real_save = SaveManager.save
+	_locale = TranslationServer.get_locale()
+
+
+func after_test() -> void:
+	SaveManager.save = _real_save
+	TranslationServer.set_locale(_locale)
+
 
 func _farm() -> SaveGame:
 	var save := SaveGame.new()
@@ -212,3 +225,45 @@ func test_money_on_the_farm_screen_is_grouped_in_thousands() -> void:
 	assert_str(FarmScreen._thousands(12)).is_equal("12")
 	assert_str(FarmScreen._thousands(1000)).is_equal("1,000")
 	assert_str(FarmScreen._thousands(-1234)).is_equal("-1,234")
+
+
+func test_an_upgrade_entry_shows_its_price_until_bought_then_owned() -> void:
+	var save := _farm()
+	assert_str(FarmScreen.price_tag("tractor", save)).is_equal("$9,000")
+	save.farm_bought.append("tractor")
+	assert_str(FarmScreen.price_tag("tractor", save)).is_equal("OWNED")
+	assert_str(FarmScreen.price_tag("plot", save)).is_equal("$%s" % FarmScreen._thousands(FarmScreen.plot_price(save)))
+
+
+func test_every_hint_line_fits_the_screen_in_german_and_a_short_one_keeps_the_full_size() -> void:
+	var font := FarmScreen.screen_font()
+	var width := FarmScreen.SIZE.x - 72
+	var screen: FarmScreen = auto_free(load("res://entities/farm_screen/farm_screen.tscn").instantiate())
+	add_child(screen)
+	TranslationServer.set_locale("de")
+	var tr_ := func(text: String) -> String: return TranslationServer.translate(text)
+	var hints: Array[String] = [tr_.call(screen._msg), tr_.call("Not enough money for seeds."), tr_.call("Not enough money."),
+			tr_.call("Locked. Clear a plot on the right."), tr_.call("No seeds. Buy some in the seed shop."),
+			tr_.call("%d seeds delivered.") % 99999, tr_.call("Harvested: +%d cabbages to stock.") % 99,
+			tr_.call("Planted. Ripe in %d s.") % 30, tr_.call("%s approved.") % tr_.call("CLEAR A PLOT")]
+	for u: Dictionary in FarmScreen.UPGRADES:
+		hints.append(tr_.call("%s approved.") % tr_.call(u.title))
+	for hint in hints:
+		var size := FarmScreen.msg_size(font, hint, width)
+		assert_float(font.get_string_size(hint, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x) 				.override_failure_message("%s at %d px" % [hint, size]).is_less_equal(width)
+	assert_int(FarmScreen.msg_size(font, "Ripe.", width)).is_equal(22)
+
+
+func test_the_farm_clock_only_runs_once_the_family_farm_is_stamped() -> void:
+	var save := SaveGame.new()
+	SaveManager.save = save
+	var screen: FarmScreen = auto_free(load("res://entities/farm_screen/farm_screen.tscn").instantiate())
+	add_child(screen)
+	screen._process(2.0)
+	assert_float(save.farm_seconds).is_equal(0.0)
+
+	save.stamped.append("family_farm")
+	screen._process(2.0)
+
+	assert_float(save.farm_seconds).is_equal_approx(2.0, 0.0001)
+

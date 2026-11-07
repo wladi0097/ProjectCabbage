@@ -23,22 +23,22 @@ const REMOTE_SCALE := 1.5
 const CORNER_AT := Vector3(-2.612, 0.75, -0.012)
 const CORNER_TURN := PI / 4.0
 ## The glass in the model: centre, normal +Z, half size (m), and the viewport it shows (px).
-const SCREEN_CENTRE := Vector3(-0.0525, 0.33, 0.262)
-const SCREEN_HALF := Vector2(0.25, 0.19)
-const SCREEN_PIXELS := Vector2(1024, 768)
+const SCREEN_CENTRE := Vector3(-0.025, 0.33, 0.262)
+const SCREEN_HALF := Vector2(0.320625, 0.19)
+const SCREEN_PIXELS := Vector2(1296, 768)
 ## Barrel warp of the glass; the same as WARP in crt_screen.gdshader.
 const WARP := 0.06
 ## The BACK button on the set's narrow right panel: front face centre and half size (m), as the
 ## glass; the click target takes in its chrome rim.
-const BACK_CENTRE := Vector3(0.3075, 0.36, 0.282)
-const BACK_HALF := Vector2(0.041, 0.035)
+const BACK_CENTRE := Vector3(0.356625, 0.37, 0.282)
+const BACK_HALF := Vector2(0.024, 0.045)
 ## The TV view: the glass fills this much of the desk camera's vertical field of view (degrees),
 ## leaving some room around the set.
-const FILL := 0.58
+const FILL := 0.66
 const DESK_FOV := 40.0
 ## The TV view sits this far right of the glass (m): on the middle of the case, so the BACK
 ## button is in view too.
-const VIEW_SHIFT := 0.0525
+const VIEW_SHIFT := 0.025
 ## ...and looks down at it this much (degrees), so the desk corner under the set shows.
 const VIEW_PITCH := 9.0
 const PAN_TIME := 1.05
@@ -52,7 +52,7 @@ const DROP_TIME := 0.45
 const LED_ON := Color(0.42, 0.09, 0.06)
 ## The BACK button's stencilled arrow: dim, and lit while hovered. The hint slip under the plate
 ## is styled like the hand's tooltips.
-const ARROW := Color(0.5, 0.53, 0.5)
+const ARROW := Color(0.14, 0.15, 0.14)  # Dark paint on the pale plate, like the stencil: reads as the button.
 const ARROW_LIT := Color(0.66, 0.74, 0.72)
 ## Hovered, the arrow stands this far proud of its plate (m).
 const ARROW_LIFT := 0.004
@@ -117,8 +117,8 @@ func _process(_delta: float) -> void:
 	for i in _lamps.size():
 		_lamps[i].light_energy = _lamp_energy[i] * smoothstep(0.0, 0.5, _view)  # Up early: the corner reads mid-pan.
 		_lamps[i].visible = _view > 0.0
-	_hint.visible = _back_hover
-	if _back_hover:
+	_hint.visible = hint_shown(_back_hover, BossReport.up)
+	if _hint.visible:
 		var below := _camera.unproject_position(back_frame() * Vector3(0.0, -BACK_HALF.y - 0.07, 0.0))
 		_hint.position = below - Vector2(_hint.size.x / 2.0, 0.0)
 	_screen.render_target_update_mode = SubViewport.UPDATE_ALWAYS if _view > 0.0 else SubViewport.UPDATE_DISABLED
@@ -134,9 +134,10 @@ func _process(_delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	# _input, not _unhandled_input: the pause menu (later in the tree) would take Esc first.
 	# A boss report is up: it takes the mouse (and Esc goes to the pause menu), not the TV.
-	if not _at_tv or BossReport.up:
+	# The pause menu is open (Esc during a report's flight can open it): its buttons take the mouse.
+	if not takes_input(_at_tv, BossReport.up, _menu_open()):
 		return
-	if event.is_action_pressed("ui_cancel") and not _menu_open():
+	if event.is_action_pressed("ui_cancel"):
 		_pan(false)
 		get_viewport().set_input_as_handled()
 		return
@@ -179,6 +180,17 @@ func screen_frame() -> Transform3D:
 ## The BACK button's face in the world, as screen_frame.
 func back_frame() -> Transform3D:
 	return _corner.global_transform * Transform3D(Basis(), BACK_CENTRE)
+
+
+## Whether the TV takes Esc and the mouse: only at the TV with no boss report up and no menu open.
+static func takes_input(at_tv: bool, report_up: bool, menu_open: bool) -> bool:
+	return at_tv and not report_up and not menu_open
+
+
+## Whether the "Back to the desk" slip shows: on the BACK plate, and not over a boss report (it is
+## on a higher layer than the report and would float above it).
+static func hint_shown(back_hover: bool, report_up: bool) -> bool:
+	return back_hover and not report_up
 
 
 static func bought(save: SaveGame) -> bool:
@@ -333,11 +345,14 @@ func _build_corner() -> void:
 	stencil.text = "TO DESK"
 	stencil.font = load("res://assets/fonts/Oswald.ttf")
 	stencil.font_size = 64
-	stencil.pixel_size = 0.00022
+	stencil.pixel_size = 0.00015
+	stencil.width = 2.0 * (BACK_HALF.x - 0.007) / stencil.pixel_size  # Wraps to fit the narrow plate ("ZUM TISCH").
+	stencil.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	stencil.line_spacing = -14.0
 	stencil.outline_size = 0
 	stencil.modulate = Color(0.1, 0.11, 0.1)  # Dark paint on the pale plate.
 	stencil.shaded = true
-	stencil.position = BACK_CENTRE + Vector3(0.0, -BACK_HALF.y + 0.014, 0.002)
+	stencil.position = BACK_CENTRE + Vector3(0.0, -0.02, 0.002)
 	model.add_child(stencil)
 	var lamp := OmniLight3D.new()
 	lamp.light_color = Color(0.72, 0.8, 0.82)
@@ -362,7 +377,7 @@ func _build_corner() -> void:
 	_lamps.append(step)
 	var wash := OmniLight3D.new()  # Grazes the tile wall left of the set, so the view has no black hole.
 	wash.light_color = Color(0.6, 0.68, 0.7)
-	wash.light_energy = 2.4
+	wash.light_energy = 1.5  # The side wall behind the set stays darker than the glass.
 	wash.omni_range = 2.2
 	wash.position = Vector3(-0.95, 0.9, 0.1)
 	_corner.add_child(wash)

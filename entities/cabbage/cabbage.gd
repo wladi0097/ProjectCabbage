@@ -5,7 +5,8 @@ extends RigidBody3D
 ## Out through the window gap is a sale; the SaleWindow marks it sold, or sends it out and back
 ## when the street refuses it (`away` meanwhile). Every cabbage is in the "cabbages" group.
 ## A rotten one (set before it enters the tree) is grey and slumped: sold, it is fined (SaleWindow);
-## binned, it is gone (RottenBin). A mid-air catch calls `caught` on the "catch_combo" group.
+## binned, it is gone (RottenBin). A mid-air catch calls `caught` on the "catch_combo" group; a
+## chute unit that lands uncaught calls `missed` (a mini falling from upstairs never does).
 
 signal bumped(speed: float)
 
@@ -30,7 +31,8 @@ const MINI_SCALE := 0.63
 ## A research unit: a cold cyan lab glow, and a faint light of the same tint on the mat around it.
 const RESEARCH_MATERIAL := preload("res://assets/materials/cabbage_research.tres")
 const RESEARCH_LIGHT := Color(0.45, 0.9, 1.0)
-## Let go by the hand, it may drop into the bin for this long (a drop or a short toss lands by then).
+## Let go by the hand near the bin (RottenBin.let_go_over), it may drop in for this long (a drop or
+## a short toss lands by then).
 const BIN_GRACE := 1.0
 
 ## How hard it is pulled toward the hand per metre of lag.
@@ -97,6 +99,8 @@ func _ready() -> void:
 	$Interactable.grabbed.connect(_on_grabbed)
 	$Interactable.released.connect(_on_released)
 	body_entered.connect(func(_body: Node) -> void:
+		if in_flight and not mini:
+			get_tree().call_group(&"catch_combo", &"missed")
 		in_flight = false
 		bumped.emit(linear_velocity.length()))
 	bumped.connect(func(speed: float) -> void: $Bump.cue(global_position, speed))
@@ -144,6 +148,7 @@ func send_away(to: Vector3, time: float) -> void:
 ## `clear` seconds, can't be grabbed for a moment, and is the window's again after `landed` seconds.
 func throw_in(from: Vector3, velocity: Vector3, clear: float, landed: float) -> void:
 	global_position = from
+	visible = true
 	freeze = false
 	gravity_scale = 1.0
 	collision_layer = _layer
@@ -209,7 +214,10 @@ func _on_grabbed() -> void:
 func _on_released() -> void:
 	_held = false
 	gravity_scale = 1.0
-	aim_for_bin(BIN_GRACE)
+	# Only let go near the bin: one dropped elsewhere that later rolls in is popped back out.
+	var bin := get_tree().get_first_node_in_group(&"rotten_bin") as RottenBin
+	if bin != null and bin.visible and RottenBin.let_go_over(bin.global_position, global_position, bin.mouth_reach()):
+		aim_for_bin(BIN_GRACE)
 
 
 ## Let go by the player or thrown by a hired hand: the RottenBin takes it for `seconds` from now.

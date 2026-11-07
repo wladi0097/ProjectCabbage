@@ -2,7 +2,7 @@ class_name BossReport
 extends CanvasLayer
 ## The boss's reports: the WELCOME note on a new game, and one for each big event when it starts
 ## (GameEvents.EVENTS, `due`; its `report`: a headline `re` and a `body`). It drops in from the top
-## to the middle of the screen, big, gets stamped and stays until signed: the mouse is a pen over the signature field
+## to the middle of the screen, big, and stays until signed: the mouse is a pen over the signature field
 ## and draws ink there; once SIGN_INK px are drawn an OK button shows, and clicked the report flies
 ## into the FILES folder (the memo's) and the next one, if any, comes. The game keeps running, but
 ## only the paper takes the mouse: a grey Backdrop under it blocks the rest of the screen. Signed ids go into save.reports (one up or queued at quit comes again).
@@ -11,7 +11,7 @@ extends CanvasLayer
 const Events := preload("res://globalScripts/game_events.gd")
 const Memo := preload("res://entities/milestone/milestone_memo.gd")
 
-const WELCOME := {re = "WELCOME TO DESK 4", stamp = "",
+const WELCOME := {re = "WELCOME TO DESK 4",
 	body = "You have been assigned a desk, a window and a supply of cabbages (units). Throw units out of the window to sell them: the street pays in coins. Sweep the coins off the mat to bank them. Further instructions will follow in writing. Sign below to confirm you have understood."}
 ## The demo's last report, Demo.END_AFTER seconds of farming after the family farm (save.farm_seconds).
 ## No signature (`buttons`): WISHLIST opens the store page (STORE_URL), DONE files it.
@@ -29,9 +29,8 @@ const OK_BOX := Rect2(470, 318, 140, 50)
 const SIGN_INK := 120.0
 const INK := Color(0.1, 0.12, 0.2)
 const CHECK_EVERY := 0.5
-## Seconds to drop in, when the stamp comes down, and the flight into the folder.
+## Seconds to drop in and the flight into the folder.
 const IN_TIME := 0.45
-const STAMP_AT := 0.8
 const FLY_TIME := 0.55
 const FLY_SCALE := 0.08
 const TILT := -1.5
@@ -60,11 +59,13 @@ var _id := ""
 var _t := 0.0
 ## Seconds since OK was clicked, or -1 while it is up.
 var _leaving := -1.0
-var _stamped := false
 var _check_in := 0.0
 ## The signature: strokes of paper px, and whether the pen is down.
 var _strokes: Array[PackedVector2Array] = []
 var _pen_down := false
+## layout() of the report up, and the "id|locale" it was computed for.
+var _fit := {}
+var _fit_key := ""
 
 @onready var _paper: Control = $Paper
 ## Behind the paper, over the whole screen: nothing in the game takes the mouse while a report is up.
@@ -100,7 +101,6 @@ func _process(delta: float) -> void:
 		_id = _queue.pop_front()
 		_t = 0.0
 		_leaving = -1.0
-		_stamped = false
 		_strokes.clear()
 		_pen_down = false
 		_paper.visible = true
@@ -108,10 +108,6 @@ func _process(delta: float) -> void:
 		up = true
 		$Land.play()
 	_t += delta
-	if not _stamped and _t >= STAMP_AT:
-		_stamped = true
-		if report(_id).get("stamp", "URGENT") != "":
-			$Stamp.play()
 	var view := get_viewport().get_visible_rect().size
 	var rest := view * 0.5
 	var centre := rest.lerp(Vector2(rest.x, -SIZE.y * ZOOM), 1.0 - Memo.slide_at(_t * Memo.IN_TIME / IN_TIME))
@@ -125,8 +121,6 @@ func _process(delta: float) -> void:
 	_paper.scale = Vector2(size, size)
 	_paper.rotation = deg_to_rad(lerpf(TILT, 14.0, p))
 	_paper.position = centre - SIZE * 0.5
-	if _t < STAMP_AT + 0.2:
-		_paper.queue_redraw()  # The stamp's thump.
 	if p >= 1.0:
 		SaveManager.save.reports.append(_id)  # Filed only once signed: quit before, it comes again.
 		_id = ""
@@ -259,7 +253,12 @@ func _draw_paper() -> void:
 	_paper.draw_string(Memo.FONT, Vector2(30, 50), tr("OFFICE OF THE DIRECTOR"), HORIZONTAL_ALIGNMENT_LEFT, -1, 30, ink)
 	_paper.draw_line(Vector2(30, 64), Vector2(w - 30, 64), ink, 3.0)
 	_paper.draw_line(Vector2(30, 70), Vector2(w - 30, 70), ink, 1.0)
-	var fit := layout(r)
+	# The fit runs shrink loops: once per report and language, not on every redraw (each pen move).
+	var key := _id + "|" + TranslationServer.get_locale()
+	if key != _fit_key:
+		_fit_key = key
+		_fit = layout(r)
+	var fit := _fit
 	_paper.draw_multiline_string(Memo.FONT, Vector2(30, TEXT_TOP + Memo.FONT.get_ascent(fit.re)), tr(r.re) + "!", HORIZONTAL_ALIGNMENT_LEFT, w - 60, fit.re, RE_LINES, ink)
 	_paper.draw_multiline_string(Memo.BODY_FONT, Vector2(30, fit.body_y + Memo.BODY_FONT.get_ascent(fit.body)), tr(r.body), HORIZONTAL_ALIGNMENT_LEFT, w - 60, fit.body, -1, Color(ink, 0.9))
 	if r.get("buttons", false):
@@ -272,13 +271,6 @@ func _draw_paper() -> void:
 		_paper.draw_string(Memo.FONT, Vector2(OK_BOX.position.x, OK_BOX.position.y + 35), tr("DONE"), HORIZONTAL_ALIGNMENT_CENTER, OK_BOX.size.x, 28, Memo.PAPER)
 	else:
 		_draw_signature(ink)
-	var word: String = r.get("stamp", "URGENT")
-	if _stamped and not word.is_empty():
-		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - (_t - STAMP_AT) / 0.12)
-		_paper.draw_set_transform(Vector2(w - 120, 38), deg_to_rad(-8.0), Vector2(pop, pop))
-		_paper.draw_rect(Rect2(-80, -26, 160, 48), Color(Memo.STAMP, 0.85), false, 3.0)
-		_paper.draw_string(Memo.FONT, Vector2(-80, 12), tr(word), HORIZONTAL_ALIGNMENT_CENTER, 160, 30, Color(Memo.STAMP, 0.85))
-		_paper.draw_set_transform(Vector2.ZERO)
 
 
 ## The signature field: a line to sign on, the ink, and OK once signed.

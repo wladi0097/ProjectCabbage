@@ -2,6 +2,16 @@ extends GdUnitTestSuite
 
 const Feeder := preload("res://worlds/components/cabbage_feeder.gd")
 
+var _real_save: SaveGame
+
+
+func before_test() -> void:
+	_real_save = SaveManager.save
+
+
+func after_test() -> void:
+	SaveManager.save = _real_save
+
 
 func test_the_chute_sends_a_unit_while_the_mat_has_room_and_stock_is_left() -> void:
 	assert_bool(Feeder.should_dispense(0, 0, 1, 10)).is_true()
@@ -75,7 +85,6 @@ func _feeder_on_a_full_mat(save: SaveGame) -> TestFeeder:
 
 
 func test_stamping_the_research_card_rolls_a_research_unit_at_once_even_onto_a_full_mat() -> void:
-	var real_save := SaveManager.save
 	var save := SaveGame.new()
 	SaveManager.save = save
 	var feeder := _feeder_on_a_full_mat(save)
@@ -87,11 +96,9 @@ func test_stamping_the_research_card_rolls_a_research_unit_at_once_even_onto_a_f
 	feeder._physics_process(0.016)
 
 	assert_array(feeder.rolled).contains_exactly([true])
-	SaveManager.save = real_save
 
 
 func test_a_bigger_research_share_rolls_another_research_unit_at_once() -> void:
-	var real_save := SaveManager.save
 	var save := SaveGame.new()
 	save.stamped = PackedStringArray(["research_cabbage"])
 	SaveManager.save = save
@@ -103,7 +110,6 @@ func test_a_bigger_research_share_rolls_another_research_unit_at_once() -> void:
 	feeder._physics_process(0.016)
 
 	assert_array(feeder.rolled).contains_exactly([true])
-	SaveManager.save = real_save
 
 
 func test_a_flung_cabbage_lands_on_its_target_after_the_flight_time() -> void:
@@ -113,3 +119,33 @@ func test_a_flung_cabbage_lands_on_its_target_after_the_flight_time() -> void:
 	var velocity := Feeder.ballistic_velocity(from, to, t)
 	var gravity := Vector3.DOWN * float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 	assert_vector(from + velocity * t + 0.5 * gravity * t * t).is_equal_approx(to, Vector3.ONE * 0.0001)
+
+
+## The chute's script with nothing of its scene running, to fling units by hand.
+class BareFeeder extends Feeder:
+	func _ready() -> void:
+		pass
+
+	func _process(_delta: float) -> void:
+		pass
+
+	func _physics_process(_delta: float) -> void:
+		pass
+
+
+func _fling_one(catchable: bool) -> Cabbage:
+	var feeder: BareFeeder = auto_free(BareFeeder.new())
+	add_child(feeder)
+	var cabbage: Cabbage = auto_free(preload("res://entities/cabbage/cabbage.tscn").instantiate())
+	add_child(cabbage)
+	cabbage.freeze = true
+	feeder._fling(cabbage, cabbage.get_node("Interactable") as Interactable, catchable)
+	return cabbage
+
+
+func test_a_unit_off_the_chute_is_catchable_in_mid_air() -> void:
+	assert_bool(_fling_one(true).in_flight).is_true()
+
+
+func test_a_research_unit_owed_by_a_purchase_lands_without_being_a_catch_or_a_miss() -> void:
+	assert_bool(_fling_one(false).in_flight).is_false()

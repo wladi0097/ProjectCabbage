@@ -1,15 +1,22 @@
 extends GdUnitTestSuite
 
+const SALES_NODES: Array[String] = ["lamp_mult", "lamp_time", "lamp_every", "combo_window", "combo_cap",
+		"combo_step", "bin_mouth", "bin_rebate", "bin_rebate_2", "bin_rebate_3", "bin_rebate_4", "bin_rebate_5",
+		"hands_bin", "target_size", "target_every", "target_shower"]
+
 var _demo: Variant
+var _locale: String
 
 
 func before_test() -> void:
 	_demo = ProjectSettings.get_setting("game/demo", false)
 	ProjectSettings.set_setting("game/demo", false)
+	_locale = TranslationServer.get_locale()
 
 
 func after_test() -> void:
 	ProjectSettings.set_setting("game/demo", _demo)
+	TranslationServer.set_locale(_locale)
 
 
 func _save(cards: Array, coins := 0) -> SaveGame:
@@ -42,6 +49,32 @@ func test_every_number_a_node_changes_is_tracked_by_the_save() -> void:
 	for node: Dictionary in Projector.NODES:
 		for stat: String in node.get("mul", {}).keys() + node.get("add", {}).keys():
 			assert_bool(save.get(stat) != null).override_failure_message("%s changes %s, which the save doesn't have" % [node.id, stat]).is_true()
+
+
+func test_every_sales_event_tree_node_changes_a_real_save_number() -> void:
+	for id in SALES_NODES:
+		var save := SaveGame.new()
+		var node := Projector.node_data(id)
+		var was := {}
+		for stat: String in node.get("mul", {}).keys() + node.get("add", {}).keys():
+			was[stat] = save.get(stat)
+		Projector.apply(id, save)
+
+		assert_dict(was).override_failure_message("node " + id).is_not_empty()
+		for stat: String in was:
+			assert_bool(save.get(stat) != was[stat]).override_failure_message("node %s stat %s" % [id, stat]).is_true()
+
+
+func test_disposal_rebate_tiers_climb_from_20_to_120_percent_in_25_point_steps() -> void:
+	var save := SaveGame.new()
+	var tiers: Array[float] = []
+	for id in ["bin_rebate", "bin_rebate_2", "bin_rebate_3", "bin_rebate_4", "bin_rebate_5"]:
+		Projector.apply(id, save)
+		tiers.append(save.bin_rebate)
+	var want: Array[float] = [0.2, 0.45, 0.7, 0.95, 1.2]
+
+	for i in want.size():
+		assert_float(tiers[i]).is_equal_approx(want[i], 0.0001)
 
 
 func test_a_node_is_found_by_its_id_and_an_unknown_id_finds_nothing() -> void:
@@ -259,7 +292,7 @@ func test_the_popup_names_what_an_upgrade_waits_for() -> void:
 	assert_array(Projector.requirement("hire_associate_6", save)).is_equal(["REQUIRES:", "HIRE ASSOCIATE V"])
 	assert_str(Projector.requirement("hire_associate_5", save)[0]).is_equal("REQUIRES RESEARCH:")
 	assert_str(Projector.requirement("manager_time", save)[0]).is_equal("REQUIRES DESK CARD:")
-	assert_str(Projector.requirement("pack_2", save)[0]).starts_with("REQUIRES")
+	assert_str(Projector.requirement("conveyor_1", save)[0]).starts_with("REQUIRES")
 	assert_array(Projector.requirement("discount_1", save)).is_empty()
 	assert_bool(Projector.can_hold("discount_1", save)).is_true()
 
@@ -269,30 +302,32 @@ func test_everything_bought_fills_the_mat_to_twenty_and_hires_every_visible_hand
 	UpgradeDesk.apply("desk_space", full)
 	UpgradeDesk.apply("junior_associate", full)
 	UpgradeDesk.apply("coin_collector", full)
+	UpgradeDesk.apply("mat_allowance", full)
 	for node: Dictionary in Projector.NODES:
 		Projector.apply(node.id, full)
-	for n in Projector.MAT_MAX:
-		Projector.apply(Projector.MAT, full)
 	assert_int(full.desk_capacity).is_equal(20)
 	assert_int(full.hands).is_equal(Associate.MAX_VISIBLE)
 	assert_float(full.hand_output).is_equal_approx(2.25, 0.0001)
 	assert_int(full.qa_slots).is_equal(3)
 	assert_int(full.vacuums).is_equal(3)
-	assert_int(full.auto_reserve).is_equal(25)
+	assert_int(full.auto_reserve).is_equal(10)
 
 
-func test_the_mat_holds_two_until_the_allowance_card() -> void:
+func test_the_mat_holds_two_until_the_allowance_card_which_adds_a_third_and_opens_the_chain_at_the_fourth() -> void:
 	var save := _save(["projector", "junior_associate", "coin_collector", "quality_assurance", "research_materials"], 100000000)
 	UpgradeDesk.apply("desk_space", save)
 	for node: Dictionary in Projector.NODES:
-		if node.id != Projector.MAT:
+		if not node.id.begins_with("mat_"):
 			Projector.apply(node.id, save)
 	assert_int(save.desk_capacity).is_equal(2)
-	assert_bool(Projector.is_shown(Projector.MAT, save)).is_false()
-	assert_bool(Projector.buy(Projector.MAT, save)).is_false()
+	assert_bool(Projector.is_shown("mat_4", save)).is_false()
+	assert_bool(Projector.buy("mat_4", save)).is_false()
 	save.stamped.append("mat_allowance")
-	assert_bool(Projector.buy(Projector.MAT, save)).is_true()
+	UpgradeDesk.apply("mat_allowance", save)
 	assert_int(save.desk_capacity).is_equal(3)
+	assert_bool(Projector.buy("mat_5", save)).is_false()
+	assert_bool(Projector.buy("mat_4", save)).is_true()
+	assert_int(save.desk_capacity).is_equal(4)
 
 
 func test_the_mat_allowance_card_costs_about_three_thousand_coins() -> void:
@@ -301,41 +336,73 @@ func test_the_mat_allowance_card_costs_about_three_thousand_coins() -> void:
 	assert_int(card.price).is_equal(3000)
 
 
-func test_each_mat_step_adds_one_and_costs_more_than_the_last() -> void:
+func test_the_mat_chain_is_one_node_per_unit_from_the_fourth_to_the_twentieth_each_under_the_last() -> void:
+	for unit in range(Projector.MAT_FIRST, Projector.MAT_MAX + 1):
+		var node := Projector.node_data("mat_%d" % unit)
+		assert_dict(node).override_failure_message("unit %d" % unit).is_not_empty()
+		assert_str(node.parent).is_equal("dept_manual" if unit == Projector.MAT_FIRST else "mat_%d" % (unit - 1))
+		assert_dict(node.add).is_equal({desk_capacity = 1})
+	assert_dict(Projector.node_data("mat_%d" % (Projector.MAT_MAX + 1))).is_empty()
+
+
+func test_each_mat_step_adds_one_and_costs_more_than_the_last_starting_at_the_old_fourth_unit_price() -> void:
 	var save := _save(["projector", "mat_allowance"], 1000000000)
-	save.desk_capacity = 2
+	save.desk_capacity = 3
 	var last := 0
-	while save.desk_capacity < Projector.MAT_MAX:
-		var units := save.desk_capacity
-		var price := Projector.price_of(Projector.MAT, save)
-		assert_float(float(price)).override_failure_message("unit %d at $%d" % [units + 1, price]).is_greater(last * 1.3)
-		assert_bool(Projector.buy(Projector.MAT, save)).is_true()
-		assert_int(save.desk_capacity).is_equal(units + 1)
+	for unit in range(Projector.MAT_FIRST, Projector.MAT_MAX + 1):
+		var id := "mat_%d" % unit
+		var price := Projector.price_of(id, save)
+		assert_float(float(price)).override_failure_message("unit %d at $%d" % [unit, price]).is_greater(last * 1.3)
+		assert_bool(Projector.buy(id, save)).is_true()
+		assert_int(save.desk_capacity).is_equal(unit)
 		last = price
-	assert_int(Projector.mat_price(2)).is_equal(Projector.MAT_BASE)
+	assert_int(Projector.price_of("mat_4", save)).is_equal(2100)
+	assert_int(Projector.price_of("mat_20", save)).is_equal(457350)
 
 
-func test_the_mat_never_holds_more_than_twenty() -> void:
+func test_a_bought_mat_step_is_never_bought_again() -> void:
 	var save := _save(["projector", "mat_allowance"], 1000000000)
-	save.desk_capacity = 19
-	assert_bool(Projector.buy(Projector.MAT, save)).is_true()
-	assert_int(save.desk_capacity).is_equal(20)
+	save.desk_capacity = 3
+	assert_bool(Projector.buy("mat_4", save)).is_true()
 	var coins := save.coins
-	assert_bool(Projector.is_bought(Projector.MAT, save)).is_true()
-	assert_bool(Projector.can_hold(Projector.MAT, save)).is_false()
-	assert_bool(Projector.buy(Projector.MAT, save)).is_false()
+	assert_bool(Projector.can_hold("mat_4", save)).is_false()
+	assert_bool(Projector.buy("mat_4", save)).is_false()
 	assert_int(save.coins).is_equal(coins)
-	Projector.apply(Projector.MAT, save)
-	assert_int(save.desk_capacity).is_equal(20)
+	assert_int(save.desk_capacity).is_equal(4)
 
 
-func test_an_old_save_keeps_its_mat_and_pays_for_the_next_unit_from_there() -> void:
+func test_an_old_save_counts_its_mat_units_as_bought_chain_nodes_and_pays_for_the_next_from_there() -> void:
 	var save := _save(["projector", "mat_allowance"], 1000000000)
-	save.tree_bought = PackedStringArray(["conveyor_1", "desk_1"])
 	save.desk_capacity = 8
-	assert_int(Projector.price_of(Projector.MAT, save)).is_equal(Projector.mat_price(8))
-	assert_bool(Projector.buy(Projector.MAT, save)).is_true()
+	Projector.migrate_mat(save)
+	assert_int(save.desk_capacity).is_equal(8)
+	for unit in range(4, 9):
+		assert_bool(Projector.is_bought("mat_%d" % unit, save)).override_failure_message("unit %d" % unit).is_true()
+	assert_bool(Projector.is_bought("mat_9", save)).is_false()
+	assert_bool(Projector.buy("mat_9", save)).is_true()
 	assert_int(save.desk_capacity).is_equal(9)
+	Projector.migrate_mat(save)
+	assert_int(save.tree_bought.count("mat_9")).is_equal(1)
+
+
+func test_an_old_save_with_the_allowance_card_and_no_units_gets_the_free_third_unit() -> void:
+	var save := _save(["projector", "mat_allowance"])
+	save.desk_capacity = 2
+	UpgradeDesk.migrate(save)
+	assert_int(save.desk_capacity).is_equal(3)
+	assert_array(save.tree_bought).not_contains("mat_4")
+	var plain := _save(["projector"])
+	plain.desk_capacity = 2
+	UpgradeDesk.migrate(plain)
+	assert_int(plain.desk_capacity).is_equal(2)
+
+
+func test_an_old_full_mat_keeps_twenty_and_has_nothing_left_to_buy() -> void:
+	var save := _save(["projector", "mat_allowance"], 1000000000)
+	save.desk_capacity = 20
+	Projector.migrate_mat(save)
+	assert_int(save.desk_capacity).is_equal(20)
+	assert_bool(Projector.can_hold("mat_20", save)).is_false()
 
 
 func test_an_old_save_tops_up_merged_chains_to_what_the_kept_nodes_now_give() -> void:
@@ -436,8 +503,8 @@ func test_the_pull_tugs_once_per_upgrade_not_each_time_the_coins_climb_back_over
 	assert_bool(Projector.announce(save, announced)).is_false()
 
 
-func test_the_pull_hangs_from_the_middle_of_the_screen() -> void:
-	assert_float(Projector.TAB_AT).is_equal(0.5)
+func test_the_pull_hangs_a_tenth_right_of_the_middle_of_the_screen() -> void:
+	assert_float(Projector.TAB_AT).is_equal(0.6)
 	assert_float(Projector.SCREEN.get_center().x).is_equal_approx(0.5, 0.0001)
 
 
@@ -553,3 +620,154 @@ func test_after_the_first_open_a_newly_reachable_node_is_still_marked_new() -> v
 	save.tree_bought.append("slogan_1")
 	Projector.mark_first_open(save)
 	assert_array(Projector.fresh(save)).is_equal(["slogan_2"])
+
+
+## Every edge of the tree as [from, to, id] at wheel scale `unit`.
+func _edges(unit: Vector2) -> Array:
+	var out := []
+	for node: Dictionary in Projector.NODES:
+		out.append([Vector2.ZERO if node.parent == "" else Projector.node_data(node.parent).at * unit, node.at * unit, node.id])
+	return out
+
+
+## What a node covers at radius `r`: its circle and its name above it, or a department's plate.
+func _node_box(node: Dictionary, unit: Vector2, r: float) -> Rect2:
+	var at: Vector2 = node.at * unit
+	if node.get("dept", false):
+		return Projector.plate(node.id, at, r)
+	var font := int(clampf(r * 0.6, 9.0, 34.0))
+	var width := Projector.FONT.get_string_size(TranslationServer.translate(node.title), HORIZONTAL_ALIGNMENT_LEFT, -1, font).x
+	return Rect2(at - Vector2(r, r), Vector2(r, r) * 2.0).merge(Rect2(at.x - width / 2.0, at.y - r - 8.0 - font, width, font + 8.0))
+
+
+func _segment_hits_rect(from: Vector2, to: Vector2, box: Rect2) -> bool:
+	if box.has_point(from) or box.has_point(to):
+		return true
+	var corners := [box.position, Vector2(box.end.x, box.position.y), box.end, Vector2(box.position.x, box.end.y)]
+	for i in 4:
+		if Geometry2D.segment_intersects_segment(from, to, corners[i], corners[(i + 1) % 4]) != null:
+			return true
+	return false
+
+
+func test_theme_heading_plates_cover_no_node_edge_or_other_heading_in_english_or_german() -> void:
+	var unit := Vector2(480.0, 300.0)
+	var r := 30.0
+	for locale: String in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		for i in Projector.THEMES.size():
+			var box := Projector.theme_plate(i, unit, r)
+			var theme: String = Projector.THEMES[i][0]
+			assert_bool(box.size.x > box.size.y).override_failure_message(theme).is_true()
+			assert_bool(box.intersects(Rect2(-Vector2.ONE * r * 1.1, Vector2.ONE * r * 2.2))).override_failure_message("%s covers the hub" % theme).is_false()
+			for node: Dictionary in Projector.NODES:
+				assert_bool(box.intersects(_node_box(node, unit, r))) \
+						.override_failure_message("%s (%s) covers %s" % [theme, locale, node.id]).is_false()
+			for edge: Array in _edges(unit):
+				assert_bool(_segment_hits_rect(edge[0], edge[1], box)) \
+						.override_failure_message("%s (%s) covers the edge to %s" % [theme, locale, edge[2]]).is_false()
+			for j in range(i + 1, Projector.THEMES.size()):
+				assert_bool(box.intersects(Projector.theme_plate(j, unit, r))) \
+						.override_failure_message("%s and %s overlap" % [theme, Projector.THEMES[j][0]]).is_false()
+
+
+## The supply/pack nodes: whatever changes what a pack holds or costs, or how auto-buy orders.
+func _pack_nodes() -> Array:
+	return Projector.NODES.filter(func(node: Dictionary) -> bool:
+		var stats: Array = node.get("mul", {}).keys() + node.get("add", {}).keys()
+		return stats.any(func(stat: String) -> bool: return stat in ["pack_size", "pack_discount", "auto_reserve", "auto_max_factor"]))
+
+
+func test_the_pack_branch_is_a_few_cheap_steps_since_packs_stop_paying_after_the_farm() -> void:
+	var packs := _pack_nodes()
+	assert_int(packs.size()).is_less_equal(5)
+	for node: Dictionary in packs:
+		assert_int(node.price).override_failure_message("%s at $%d" % [node.id, node.price]).is_less_equal(1000)
+		assert_str(node.get("research", "")).override_failure_message(node.id).is_empty()
+
+
+func test_the_slim_pack_branch_still_gives_bigger_cheaper_packs_and_a_smarter_auto_buy() -> void:
+	var save := SaveGame.new()
+	var base := SaveGame.new()
+	for node: Dictionary in _pack_nodes():
+		Projector.apply(node.id, save)
+	assert_int(save.pack_size).is_equal(base.pack_size + 43)
+	assert_float(save.pack_discount).is_equal_approx(0.7, 0.0001)
+	assert_int(save.auto_reserve).is_equal(base.auto_reserve + 7)
+	assert_float(save.auto_max_factor).is_equal_approx(base.auto_max_factor - 0.5, 0.0001)
+
+
+func test_an_old_save_keeps_both_old_discounts_and_one_with_the_first_gets_the_merged_cut() -> void:
+	var both := SaveGame.new()
+	both.migration = 2
+	both.tree_bought = PackedStringArray(["pack_1", "discount_1", "discount_2", "auto_reserve_1", "auto_smart_1", "auto_reserve_2"])
+	both.pack_discount = 0.85 * 0.68
+	both.auto_reserve = 25
+	both.auto_max_factor = 0.8
+	UpgradeDesk.migrate(both)
+	assert_float(both.pack_discount).is_equal_approx(0.85 * 0.68, 0.0001)
+	assert_int(both.auto_reserve).is_equal(25)
+	assert_float(both.auto_max_factor).is_equal_approx(0.8, 0.0001)
+	var first := SaveGame.new()
+	first.migration = 2
+	first.tree_bought = PackedStringArray(["pack_1", "discount_1"])
+	first.pack_discount = 0.85
+	UpgradeDesk.migrate(first)
+	assert_float(first.pack_discount).is_equal_approx(0.7, 0.0001)
+	UpgradeDesk.migrate(first)
+	assert_float(first.pack_discount).is_equal_approx(0.7, 0.0001)
+
+
+func test_every_popup_body_wraps_to_the_popup_width_in_english_and_german() -> void:
+	for locale: String in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		for node: Dictionary in Projector.NODES:
+			var shown := TranslationServer.translate(node.body)
+			var lines := Projector.popup_lines(shown)
+			assert_str(" ".join(lines).replace(" ", "")).override_failure_message("%s (%s) lost words" % [node.id, locale]) \
+					.is_equal(shown.replace("\n", "").replace(" ", ""))
+			for line in lines:
+				var wide := Projector.FONT.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, Projector.POPUP_BODY).x
+				assert_float(wide).override_failure_message("%s (%s): \"%s\" is %d px" % [node.id, locale, line, wide]) \
+						.is_less_equal(Projector.POPUP_TEXT)
+
+
+func test_the_pull_word_fits_its_pennant_in_english_and_german() -> void:
+	for locale: String in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		var word := TranslationServer.translate("PULL")
+		var wide := Projector.FONT.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, Projector.pull_size(word)).x * Projector.PULL_PIXEL
+		assert_float(wide).override_failure_message("%s: %s is %.3f m" % [locale, word, wide]).is_less_equal(Projector.PULL_WIDTH)
+	assert_int(Projector.pull_size("PULL")).is_equal(Projector.PULL_SIZE)
+
+
+func test_an_old_mat_of_four_stamping_the_allowance_keeps_its_units_and_tops_out_at_twenty() -> void:
+	var save := _save(["projector", "coin_collector", "desk_space"], 1000000000)
+	save.desk_capacity = 4
+	save.stamped.append("mat_allowance")
+	UpgradeDesk.apply("mat_allowance", save)
+	assert_int(save.desk_capacity).is_equal(4)
+	assert_bool(Projector.is_bought("mat_4", save)).is_true()
+	for unit in range(Projector.MAT_FIRST + 1, Projector.MAT_MAX + 1):
+		assert_bool(Projector.buy("mat_%d" % unit, save)).override_failure_message("unit %d" % unit).is_true()
+		assert_int(save.desk_capacity).is_equal(unit)
+	assert_int(save.desk_capacity).is_equal(Projector.MAT_MAX)
+
+
+func test_the_allowance_card_fills_a_small_mat_to_three() -> void:
+	var save := SaveGame.new()
+	UpgradeDesk.apply("mat_allowance", save)
+	assert_int(save.desk_capacity).is_equal(Projector.MAT_FIRST - 1)
+
+
+func test_a_save_from_before_any_merge_with_the_first_two_old_discounts_gets_the_whole_merged_cut() -> void:
+	var both := SaveGame.new()
+	both.tree_bought = PackedStringArray(["pack_1", "discount_1", "discount_2"])
+	both.pack_discount = 0.85 * 0.85
+	UpgradeDesk.migrate(both)
+	assert_float(both.pack_discount).is_equal_approx(0.7, 0.0001)
+	var first := SaveGame.new()
+	first.tree_bought = PackedStringArray(["pack_1", "discount_1"])
+	first.pack_discount = 0.85
+	UpgradeDesk.migrate(first)
+	assert_float(first.pack_discount).is_equal_approx(0.7, 0.0001)

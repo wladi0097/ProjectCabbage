@@ -3,6 +3,16 @@ extends GdUnitTestSuite
 const Report := preload("res://entities/boss_report/boss_report.gd")
 const Events := preload("res://globalScripts/game_events.gd")
 
+var _locale: String
+
+
+func before_test() -> void:
+	_locale = TranslationServer.get_locale()
+
+
+func after_test() -> void:
+	TranslationServer.set_locale(_locale)
+
 
 func test_a_new_game_opens_with_the_welcome_report_alone() -> void:
 	assert_array(Report.due(SaveGame.new())).is_equal(["welcome"])
@@ -47,9 +57,9 @@ func test_every_event_has_a_report_with_a_headline_and_a_body() -> void:
 		assert_str(report.body).is_not_empty()
 
 
-func test_event_reports_are_stamped_urgent_and_the_welcome_is_not_stamped() -> void:
-	assert_str(Report.report("supply_shock").get("stamp", "URGENT")).is_equal("URGENT")
-	assert_str(Report.report("welcome").get("stamp", "URGENT")).is_empty()
+func test_no_report_carries_a_stamp() -> void:
+	for id: String in ["welcome", "demo_end"] + Events.EVENTS.keys():
+		assert_bool(Report.report(id).has("stamp")).is_false()
 
 
 func test_the_demo_end_report_has_buttons_instead_of_a_signature() -> void:
@@ -74,7 +84,6 @@ func test_the_ok_and_wishlist_buttons_lie_clear_of_the_signature_field_and_each_
 
 
 func test_every_report_text_fits_its_paper_in_english_and_german() -> void:
-	var locale := TranslationServer.get_locale()
 	var ids: Array = ["welcome", "demo_end"] + Events.EVENTS.keys()
 	for lang in ["en", "de"]:
 		TranslationServer.set_locale(lang)
@@ -82,7 +91,6 @@ func test_every_report_text_fits_its_paper_in_english_and_german() -> void:
 			var fit := Report.layout(Report.report(id))
 			assert_bool(fit.fits).override_failure_message("%s report '%s' overflows: %s" % [lang, id, fit]).is_true()
 			assert_int(fit.body).is_greater_equal(Report.BODY_MIN)
-	TranslationServer.set_locale(locale)
 
 
 func test_a_farm_bought_before_the_shock_gets_the_squeeze_report_only_with_the_shock() -> void:

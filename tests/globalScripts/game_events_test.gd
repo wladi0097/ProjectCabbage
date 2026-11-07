@@ -23,7 +23,6 @@ func test_every_event_starts_on_a_saved_flag_or_a_real_desk_card() -> void:
 			assert_bool(event.flag in SaveGame.new()).override_failure_message(id).is_true()
 		if event.has("card"):
 			assert_dict(UpgradeDesk.card_data(event.card)).override_failure_message(id).is_not_empty()
-			assert_array(["offered", "stamped"]).override_failure_message(id).contains(event.when)
 
 
 func test_a_flag_event_starts_with_its_flag() -> void:
@@ -82,7 +81,7 @@ func test_the_warning_deals_the_farm_card_first_but_leaves_crate_prices_alone() 
 	UpgradeDesk.start_warning(save)
 	assert_array(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)).is_equal(["family_farm", "golden_lamp"])
 	assert_array(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED)).not_contains("family_farm")
-	assert_float(SupplyConsole.unit_cost(save)).is_equal(SupplyConsole.UNIT_COST)
+	assert_float(SupplyConsole.crate_floor(save)).is_equal(0.0)
 
 
 func test_prices_explode_after_the_set_number_of_units_sold_since_the_warning() -> void:
@@ -105,15 +104,32 @@ func test_no_shock_without_the_warning_however_many_units_are_sold() -> void:
 
 
 func test_a_full_tray_holds_the_warning_back_and_the_farm_card_comes_first_after_a_stamp() -> void:
+	var save := _all_stamped_but(["family_farm", "golden_lamp", "mat_allowance", "stats_ledger"])
+	save.tray_unlocked = true
+	assert_bool(Events.warning_ready(save)).is_true()
+	assert_bool(Events.warning_due(save)).is_false()
+	UpgradeDesk.start_warning(save)
+	assert_str(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)[0]).is_equal("family_farm")
+
+
+func test_the_demo_never_holds_its_warning_back_for_a_full_tray() -> void:
 	ProjectSettings.set_setting("game/demo", true)
 	var save := SaveGame.new()
 	save.tray_unlocked = true
 	save.sold = Events.Demo.WARNING_SOLD
 	save.stamped = PackedStringArray(["price_slate", "radio"])
-	assert_bool(Events.warning_ready(save)).is_true()
-	assert_bool(Events.warning_due(save)).is_false()
-	UpgradeDesk.start_warning(save)
-	assert_str(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)[0]).is_equal("family_farm")
+	assert_bool(Events.warning_due(save)).is_true()
+
+
+func test_skipping_the_optional_memos_and_the_ledger_never_blocks_stage_two() -> void:
+	var save := _all_stamped_but(["family_farm", "golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger"])
+	assert_bool(Events.tray_dry(save)).is_true()
+
+
+func test_no_card_another_card_needs_counts_as_optional_for_the_dry_tray() -> void:
+	for card: Dictionary in UpgradeDesk.CARDS:
+		for need: String in card.get("needs", []):
+			assert_array(Events.DRY_LEFT).override_failure_message(card.id).not_contains([need])
 
 
 func test_a_farm_bought_before_the_shock_starts_the_squeeze_at_the_shock() -> void:
@@ -171,14 +187,14 @@ func test_the_farm_squeeze_holds_then_eases_back_to_the_shock_share() -> void:
 
 func test_a_shocked_unit_still_sells_at_a_profit_until_the_farm_squeeze_makes_it_a_loss() -> void:
 	var save := SaveGame.new()
-	assert_float(SupplyConsole.unit_cost(save)).is_equal(SupplyConsole.UNIT_COST)
+	assert_float(SupplyConsole.crate_floor(save)).is_equal(0.0)
 	save.supply_shock = true
 	save.marketing = 5.0
 	# Full-sale price at marketing 5 is $15.
-	assert_float(SupplyConsole.unit_cost(save)).is_equal_approx(SupplyConsole.SHOCK_SHARE * 15.0, 0.0001)
-	assert_float(SupplyConsole.unit_cost(save)).is_less(15.0)
+	assert_float(SupplyConsole.crate_floor(save)).is_equal_approx(SupplyConsole.SHOCK_SHARE * 15.0, 0.0001)
+	assert_float(SupplyConsole.crate_floor(save)).is_less(15.0)
 	UpgradeDesk.apply("family_farm", save)
-	assert_float(SupplyConsole.unit_cost(save)).is_greater(15.0)
+	assert_float(SupplyConsole.crate_floor(save)).is_greater(15.0)
 
 
 func test_a_pack_costs_its_units_at_the_price_factor() -> void:

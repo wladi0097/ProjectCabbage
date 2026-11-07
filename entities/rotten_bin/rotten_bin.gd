@@ -24,6 +24,8 @@ const RIM := 0.262
 const SINK := 0.5
 const CLEAR := 0.16
 const SLACK := 0.11
+## A unit let go this far (m) past the mouth's reach still counts as aimed at the bin (let_go_over).
+const AIM_SLACK := 0.12
 ## Only below this height: one carried high over the bin is not in it yet.
 const TOP_Y := 1.15
 const FALL_TIME := 0.4
@@ -94,7 +96,7 @@ func _physics_process(delta: float) -> void:
 	if not visible or _check > 0.0:
 		return
 	_check = CHECK_EVERY
-	var reach := MOUTH * SaveManager.save.bin_mouth + SLACK
+	var reach := mouth_reach()
 	for cabbage: Cabbage in get_tree().get_nodes_in_group(&"cabbages"):
 		if not cabbage.sold and not cabbage.away and not cabbage.freeze \
 				and (Hand.held == null or Hand.held.get_parent() != cabbage) \
@@ -122,6 +124,17 @@ static func rotten_due(save: SaveGame) -> bool:
 ## Where a hired hand lobs a rotten unit: over the mouth, once the bin is on the desk.
 func hand_aim() -> Vector3:
 	return global_position + Vector3.UP * HAND_AIM_Y
+
+
+## How far from the bin's middle a cabbage's centre may be and still drop in.
+func mouth_reach() -> float:
+	return MOUTH * SaveManager.save.bin_mouth + SLACK
+
+
+## A unit let go at `at` was aimed at the bin standing at `bin` (mouth `reach` wide): over the mouth
+## or within AIM_SLACK of it (a short toss), at any height.
+static func let_go_over(bin: Vector3, at: Vector3, reach: float) -> bool:
+	return Vector2(at.x - bin.x, at.z - bin.z).length() < reach + AIM_SLACK
 
 
 ## A cabbage at `at` is over the bin standing at `bin` (mouth `reach` wide) and low enough to fall in.

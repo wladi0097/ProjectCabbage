@@ -163,7 +163,7 @@ extends Resource
 ## each with the play time and the state after it (log_entry). Also written as playtest_log.csv.
 @export var playtest_log: Array[Dictionary] = []
 
-const MIGRATION := 2
+const MIGRATION := 3
 ## Snapshots older than THIN_AFTER play seconds are kept one per THIN_EVERY seconds (thin_log).
 const THIN_AFTER := 3600
 const THIN_EVERY := 300

@@ -1,10 +1,27 @@
 extends GdUnitTestSuite
 
+const DESK_SCENE := preload("res://entities/upgrade_desk/upgrade_desk.tscn")
+
 const BEFORE_RADIO := ["price_slate", "desk_space", "junior_associate", "acceptance_meter"]
 const THROUGH_QA := ["price_slate", "radio", "desk_space", "acceptance_meter", "junior_associate", "quality_assurance"]
 const THROUGH_MINI_TUBE := ["price_slate", "radio", "desk_space", "acceptance_meter", "junior_associate", "quality_assurance",
 		"mini_cabbages", "street_posters", "projector", "research_inspection", "pricing_consultant", "catch_combo",
 		"research_cabbage", "mini_tube"]
+
+
+var _real_save: SaveGame
+var _demo_was: bool
+
+
+func before_test() -> void:
+	_real_save = SaveManager.save
+	_demo_was = ProjectSettings.get_setting("game/demo", false)
+	ProjectSettings.set_setting("game/demo", false)
+
+
+func after_test() -> void:
+	SaveManager.save = _real_save
+	ProjectSettings.set_setting("game/demo", _demo_was)
 
 
 func _next(stamped: Array, count := UpgradeDesk.OFFERED, save: SaveGame = null) -> Array[String]:
@@ -199,7 +216,7 @@ func test_stamping_every_card_once_adds_up_to_the_listed_effects_and_nothing_els
 		UpgradeDesk.apply(card.id, save)
 
 	assert_bool(save.slate_unlocked).is_true()
-	assert_int(save.desk_capacity).is_equal(2)
+	assert_int(save.desk_capacity).is_equal(3)  # desk_space and the mat allowance: one each
 	assert_int(save.pack_size).is_equal(SaveGame.new().pack_size)
 	assert_int(save.hands).is_equal(1)
 	assert_float(save.marketing).is_equal_approx(1.2 * 1.5, 0.0001)
@@ -273,3 +290,96 @@ func test_the_approved_list_on_the_spike_shows_the_newest_card_first_and_skips_r
 	save.stamped.append("retired_card")
 	save.stamped.append("radio")
 	assert_array(UpgradeDesk.approved_newest_first(save)).is_equal(["radio", "price_slate"])
+
+
+func test_the_supply_shock_switches_the_standing_order_off_and_the_player_may_switch_it_back_on() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["auto_procurement"])
+	UpgradeDesk.start_warning(save)
+	assert_bool(save.auto_buy).is_true()
+	UpgradeDesk.start_shock(save)
+	assert_bool(save.auto_buy).is_false()
+	save.auto_buy = true
+	UpgradeDesk.migrate(save)
+	assert_bool(save.auto_buy).is_true()
+
+
+func test_a_shock_before_the_standing_order_is_stamped_leaves_it_on_for_when_it_is() -> void:
+	var save := SaveGame.new()
+	UpgradeDesk.start_warning(save)
+	UpgradeDesk.start_shock(save)
+	assert_bool(save.auto_buy).is_true()
+
+
+func test_the_mat_allowance_card_waits_for_desk_space() -> void:
+	assert_array(UpgradeDesk.card_data("mat_allowance").needs).contains(["desk_space", "coin_collector"])
+
+
+func test_in_the_demo_a_full_tray_makes_room_for_the_farm_card_in_its_last_slot() -> void:
+	ProjectSettings.set_setting("game/demo", true)
+	var save := SaveGame.new()
+	save.tray_unlocked = true
+	save.sold = UpgradeDesk.Events.Demo.WARNING_SOLD
+	save.stamped = PackedStringArray(["price_slate", "radio"])
+	SaveManager.save = save
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	add_child(desk)
+	var first := _ids(desk._offered)
+
+	desk._process(0.0)
+
+	assert_bool(save.supply_warning).is_true()
+	assert_array(_ids(desk._offered)).is_equal([first[0], first[1], "family_farm"])
+
+
+func test_the_tray_never_shows_more_cards_than_offered_however_many_are_open() -> void:
+	var save := _all_stamped_but(["family_farm", "golden_lamp", "mat_allowance", "stats_ledger", "spoilage_memo", "lab_priority"])
+	save.tray_unlocked = true
+	assert_int(_next(save.stamped, UpgradeDesk.CARDS.size(), save).size()).is_greater(UpgradeDesk.OFFERED)
+	SaveManager.save = save
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	add_child(desk)
+	assert_int(desk._offered.size()).is_equal(UpgradeDesk.OFFERED)
+
+	desk._deal(false)
+
+	assert_int(desk._offered.size()).is_equal(UpgradeDesk.OFFERED)
+
+
+func test_a_stamped_cards_slot_goes_to_the_farm_card_once_the_warning_is_ready() -> void:
+	var save := _all_stamped_but(["family_farm", "golden_lamp", "mat_allowance", "stats_ledger"])
+	save.tray_unlocked = true
+	SaveManager.save = save
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	add_child(desk)
+	desk._shock_in = INF  # Only the stamp may start the warning here.
+	var stamped := desk._offered[0]
+	var kept := _ids(desk._offered).slice(1)
+	assert_bool(UpgradeDesk.Events.warning_ready(save)).is_true()
+	# What the press does on a stamp (_bottom_out), then the card has been shown long enough.
+	save.stamped.append(stamped.id)
+	desk._offered.erase(stamped)
+	desk._leaving = stamped
+	desk._shown = UpgradeDesk.SHOW_TIME
+
+	desk._process(0.0)
+
+	assert_bool(save.supply_warning).is_true()
+	assert_array(_ids(desk._offered)).is_equal(kept + ["family_farm"])
+
+
+func test_every_sales_event_has_a_desk_card() -> void:
+	for id: String in ["golden_lamp", "catch_combo", "window_targets"]:
+		assert_dict(UpgradeDesk.card_data(id)).override_failure_message("card " + id).is_not_empty()
+
+
+func _ids(cards: Array[UpgradeCard]) -> Array:
+	return cards.map(func(card: UpgradeCard) -> String: return card.id)
+
+
+func _all_stamped_but(ids: Array) -> SaveGame:
+	var save := SaveGame.new()
+	for card: Dictionary in UpgradeDesk.CARDS:
+		if card.id not in ids:
+			save.stamped.append(card.id)
+	return save

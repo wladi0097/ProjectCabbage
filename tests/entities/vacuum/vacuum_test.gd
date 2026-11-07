@@ -89,6 +89,14 @@ func test_only_a_robot_out_driving_can_tip_over() -> void:
 	assert_bool(CoinVacuums.can_tip(CoinVacuums.State.ROAM, true, save)).is_false()
 
 
+func test_only_a_robot_lying_on_its_back_asks_for_help() -> void:
+	assert_bool(CoinVacuums.asks_for_help(CoinVacuums.State.TIPPED, false)).is_true()
+	assert_bool(CoinVacuums.asks_for_help(CoinVacuums.State.TIPPED, true)).is_false()
+	assert_bool(CoinVacuums.asks_for_help(CoinVacuums.set_down(CoinVacuums.State.TIPPED), false)).is_false()
+	assert_bool(CoinVacuums.asks_for_help(CoinVacuums.State.ROAM, false)).is_false()
+	assert_bool(CoinVacuums.asks_for_help(CoinVacuums.State.PARKED, false)).is_false()
+
+
 func test_the_stabiliser_stops_robots_tipping() -> void:
 	var save := SaveGame.new()
 	save.tree_bought.append(CoinVacuums.STABILISER)
@@ -129,3 +137,74 @@ func test_a_stack_past_a_corner_of_the_mat_out_of_reach_is_not_a_goal() -> void:
 func test_a_vacuum_emptying_at_home_only_blips_far_quieter_than_a_tip() -> void:
 	var level := SoundCue.level_for(CoinVacuums.UNLOAD_BEEP, 0.0, 1.0)
 	assert_float(linear_to_db(level)).is_less_equal(-15.0)
+
+
+func test_a_robot_comes_home_even_past_a_robot_fallen_next_to_its_dock() -> void:
+	var home := Vector3(-0.254, 0.76, 0.28)
+	var fallen: Array[Vector3] = [home + Vector3(0.07, 0.0, 0.02)]
+	var xf := Transform3D(Basis(), Vector3(0.3, 0.76, -0.2))
+	var arrived := false
+	for i in 4000:
+		xf = CoinVacuums.drive_step(xf, home, fallen, CoinVacuums.TURN_SPEED / 60.0, CoinVacuums.BASE_SPEED / 60.0)
+		if xf.origin.distance_to(home) < CoinVacuums.ARRIVE:
+			arrived = true
+			break
+	assert_bool(arrived).is_true()
+
+
+func test_a_robot_drives_round_one_by_the_mat_edge_on_the_mat_side_never_off_the_mat() -> void:
+	var edge := CoinVacuums.AREA.position.x
+	var in_the_way: Array[Vector3] = [Vector3(edge + 0.03, 0.76, 0.0)]
+	var xf := Transform3D(Basis(), Vector3(edge, 0.76, 0.3))
+	var goal := Vector3(edge, 0.76, -0.3)
+	var off := 0
+	for i in 4000:
+		xf = CoinVacuums.drive_step(xf, goal, in_the_way, CoinVacuums.TURN_SPEED / 60.0, CoinVacuums.BASE_SPEED / 60.0)
+		if xf.origin != CoinVacuums.on_mat(xf.origin):
+			off += 1
+		if xf.origin.distance_to(goal) < CoinVacuums.ARRIVE:
+			break
+	assert_int(off).is_equal(0)
+	assert_float(xf.origin.distance_to(goal)).is_less(CoinVacuums.ARRIVE)
+
+
+func _fleet() -> CoinVacuums:
+	var vacuums: CoinVacuums = auto_free(preload("res://entities/vacuum/vacuum.tscn").instantiate())
+	add_child(vacuums)
+	vacuums.set_physics_process(false)
+	vacuums._add_unit()
+	return vacuums
+
+
+func _grip(unit: CoinVacuums.Unit) -> Interactable:
+	for child in unit.body.get_children():
+		if child is Interactable:
+			return child
+	return null
+
+
+func test_a_robot_in_the_hand_collides_with_no_cabbage() -> void:
+	var unit := _fleet()._units[0]
+	_grip(unit).grabbed.emit()
+
+	assert_int(unit.body.collision_layer & 7).is_equal(0)
+
+
+func test_a_robot_set_down_on_a_cabbage_stays_soft_until_the_cabbage_is_gone() -> void:
+	var vacuums := _fleet()
+	var unit := vacuums._units[0]
+	var cabbage: Cabbage = preload("res://entities/cabbage/cabbage.tscn").instantiate()
+	add_child(cabbage)
+	cabbage.freeze = true
+	cabbage.global_position = unit.body.global_position + Vector3.UP * 0.05
+	await get_tree().physics_frame
+	_grip(unit).grabbed.emit()
+	_grip(unit).released.emit()
+
+	assert_int(unit.body.collision_layer & 7).is_equal(0)
+
+	cabbage.free()
+	await get_tree().physics_frame
+	vacuums._settle(unit)
+
+	assert_int(unit.body.collision_layer).is_equal(CoinVacuums.SOLID_LAYER)

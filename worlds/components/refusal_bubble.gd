@@ -2,7 +2,8 @@ class_name RefusalBubble
 extends Control
 ## The street's answer to a refused unit: a paper slip hanging from the top screen edge over the
 ## window, its tail pointing up at the street. It shows the asked price in red, struck through.
-## It pops in with a shake, holds, and fades. Never takes the mouse.
+## It pops in with a shake, holds, and fades. Never takes the mouse. Only over the desk: while the
+## camera is at the farm TV (FarmTv.away) no slip is hung, and one already up stays out of sight.
 
 const FONT := preload("res://assets/fonts/Oswald.ttf")
 const PAPER := ManagerBubble.PAPER
@@ -31,6 +32,8 @@ func _ready() -> void:
 
 ## The street refused a unit at `price`, out by the window at world point `at`.
 func say(price: int, at: Vector3) -> void:
+	if FarmTv.away:
+		return
 	_price = price
 	var camera := get_viewport().get_camera_3d()
 	var view := get_viewport_rect().size
@@ -51,8 +54,13 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+## A slip is up and the camera is on the desk.
+func showing() -> bool:
+	return _time <= POP_TIME + HOLD_TIME + FADE_TIME and not FarmTv.away
+
+
 func _draw() -> void:
-	if _time > POP_TIME + HOLD_TIME + FADE_TIME:
+	if not showing():
 		return
 	var pop := minf(_time / POP_TIME, 1.0)
 	var alpha := 1.0 - clampf((_time - POP_TIME - HOLD_TIME) / FADE_TIME, 0.0, 1.0)

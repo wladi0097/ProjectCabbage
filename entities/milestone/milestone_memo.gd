@@ -2,19 +2,20 @@ extends CanvasLayer
 ## Memos (also the game's Steam achievements): each entry in MEMOS has a condition on the save. Every
 ## CHECK_EVERY seconds the first one met and not yet filed is filed (its id goes into save.milestones),
 ## its bonus (if any) applied once, logged, pushed to Steam (SteamAchievements), and a paper memo
-## slides up from the bottom edge, gets stamped, and after HOLD seconds flies into the FILES folder
+## slides up from the bottom edge and after HOLD seconds flies into the FILES folder
 ## (a click on it removes it at once). Several due at once queue up. A memo filed makes the folder
 ## glow softly until it is clicked or GLOW_TIME seconds pass. The game keeps running; only the paper's own rect takes the mouse.
 ## Memos already met when the scene loads (an old save meeting new memos) are filed without the paper.
 ## The FILES folder, a 3D manila folder lying in the desk's bottom-right corner (once a memo is
 ## filed), opens on hover a little and, clicked, shows every memo as a grid of paper cards on a dark
-## shade: the filed ones newest first, then the ones not yet filed, greyed and stamped CLASSIFIED.
+## shade: the filed ones newest first, then the ones not yet filed, greyed.
 ## An X in the top-right corner, a click outside the cards or Esc closes it.
 
 const FONT := preload("res://assets/fonts/Oswald.ttf")
 const BODY_FONT := preload("res://assets/fonts/NunitoSans.ttf")
 const PAPER := Color(0.72, 0.73, 0.69)
 const INK := Color(0.13, 0.15, 0.14)
+## The ink line under the stamp glyph.
 const STAMP := Color(0.55, 0.12, 0.1)
 ## The only saturated colours: the cabbage's green, and research's cold cyan.
 const CABBAGE := Color(0.42, 0.68, 0.25)
@@ -110,7 +111,6 @@ const IN_TIME := 0.35
 const FLY_TIME := 0.55
 const FLY_SCALE := 0.08
 const HOLD := 6.0
-const STAMP_AT := 0.7
 ## One card in the FILES grid.
 const CARD := Vector2(540, 150)
 ## The FILES view's close button (px square), in its top-right corner.
@@ -136,7 +136,6 @@ var _glow_left := 0.0
 var _clock := 0.0
 ## Whether the mouse is on the folder (what the hover eases back to after a flick).
 var _hovered := 0.0
-var _stamped := false
 var _check_in := 0.0
 ## 0 rest .. 1 hovered: the folder's cover lifts, its papers rise, it grows a little.
 var _hover := 0.0
@@ -197,13 +196,9 @@ func _process(delta: float) -> void:
 			return
 		_memo = _queue.pop_front()
 		_t = 0.0
-		_stamped = false
 		_paper.visible = true
 		$Land.play()
 	_t += delta
-	if not _stamped and _t >= STAMP_AT:
-		_stamped = true
-		$Stamp.play()
 	var view := get_viewport().get_visible_rect().size
 	_rest = Vector2(view.x * 0.5, view.y - SIZE.y * 0.5 - 40.0)
 	var centre := _rest.lerp(_rest + Vector2(0, SIZE.y + 70.0), 1.0 - slide_at(_t))
@@ -371,14 +366,7 @@ func _draw_paper() -> void:
 	var line: String = tr("Effective immediately: ") + tr(_memo.bonus) if _memo.has("bonus") else tr(NO_BONUS)
 	_paper.draw_string(FONT, Vector2(28, 168), line, HORIZONTAL_ALIGNMENT_LEFT, w - 56, 21, INK)
 	_paper.draw_line(Vector2(28, 196), Vector2(w - 28, 196), Color(INK, 0.3), 1.0)
-	_paper.draw_string(FONT, Vector2(28, 222), tr("Retain for your records. Records are retained regardless."), HORIZONTAL_ALIGNMENT_LEFT, w - 200, 13, Color(INK, 0.55))
-	if _stamped:
-		# The stamp thumps down slightly too big and settles.
-		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - (_t - STAMP_AT) / 0.12)
-		_paper.draw_set_transform(Vector2(w - 92, 214), deg_to_rad(-9.0), Vector2(pop, pop))
-		_paper.draw_rect(Rect2(-62, -24, 124, 46), Color(STAMP, 0.8), false, 3.0)
-		_paper.draw_string(FONT, Vector2(-62, 12), tr("NOTED"), HORIZONTAL_ALIGNMENT_CENTER, 124, 30, Color(STAMP, 0.8))
-		_paper.draw_set_transform(Vector2.ZERO)
+	_paper.draw_string(FONT, Vector2(28, 222), tr("Retain for your records. Records are retained regardless."), HORIZONTAL_ALIGNMENT_LEFT, w - 56, 13, Color(INK, 0.55))
 
 
 ## The mouse on (1) or off (0) the folder: it eases open or shut, a paper rustle as it opens.
@@ -423,18 +411,12 @@ func _draw_shade() -> void:
 
 
 ## One memo's card: its icon in a box on the left, title, how to file it, and the bonus (or, once
-## filed, its note). Not yet filed: grey paper, stamped CLASSIFIED.
+## filed, its note). Not yet filed: grey paper.
 func _draw_card(card: Control, m: Dictionary) -> void:
 	var filed := SaveManager.save.milestones.has(m.id)
 	var ink := INK if filed else Color(INK, 0.75)
 	card.draw_rect(Rect2(Vector2(6, 6), CARD), Color(0, 0, 0, 0.4))
 	card.draw_rect(Rect2(Vector2.ZERO, CARD), PAPER if filed else PAPER.darkened(0.4))
-	if not filed:
-		# Under the writing, so the title and how stay readable through it.
-		card.draw_set_transform(Vector2(CARD.x - 120, CARD.y * 0.55), deg_to_rad(-12.0))
-		card.draw_rect(Rect2(-92, -22, 184, 42), Color(STAMP, 0.6), false, 3.0)
-		card.draw_string(FONT, Vector2(-92, 11), tr("CLASSIFIED"), HORIZONTAL_ALIGNMENT_CENTER, 184, 28, Color(STAMP, 0.6))
-		card.draw_set_transform(Vector2.ZERO)
 	var box := Rect2(16, 16, CARD.y - 32, CARD.y - 32)
 	card.draw_rect(box, Color(INK, 0.1))
 	card.draw_rect(box, Color(INK, 0.45), false, 2.0)
