@@ -264,6 +264,7 @@ shape = SubResource("HandleShape")
 
 [node name="Interactable" type="Node" parent="Press/Handle" unique_id=988583497]
 script = ExtResource("3_interactable")
+tooltip = "Approval press. Drag a card from the tray onto the pad, then pull this handle all the way down to pay for and approve it."
 
 [node name="Spike" type="Node3D" parent="." unique_id=1042276350]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0442882, 0.75, -0.33673063)
@@ -280,6 +281,7 @@ shape = SubResource("SpikeShape")
 
 [node name="Interactable" type="Node" parent="Spike/Hit"]
 script = ExtResource("3_interactable")
+tooltip = "Approved cards. Click to read every card you have bought."
 enabled = false
 pressable = true
 

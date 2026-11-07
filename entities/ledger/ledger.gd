@@ -1,40 +1,39 @@
 class_name Ledger
 extends Control
-## The stats ledger, there once the "stats_ledger" desk card is stamped. A steel latch sticks out
-## of the desk's left edge; drag it right (heavy, like the projector tab) and a bound ledger slides
-## out with it, past half it runs out the rest of the way, lands and flips open. A click on the
-## latch, or dragging it back left, shuts and stows it. A click on the left page turns back, on the
-## right page forward. The game keeps running behind it.
+## The stats ledger, there once the "stats_ledger" desk card is stamped: a bound grey-green binder
+## (the Binder node, 3D) drops onto the desk's left side. Hovered it lifts a little; clicked, the
+## book slides in from the screen's left edge, lands and flips open. A click on the left page turns
+## back, on the right page forward; the X beside it, a click anywhere else or Esc shuts and stows it.
+## The game keeps running behind it.
 ##
 ## The pages (pages()) are built from the save once a frame while it is open: a performance summary,
 ## a chart of the coins over time from the playtest log, personnel, then every requisition approved,
 ## by play time. The log-derived rows are only rescanned when the log changes.
-## Drawn in 2D like the projector (the camera looks steeply down, a 3D book would read as a strip);
-## _has_point keeps the rest of the screen clicking through to the desk.
+## The open book is drawn in 2D like the projector (the camera looks steeply down, a 3D book would
+## read as a strip); while it is out it takes every click.
 
 ## Requisition lines per page.
 const REQ_PER_PAGE := 12
-## The book follows the latch at most this fast (travels per second).
-const PULL_SPEED := 3.0
-## A press on the latch that moves less than this (px) is a click: it opens or stows the book.
-const CLICK_PX := 8.0
+## The binder's drop onto the desk (m, s), and how far it lifts hovered (m, s).
+const DROP_HEIGHT := 1.2
+const DROP_TIME := 0.45
+const HOVER_LIFT := 0.045
+## Hovered, the binder also tips its front edge up toward the camera (rad).
+const HOVER_TILT := 0.09
+const HOVER_TIME := 0.15
+## The close button beside the open book's top-right corner (px square).
+const CLOSE := 40.0
 ## Page height as a share of the view, page width per height, the spread's top and left margin.
 const PAGE_H := 0.84
 const PAGE_ASPECT := 0.68
 const TOP := 0.08
 const LEFT := 40.0
-## Where the latch sits along the book's front edge (0 top .. 1 bottom), and its size (px).
-const LATCH_AT := 0.62
-const LATCH_SIZE := Vector2(72, 160)
-## How much of the stowed book's edge still shows at the screen edge (px).
-const PEEK := 18.0
 const FONT := preload("res://assets/fonts/Oswald.ttf")
 const PAPER := Color(0.78, 0.78, 0.72)
 const RULE := Color(0.42, 0.5, 0.55, 0.35)
 const MARGIN := Color(0.55, 0.25, 0.22, 0.35)
 const INK := Color(0.13, 0.14, 0.14)
 const BOARD := Color(0.2, 0.23, 0.21)
-const STEEL := Color(0.62, 0.65, 0.61)
 const STAMP := Color(0.55, 0.12, 0.1, 0.7)
 
 @export var latch_sound: AudioStream
@@ -45,12 +44,8 @@ const STAMP := Color(0.55, 0.12, 0.1, 0.7)
 var _out := 0.0
 var _open := 0.0
 var _spread := 0
-var _dragging := false
-var _press_x := 0.0
-var _press_out := 0.0
 var _settling: Tween
-## The latch's slide in from the screen edge when it first turns up (px of offset).
-var _arrive := 0.0
+var _lifting: Tween
 var _hover_side := 0
 ## Typewriter face for the entries; falls back to the default font where none of these exist.
 var _type := SystemFont.new()
@@ -62,26 +57,49 @@ var _points := PackedVector2Array()
 var _cached_pages := []
 var _pages_frame := -1
 
+@onready var _binder: Node3D = $"../Binder"
+@onready var _binder_rest := _binder.position
+
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	_type.font_names = PackedStringArray(["Courier New", "Courier Prime", "Liberation Mono", "DejaVu Sans Mono", "monospace"])
 	_type.font_weight = 600
-	visible = unlocked(SaveManager.save)
+	var hit: Interactable = $"../Binder/Hit/Interactable"
+	hit.grabbed.connect(func() -> void:
+		_play(latch_sound)
+		_settle(true))
+	hit.hovered.connect(_lift.bind(HOVER_LIFT))
+	hit.unhovered.connect(_lift.bind(0.0))
+	_binder.visible = unlocked(SaveManager.save)
+	hit.enabled = _binder.visible
 
 
-func _process(delta: float) -> void:
-	if not visible:
-		if unlocked(SaveManager.save):
-			visible = true
-			_arrive = -LATCH_SIZE.x * 1.5
-			create_tween().tween_property(self, "_arrive", 0.0, 0.4).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-			_play(latch_sound)
-		return
-	if _dragging:
-		var target := clampf(_press_out + (get_local_mouse_position().x - _press_x) / _travel(), 0.0, 1.0)
-		_out = move_toward(_out, target, PULL_SPEED * delta)
-	queue_redraw()
+func _process(_delta: float) -> void:
+	if not _binder.visible and unlocked(SaveManager.save):
+		_drop()
+	if _out > 0.0 or _settling != null and _settling.is_running():
+		queue_redraw()
+
+
+## The binder drops onto the desk from above and settles with a thud.
+func _drop() -> void:
+	_binder.visible = true
+	_binder.position = _binder_rest + Vector3.UP * DROP_HEIGHT
+	var tween := create_tween()
+	tween.tween_property(_binder, "position", _binder_rest, DROP_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func() -> void:
+		_play(thud_sound)
+		$"../Binder/Hit/Interactable".enabled = true)
+
+
+## Lifts the binder `height` above where it lies (hover), eased.
+func _lift(height: float) -> void:
+	if _lifting != null:
+		_lifting.kill()
+	_lifting = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_lifting.tween_property(_binder, "position", _binder_rest + Vector3.UP * height, HOVER_TIME)
+	_lifting.parallel().tween_property($"../Binder/Model", "rotation:x", -HOVER_TILT * height / HOVER_LIFT, HOVER_TIME)
 
 
 static func unlocked(save: SaveGame) -> bool:
@@ -193,41 +211,36 @@ func _pages() -> Array:
 
 # --- Input ---
 
-func _has_point(point: Vector2) -> bool:
-	return visible and (_latch_rect().grow(6.0).has_point(point) or (_out > 0.0 and _book_rect().has_point(point)))
+## While the book is out it takes the whole screen: pages turn it, anywhere else stows it.
+func _has_point(_point: Vector2) -> bool:
+	return _out > 0.0
 
 
 func _gui_input(event: InputEvent) -> void:
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
 		if button.pressed:
-			if _latch_rect().grow(6.0).has_point(button.position):
-				_dragging = true
-				_press_x = button.position.x
-				_press_out = _out
-				_play(latch_sound)
-				if _settling != null:
-					_settling.kill()
-				_settling = create_tween()
-				_settling.tween_property(self, "_open", 0.0, 0.15 * _open)
-			elif _open >= 1.0:
-				var side := _side_at(button.position)
+			var side := _side_at(button.position)
+			if _close_rect().has_point(button.position) or not _book_rect().has_point(button.position):
+				_settle(false)
+			elif _open >= 1.0 and side != 0:
 				@warning_ignore("integer_division")
 				var last := (_pages().size() - 1) / 2
 				var next := clampi(_spread + side, 0, last)
 				if next != _spread:
 					_spread = next
 					_play(page_sound)
-		elif _dragging:
-			_dragging = false
-			var clicked := absf(button.position.x - _press_x) < CLICK_PX
-			_settle(_press_out < 0.5 if clicked else _out > 0.5)
 		accept_event()
 	elif event is InputEventMouseMotion:
 		var at := (event as InputEventMouseMotion).position
-		_hover_side = _side_at(at) if _open >= 1.0 and not _dragging else 0
-		mouse_default_cursor_shape = CURSOR_DRAG if _dragging or _latch_rect().grow(6.0).has_point(at) \
-				else CURSOR_POINTING_HAND if _hover_side != 0 else CURSOR_ARROW
+		_hover_side = _side_at(at) if _open >= 1.0 else 0
+		mouse_default_cursor_shape = CURSOR_POINTING_HAND if _hover_side != 0 or _close_rect().has_point(at) else CURSOR_ARROW
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _out > 0.0 and event.is_action_pressed("ui_cancel"):
+		_settle(false)
+		get_viewport().set_input_as_handled()
 
 
 ## -1 over the left page, 1 over the right page, 0 elsewhere.
@@ -239,6 +252,8 @@ func _side_at(point: Vector2) -> int:
 
 
 func _settle(out: bool) -> void:
+	if _settling != null:
+		_settling.kill()
 	_settling = create_tween()
 	if out:
 		_settling.tween_property(self, "_out", 1.0, 0.3 * (1.0 - _out) + 0.05).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
@@ -274,15 +289,15 @@ func _travel() -> float:
 	return LEFT + _page_size().x * 2.0
 
 
-## The open spread: two pages, the front (right) edge following the latch.
+## The open spread: two pages, sliding in from the left screen edge as it comes out.
 func _book_rect() -> Rect2:
 	var page := _page_size()
-	return Rect2(Vector2(PEEK + _out * _travel() - page.x * 2.0, size.y * TOP), Vector2(page.x * 2.0, page.y))
+	return Rect2(Vector2(_out * _travel() - page.x * 2.0, size.y * TOP), Vector2(page.x * 2.0, page.y))
 
 
-func _latch_rect() -> Rect2:
+func _close_rect() -> Rect2:
 	var book := _book_rect()
-	return Rect2(Vector2(book.end.x + _arrive, book.position.y + book.size.y * LATCH_AT - LATCH_SIZE.y / 2.0), LATCH_SIZE)
+	return Rect2(Vector2(book.end.x + 24.0, book.position.y), Vector2(CLOSE, CLOSE))
 
 
 # --- Drawing ---
@@ -294,9 +309,7 @@ func _draw() -> void:
 	var right := Rect2(Vector2(spine, book.position.y), page)
 	# The cover swings over the spine: over the right page (closed) to over the left (open).
 	var swing := cos(PI * _open) * page.x
-	if _out <= 0.0:
-		draw_rect(Rect2(Vector2(book.end.x - PEEK, book.position.y - 8.0), Vector2(PEEK, book.size.y + 16.0)), BOARD.darkened(0.3))
-	else:
+	if _out > 0.0:
 		var under := right if _open <= 0.0 else book
 		draw_rect(Rect2(under.position + Vector2(10, 12), under.size), Color(0, 0, 0, 0.4))
 		draw_rect(under.grow(8.0), BOARD)
@@ -312,7 +325,12 @@ func _draw() -> void:
 		else:
 			_draw_cover(Rect2(Vector2(spine, book.position.y), Vector2(swing, page.y)).grow(8.0))
 		draw_line(Vector2(spine, book.position.y), Vector2(spine, book.end.y), Color(0, 0, 0, 0.5), 4.0)
-	_draw_latch()
+		# The close button: a dark stamped square with an X, as on the projector.
+		var close := _close_rect()
+		draw_rect(close, Color(INK, 0.9))
+		var x := close.grow(-12.0)
+		draw_line(x.position, x.end, PAPER, 3.0, true)
+		draw_line(Vector2(x.end.x, x.position.y), Vector2(x.position.x, x.end.y), PAPER, 3.0, true)
 
 
 func _draw_cover(cover: Rect2) -> void:
@@ -330,24 +348,6 @@ func _draw_cover(cover: Rect2) -> void:
 			HORIZONTAL_ALIGNMENT_CENTER, label.size.x, int(label.size.y * 0.12), INK)
 	draw_string(FONT, Vector2(label.position.x, label.position.y + label.size.y * 0.88), "FORM L-1   |   NOT FOR CIRCULATION",
 			HORIZONTAL_ALIGNMENT_CENTER, label.size.x, int(label.size.y * 0.08), Color(INK, 0.7))
-
-
-func _draw_latch() -> void:
-	var latch := _latch_rect()
-	# A steel plate on the book's edge and a T-handle bolted to it.
-	draw_rect(Rect2(latch.position + Vector2(5, 6), latch.size), Color(0, 0, 0, 0.45))
-	draw_rect(Rect2(latch.position, Vector2(latch.size.x * 0.45, latch.size.y)), STEEL.darkened(0.35))
-	var grip := Rect2(latch.position + Vector2(latch.size.x * 0.45, latch.size.y * 0.12), Vector2(latch.size.x * 0.55, latch.size.y * 0.76))
-	draw_rect(Rect2(latch.position + Vector2(latch.size.x * 0.4, latch.size.y * 0.42), Vector2(latch.size.x * 0.2, latch.size.y * 0.16)), STEEL.darkened(0.2))
-	draw_rect(grip, STEEL)
-	draw_rect(grip, INK, false, 2.0)
-	draw_rect(Rect2(grip.end - Vector2(grip.size.x * 0.35, grip.size.y), Vector2(grip.size.x * 0.35, grip.size.y)), STEEL.lightened(0.2))
-	for y: float in [0.18, 0.82]:
-		draw_circle(latch.position + Vector2(latch.size.x * 0.22, latch.size.y * y), 4.0, INK)
-	draw_set_transform(latch.position + Vector2(latch.size.x * 0.3, latch.size.y * 0.5), -PI / 2.0)
-	draw_string(FONT, Vector2(-latch.size.y / 2.0, 5.0), "LEDGER" if _out < 0.5 else "STOW",
-			HORIZONTAL_ALIGNMENT_CENTER, latch.size.y, 18, Color(INK, 0.85))
-	draw_set_transform(Vector2.ZERO)
 
 
 func _draw_page(rect: Rect2, index: int, side: int) -> void:

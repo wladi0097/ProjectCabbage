@@ -20,5 +20,9 @@ func _ready() -> void:
 	if Feeder.is_rotten(false, 0.0) or not Feeder.is_rotten(true, 0.0) or Feeder.is_rotten(true, 0.5) 			or not Feeder.is_rotten(true, 0.0, Feeder.MAX_ROTTEN - 1) or Feeder.is_rotten(true, 0.0, Feeder.MAX_ROTTEN):
 		failed = true
 		push_error("is_rotten wrong")
+	# Research units: none before the card, research_chance of fresh ones after.
+	if Feeder.is_research(false, 0.0, 0.1) or not Feeder.is_research(true, 0.05, 0.1) or Feeder.is_research(true, 0.5, 0.1):
+		failed = true
+		push_error("is_research wrong")
 	print("cabbage feeder tests failed" if failed else "cabbage feeder tests passed")
 	get_tree().quit(1 if failed else 0)

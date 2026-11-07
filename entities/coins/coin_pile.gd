@@ -14,6 +14,9 @@ signal deposited(position: Vector3)
 enum State { FLYING, SETTLING, RESTING, HOMING }
 
 const MAX_COINS := 4096
+## The MultiMesh grows by this many instances when the coins outgrow it (never shrinks): the whole
+## buffer is sent each upload, so it is kept near the coins actually out.
+const CHUNK := 256
 const CELL := 0.054
 const THICKNESS := 0.014
 const MAX_STACK := 10
@@ -67,10 +70,11 @@ class Coin:
 	var value := 1
 	var cell := Vector2i.ZERO  # the payout's stack
 	var gone := false  # taken by a vacuum, dropped from _coins at the end of vacuum_at
+	var slot := -1  # the MultiMesh instance _upload last wrote it to (-1: write it again)
 
 
-# ponytail: Array of RefCounted coins, rewritten in full each moving frame; switch to packed
-# arrays if a profile shows the coin loop above ~1 ms.
+# ponytail: Array of RefCounted coins, the moving ones rewritten each frame (resting ones stay put in
+# the buffer); switch to packed arrays if a profile shows the coin loop above ~1 ms.
 var _coins: Array[Coin] = []
 var _stacks := {}  # Vector2i -> Array[Coin], bottom first
 var _buffer := PackedFloat32Array()
@@ -86,9 +90,7 @@ func _ready() -> void:
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.use_colors = true
 	multimesh.use_custom_data = true
-	multimesh.instance_count = MAX_COINS
 	multimesh.visible_instance_count = 0
-	_buffer.resize(MAX_COINS * FLOATS)
 	custom_aabb = AABB(Vector3(-4, -1, -4), Vector3(8, 4, 8))
 	# Coins still flying or lying on the mat are banked when the game quits, not lost.
 	SaveManager.closing.connect(func() -> void: SaveManager.save.coins += pending_value())
@@ -153,6 +155,7 @@ func _process(delta: float) -> void:
 				coin.xf = coin.from.interpolate_with(coin.to, ease(coin.t, 0.4))
 				if coin.t >= 1.0:
 					coin.state = State.RESTING
+					coin.slot = -1  # its final spot still has to be written
 			State.HOMING:
 				if _home(coin, delta):
 					_coins.remove_at(i)
@@ -343,8 +346,16 @@ static func thickness(value: int) -> float:
 	return THICKNESS * BIG_SCALE.y if value >= BIG_VALUE else THICKNESS
 
 
+## Resting coins still in the slot they were last written to are skipped: the buffer keeps them.
 func _upload() -> void:
+	var room := ceili(_coins.size() / float(CHUNK)) * CHUNK
+	if room > multimesh.instance_count:
+		multimesh.instance_count = room
+		_buffer.resize(room * FLOATS)
 	for i in _coins.size():
+		if _coins[i].state == State.RESTING and _coins[i].slot == i:
+			continue
+		_coins[i].slot = i
 		var xf := _coins[i].xf
 		if _coins[i].value >= BIG_VALUE:
 			xf.basis = xf.basis * Basis.from_scale(BIG_SCALE)

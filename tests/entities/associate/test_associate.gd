@@ -51,6 +51,43 @@ func _ready() -> void:
 	if skip_before or not skip_memo or Associate.skips_rotten(memo) or Associate.pick_target([rotten], entry, null, [], true) != null:
 		failed = true
 		push_error("the spoilage memo should keep hands off rotten units until hands_bin")
+	# Research hands never take rotten units, whatever the memo says.
+	if Associate.pick_target([rotten], entry, null, [], false, true) != null:
+		failed = true
+		push_error("research hands should leave rotten units alone")
+	# lab_priority: before it anyone takes a research unit; after it money hands never do and research
+	# hands take one before any nearer ordinary unit.
+	var unit := CABBAGE.instantiate() as Cabbage
+	unit.research = true
+	add_child(unit)
+	unit.global_position = Vector3(0.6, 0.87, 0.75)
+	var plain := CABBAGE.instantiate() as Cabbage
+	add_child(plain)
+	plain.global_position = Vector3(0.0, 0.87, 0.3)
+	var pool: Array = [plain, unit]
+	var lab_entry := Associate.park_spot(0, true)
+	if Associate.pick_target(pool, entry, held, [], false, false, false) != unit \
+			or Associate.pick_target(pool, lab_entry, held, [], false, true, false) != plain \
+			or Associate.pick_target(pool, entry, held, [], false, false, true) != plain \
+			or Associate.pick_target([unit], entry, held, [], false, false, true) != null \
+			or Associate.pick_target(pool, lab_entry, held, [], false, true, true) != unit \
+			or Associate.pick_target(pool, lab_entry, held, [unit], false, true, true) != plain:
+		failed = true
+		push_error("lab_priority picks wrong")
+	unit.queue_free()
+	plain.queue_free()
+	# The toss into the QA bay (MainStoryWorld QaBay at (-0.08, 0.75, -0.8): mouth (0.055, 0.89, -0.84),
+	# front plane z -0.64, opening x -0.07..0.335 local, y 0.76..1.035): a cabbage (r 0.11) passes clear.
+	var mouth := Vector3(0.055, 0.89, -0.84)
+	for jitter: float in [-1.0, 1.0]:
+		var aim := Associate.bay_aim(mouth, jitter)
+		var from := mouth + Associate.RESEARCH_RELEASE
+		var v := Feeder.ballistic_velocity(from, aim, Associate.BAY_LOB)
+		var t := (-0.64 - from.z) / v.z
+		var y := from.y + v.y * t - 0.5 * 9.8 * t * t
+		if y < 0.76 + 0.11 or y > 1.035 - 0.11 or aim.x < -0.08 - 0.07 + 0.11 or aim.x > -0.08 + 0.335 - 0.11:
+			failed = true
+			push_error("toss to %s crosses the bay front at y %.2f" % [aim, y])
 	var bin :=RottenBin.new()  # never in the tree: only its visibility counts here
 	if Associate.bin_for(rotten, 0, bin) != null or Associate.bin_for(rotten, 1, bin) != bin \
 			or Associate.bin_for(cabbages[3], 1, bin) != null or Associate.bin_for(rotten, 1, null) != null:
@@ -91,11 +128,9 @@ func _ready() -> void:
 				if y < 0.8 or y > 1.07 + 0.05:
 					failed = true
 					push_error("lob to %s crosses z -0.6 at y %.2f" % [aim, y])
-	if Associate.PARK_X.size() < Associate.MAX_VISIBLE or Associate.MAX_VISIBLE < 10:
-		failed = true
-		push_error("every visible hand (10) needs a parking spot")
-	# Parking spots sit inside the bottom edge of the world camera's 16:9 frame, never overlap and
-	# keep clear of the waste bin (MainStoryWorld RottenBin at x 0.95).
+	# Idle hands lie in two loose piles inside the bottom edge of the world camera's 16:9 frame, clear
+	# of the waste bin (MainStoryWorld RottenBin at x 0.95): research hands on the QA bay's side, all
+	# left of every money hand, so the lanes don't cross. Later hands rest a layer higher, a little turned.
 	var camera := Camera3D.new()
 	camera.fov = 40.0
 	camera.transform = Transform3D(Basis(Vector3(1, 0, 0), Vector3(0, 0.4826, -0.8758), Vector3(0, 0.8758, 0.4826)), Vector3(0.25, 3.2, 1.6))
@@ -103,13 +138,21 @@ func _ready() -> void:
 	view.size = Vector2i(1920, 1080)
 	add_child(view)
 	view.add_child(camera)
-	var xs: Array[float] = Associate.PARK_X.duplicate()
-	xs.sort()
-	for k in xs.size():
-		var spot := Associate.PARK + Vector3.RIGHT * xs[k]
-		var at := camera.unproject_position(spot) / Vector2(view.size)
-		if k > 0 and xs[k] - xs[k - 1] < 0.2 - 1e-4 or absf(xs[k] - 0.95) < Associate.BIN_CLEAR or at.x < 0.03 or at.x > 0.97 or at.y < 0.8 or at.y > 0.97:
-			failed = true
-			push_error("parking spot %s at screen %s" % [spot, at])
+	var research_right := -INF
+	var money_left := INF
+	for kind: bool in [false, true]:
+		for k in (Associate.MAX_RESEARCH if kind else Associate.MAX_VISIBLE):
+			var spot := Associate.park_spot(k, kind)
+			var at := camera.unproject_position(spot) / Vector2(view.size)
+			if kind:
+				research_right = maxf(research_right, spot.x)
+			else:
+				money_left = minf(money_left, spot.x)
+			if absf(spot.x - 0.95) < Associate.BIN_CLEAR or at.x < 0.03 or at.x > 0.97 or at.y < 0.8 or at.y > 0.97 					or spot.y < Associate.park_spot(maxi(k - Associate.PILE_ROW, 0), kind).y + (Associate.PILE_LAYER - 1e-4 if k >= Associate.PILE_ROW else 0.0) 					or absf(Associate.park_turn(k)) > Associate.PILE_TURN + 1e-4:
+				failed = true
+				push_error("parking spot %s at screen %s" % [spot, at])
+	if research_right >= money_left or Associate.park_spot(3, false) != Associate.park_spot(3, false):
+		failed = true
+		push_error("research pile should lie left of the money pile, spots fixed per index")
 	print("associate tests failed" if failed else "associate tests passed")
 	get_tree().quit(1 if failed else 0)

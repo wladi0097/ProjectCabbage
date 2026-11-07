@@ -32,7 +32,7 @@ func _ready() -> void:
 		push_error("split zone spans %.3f..%.3f" % [left, right])
 	window.free()
 	# One payout hook: every boost multiplies the price; never below 1. Fines: 10x, at most all coins.
-	if Sale.payout(4, {}) != 4 or Sale.payout(4, {lamp = 5.0, combo = 1.5}) != 30 or Sale.payout(1, {x = 0.1}) != 1:
+	if Sale.payout(4, {}) != 4 or Sale.payout(4, {lamp = 5.0, combo = 1.5}) != 30 or Sale.payout(1, {x = 0.1}) != 1 			or Sale.payout(8 * 0.25, {}) != 2 or Sale.payout(1 * 0.25, {}) != 1:
 		failed = true
 		push_error("payout wrong")
 	if Sale.fine_for(4, 100) != 40 or Sale.fine_for(4, 25) != 25 or Sale.fine_for(4, 0) != 0:

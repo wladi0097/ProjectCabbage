@@ -1,0 +1,89 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/mini_drop/mini_drop.gd" id="1_drop"]
+[ext_resource type="PackedScene" uid="uid://bdbnu433pr7xy" path="res://assets/meshes/Machines/mini_tube.blend" id="2_tube"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Table/table_tube.blend" id="5_mat"]
+[ext_resource type="Script" uid="uid://b8vly5jskxxs3" path="res://entities/components/interactable.gd" id="3_interactable"]
+[ext_resource type="Script" uid="uid://s7bovuudwem5" path="res://entities/components/sound_cue.gd" id="4_cue"]
+[ext_resource type="AudioStream" uid="uid://b0mb32fxtafxh" path="res://assets/audio/effects/tray_drop.wav" id="sfx_tray_drop"]
+[ext_resource type="AudioStream" uid="uid://bg7f15vdlfa0q" path="res://assets/audio/effects/press_lever_1.wav" id="sfx_press_lever_1"]
+[ext_resource type="AudioStream" uid="uid://c0h6xlxy48ea" path="res://assets/audio/effects/press_lever_2.wav" id="sfx_press_lever_2"]
+[ext_resource type="AudioStream" uid="uid://ddh0se6i6mr73" path="res://assets/audio/effects/cabbage_roll_1.wav" id="sfx_cabbage_roll_1"]
+[ext_resource type="AudioStream" uid="uid://kd55yx57t4n6" path="res://assets/audio/effects/cabbage_roll_2.wav" id="sfx_cabbage_roll_2"]
+[ext_resource type="AudioStream" uid="uid://ckxk87o70aaxt" path="res://assets/audio/effects/cabbage_roll_3.wav" id="sfx_cabbage_roll_3"]
+
+[sub_resource type="SphereShape3D" id="HandleShape"]
+radius = 0.06
+
+[sub_resource type="BoxShape3D" id="PedestalShape"]
+size = Vector3(0.14, 0.1, 0.1)
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Thud"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 1
+stream_0/stream = ExtResource("sfx_tray_drop")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Clunk"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_press_lever_1")
+stream_1/stream = ExtResource("sfx_press_lever_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Whoosh"]
+random_pitch = 1.15
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_cabbage_roll_1")
+stream_1/stream = ExtResource("sfx_cabbage_roll_2")
+stream_2/stream = ExtResource("sfx_cabbage_roll_3")
+
+[node name="MiniDrop" type="Node3D"]
+script = ExtResource("1_drop")
+
+[node name="TubeDesk" parent="." instance=ExtResource("5_mat")]
+
+[node name="Tube" type="Node3D" parent="."]
+
+[node name="Model" parent="Tube" instance=ExtResource("2_tube")]
+
+[node name="BlockLight" type="OmniLight3D" parent="Tube"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 0.72, -0.64)
+light_color = Color(0.82, 0.9, 1, 1)
+light_energy = 0.5
+omni_range = 0.26
+
+[node name="Pedestal" type="StaticBody3D" parent="Tube"]
+
+[node name="Shape" type="CollisionShape3D" parent="Tube/Pedestal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.58, 0.8, 1.16)
+shape = SubResource("PedestalShape")
+
+[node name="Handle" type="StaticBody3D" parent="Tube"]
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Tube/Handle"]
+shape = SubResource("HandleShape")
+
+[node name="Interactable" type="Node" parent="Tube/Handle"]
+script = ExtResource("3_interactable")
+tooltip = "Tube lever. SALES: minis roll out of the window and sell. RESEARCH: they go to the QA lab for Findings. SPLIT: every other one. Drag it, or click to step."
+
+[node name="Thud" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_Thud")
+bus = &"SFX"
+script = ExtResource("4_cue")
+
+[node name="Clunk" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_Clunk")
+bus = &"SFX"
+script = ExtResource("4_cue")
+
+[node name="Whoosh" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_Whoosh")
+max_polyphony = 2
+bus = &"SFX"
+script = ExtResource("4_cue")
+min_interval = 0.1

@@ -32,8 +32,9 @@ func _ready() -> void:
 	_check(Bin.rotten_due(save), "rot once the bin is stamped")
 	# The real queue: once catch_combo is stamped the bin card is dealt, and rot starts with it.
 	var dealt := SaveGame.new()
-	dealt.stamped = PackedStringArray(["price_slate", "desk_space", "junior_associate", "acceptance_meter",
-			"quality_assurance", "street_posters", "projector", "research_inspection"])
+	dealt.stamped = PackedStringArray(["price_slate", "radio", "desk_space", "junior_associate", "acceptance_meter",
+			"mini_cabbages", "quality_assurance", "street_posters", "projector", "research_inspection",
+			"pricing_consultant", "research_cabbage", "mini_tube"])
 	dealt.tray_unlocked = true
 	_check(not Bin.rotten_due(dealt), "no rot before the bin card is offered")
 	dealt.stamped.append("catch_combo")

@@ -103,10 +103,11 @@ shape = SubResource("ButtonShape")
 
 [node name="Interactable" type="Node" parent="Button"]
 script = ExtResource("2_interactable")
+tooltip = "Buy a pack of units (cabbages) for the price on the ticker, paid from your coins. They roll down the chute."
 pressable = true
 
 [node name="Auto" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.0, 1.0, 0, -1.0, 0.0, 0.065, 0.084, 0.085)
+transform = Transform3D(1, 0, 0, 0, 0.0, 1.0, 0, -1.0, 0.0, 0.04, 0.084, 0.085)
 visible = false
 pixel_size = 0.0007
 modulate = Color(1, 0.62, 0.18, 1)
@@ -123,6 +124,7 @@ shape = SubResource("AutoShape")
 
 [node name="Interactable" type="Node" parent="AutoSwitch"]
 script = ExtResource("2_interactable")
+tooltip = "Auto-buy lamp: amber while on. Click it (or the switch beside it) to turn automatic pack buying on or off."
 enabled = false
 pressable = true
 

@@ -4,6 +4,12 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/qa_flap_shut_1.wav" id="2_latch"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/press_denied_1.wav" id="3_thud"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_pickup_1.wav" id="4_page"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Props/ledger_binder.blend" id="5_binder"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="6_oswald"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="7_interactable"]
+
+[sub_resource type="BoxShape3D" id="BinderShape"]
+size = Vector3(0.23, 0.06, 0.3)
 
 [node name="Ledger" type="CanvasLayer"]
 
@@ -18,3 +24,32 @@ script = ExtResource("1_ledger")
 latch_sound = ExtResource("2_latch")
 thud_sound = ExtResource("3_thud")
 page_sound = ExtResource("4_page")
+
+[node name="Binder" type="Node3D" parent="."]
+transform = Transform3D(0.9925, 0, 0.1219, 0, 1, 0, -0.1219, 0, 0.9925, -1.1, 0.75, 0.2)
+visible = false
+
+[node name="Model" parent="Binder" instance=ExtResource("5_binder")]
+
+[node name="Label" type="Label3D" parent="Binder"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0525, -0.055)
+pixel_size = 0.0007
+modulate = Color(0.14, 0.15, 0.14, 0.9)
+text = "LEDGER"
+font = ExtResource("6_oswald")
+font_size = 64
+outline_size = 0
+
+[node name="Hit" type="StaticBody3D" parent="Binder"]
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Binder/Hit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+shape = SubResource("BinderShape")
+
+[node name="Interactable" type="Node" parent="Binder/Hit"]
+script = ExtResource("7_interactable")
+tooltip = "The ledger: your sales, coins over time, staff and approvals. Click to open."
+enabled = false
+pressable = true

@@ -3,6 +3,40 @@
 [ext_resource type="Script" path="res://entities/milestone/milestone_memo.gd" id="1_script"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_1.wav" id="2_land"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/press_stamp_1.wav" id="3_stamp"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_1.wav" id="4_rustle"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Props/files_folder.blend" id="5_folder"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="6_oswald"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="7_interactable"]
+
+[sub_resource type="StyleBoxFlat" id="ScrollTrack"]
+content_margin_left = 7.0
+content_margin_right = 7.0
+bg_color = Color(0.15, 0.16, 0.15, 0.95)
+border_width_left = 1
+border_width_right = 1
+border_color = Color(0.36, 0.42, 0.38, 1)
+
+[sub_resource type="StyleBoxFlat" id="ScrollGrab"]
+bg_color = Color(0.42, 0.5, 0.45, 1)
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.89, 0.84, 0.5)
+
+[sub_resource type="StyleBoxFlat" id="ScrollGrabLit"]
+bg_color = Color(0.62, 0.68, 0.62, 1)
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.89, 0.84, 0.7)
+
+[sub_resource type="BoxShape3D" id="FolderShape"]
+size = Vector3(0.24, 0.05, 0.3)
+
+[sub_resource type="Theme" id="ListTheme"]
+VScrollBar/styles/grabber = SubResource("ScrollGrab")
+VScrollBar/styles/grabber_highlight = SubResource("ScrollGrabLit")
+VScrollBar/styles/grabber_pressed = SubResource("ScrollGrabLit")
+VScrollBar/styles/scroll = SubResource("ScrollTrack")
+VScrollBar/styles/scroll_focus = SubResource("ScrollTrack")
 
 [node name="MilestoneMemo" type="CanvasLayer"]
 layer = 2
@@ -15,21 +49,74 @@ anchors_preset = 0
 offset_right = 560.0
 offset_bottom = 250.0
 
-[node name="Tab" type="Control" parent="."]
+[node name="Folder" type="Node3D" parent="."]
+transform = Transform3D(0.8951, 0, -0.0941, 0, 0.9, 0, 0.0941, 0, 0.8951, -0.745, 0.75, 0.25)
 visible = false
-layout_mode = 3
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
+
+[node name="Model" parent="Folder" instance=ExtResource("5_folder")]
+
+[node name="Stamp" type="BoneAttachment3D" parent="Folder/Model/Armature/Skeleton3D"]
+bone_name = "CoverHinge"
+bone_idx = 1
+
+[node name="Label" type="Label3D" parent="Folder/Model/Armature/Skeleton3D/Stamp"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0075, 0.16)
+pixel_size = 0.0007
+modulate = Color(0.42, 0.09, 0.07, 1)
+text = "FILES"
+font = ExtResource("6_oswald")
+font_size = 96
+outline_size = 0
+
+[node name="Hit" type="StaticBody3D" parent="Folder"]
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Folder/Hit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+shape = SubResource("FolderShape")
+
+[node name="Interactable" type="Node" parent="Folder/Hit"]
+script = ExtResource("7_interactable")
+tooltip = "Your memos: the ones you have earned and the ones still classified, with how to earn them. Click to open."
+enabled = false
+pressable = true
+
+[node name="Files" type="CanvasLayer" parent="."]
+layer = 6
+visible = false
+
+[node name="Shade" type="ColorRect" parent="Files"]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -84.0
-offset_top = -72.0
-offset_right = -24.0
-offset_bottom = -24.0
-grow_horizontal = 0
-grow_vertical = 0
-mouse_default_cursor_shape = 2
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.11, 0.12, 0.115, 1)
+
+[node name="List" type="ScrollContainer" parent="Files/Shade"]
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -850.0
+offset_top = 130.0
+offset_right = 850.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme = SubResource("ListTheme")
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="Grid" type="GridContainer" parent="Files/Shade/List"]
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 24
+columns = 3
 
 [node name="Land" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_land")
@@ -38,4 +125,9 @@ bus = &"SFX"
 [node name="Stamp" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("3_stamp")
 volume_db = -4.0
+bus = &"SFX"
+
+[node name="Rustle" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_rustle")
+volume_db = -8.0
 bus = &"SFX"

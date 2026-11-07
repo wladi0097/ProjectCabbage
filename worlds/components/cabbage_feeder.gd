@@ -6,7 +6,8 @@ extends Node3D
 ## on its front rail rolls to the stock. Once rotten units are in (save.rotten_unlocked), one in
 ## ROTTEN_EVERY comes down rotten. Rotten units don't take up desk_capacity (the player may leave
 ## them on the mat, they must not stall the chute); while MAX_ROTTEN lie on the mat the chute
-## sends fresh ones only, so they never pile up.
+## sends fresh ones only, so they never pile up. Once the research_cabbage card is stamped, a fresh
+## unit comes down a research unit with the save's research_chance (still stock, sold as usual).
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
 const PLAY_AREA_LAYER := 2
@@ -89,6 +90,11 @@ static func is_rotten(unlocked: bool, roll: float, rotten := 0) -> bool:
 	return unlocked and rotten < MAX_ROTTEN and roll < 1.0 / ROTTEN_EVERY
 
 
+## Whether the next (fresh) unit is a research unit: the card is `stamped`, `roll` is 0..1.
+static func is_research(stamped: bool, roll: float, chance: float) -> bool:
+	return stamped and roll < chance
+
+
 ## Room on the mat for `fresh` units (rotten ones don't count), and stock that isn't on it yet
 ## (`on_desk` counts every unit there).
 static func should_dispense(fresh: int, on_desk: int, capacity: int, stock: int) -> bool:
@@ -97,7 +103,9 @@ static func should_dispense(fresh: int, on_desk: int, capacity: int, stock: int)
 
 func _roll() -> void:
 	var cabbage := CABBAGE.instantiate() as Cabbage
-	cabbage.rotten = is_rotten(SaveManager.save.rotten_unlocked, randf(), _rotten_on_desk)
+	var save := SaveManager.save
+	cabbage.rotten = is_rotten(save.rotten_unlocked, randf(), _rotten_on_desk)
+	cabbage.research = not cabbage.rotten and is_research(save.stamped.has("research_cabbage"), randf(), save.research_chance)
 	get_parent().add_child(cabbage)
 	_on_desk.append(cabbage)
 	var interactable := cabbage.get_node("Interactable") as Interactable

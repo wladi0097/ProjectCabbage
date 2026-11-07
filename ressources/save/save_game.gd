@@ -51,8 +51,12 @@ extends Resource
 @export var price_history := PackedFloat32Array()
 ## The projector tree's nodes bought so far (ids from Projector.NODES), in order.
 @export var tree_bought := PackedStringArray()
-## Units-sold milestones reached (ids from MilestoneMemo's MILESTONES), each bonus applied once.
+## The projector screen has been pulled down once (until then its pull swings hard to be noticed).
+@export var projector_opened := false
+## Memos filed (ids from MilestoneMemo's MEMOS, also the Steam achievements), each reward applied once.
 @export var milestones := PackedStringArray()
+## Tooltips already shown once (their text): from then on they wait a second of hovering (Hand).
+@export var tooltips_seen := PackedStringArray()
 # Manager + pricing consultant (entities/manager/, entities/consultant/).
 ## The manager's quota: seconds given, bonus coins per unit of quota per coin of price, and how
 ## much the last 5 minutes' pace is raised. Upgradeable (projector tree). Quotas met and missed.
@@ -65,6 +69,8 @@ extends Resource
 ## 1 reads the mood, 2 best income after pack costs). Upgradeable (projector tree).
 @export var consultant_interval := 4.0
 @export var consultant_skill := 0
+## The slate's switch: the consultant works (true) or stays away.
+@export var consultant_on := true
 # Sales events: golden lamp, catch combo, rotten units + bin, window targets (entities/golden_lamp/,
 # entities/catch_combo/, entities/rotten_bin/, entities/window_targets/). All upgradeable (projector tree).
 ## Golden lamp: sale multiplier while it glows, seconds it glows, mean seconds between glows.
@@ -107,6 +113,30 @@ extends Resource
 @export var vacuum_reach := 0.07
 ## Cabbages the QA bay analyses at once.
 @export var qa_slots := 1
+# Mini units, the tube and its lever (entities/mini_drop/): they start once the desk card
+# mini_cabbages is stamped. Free (never stock), sold at mini_value times the chalked price.
+## Mean seconds between mini drops, their share of the chalked price, the tube's speed (× base) and
+## the lever: the share of the tube's minis sent to research (0 all sold .. 1 all to research).
+@export var mini_every := 20.0
+@export var mini_value := 0.25
+@export var tube_speed := 1.0
+@export var tube_split := 0.0
+@export var minis_sold := 0
+## Research units (blue, desk card research_cabbage): the chance a unit off the chute is one, the
+## Findings it yields times a normal unit's, and how many have been analysed.
+@export var research_chance := 0.1
+@export var research_mult := 3.0
+@export var research_units := 0
+## Research hands (entities/associate/, research = true): hands that lob units into the QA bay.
+@export var research_hands := 0
+## Units the street refused and threw back in.
+@export var refusals := 0
+## The radio (entities/radio/): playing or stopped, the track it is on, songs skipped, and seconds
+## played with it bought but stopped (for the memos).
+@export var radio_on := true
+@export var radio_track := 0
+@export var songs_skipped := 0
+@export var radio_silent := 0.0
 ## For playtests: every purchase, session start and a snapshot every SaveManager.LOG_EVERY seconds,
 ## each with the play time and the state after it (log_entry). Also written as playtest_log.csv.
 @export var playtest_log: Array[Dictionary] = []

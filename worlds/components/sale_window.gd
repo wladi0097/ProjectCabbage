@@ -2,7 +2,8 @@ class_name SaleWindow
 extends Area3D
 ## The window gap, from the sill outward. A cabbage that reaches it is bought with the chance
 ## PriceSlate.demand gives for the chalked price: it is let go and sucked out into the street, and
-## after a beat the street throws the price in coins back in. Otherwise it is pulled out all the
+## after a beat the street throws the price in coins back in (for a mini unit, save.mini_value of
+## it: minis are no stock). Otherwise it is pulled out all the
 ## same, and after AWAY_TIME the street throws it back onto the mat. Checked every physics tick, so
 ## one pushed out by another or left in the gap is judged too; and one off the mat (fallen, or
 ## hidden behind the press and ramp) for STRAY_TIME is thrown back in, so no cabbage is ever lost.
@@ -66,8 +67,9 @@ func _ready() -> void:
 	layer.add_child(_bubble)
 
 
-## Coins for one sale at `price` with every factor in `boosts`; never below 1.
-static func payout(price: int, factors: Dictionary) -> int:
+## Coins for one sale at `price` (a mini's is a share of the chalked price) with every factor in
+## `boosts`; never below 1.
+static func payout(price: float, factors: Dictionary) -> int:
 	var total := float(price)
 	for factor: float in factors.values():
 		total *= factor
@@ -138,15 +140,22 @@ func _judge(cabbage: Cabbage) -> void:
 		fined.emit(cabbage, fine)
 		return
 	if not _buys(Slate.acceptance(save)):
+		save.refusals += 1
 		cabbage.send_away(out, SUCK_TIME)
 		refused.emit(cabbage)
 		_bubble.say(price, out)
 		_send_back(cabbage, SUCK_TIME + randf_range(AWAY_TIME.x, AWAY_TIME.y), true)
 		return
 	cabbage.suck_out(out, SUCK_TIME)
-	SaveManager.save.stock -= 1
-	SaveManager.save.sold += 1
-	var paid := payout(price, boosts)
+	var paid: int
+	if cabbage.mini:
+		# Free units: no stock, no units sold, a share of the price.
+		save.minis_sold += 1
+		paid = payout(price * save.mini_value, boosts)
+	else:
+		save.stock -= 1
+		save.sold += 1
+		paid = payout(price, boosts)
 	sold.emit(cabbage, paid)
 	coins.throw_in_after(THROW_DELAY, Vector3(x, throw_from.y, throw_from.z), paid)
 

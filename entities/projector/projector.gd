@@ -24,334 +24,293 @@ extends Control
 ## node multiplies each save number in `mul`, raises each in `add`, and `hire` adds one hand.
 ## `research` names the desk card that unlocks it (see locked_by).
 ## `at` is the spot on the wheel (centre 0,0; x is drawn 1.6 times wider than y): marketing up, QA
-## down, manual handling right (procurement and desk space, sales events, management fanning out),
-## automation left (consultancy, supply chain, coin units, associates, headcount); THEMES names the
-## fans. Generated, with no overlaps or crossing edges, by tools/projector_layout/layout.py from its
+## down (research, lab hands), manual handling right (procurement and desk space, minis, sales events,
+## management fanning out), automation left (consultancy, supply chain, coin units, associates,
+## headcount); THEMES names the fans. Generated, with no overlaps or crossing edges, by tools/projector_layout/layout.py from its
 ## sectors.json.
 const NODES := [
 	# Departments: free sub-hubs around the hub, one per direction, never bought (`dept`). Greyed until
 	# their own `needs` / `research` are met; every upgrade hangs under exactly one of them.
 	{id = "dept_marketing", parent = "", at = Vector2(0.12, -0.60), icon = "megaphone", price = 0,
 		dept = true, needs = ["street_posters"], title = "MARKETING",
-		body = "The street is told what it wants.
-Slogans and campaigns: the street accepts higher prices."},
+		body = "The street is told what it wants.\nSlogans and campaigns: each raises the price the\nstreet pays before it starts refusing units."},
 	{id = "dept_manual", parent = "", at = Vector2(0.84, 0.00), icon = "hand", price = 0,
 		dept = true, title = "MANUAL HANDLING",
-		body = "Work you still do yourself.
-Packs, desk space, catches, the bin, targets,
-the lamp and the manager's quotas."},
+		body = "Work you still do yourself.\nPacks, desk space, minis, catches, the bin,\ntargets, the lamp and the manager's quotas."},
 	{id = "dept_qa", parent = "", at = Vector2(0.00, 0.77), icon = "lens", price = 0,
 		dept = true, needs = ["quality_assurance"], research = "research_inspection", title = "QUALITY ASSURANCE",
-		body = "Every unit is a lesson.
-Faster analysis, more Findings, more benches."},
+		body = "Every unit is a lesson.\nFaster analysis, more Findings (¶) per unit, more\nbenches, research units and lab hands."},
 	{id = "dept_automation", parent = "", at = Vector2(-0.61, 0.00), icon = "belt", price = 0,
 		dept = true, needs = ["junior_associate"], title = "AUTOMATION",
-		body = "Work that no longer needs you.
-Headcount, walking speed, conveyors, auto-buy,
-coin units and the consultant."},
+		body = "Work that no longer needs you.\nHired hands, conveyors, auto-buy, coin robots,\nthe consultant and the waste protocol."},
 	{id = "slogan_1", parent = "dept_marketing", at = Vector2(0.12, -1.03), icon = "megaphone", price = 35,
 		mul = {marketing = 1.25}, title = "SLOGAN I",
-		body = "\"Cabbage. Because you have to eat.\"
-The street accepts prices 25% higher."},
+		body = "\"Cabbage. Because you have to eat.\"\nThe street pays 25% more before it refuses units."},
 	{id = "slogan_2", parent = "slogan_1", at = Vector2(0.12, -1.46), icon = "megaphone", price = 120,
 		mul = {marketing = 1.25}, title = "SLOGAN II",
-		body = "\"Cabbage. Compliance tastes green.\"
-The street accepts prices 25% higher."},
+		body = "\"Cabbage. Compliance tastes green.\"\nThe street pays 25% more before it refuses units."},
 	{id = "slogan_3", parent = "slogan_2", at = Vector2(-0.24, -1.89), icon = "megaphone", price = 900,
 		mul = {marketing = 1.25}, title = "SLOGAN III",
-		body = "\"Cabbage. You were expecting something else?\"
-The street accepts prices 25% higher."},
+		body = "\"Cabbage. You were expecting something else?\"\nThe street pays 25% more before it refuses units."},
 	{id = "slogan_4", parent = "slogan_3", at = Vector2(-0.49, -2.32), icon = "megaphone", price = 5500,
 		research = "research_sentiment", mul = {marketing = 1.25}, title = "SLOGAN IV",
-		body = "\"Cabbage. It has been decided.\"
-The street accepts prices 25% higher."},
+		body = "\"Cabbage. It has been decided.\"\nThe street pays 25% more before it refuses units."},
 	{id = "slogan_5", parent = "slogan_4", at = Vector2(-0.49, -2.75), icon = "megaphone", price = 22500,
 		mul = {marketing = 1.25}, title = "SLOGAN V",
-		body = "\"Cabbage. Your household quota is attached.\"
-The street accepts prices 25% higher."},
+		body = "\"Cabbage. Your household quota is attached.\"\nThe street pays 25% more before it refuses units."},
 	{id = "slogan_6", parent = "slogan_5", at = Vector2(-0.49, -3.18), icon = "megaphone", price = 105000,
 		mul = {marketing = 1.25}, title = "SLOGAN VI",
-		body = "\"Cabbage.\"
-The street accepts prices 25% higher."},
+		body = "\"Cabbage.\"\nThe street pays 25% more before it refuses units."},
 	{id = "pack_1", parent = "dept_manual", at = Vector2(1.54, -0.18), icon = "crate", price = 400,
 		add = {pack_size = 3}, title = "BULK PROCUREMENT",
-		body = "Volume is policy.
-3 more units in every pack (10 to 13)."},
+		body = "Volume is policy.\nEvery pack from the supply console holds 3 more\nunits: 13 instead of 10."},
 	{id = "pack_2", parent = "pack_1", at = Vector2(1.98, -0.52), icon = "crate", price = 875,
 		research = "research_materials", add = {pack_size = 40}, title = "CONTAINER ORDERS",
-		body = "A container is parked in the street.
-40 more units in every pack (13 to 53)."},
+		body = "A container is parked in the street.\nEvery pack holds 40 more units: 53 instead of 13."},
 	{id = "conveyor_1", parent = "dept_automation", at = Vector2(-0.99, -0.87), icon = "belt", price = 775,
 		research = "research_materials", mul = {dispense_interval = 0.5}, add = {desk_capacity = 2}, title = "CONVEYOR RETROFIT",
-		body = "The ramp is motorised.
-Units roll down the ramp twice as often.
-2 more units fit on the mat."},
+		body = "The ramp is motorised.\nThe chute rolls a unit down every 0.5 s, not 1 s.\n2 more units fit on the mat."},
 	{id = "conveyor_2", parent = "conveyor_1", at = Vector2(-1.47, -1.51), icon = "belt", price = 13500,
 		mul = {dispense_interval = 0.67}, add = {desk_capacity = 2}, title = "CONVEYOR II",
-		body = "A second motor, same belt.
-Units roll down the ramp 50% more often.
-2 more units fit on the mat."},
+		body = "A second motor, same belt.\nThe chute rolls a unit down every 0.33 s, not 0.5 s.\n2 more units fit on the mat."},
 	{id = "conveyor_3", parent = "conveyor_2", at = Vector2(-1.95, -2.15), icon = "belt", price = 67500,
 		mul = {dispense_interval = 0.67}, add = {desk_capacity = 2}, title = "CONVEYOR III",
-		body = "Safety guards removed.
-Units roll down the ramp 50% more often.
-2 more units fit on the mat."},
+		body = "Safety guards removed.\nThe chute rolls a unit down every 0.22 s, not 0.33 s.\n2 more units fit on the mat."},
 	{id = "associate_1", parent = "dept_automation", at = Vector2(-1.50, 0.75), icon = "clock", price = 180,
 		needs = ["junior_associate"], mul = {associate_speed = 1.5}, title = "BRISK WALK I",
-		body = "A stopwatch on every associate's desk.
-Associates move 50% faster."},
+		body = "A stopwatch on every associate's desk.\nHired hands and lab hands move 50% faster."},
 	{id = "associate_2", parent = "associate_1", at = Vector2(-2.03, 0.94), icon = "clock", price = 525,
 		research = "performance_review", mul = {associate_speed = 1.5}, title = "BRISK WALK II",
-		body = "Lunch is now a standing meeting.
-Associates move 50% faster."},
+		body = "Lunch is now a standing meeting.\nHired hands and lab hands move 50% faster again\n(2.25× the start speed)."},
 	{id = "hire_associate_2", parent = "dept_automation", at = Vector2(-1.10, 0.58), icon = "hand", price = 150,
 		needs = ["junior_associate"], hire = true, title = "HIRE ASSOCIATE II",
-		body = "Headcount approved.
-One more associate selling units off the mat."},
+		body = "Headcount approved.\nOne more hired hand throwing units out of the\nwindow: 1 to 2 hands."},
 	{id = "hire_associate_3", parent = "hire_associate_2", at = Vector2(-1.19, 0.97), icon = "hand", price = 400,
 		hire = true, title = "HIRE ASSOCIATE III",
-		body = "Another sleeve, same grey.
-One more associate selling units off the mat."},
+		body = "Another sleeve, same grey.\nOne more hired hand throwing units out of the\nwindow: 2 to 3 hands."},
 	{id = "hire_associate_4", parent = "hire_associate_3", at = Vector2(-1.29, 1.36), icon = "hand", price = 1100,
 		hire = true, title = "HIRE ASSOCIATE IV",
-		body = "Interviews were waived.
-One more associate selling units off the mat."},
+		body = "Interviews were waived.\nOne more hired hand throwing units out of the\nwindow: 3 to 4 hands."},
 	{id = "hire_associate_5", parent = "hire_associate_4", at = Vector2(-1.39, 1.75), icon = "hand", price = 3000,
 		research = "performance_review", hire = true, title = "HIRE ASSOCIATE V",
-		body = "The desk is now a department.
-One more associate selling units off the mat."},
+		body = "The desk is now a department.\nOne more hired hand throwing units out of the\nwindow: 4 to 5 hands."},
 	{id = "hire_associate_6", parent = "hire_associate_5", at = Vector2(-1.49, 2.14), icon = "hand", price = 12000,
 		hire = true, title = "HIRE ASSOCIATE VI",
-		body = "Names are no longer collected.
-One more associate selling units off the mat."},
+		body = "Names are no longer collected.\nOne more hired hand throwing units out of the\nwindow: 5 to 6 hands."},
 	{id = "hire_associate_7", parent = "hire_associate_6", at = Vector2(-1.59, 2.53), icon = "hand", price = 35000,
 		hire = true, title = "HIRE ASSOCIATE VII",
-		body = "A second coat rack is requisitioned.
-One more associate selling units off the mat."},
+		body = "A second coat rack is requisitioned.\nOne more hired hand throwing units out of the\nwindow: 6 to 7 hands."},
 	{id = "hire_associate_8", parent = "hire_associate_7", at = Vector2(-1.69, 2.92), icon = "hand", price = 100000,
 		hire = true, title = "HIRE ASSOCIATE VIII",
-		body = "Full complement. Morale is not tracked.
-One more associate selling units off the mat."},
+		body = "Full complement. Morale is not tracked.\nOne more hired hand throwing units out of the\nwindow: 7 to 8 hands."},
 	{id = "qa_time", parent = "dept_qa", at = Vector2(0.00, 1.33), icon = "lens", price = 425,
 		needs = ["quality_assurance"], research = "research_inspection", mul = {qa_time = 0.75}, title = "FASTER ANALYSIS",
-		body = "The scan line is told to hurry.
-QA takes 25% less time per unit (5 s to 3.75 s)."},
+		body = "The scan line is told to hurry.\nThe QA bay analyses a unit in 3.75 s, not 5 s."},
 	{id = "qa_findings", parent = "qa_time", at = Vector2(0.15, 1.89), icon = "pilcrow", price = 575,
 		add = {findings_per_cabbage = 1}, title = "MORE FINDINGS",
-		body = "Standards are revised.
-One more Finding per unit analysed."},
+		body = "Standards are revised.\nEach unit analysed gives 2 Findings, not 1."},
 	{id = "qa_fast_track", parent = "qa_findings", at = Vector2(0.15, 2.45), icon = "lens", price = 5000,
 		mul = {qa_time = 0.5}, title = "QA FAST TRACK",
-		body = "Analysis is now a formality.
-QA takes half the time per unit."},
+		body = "Analysis is now a formality.\nThe QA bay analyses a unit in 1.9 s, not 3.75 s."},
 	{id = "double_findings", parent = "qa_fast_track", at = Vector2(0.15, 3.01), icon = "pilcrow", price = 20000,
 		mul = {findings_per_cabbage = 2}, title = "DOUBLE FINDINGS",
-		body = "Every finding is filed twice.
-Twice the Findings per unit analysed."},
+		body = "Every finding is filed twice.\nEach unit analysed gives 4 Findings, not 2."},
 	# Supply + automation (desk space, packs, auto-buy, hands, seating, campaigns, vacuums, QA rest):
 	# entities/supply_console/, entities/associate/, entities/vacuum/, entities/qa_bay/.
 	{id = "desk_1", parent = "pack_2", at = Vector2(2.16, -1.18), icon = "desk", price = 1000,
 		add = {desk_capacity = 4}, title = "HOT-DESKING",
-		body = "Units now share the mat.
-Four more units fit on the mat."},
+		body = "Units now share the mat.\n4 more units fit on the mat (the chute keeps it full)."},
 	{id = "desk_2", parent = "desk_1", at = Vector2(2.26, -1.57), icon = "desk", price = 5000,
 		add = {desk_capacity = 4}, title = "CLEAR-DESK POLICY",
-		body = "Personal items have been binned.
-Four more units fit on the mat."},
+		body = "Personal items have been binned.\n4 more units fit on the mat."},
 	{id = "desk_3", parent = "desk_2", at = Vector2(2.36, -1.96), icon = "desk", price = 18000,
 		add = {desk_capacity = 4}, title = "MAXIMUM OCCUPANCY",
-		body = "The fire code has been reinterpreted.
-Four more units fit on the mat."},
+		body = "The fire code has been reinterpreted.\n4 more units fit on the mat."},
 	{id = "discount_1", parent = "pack_1", at = Vector2(2.03, -0.07), icon = "crate", price = 400,
 		mul = {pack_discount = 0.85}, title = "SUPPLIER REVIEW",
-		body = "The supplier is reminded of alternatives.
-Packs cost 15% less."},
+		body = "The supplier is reminded of alternatives.\nPacks cost 15% less. The ticker shows the cut price."},
 	{id = "discount_2", parent = "discount_1", at = Vector2(2.49, -0.18), icon = "crate", price = 2500,
 		mul = {pack_discount = 0.68}, title = "EXCLUSIVITY CLAUSE",
-		body = "The supplier has no other customers now.
-Packs cost 32% less."},
+		body = "The supplier has no other customers now.\nPacks cost 32% less again: 58% of the full price,\nnot 85%."},
 	{id = "auto_reserve_1", parent = "dept_automation", at = Vector2(-1.21, -0.44), icon = "clock", price = 1500,
 		needs = ["auto_procurement"], add = {auto_reserve = 7}, title = "SAFETY STOCK",
-		body = "The order is placed earlier.
-Auto-buy reorders at 10 units left, not 3."},
+		body = "The order is placed earlier.\nAuto-buy orders a pack at 10 units left, not 3."},
 	{id = "auto_reserve_2", parent = "auto_smart_1", at = Vector2(-2.17, -1.73), icon = "clock", price = 17500,
 		add = {auto_reserve = 15, auto_max_factor = -0.2}, title = "STRATEGIC PROCUREMENT",
-		body = "A second shelf is approved. Procurement watches the ticker.
-Auto-buy reorders at 25 units left, not 10,
-and waits for 20% below base pack price unless stock runs out."},
+		body = "A second shelf is approved.\nAuto-buy orders at 25 units left, not 10, and waits\nfor 20% below base pack price unless stock is out."},
 	{id = "auto_smart_1", parent = "auto_reserve_1", at = Vector2(-1.69, -1.09), icon = "lens", price = 3000,
 		add = {auto_max_factor = -0.5}, title = "PRICE DISCIPLINE",
-		body = "The order waits for a fair price.
-Auto-buy waits for the base pack price or lower,
-unless stock runs out."},
+		body = "The order waits for a fair price.\nAuto-buy waits for the base pack price or lower\n(it used to pay up to 150%), unless stock runs out."},
 	{id = "hire_associate_9", parent = "hire_associate_8", at = Vector2(-1.78, 3.31), icon = "hand", price = 250000,
 		hire = true, title = "HIRE ASSOCIATE IX",
-		body = "Desks are now shared in shifts.
-One more associate selling units off the mat."},
+		body = "Desks are now shared in shifts.\nOne more hired hand throwing units out of the\nwindow: 8 to 9 hands."},
 	{id = "hire_associate_10", parent = "hire_associate_9", at = Vector2(-1.88, 3.70), icon = "hand", price = 400000,
 		hire = true, title = "HIRE ASSOCIATE X",
-		body = "Headcount is final. For now.
-One more associate selling units off the mat."},
+		body = "Headcount is final. For now.\nOne more hired hand throwing units out of the\nwindow: 9 to 10 hands."},
 	{id = "seating_1", parent = "associate_1", at = Vector2(-1.89, 1.36), icon = "chair", price = 500,
 		mul = {hand_output = 1.5}, title = "OPEN-PLAN SEATING I",
-		body = "The walls between associates come down.
-Associates make 50% more trips."},
+		body = "The walls between associates come down.\nHired hands and lab hands set off 50% more often:\nevery 5.3 s, not 8 s (2.7 s, not 4 s, after the study)."},
 	{id = "seating_2", parent = "seating_1", at = Vector2(-2.36, 1.76), icon = "chair", price = 13500,
 		mul = {hand_output = 1.5}, title = "OPEN-PLAN SEATING II",
-		body = "Chairs are replaced with a bench.
-Associates make 50% more trips."},
+		body = "Chairs are replaced with a bench.\nHired hands and lab hands set off 50% more often\nagain (e.g. every 1.8 s, not 2.7 s)."},
 	{id = "campaign_1", parent = "slogan_2", at = Vector2(0.49, -1.89), icon = "megaphone", price = 220,
 		mul = {marketing = 1.25}, title = "SYNERGY JINGLE",
-		body = "Four notes. Staff are asked to hum them.
-The street accepts prices 25% higher."},
+		body = "Four notes. Staff are asked to hum them.\nThe street pays 25% more before it refuses units."},
 	{id = "campaign_2", parent = "campaign_1", at = Vector2(0.49, -2.32), icon = "megaphone", price = 1500,
 		mul = {marketing = 1.25}, title = "LEAF IT TO US",
-		body = "Legal approved the pun.
-The street accepts prices 25% higher."},
+		body = "Legal approved the pun.\nThe street pays 25% more before it refuses units."},
 	{id = "campaign_3", parent = "campaign_2", at = Vector2(0.49, -2.75), icon = "megaphone", price = 2500,
 		mul = {marketing = 1.25}, title = "CRUCIFEROUS EXCELLENCE",
-		body = "Nobody knows the word. Everyone trusts it.
-The street accepts prices 25% higher."},
+		body = "Nobody knows the word. Everyone trusts it.\nThe street pays 25% more before it refuses units."},
 	{id = "campaign_4", parent = "slogan_3", at = Vector2(0.00, -2.32), icon = "megaphone", price = 2500,
 		research = "research_sentiment", mul = {marketing = 1.25}, title = "BRASSICA FOR THE MASSES",
-		body = "Posters in every stairwell.
-The street accepts prices 25% higher."},
+		body = "Posters in every stairwell.\nThe street pays 25% more before it refuses units."},
 	{id = "campaign_5", parent = "campaign_4", at = Vector2(0.00, -2.75), icon = "megaphone", price = 20000,
 		mul = {marketing = 1.25}, title = "TRUSTED BY THE MINISTRY",
-		body = "The Ministry has not denied it.
-The street accepts prices 25% higher."},
+		body = "The Ministry has not denied it.\nThe street pays 25% more before it refuses units."},
 	{id = "campaign_6", parent = "campaign_5", at = Vector2(0.00, -3.18), icon = "megaphone", price = 67500,
 		mul = {marketing = 1.25}, title = "THE ONLY VEGETABLE",
-		body = "Other vegetables are under review.
-The street accepts prices 25% higher."},
+		body = "Other vegetables are under review.\nThe street pays 25% more before it refuses units."},
 	{id = "vacuum_speed_1", parent = "dept_automation", at = Vector2(-1.20, 0.05), icon = "puck", price = 900,
 		needs = ["coin_collector"], mul = {vacuum_speed = 1.5}, title = "FIRMWARE UPDATE",
-		body = "The unit is told to hurry.
-Coin units move 50% faster."},
+		body = "The unit is told to hurry.\nCoin robots drive 50% faster."},
 	{id = "vacuum_2", parent = "vacuum_speed_1", at = Vector2(-1.75, 0.10), icon = "puck", price = 5500,
 		add = {vacuums = 1, vacuum_capacity = 12}, title = "SECOND UNIT",
-		body = "A second unit is unboxed, with a bigger bag.
-One more coin unit on the mat.
-Coin units carry 12 more coins per trip (8 to 20)."},
+		body = "A second unit is unboxed, with a bigger bag.\nA second coin robot docks on the mat.\nEach robot carries 20 coins per trip, not 8."},
 	{id = "vacuum_speed_2", parent = "vacuum_2", at = Vector2(-2.31, 0.14), icon = "puck", price = 20000,
 		mul = {vacuum_speed = 1.5, vacuum_reach = 1.5}, title = "FIRMWARE UPDATE II",
-		body = "Obstacle detection is disabled. The unit is louder now.
-Coin units move 50% faster and reach 50% further."},
+		body = "Obstacle detection is disabled. The unit is louder.\nCoin robots drive 50% faster again and suck up\ncoins from 50% further away."},
 	{id = "vacuum_3", parent = "vacuum_speed_2", at = Vector2(-2.87, 0.19), icon = "puck", price = 87500,
 		add = {vacuums = 1, vacuum_capacity = 30}, title = "THIRD UNIT",
-		body = "The units have formed a department. The bag is now a sack.
-One more coin unit on the mat.
-Coin units carry 30 more coins per trip (20 to 50)."},
+		body = "The units have formed a department.\nA third coin robot docks on the mat.\nEach robot carries 50 coins per trip, not 20."},
 	{id = "qa_slot_2", parent = "qa_time", at = Vector2(-0.15, 1.89), icon = "lens", price = 900,
 		add = {qa_slots = 1}, title = "SECOND BENCH",
-		body = "A second bench in the bay.
-QA analyses two units at once."},
+		body = "A second bench in the bay.\nThe QA bay analyses 2 units at once, not 1."},
 	{id = "qa_slot_3", parent = "qa_slot_2", at = Vector2(-0.15, 2.45), icon = "lens", price = 35000,
 		add = {qa_slots = 1}, title = "THIRD BENCH",
-		body = "The bay is now a lab.
-QA analyses three units at once."},
+		body = "The bay is now a lab.\nThe QA bay analyses 3 units at once, not 2."},
 	# Manager (down-right) and pricing consultant (up-right): entities/manager/, entities/consultant/.
 	{id = "manager_time", parent = "dept_manual", at = Vector2(1.01, 0.92), icon = "clock", price = 200,
 		needs = ["managerial_oversight"], add = {manager_time = 15.0}, title = "EXTENDED DEADLINES",
-		body = "The manager is shown a calendar.
-Quotas give 60 s instead of 45 s."},
+		body = "The manager is shown a calendar.\nQuotas give you 60 s instead of 45 s."},
 	{id = "manager_reward_1", parent = "manager_time", at = Vector2(1.11, 1.48), icon = "crate", price = 875,
 		mul = {manager_reward = 1.5}, title = "PERFORMANCE BONUS",
-		body = "Bonuses are now discussed openly.
-Met quotas pay 50% more."},
+		body = "Bonuses are now discussed openly.\nMet quotas pay quota × price × 1.5, not × 1."},
 	{id = "manager_raise", parent = "manager_reward_1", at = Vector2(1.21, 2.04), icon = "lens", price = 2000,
 		add = {manager_raise = -0.1}, title = "REALISTIC TARGETS",
-		body = "Ambition is capped by memo.
-Quotas ask 115% of your recent pace, not 125%."},
+		body = "Ambition is capped by memo.\nQuotas ask 115% of your recent pace, not 125%."},
 	{id = "manager_reward_2", parent = "manager_raise", at = Vector2(1.31, 2.60), icon = "crate", price = 6250,
 		mul = {manager_reward = 1.5}, title = "EMPLOYEE OF THE QUARTER",
-		body = "A frame is purchased. It stays empty.
-Met quotas pay 50% more."},
+		body = "A frame is purchased. It stays empty.\nMet quotas pay quota × price × 2.25, not × 1.5."},
 	{id = "consultant_speed_1", parent = "dept_automation", at = Vector2(-0.86, -1.47), icon = "clock", price = 200,
 		needs = ["pricing_consultant"], mul = {consultant_interval = 0.5}, title = "BILLABLE HOURS",
-		body = "The consultant bills by the tap.
-It adjusts the price every 2 s instead of 4 s."},
+		body = "The consultant bills by the tap.\nIt taps the slate every 2 s instead of 4 s."},
 	{id = "consultant_mood", parent = "consultant_speed_1", at = Vector2(-0.94, -1.96), icon = "lens", price = 725,
 		add = {consultant_skill = 1}, title = "READS THE ROOM",
-		body = "The consultant looks out of the window.
-Its target price follows the street's mood
-(±25%), not the textbook."},
+		body = "The consultant looks out of the window.\nIt reads the street's mood (it drifts up to ±25%),\nso ~90% of units still sell when the mood turns."},
 	{id = "consultant_smart", parent = "consultant_mood", at = Vector2(-1.02, -2.45), icon = "crate", price = 2000,
 		add = {consultant_skill = 1}, title = "YIELD OPTIMISATION",
-		body = "Some units may now be refused.
-It aims for the most profit per unit after
-pack costs, even if some units are refused."},
+		body = "Some units may now be refused.\nIt aims for the most coins per unit after pack costs.\nWhile hired hands find no unit, it asks $1 more a tap\n(up to 1.6× the price at which every unit sells)."},
 	{id = "consultant_speed_2", parent = "consultant_smart", at = Vector2(-1.11, -2.95), icon = "clock", price = 18000,
 		mul = {consultant_interval = 0.5}, title = "RETAINER",
-		body = "The consultant no longer leaves.
-It adjusts the price twice as often (every 1 s)."},
+		body = "The consultant no longer leaves.\nIt taps the slate every 1 s instead of 2 s."},
 	# Sales events (golden lamp up-left, catch combo far up-left, waste bin down, window targets far
 	# right): entities/golden_lamp/, catch_combo/, rotten_bin/, window_targets/.
 	{id = "lamp_mult", parent = "dept_manual", at = Vector2(1.90, 0.38), icon = "crate", price = 32500,
 		needs = ["golden_lamp"], add = {lamp_mult = 3.0}, title = "GILDED FILAMENT",
-		body = "The bulb is replaced with a better bulb.
-The golden lamp pays ×8 instead of ×5."},
+		body = "The bulb is replaced with a better bulb.\nWhile the lamp glows, sales pay 8× instead of 5×."},
 	{id = "lamp_time", parent = "lamp_mult", at = Vector2(2.37, 0.90), icon = "clock", price = 42500,
 		mul = {lamp_time = 1.5}, title = "EXTENDED BURN",
-		body = "The lamp's timer is taped down.
-It glows for 30 s instead of 20 s."},
+		body = "The lamp's timer is taped down.\nIt glows for 30 s instead of 20 s."},
 	{id = "lamp_every", parent = "lamp_time", at = Vector2(2.83, 1.42), icon = "clock", price = 67500,
 		mul = {lamp_every = 0.6}, title = "LOOSE WIRING",
-		body = "Maintenance has been told not to look.
-It glows about every 90 s instead of 150 s."},
+		body = "Maintenance has been told not to look.\nIt glows about every 90 s instead of 150 s."},
 	{id = "combo_window", parent = "dept_manual", at = Vector2(1.74, 0.74), icon = "clock", price = 150,
 		needs = ["catch_combo"], mul = {combo_window = 1.5}, title = "GRACE PERIOD",
-		body = "Interceptions are counted generously.
-The combo holds 6 s after a catch, not 4 s."},
+		body = "Interceptions are counted generously.\nThe combo holds 6 s after a catch, not 4 s."},
 	{id = "combo_cap", parent = "combo_window", at = Vector2(2.21, 1.26), icon = "crate", price = 725,
 		add = {combo_cap = 0.5}, title = "UNCAPPED ENTHUSIASM",
-		body = "The ceiling is raised by memo.
-The combo tops out at +100% instead of +50%."},
+		body = "The ceiling is raised by memo.\nThe combo tops out at +100% instead of +50%."},
 	{id = "combo_step", parent = "combo_cap", at = Vector2(2.67, 1.78), icon = "hand", price = 4250,
 		mul = {combo_step = 2.0}, title = "REFLEX TRAINING",
-		body = "A mandatory seminar on catching things.
-Each catch adds +20% to sales instead of +10%."},
+		body = "A mandatory seminar on catching things.\nEach catch adds +20% to sales instead of +10%."},
 	{id = "bin_mouth", parent = "dept_manual", at = Vector2(1.43, 1.46), icon = "lens", price = 120,
 		needs = ["rotten_bin"], mul = {bin_mouth = 1.35}, title = "WIDER RECEPTACLE",
-		body = "A larger bin is requisitioned.
-Its mouth is 35% wider."},
+		body = "A larger bin is requisitioned.\nThe bin's mouth is 35% wider: units let go nearby\ndrop in from further away."},
 	{id = "bin_rebate", parent = "bin_mouth", at = Vector2(1.89, 1.98), icon = "crate", price = 575,
 		add = {bin_rebate = 0.2}, title = "DISPOSAL REBATE",
-		body = "Waste is now a revenue stream.
-Each binned unit pays 20% of your chalked price."},
+		body = "Waste is now a revenue stream.\nA binned rotten unit pays 20% of your price\n(nothing before)."},
 	{id = "bin_rebate_2", parent = "bin_rebate", at = Vector2(2.36, 2.50), icon = "crate", price = 775,
 		add = {bin_rebate = 0.25}, title = "SALVAGE CREDIT",
-		body = "Rot is reclassified as inventory.
-Each binned unit pays 45% of your chalked price, not 20%."},
+		body = "Rot is reclassified as inventory.\nA binned rotten unit pays 45% of your price\n(20% before)."},
 	{id = "bin_rebate_3", parent = "bin_rebate_2", at = Vector2(2.82, 3.02), icon = "crate", price = 3500,
 		add = {bin_rebate = 0.25}, title = "COMPOST CONTRACT",
-		body = "The Ministry buys it by the tonne. Nobody asks for what.
-Each binned unit pays 70% of your chalked price, not 45%."},
+		body = "The Ministry buys it by the tonne.\nA binned rotten unit pays 70% of your price\n(45% before)."},
 	{id = "bin_rebate_4", parent = "bin_rebate_3", at = Vector2(3.29, 3.55), icon = "crate", price = 13000,
 		add = {bin_rebate = 0.25}, title = "WASTE MONETISATION",
-		body = "Spoilage now has its own quarterly target.
-Each binned unit pays 95% of your chalked price, not 70%."},
+		body = "Spoilage now has its own quarterly target.\nA binned rotten unit pays 95% of your price\n(70% before)."},
 	{id = "bin_rebate_5", parent = "bin_rebate_4", at = Vector2(3.76, 4.07), icon = "crate", price = 40000,
 		add = {bin_rebate = 0.25}, title = "SPOILAGE PREMIUM",
-		body = "A rotten unit is worth more than a fresh one. This is fine.
-Each binned unit pays 120% of your chalked price, not 95%."},
+		body = "A rotten unit is worth more than a fresh one. Fine.\nA binned rotten unit pays 120% of your price\n(95% before)."},
 	{id = "hands_bin", parent = "dept_automation", at = Vector2(-0.52, 0.96), icon = "hand", price = 400,
 		needs = ["junior_associate", "rotten_bin"], add = {hands_bin = 1}, title = "WASTE HANDLING PROTOCOL",
-		body = "Associates are shown where the bin is.
-Associates throw rotten units in the bin
-instead of selling or leaving them."},
+		body = "Associates are shown where the bin is.\nHired hands throw rotten units into the bin\ninstead of selling them or leaving them."},
 	{id = "target_size", parent = "dept_manual", at = Vector2(1.58, 1.10), icon = "lens", price = 575,
 		needs = ["window_targets"], mul = {target_size = 1.5}, title = "BROADER FLOODLIGHT",
-		body = "The street lamp is pointed less carefully.
-Lit targets are 50% wider."},
+		body = "The street lamp is pointed less carefully.\nLit crates are 50% wider: more sales land in them."},
 	{id = "target_every", parent = "target_size", at = Vector2(2.05, 1.62), icon = "clock", price = 575,
 		mul = {target_every = 0.6}, title = "STREET COOPERATION",
-		body = "The street has been asked to stand still.
-A target lights about every 36 s, not 60 s."},
+		body = "The street has been asked to stand still.\nA crate lights about every 36 s, not 60 s."},
 	{id = "target_shower", parent = "target_every", at = Vector2(2.52, 2.14), icon = "crate", price = 5500,
 		mul = {target_shower = 2}, title = "PRIZE CRATES",
-		body = "The crates are lined with coin.
-A hit adds +20× the sale's coins instead of +10×."},
+		body = "The crates are lined with coin.\nA hit adds 20× the sale's coins instead of 10×."},
+	# Minis and the tube (right, between procurement and sales events): entities/mini_drop/.
+	{id = "mini_rate_1", parent = "dept_manual", at = Vector2(0.96, -0.68), icon = "clock", price = 90,
+		needs = ["mini_cabbages"], mul = {mini_every = 0.7}, title = "MINIATURISATION I",
+		body = "The units are asked to be smaller, sooner.\nMinis drop 43% more often (every 14 s, not 20 s)."},
+	{id = "mini_rate_2", parent = "mini_rate_1", at = Vector2(0.70, -1.46), icon = "clock", price = 500,
+		mul = {mini_every = 0.7}, title = "MINIATURISATION II",
+		body = "Nobody measured the old ones.\nMinis drop 43% more often (wait between drops\n×0.7, e.g. every 9.8 s, not 14 s)."},
+	{id = "mini_rate_3", parent = "mini_rate_2", at = Vector2(0.81, -2.09), icon = "clock", price = 2000,
+		mul = {mini_every = 0.7}, title = "MINIATURISATION III",
+		body = "The units are now a rounding error.\nMinis drop 43% more often (wait between drops\n×0.7, e.g. every 6.9 s, not 9.8 s)."},
+	{id = "mini_value_1", parent = "mini_rate_1", at = Vector2(1.06, -1.30), icon = "crate", price = 180,
+		add = {mini_value = 0.08}, title = "PORTION REVIEW",
+		body = "A mini is reclassified as a third.\nMinis sell for 1/3 of your price, not 1/4."},
+	{id = "mini_value_2", parent = "mini_value_1", at = Vector2(1.17, -1.93), icon = "crate", price = 900,
+		add = {mini_value = 0.17}, title = "HALF-UNIT STANDARD",
+		body = "The street is told it is half a cabbage.\nMinis sell for 1/2 of your price, not 1/3."},
+	{id = "tube_speed_1", parent = "mini_rate_1", at = Vector2(1.42, -1.15), icon = "belt", price = 300,
+		needs = ["mini_tube"], mul = {tube_speed = 1.5, mini_every = 0.8}, title = "PNEUMATIC PRESSURE",
+		body = "The compressor is set past its label.\nMinis roll through the tube 50% faster and drop\n25% more often (the wait between drops ×0.8)."},
+	# Research units and lab hands (QA, down): Cabbage.research, entities/associate/ (research hands).
+	{id = "research_mult_1", parent = "dept_qa", at = Vector2(-0.44, 1.61), icon = "pilcrow", price = 350,
+		needs = ["research_cabbage"], add = {research_mult = 2.0}, title = "PEER REVIEW",
+		body = "Each research unit is read by two people.\nBlue research units give 5× the Findings, not 3×."},
+	{id = "research_mult_2", parent = "research_mult_1", at = Vector2(-0.50, 2.19), icon = "pilcrow", price = 1600,
+		add = {research_mult = 3.0}, title = "LONGITUDINAL STUDY",
+		body = "The study is extended indefinitely.\nBlue research units give 8× the Findings, not 5×."},
+	{id = "research_mult_3", parent = "research_mult_2", at = Vector2(-0.70, 2.57), icon = "pilcrow", price = 7500,
+		add = {research_mult = 4.0}, title = "CONTROL GROUP",
+		body = "Half the units are told nothing.\nBlue research units give 12× the Findings, not 8×."},
+	{id = "research_mult_4", parent = "research_mult_3", at = Vector2(-0.90, 2.95), icon = "pilcrow", price = 35000,
+		add = {research_mult = 8.0}, title = "PUBLISH OR PERISH",
+		body = "The findings are published internally.\nBlue research units give 20× the Findings, not 12×."},
+	{id = "research_chance_1", parent = "research_mult_1", at = Vector2(-0.79, 1.80), icon = "lens", price = 800,
+		add = {research_chance = 0.05}, title = "SAMPLING QUOTA",
+		body = "More units are selected at random.\n1 unit in ~7 off the chute is blue, not 1 in 10."},
+	{id = "research_chance_2", parent = "research_chance_1", at = Vector2(-0.99, 2.19), icon = "lens", price = 4500,
+		add = {research_chance = 0.05}, title = "SAMPLING QUOTA II",
+		body = "Random is redefined.\n1 unit in 5 off the chute is blue, not 1 in ~7."},
+	{id = "research_chance_3", parent = "research_chance_2", at = Vector2(-1.19, 2.57), icon = "lens", price = 22000,
+		add = {research_chance = 0.05}, title = "SAMPLING QUOTA III",
+		body = "Every unit is now a candidate.\n1 unit in 4 off the chute is blue, not 1 in 5."},
+	{id = "lab_hand_2", parent = "dept_qa", at = Vector2(0.50, 1.92), icon = "hand", price = 900,
+		needs = ["research_assistant"], add = {research_hands = 1}, title = "SECOND LAB ASSISTANT",
+		body = "A second coat, a smaller size.\nOne more lab hand tossing units into the QA bay:\n1 to 2 lab hands."},
+	{id = "lab_hand_3", parent = "lab_hand_2", at = Vector2(0.72, 2.41), icon = "hand", price = 9000,
+		add = {research_hands = 1}, title = "THIRD LAB ASSISTANT",
+		body = "The lab has a waiting list now.\nOne more lab hand tossing units into the QA bay:\n2 to 3 lab hands."},
 ]
 ## Each theme's faint heading on the slide, where its branch ends (same units as a node's `at`).
 const THEMES := [
@@ -364,6 +323,9 @@ const THEMES := [
 	["COIN UNITS", Vector2(-3.10, 0.31)],
 	["ASSOCIATES", Vector2(-3.10, 2.21)],
 	["HEADCOUNT", Vector2(-1.66, 4.26)],
+	["MINI UNITS", Vector2(1.25, -2.31)],
+	["RESEARCH", Vector2(-1.21, 3.17)],
+	["LAB HANDS", Vector2(0.82, 2.75)],
 ]
 ## The screen's rect as fractions of the view: centred, 70% wide, unrolled down to 88% of the height.
 const SCREEN := Rect2(0.15, 0.0, 0.7, 0.88)
@@ -393,6 +355,17 @@ const GRAVITY := 20.0
 const DAMP := 0.98
 const STEP := 1.0 / 120.0
 const TIE_HEIGHT := 1.6
+## A faint draught keeps it dangling: a sideways push (m/s², x and z) that drifts in slow,
+## overlapping waves (wind_at).
+const WIND := Vector2(1.1, 0.6)
+## Tugs to draw the eye (tug_at): a push at the pull's own swing rate, so it swings hard. Until the
+## screen has been opened once it swings at TUG_FIRST (~40°); after that, for TUG_TIME whenever an
+## upgrade newly becomes buyable or affordable, at TUG_OFFER (~25°). Offers are counted every
+## OFFER_CHECK seconds.
+const TUG_FIRST := 5.0
+const TUG_OFFER := 3.0
+const TUG_TIME := 3.0
+const OFFER_CHECK := 0.5
 ## The pennant's width and height (m), and how far its face is tipped back toward the camera (rad):
 ## at rest, and lifted nearly flat while the hand pinches it.
 const TAB := Vector2(0.13, 0.11)
@@ -453,6 +426,8 @@ var _tree := Control.new()
 var _layer := Node2D.new()
 var _top := Control.new()
 var _layer_key := []
+## The sheet was down at the last redraw (rolled up, _draw is empty and needs no redraw).
+var _sheet_drawn := true
 ## Node prices sorted, to count the affordable ones cheaply (they change the drawing).
 static var _prices := PackedInt32Array()
 ## The pull in the 3D world: its body, the tipping tab, the cord, its handle and material.
@@ -467,6 +442,13 @@ var _tilt := TAB_TILT
 var _tie := Vector3.ZERO
 var _bob := Vector3.ZERO
 var _bob_last := Vector3.ZERO
+## Seconds of draught so far (wind_at).
+var _wind_time := 0.0
+## Seconds of offer tug left, seconds to the next offer count, and the last count (upgrades that can
+## be held, ones that can be bought; -1 before the first count, which never tugs).
+var _tug_left := 0.0
+var _offer_in := 0.0
+var _offers := Vector2i(-1, -1)
 var _step_left := 0.0
 ## While dragged, the tab keeps this offset from the mouse's point under it (no lag, no jump).
 var _grab_offset := Vector3.ZERO
@@ -532,6 +514,14 @@ func _process(delta: float) -> void:
 		elif _denied == 0.0:
 			_denied = 0.5
 			_play(denied_sound)
+	_offer_in -= delta
+	if _offer_in <= 0.0:
+		_offer_in = OFFER_CHECK
+		var now := offers(save)
+		if offer_grew(_offers, now):
+			_tug_left = TUG_TIME
+		_offers = now
+	_tug_left = maxf(_tug_left - delta, 0.0)
 	_move_pull(delta)
 	# The bar trails the swinging pull a little while the sheet is loose; lit, the sheet hangs flat.
 	_sway = lerpf(_sway, clampf((_grip_px.x - _tie_px().x) * 0.4, -24.0, 24.0) * (1.0 - _lamp) * minf(_drop * 4.0, 1.0),
@@ -551,7 +541,10 @@ func _process(delta: float) -> void:
 			_layer_key = key
 			_layer.queue_redraw()
 		_top.queue_redraw()
-	queue_redraw()
+	# Rolled up, _draw draws nothing: one last redraw clears the sheet, then none.
+	if _drop > 0.0 or _sheet_drawn:
+		queue_redraw()
+	_sheet_drawn = _drop > 0.0
 
 
 ## The pull: while dragged it sits under the mouse; otherwise it swings on its cord, in fixed STEPs.
@@ -578,7 +571,8 @@ func _move_pull(delta: float) -> void:
 		_step_left = minf(_step_left + delta, 0.1)
 		while _step_left >= STEP:
 			_step_left -= STEP
-			var next := swing(_bob, _bob_last, _tie, STEP)
+			_wind_time += STEP
+			var next := swing(_bob, _bob_last, _tie, STEP, wind_at(_wind_time) + tug_at(_wind_time, _tug()))
 			_bob_last = _bob
 			_bob = next
 	var up := _bob.direction_to(_tie)
@@ -747,8 +741,45 @@ static func _sum(into: Dictionary, effect: Dictionary) -> void:
 
 ## One STEP of the pull's tab, a Verlet point on a rope of CORD from `tie`: it keeps DAMP of its
 ## velocity (`bob` - `last`), falls, and the rope stops it going further than CORD.
-static func swing(bob: Vector3, last: Vector3, tie: Vector3, delta: float) -> Vector3:
-	return rope(tie, bob + (bob - last) * DAMP + Vector3.DOWN * GRAVITY * delta * delta, CORD)
+static func swing(bob: Vector3, last: Vector3, tie: Vector3, delta: float, push := Vector3.ZERO) -> Vector3:
+	return rope(tie, bob + (bob - last) * DAMP + (Vector3.DOWN * GRAVITY + push) * delta * delta, CORD)
+
+
+## The tug's push `time` seconds in at `strength` (m/s²): sideways, at the pendulum's own rate.
+static func tug_at(time: float, strength: float) -> Vector3:
+	return Vector3.RIGHT * strength * sin(time * sqrt(GRAVITY / CORD))
+
+
+## How many upgrades can be held (reachable, not bought, not locked) and how many of those `save`
+## can pay for.
+static func offers(save: SaveGame) -> Vector2i:
+	var out := Vector2i.ZERO
+	for node: Dictionary in NODES:
+		if can_hold(node.id, save):
+			out.x += 1
+			out.y += int(save.coins >= node.price)
+	return out
+
+
+## Whether the pull should tug now that `now` upgrades are on offer after `before`: more can be held
+## or more paid for (never on the first count).
+static func offer_grew(before: Vector2i, now: Vector2i) -> bool:
+	return before.x >= 0 and (now.x > before.x or now.y > before.y)
+
+
+## The tug's strength now: hard until the screen was first opened (an old save that bought upgrades
+## has), then TUG_OFFER while _tug_left runs (easing out over its last second).
+func _tug() -> float:
+	var save := SaveManager.save
+	if not save.projector_opened and save.tree_bought.is_empty():
+		return TUG_FIRST
+	return TUG_OFFER * clampf(_tug_left, 0.0, 1.0)
+
+
+## The draught's push `time` seconds in: slow gusts that never quite repeat, never still for long.
+static func wind_at(time: float) -> Vector3:
+	var gust := 0.6 + 0.4 * sin(time * 0.37)
+	return Vector3(WIND.x * sin(time * 1.3) * gust, 0.0, WIND.y * sin(time * 0.9 + 1.7) * gust)
 
 
 ## `point` pulled back to within `length` of `tie` (a rope: slack is fine, never longer).
@@ -894,6 +925,7 @@ func _build_pull() -> void:
 	_handle = Interactable.new()
 	_handle.reach = true
 	_handle.carried = true
+	_handle.tooltip = "Pull down to open the projector: the upgrade tree. Hold an upgrade there to buy it with coins."
 	_handle.hovered.connect(_touch_tab.bind(true))
 	_handle.unhovered.connect(_touch_tab.bind(false))
 	_handle.grabbed.connect(_grab)
@@ -942,6 +974,8 @@ func _settle(down: bool) -> void:
 		_settling.kill()
 	_settling = create_tween()
 	if down:
+		SaveManager.save.projector_opened = true
+		_tug_left = 0.0
 		_play(roll_down_sound)
 		_settling.tween_property(self, "_drop", 1.0, 0.35 * (1.0 - _drop) + 0.05).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 		# The lamp warms up with a stutter.

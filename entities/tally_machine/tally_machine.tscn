@@ -17,6 +17,8 @@ stream_2/stream = ExtResource("sfx_tally_tick_3")
 
 [node name="TallyMachine" type="Node3D"]
 script = ExtResource("1_script")
+hover_area = AABB(-0.38, 0, 0.053, 0.66, 0.14, 0.08)
+tooltip = "Coins: the money you have. Prices in $ (cards, upgrades, packs) are paid from here. Coins on the mat only count once you sweep them in."
 
 [node name="Model" parent="." instance=ExtResource("2_model")]
 

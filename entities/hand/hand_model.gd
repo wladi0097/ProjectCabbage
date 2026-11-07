@@ -43,11 +43,15 @@ const MAX_SWAY := 0.6
 ## Cartoon squash when the hand changes pose: how hard per pose, and how fast it settles.
 const PUNCH := { Pose.POINT: 0.3, Pose.OPEN: -0.5, Pose.GRAB: 1.0, Pose.PINCH: 0.6, Pose.REACH: 0.4 }
 const PUNCH_SPEED := 10.0
+## Seconds after a pose change until the blend is done (exp(-POSE_SPEED * 1.5) ~ 4e-11): the fingers
+## then snap to the pose exactly and the skeleton is left alone until the next change.
+const SETTLE_TIME := 1.5
 
 var pose := Pose.POINT:
 	set(value):
 		if value != pose:
 			_punch = PUNCH[value]
+			_settling = SETTLE_TIME
 		pose = value
 ## Uniform scale about the anchor (the hired hands are half size).
 var size := 1.0
@@ -60,6 +64,8 @@ var _sway := Vector3.ZERO
 var _last_target := Vector3.ZERO
 var _bones: Array[PackedInt32Array] = []
 var _sleeve := -1
+## Seconds of pose blend left (SETTLE_TIME); 0 once the fingers sit exactly on the pose.
+var _settling := 0.0
 
 @onready var _skeleton: Skeleton3D = $Model/Armature/Skeleton3D
 
@@ -77,12 +83,15 @@ func move_to(target: Vector3, delta: float) -> void:
 	if delta > 0.0:
 		var velocity := (target - _last_target) / delta if _last_target != Vector3.ZERO else Vector3.ZERO
 		_sway = _sway.lerp(sway(velocity), 1.0 - exp(-SWAY_SPEED * delta))
-		var t := 1.0 - exp(-POSE_SPEED * delta)
-		_anchor = _anchor.lerp(ANCHORS[pose], t)
-		_pitch = lerpf(_pitch, PITCH.get(pose, 0.0), t)
-		_yaw = lerpf(_yaw, YAW.get(pose, 0.0), t)
-		_angles = blend(_angles, POSES[pose], t)
-		_apply_angles()
+		if _settling > 0.0:
+			_settling -= delta
+			# Done blending: land on the pose exactly (one last skeleton update).
+			var t := 1.0 if _settling <= 0.0 else 1.0 - exp(-POSE_SPEED * delta)
+			_anchor = _anchor.lerp(ANCHORS[pose], t)
+			_pitch = lerpf(_pitch, PITCH.get(pose, 0.0), t)
+			_yaw = lerpf(_yaw, YAW.get(pose, 0.0), t)
+			_angles = blend(_angles, POSES[pose], t)
+			_apply_angles()
 		_punch *= exp(-PUNCH_SPEED * delta)
 	_last_target = target
 	basis = Basis.from_euler(_sway + Vector3(_pitch, _yaw, 0.0)) * Basis.from_scale(squash(_punch) * size)

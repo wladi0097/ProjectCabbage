@@ -121,6 +121,14 @@ enum ShadowQuality { LOW, MEDIUM, HIGH }
 		sfx_muted = is_muted
 		AudioServer.set_bus_mute(AudioServer.get_bus_index('SFX'), is_muted)
 
+## The desk radio's old-set sound (band-pass, crackle, squash on the Radio bus); off plays it clean.
+@export var radio_filter := true:
+	set(on):
+		radio_filter = on
+		var bus := AudioServer.get_bus_index('Radio')
+		for i in AudioServer.get_bus_effect_count(bus) if bus >= 0 else 0:
+			AudioServer.set_bus_effect_enabled(bus, i, on)
+
 # -- Gameplay --
 @export var language := "":
 	get:

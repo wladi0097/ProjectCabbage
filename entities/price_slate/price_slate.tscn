@@ -66,6 +66,7 @@ shape = SubResource("ArrowShape")
 
 [node name="Interactable" type="Node" parent="Down" unique_id=295971598]
 script = ExtResource("2_interactable")
+tooltip = "Lower your price by $1. A lower price means fewer units are refused, but each one earns less."
 pressable = true
 
 [node name="Label" type="Label3D" parent="Down" unique_id=2050193159]
@@ -84,6 +85,7 @@ shape = SubResource("ArrowShape")
 
 [node name="Interactable" type="Node" parent="Up" unique_id=939184124]
 script = ExtResource("2_interactable")
+tooltip = "Raise your price by $1. Each unit earns more, but past what the street accepts, more are refused."
 pressable = true
 
 [node name="Label" type="Label3D" parent="Up" unique_id=1472678271]

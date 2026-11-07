@@ -25,6 +25,11 @@ const SQUISH_TIME := 0.6
 const ROTTEN_MATERIAL := preload("res://assets/materials/cabbage_rotten.tres")
 ## A rotten one sags: this much lower, a little wider.
 const SLUMP := Vector3(1.08, 0.78, 1.08)
+## A mini unit's linear size (mesh, collider; mass goes with its cube, about a quarter).
+const MINI_SCALE := 0.63
+## A research unit: a cold cyan lab glow, and a faint light of the same tint on the mat around it.
+const RESEARCH_MATERIAL := preload("res://assets/materials/cabbage_research.tres")
+const RESEARCH_LIGHT := Color(0.45, 0.9, 1.0)
 
 ## How hard it is pulled toward the hand per metre of lag.
 @export var follow := 18.0
@@ -35,6 +40,11 @@ const SLUMP := Vector3(1.08, 0.78, 1.08)
 
 var sold := false
 var rotten := false
+## A mini unit (entities/mini_drop/): a quarter-size free one, sold at save.mini_value of the price.
+## Never rotten. Set before it enters the tree, like rotten.
+var mini := false
+## A research unit: glows a cold cyan, yields save.research_mult times the Findings in the QA bay. Never rotten.
+var research := false
 ## Out of the window or on its way back after a refusal: the SaleWindow leaves it alone.
 var away := false
 ## Seconds the SaleWindow has seen it off the mat in a row.
@@ -62,11 +72,18 @@ var _squish := 0.0:
 func _ready() -> void:
 	add_to_group(&"cabbages")
 	$Mesh.mesh = MESHES.pick_random()
-	var size := randf_range(1.0 - SIZE_SPREAD, 1.0 + SIZE_SPREAD)
+	var size := randf_range(1.0 - SIZE_SPREAD, 1.0 + SIZE_SPREAD) * (MINI_SCALE if mini else 1.0)
 	_look = Basis.from_euler(Vector3(randf(), randf(), randf()) * TAU).scaled(Vector3.ONE * 1.5 * size)
 	if rotten:
 		$Mesh.material_override = ROTTEN_MATERIAL
 		_look = Basis.from_scale(SLUMP) * _look
+	elif research:
+		$Mesh.material_override = RESEARCH_MATERIAL
+		var glow := OmniLight3D.new()
+		glow.light_color = RESEARCH_LIGHT
+		glow.light_energy = 0.5
+		glow.omni_range = 0.35
+		add_child(glow)
 	$Mesh.basis = _look
 	var ball := $Shape.shape.duplicate() as SphereShape3D
 	ball.radius *= size

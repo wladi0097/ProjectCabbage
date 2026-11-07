@@ -1,0 +1,122 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/radio/radio.gd" id="1_radio"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Props/radio.blend" id="4_model"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="5_font"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_drop"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_press_1.wav" id="sfx_press_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_press_2.wav" id="sfx_press_2"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_thud"]
+random_pitch = 1.03
+random_volume_offset_db = 1.5
+streams_count = 1
+stream_0/stream = ExtResource("sfx_drop")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_click"]
+random_pitch = 1.12
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_press_1")
+stream_1/stream = ExtResource("sfx_press_2")
+
+[sub_resource type="CylinderShape3D" id="KeyShape"]
+height = 0.05
+radius = 0.05
+
+[sub_resource type="StandardMaterial3D" id="DustMat"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.55, 0.53, 0.5, 0.5)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+
+[sub_resource type="QuadMesh" id="DustQuad"]
+material = SubResource("DustMat")
+size = Vector2(0.03, 0.03)
+
+[sub_resource type="Gradient" id="DustFade"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[node name="Radio" type="Node3D"]
+script = ExtResource("1_radio")
+
+[node name="Model" parent="." instance=ExtResource("4_model")]
+
+[node name="Track" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0585, 0.1585)
+pixel_size = 0.0005
+modulate = Color(1, 0.62, 0.18, 1)
+shaded = false
+text = "01"
+font = ExtResource("5_font")
+font_size = 56
+outline_size = 0
+
+[node name="PlayKey" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0.072)
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="PlayKey"]
+shape = SubResource("KeyShape")
+
+[node name="Interactable" type="Node" parent="PlayKey"]
+script = ExtResource("2_interactable")
+tooltip = "Play or stop the radio."
+pressable = true
+
+[node name="SkipKey" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0.245)
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SkipKey"]
+shape = SubResource("KeyShape")
+
+[node name="Interactable" type="Node" parent="SkipKey"]
+script = ExtResource("2_interactable")
+tooltip = "Skip to the next song."
+pressable = true
+
+[node name="Dust" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 40
+lifetime = 1.4
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("DustQuad")
+emission_shape = 3
+emission_box_extents = Vector3(0.14, 0.01, 0.34)
+direction = Vector3(1, 0.2, 0)
+spread = 180.0
+flatness = 0.8
+gravity = Vector3(0, 0.05, 0)
+initial_velocity_min = 0.2
+initial_velocity_max = 0.5
+damping_min = 0.6
+damping_max = 1.0
+scale_amount_min = 0.6
+scale_amount_max = 1.6
+color_ramp = SubResource("DustFade")
+
+[node name="SongA" type="AudioStreamPlayer" parent="."]
+bus = &"Radio"
+
+[node name="SongB" type="AudioStreamPlayer" parent="."]
+bus = &"Radio"
+
+[node name="Thud" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_thud")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="Click" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_click")
+bus = &"SFX"
+script = ExtResource("3_cue")
+min_interval = 0.05

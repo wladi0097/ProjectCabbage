@@ -12,7 +12,8 @@ extends Node3D
 ## a new unit while others are analysed; the flap only shuts once every bench is busy. Rotten units
 ## are refused: the chamber spits them back onto the mat (they are the bin's business). Units still
 ## being analysed and slips not filed yet are counted when the game quits. The coin vacuums leave
-## slips alone.
+## slips alone. A research unit yields research_mult times the Findings, a mini unit a share
+## (findings_for); minis are no stock. The tube's minis are filed straight into the lab (file_direct).
 
 const FLAP_TIME := 0.18
 ## Where the cabbage is sucked to (bay space, behind the back wall) and how long that takes; the
@@ -53,6 +54,8 @@ const DESK_Y := 0.76
 
 ## Seconds each unit on a bench has been analysed, oldest first.
 var _jobs: Array[float] = []
+## Findings each unit on a bench will yield (findings_for), same order as _jobs.
+var _yields: Array[int] = []
 ## Slips out of the bay and not filed yet (on their way out, on the desk or homing); value in meta.
 var _slips: Array[Node3D] = []
 var _progress := 0.0
@@ -127,10 +130,10 @@ func _on_entered(body: Node3D) -> void:
 		$FlapShut.cue(cabbage.global_position)
 		return
 	_jobs.append(0.0)
+	_yields.append(_take(cabbage))
 	# Off the mat for good: the feeder rolls the next one in while this one is analysed.
 	cabbage.suck_out(to_global(SUCK_TO), SUCK_TIME)
 	$Out.cue(cabbage.global_position)
-	SaveManager.save.stock -= 1
 	if not has_room():
 		_swing_flap(1.0)
 	_lamp.emission_energy_multiplier = LAMP_GLOW
@@ -145,9 +148,37 @@ func _on_entered(body: Node3D) -> void:
 	scan.tween_property(self, "_scan", 0.0, RETURN_TIME).set_trans(Tween.TRANS_SINE)
 
 
+## Findings one analysed unit yields: a research unit research_mult times findings_per_cabbage,
+## a mini mini_value of it (at least 1), any other findings_per_cabbage.
+static func findings_for(cabbage: Cabbage, save: SaveGame) -> int:
+	if cabbage.research:
+		return roundi(save.findings_per_cabbage * save.research_mult)
+	if cabbage.mini:
+		return maxi(1, roundi(save.findings_per_cabbage * save.mini_value))
+	return save.findings_per_cabbage
+
+
+## A unit taken in: off the stock (minis are none), counted if research. Returns its Findings.
+func _take(cabbage: Cabbage) -> int:
+	var save := SaveManager.save
+	if not cabbage.mini:
+		save.stock -= 1
+	if cabbage.research:
+		save.research_units += 1
+	return findings_for(cabbage, save)
+
+
+## Delivered by the tube straight into the lab: no bench, no slip, its Findings are filed at once.
+func file_direct(cabbage: Cabbage) -> void:
+	SaveManager.save.findings += _take(cabbage)
+	$ScanSound.cue(cabbage.global_position)
+	$Out.cue(cabbage.global_position)
+	cabbage.queue_free()
+
+
 func _finish() -> void:
 	_jobs.pop_front()
-	_eject(SaveManager.save.findings_per_cabbage)
+	_eject(_yields.pop_front())
 	$Done.cue($Done.global_position)
 	if not _jobs.is_empty():
 		# A bench came free: the flap opens again, the lamp stays on.
@@ -164,8 +195,11 @@ func _finish() -> void:
 
 ## Quitting: the units on the benches and the slips not filed yet yield their Findings now.
 func _file_pending() -> void:
-	SaveManager.save.findings += _jobs.size() * SaveManager.save.findings_per_cabbage + pending_findings()
+	for amount in _yields:
+		SaveManager.save.findings += amount
+	SaveManager.save.findings += pending_findings()
 	_jobs.clear()
+	_yields.clear()
 	for slip in _slips:
 		slip.queue_free()
 	_slips.clear()
@@ -224,6 +258,37 @@ func _sweep(point: Vector3) -> void:
 			slip.set_meta(&"resting", false)
 			_home(slip, order * CoinPile.HOME_STAGGER)
 			order += 1
+
+
+## Where the slips lying on the desk are (the coin vacuums' goals once token_recovery is stamped).
+func resting_spots() -> Array[Vector3]:
+	var out: Array[Vector3] = []
+	for slip in _slips:
+		if slip.get_meta(&"resting"):
+			out.append(slip.global_position)
+	return out
+
+
+## A coin vacuum at `point` sucks up the resting slips within `reach`, at most `room` of them: they
+## vanish into its bag and are returned, still unfiled (pending_findings counts them).
+func vacuum_at(point: Vector3, reach: float, room: int) -> Array[Node3D]:
+	var got: Array[Node3D] = []
+	for slip in _slips:
+		if got.size() < room and slip.get_meta(&"resting") and Vector2(slip.global_position.x - point.x, slip.global_position.z - point.z).length() <= reach:
+			slip.set_meta(&"resting", false)
+			slip.hide()
+			got.append(slip)
+	return got
+
+
+## A coin vacuum empties its bag at `point`: the slips fly from there into the Findings counter.
+func file_from(slips: Array[Node3D], point: Vector3) -> void:
+	for i in slips.size():
+		if not is_instance_valid(slips[i]):
+			continue  # Filed already: the game quit while it was in the bag.
+		slips[i].global_position = point
+		slips[i].show()
+		_home(slips[i], i * CoinPile.HOME_STAGGER)
 
 
 func _home(slip: Node3D, delay: float) -> void:

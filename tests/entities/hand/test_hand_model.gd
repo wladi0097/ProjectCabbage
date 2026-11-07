@@ -48,6 +48,15 @@ func _ready() -> void:
 	var a := Vector3(1, 0.9, 0)
 	_check(HandScript.rein(a, Vector3(1.05, 0.9, 0), 0.1) == Vector3(1.05, 0.9, 0), "a mouse inside the limit stays put")
 	_check(HandScript.rein(a, Vector3(0, 0.9, 0), 0.1).is_equal_approx(Vector3(0.9, 0.9, 0)), "a mouse past a wall is pulled back")
+	# After a pose change the fingers blend, then land exactly on the pose and stop updating.
+	var model: HandModel = load("res://entities/hand/hand_model.tscn").instantiate()
+	add_child(model)
+	model.pose = P.GRAB
+	for i in 120:
+		model.move_to(Vector3.ZERO, 1.0 / 60.0)
+	_check(model._settling <= 0.0 and model._angles == HandModel.POSES[P.GRAB].map(
+			func(row: Array) -> Array: return row.map(func(v: int) -> float: return float(v))), "a settled hand should sit on its pose")
+	model.free()
 	print("hand model tests failed" if _failed else "hand model tests passed")
 	get_tree().quit(1 if _failed else 0)
 

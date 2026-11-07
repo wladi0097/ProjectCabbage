@@ -12,6 +12,11 @@ extends Node3D
 ## Rotten units are lobbed out of the window like the rest (and fined there) until the desk card
 ## spoilage_memo, after which hands leave them on the mat; once the tree's WASTE HANDLING PROTOCOL
 ## (save.hands_bin) is bought they go into the waste bin instead.
+## A research hand (`research`, save.research_hands, a lab-coat cuff) is the same hand working for the
+## QA bay: it rests at the left end of the bottom edge, and only while the bay has room
+## takes a unit (never a rotten one; minis are fine, they yield little) and tosses it into the bay's
+## mouth. Hand 0 staffs both kinds. After the desk card lab_priority research hands go for research
+## units first and money hands leave them alone.
 
 enum Phase { IDLE, REACH, TAKE, CARRY, FOLLOW, FLINCH, WITHDRAW }
 
@@ -21,11 +26,34 @@ const SLEEVE := preload("res://assets/materials/associate_hand.tres")
 const OPACITY := Vector2(0.9, 1.0)
 
 ## Where an idle hand rests: palm down and still on the desk top (y 0.76), just inside the bottom
-## screen edge (the camera's 16:9 frame bottom is z ~1.23 there), its sleeve running off the edge. Hand n parks at x PARK_X[n], 0.2 apart
-## so no two overlap, the first ones in front of the mat.
+## screen edge (the camera's 16:9 frame bottom is z ~1.23 there), its sleeve running off the edge.
+## Idle hands lie in two loose piles (park_spot): money hands around PILE_X in front of the mat (the
+## tube lever and the bin to their right), research hands around RESEARCH_PILE_X on the QA bay's
+## side, so the lanes fan out to the street and the bay
+## without crossing. Hand n sits a deterministic jumble off the pile's middle (up to PILE_SPREAD across,
+## PILE_TURN turned), and every PILE_ROW hands start a new layer PILE_LAYER higher, resting on the ones
+## before. Leaving or coming back, a hand simply passes through the others (they are ghosts).
 const PARK := Vector3(0.0, 0.765, 1.15)
-## None within BIN_CLEAR of the waste bin (x 0.95): the 10th parks right of it, by the console.
-const PARK_X: Array[float] = [0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0, 1.3]
+const PILE_X := 0.15
+const RESEARCH_PILE_X := -0.25
+const PILE_SPREAD := 0.09
+const PILE_ROW := 4
+const PILE_LAYER := 0.025
+const PILE_TURN := deg_to_rad(12.0)
+## At most this many research hands are on the desk; past that the visible ones work faster.
+const MAX_RESEARCH := 3
+## The lab coat: sleeve and shirt cuff light blue (a pale echo of the research units' cyan); the hand
+## itself stays the money hands' glove.
+const LAB_COAT := {sleeve = Color(0.45, 0.66, 0.78), shirt = Color(0.66, 0.8, 0.88)}
+## A research hand lets go RESEARCH_RELEASE from the bay's mouth (in front of it, at mouth height) and
+## tosses it flat into the chamber: at the mouth plus (±BAY_JITTER, BAY_DROP, 0) after BAY_LOB.
+const RESEARCH_RELEASE := Vector3(0.0, 0.0, 0.4)
+const BAY_JITTER := 0.04
+const BAY_DROP := -0.03
+const BAY_LOB := 0.15
+## Under lab_priority a research hand takes any research unit before any other (this many m nearer).
+const PREFER := 100.0
+## No hand parks within BIN_CLEAR of the waste bin (x 0.95).
 const BIN_CLEAR := 0.3
 const MAX_VISIBLE := 10
 ## Half the player's hand.
@@ -73,8 +101,10 @@ const TREMBLE := 0.008
 ## A carried cabbage sits on this layer (the cards' one): the player's ray finds it, nothing collides.
 const CARRIED_LAYER := UpgradeCard.LAYER
 
-## Which hand this is (0 is the one placed in the world).
+## Which hand this is (0 is the one placed in the world), counted per kind.
 var index := 0
+## A research hand: lobs into the QA bay instead of the window.
+var research := false
 var _phase := Phase.IDLE
 var _wait := FIRST_WAIT
 var _entry := PARK
@@ -88,21 +118,24 @@ var _lifted := false
 var _layers := Vector2i.ZERO
 var _time := 0.0
 var _flinch_left := 0.0
-## Hand 0: how many hands are on the desk, so _staff only looks again once save.hands grows.
-var _staffed := 0
+## Hand 0: how many money (x) and research (y) hands are on the desk, so _staff only looks again
+## once save.hands or save.research_hands grows.
+var _staffed := Vector2i.ZERO
+
+## sleeve_for's materials by kind (false: money, true: research).
+static var _sleeves := {}
 
 @onready var _model: HandModel = $Hand
 
 
 func _ready() -> void:
 	add_to_group(&"associates")
-	_entry = PARK + Vector3.RIGHT * PARK_X[index]
+	_entry = park_spot(index, research)
+	rotation.y = park_turn(index)
 	_tip = _entry
 	_wait = FIRST_WAIT + index * STAGGER
 	_time = index * 1.7
-	var sleeve := SLEEVE.duplicate() as ShaderMaterial
-	sleeve.set_shader_parameter(&"opacity", OPACITY.x)
-	sleeve.set_shader_parameter(&"edge_opacity", OPACITY.y)
+	var sleeve := sleeve_for(research)
 	for mesh: MeshInstance3D in _model.find_children("*", "MeshInstance3D", true, false):
 		mesh.material_override = sleeve
 	_model.pose = HandModel.Pose.OPEN
@@ -111,9 +144,9 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if index == 0:
+	if index == 0 and not research:
 		_staff()
-	if index >= SaveManager.save.hands:
+	if index >= _hired():
 		return
 	_model.visible = true
 	_time += delta
@@ -147,7 +180,7 @@ func _process(delta: float) -> void:
 			_flinch_left -= delta
 			if _flinch_left <= 0.0:
 				_withdraw()
-			_model.move_to(_tip + Vector3.RIGHT * sin(_time * 45.0) * TREMBLE, delta)
+			_place(_tip + Vector3.RIGHT * sin(_time * 45.0) * TREMBLE, delta)
 			return
 		Phase.FOLLOW:
 			if _move(_release + Vector3(0.0, GRIP, -FOLLOW_THROUGH), CARRY_SPEED, delta):
@@ -156,7 +189,20 @@ func _process(delta: float) -> void:
 			if _move(_entry, WITHDRAW_SPEED, delta):
 				_phase = Phase.IDLE
 	# Parked, it lies still on the desk; out working, it wobbles.
-	_model.move_to(_tip + (Vector3.ZERO if _phase == Phase.IDLE else _wobble()), delta)
+	_place(_tip + (Vector3.ZERO if _phase == Phase.IDLE else _wobble()), delta)
+
+
+## The sleeve material of every money hand, or (`research`) of every research hand: made once each.
+static func sleeve_for(research: bool) -> ShaderMaterial:
+	if not _sleeves.has(research):
+		var sleeve := SLEEVE.duplicate() as ShaderMaterial
+		sleeve.set_shader_parameter(&"opacity", OPACITY.x)
+		sleeve.set_shader_parameter(&"edge_opacity", OPACITY.y)
+		if research:
+			for part: String in LAB_COAT:
+				sleeve.set_shader_parameter(part, LAB_COAT[part])
+		_sleeves[research] = sleeve
+	return _sleeves[research]
 
 
 ## The one place a hand is added (the projector tree's HIRE ASSOCIATE nodes); hand 0 spawns it.
@@ -167,16 +213,23 @@ static func add_hand(save: SaveGame) -> void:
 ## The nearest cabbage to `from` that rests on the mat and nobody has: not held by the player, not
 ## claimed by another hand, not sold, out of the window or frozen (rolling down the ramp, carried),
 ## not flying, not stray; and not rotten while `skip_rotten` (the spoilage memo, before hands bin).
-static func pick_target(cabbages: Array, from: Vector3, held: Interactable, claimed: Array = [], skip_rotten := false) -> Cabbage:
+## A `research` hand never takes a rotten one. Under `lab` (desk card lab_priority) money hands never
+## take research units and research hands take them first.
+static func pick_target(cabbages: Array, from: Vector3, held: Interactable, claimed: Array = [], skip_rotten := false,
+		research := false, lab := false) -> Cabbage:
 	var best: Cabbage = null
+	var best_score := INF
 	for cabbage: Cabbage in cabbages:
 		var interactable := cabbage.get_node("Interactable") as Interactable
-		if claimed.has(cabbage) or (skip_rotten and cabbage.rotten) or cabbage.sold or cabbage.away or cabbage.freeze or cabbage.in_flight or not interactable.enabled \
+		if claimed.has(cabbage) or ((skip_rotten or research) and cabbage.rotten) or (lab and not research and cabbage.research) \
+				or cabbage.sold or cabbage.away or cabbage.freeze or cabbage.in_flight or not interactable.enabled \
 				or held == interactable or cabbage.linear_velocity.length() > REST_SPEED \
 				or SaleWindow.is_stray(cabbage.global_position):
 			continue
-		if best == null or from.distance_to(cabbage.global_position) < from.distance_to(best.global_position):
+		var score := from.distance_to(cabbage.global_position) + (PREFER if research and lab and not cabbage.research else 0.0)
+		if score < best_score:
 			best = cabbage
+			best_score = score
 	return best
 
 
@@ -207,34 +260,79 @@ static func aim_at(roll: float, jitter: Vector2) -> Vector3:
 	return Vector3(lerpf(AIM_X.x, AIM_X.y, roll) + jitter.x * AIM_JITTER.x, AIM_Y + jitter.y * AIM_JITTER.y, AIM_Z)
 
 
-## Spawns the hired hands that are not on the desk yet (up to MAX_VISIBLE) next to this one.
+## Where hand `index` of its kind lies idle in its pile: a fixed jumble around the pile's middle, a
+## layer up every PILE_ROW hands. The few research hands pile tighter: half the spread, each one a layer up.
+static func park_spot(index: int, research: bool) -> Vector3:
+	var spread := PILE_SPREAD * (0.5 if research else 1.0)
+	var row := 1 if research else PILE_ROW
+	var jumble := Vector3(((index * 7) % 5 - 2) * 0.5 * spread, floorf(index / float(row)) * PILE_LAYER, -(index % 3) * 0.02)
+	return PARK + Vector3.RIGHT * (RESEARCH_PILE_X if research else PILE_X) + jumble
+
+
+## How far hand `index` is turned (yaw), so the pile looks dropped rather than lined up.
+static func park_turn(index: int) -> float:
+	return ((index * 5) % 7 - 3) / 3.0 * PILE_TURN
+
+
+## Where a research hand's toss into the bay's `mouth` lands for clumsiness `jitter` (-1..1).
+static func bay_aim(mouth: Vector3, jitter: float) -> Vector3:
+	return mouth + Vector3(jitter * BAY_JITTER, BAY_DROP, 0.0)
+
+
+## Hands of this kind on the payroll (money or research).
+func _hired() -> int:
+	return SaveManager.save.research_hands if research else SaveManager.save.hands
+
+
+## Spawns the hired hands of both kinds that are not on the desk yet (up to MAX_VISIBLE money hands
+## and MAX_RESEARCH research hands) next to this one.
 func _staff() -> void:
-	if _staffed >= mini(SaveManager.save.hands, MAX_VISIBLE):
+	var save := SaveManager.save
+	var want := Vector2i(mini(save.hands, MAX_VISIBLE), mini(save.research_hands, MAX_RESEARCH))
+	if _staffed.x >= want.x and _staffed.y >= want.y:
 		return
-	var count := get_tree().get_nodes_in_group(&"associates").size()
-	while count < mini(SaveManager.save.hands, MAX_VISIBLE):
-		var hand: Associate = load(scene_file_path).instantiate()
-		hand.index = count
-		add_sibling(hand)
-		count += 1
-	_staffed = count
+	var have := Vector2i.ZERO
+	for hand: Associate in get_tree().get_nodes_in_group(&"associates"):
+		have += Vector2i(0, 1) if hand.research else Vector2i(1, 0)
+	for kind in 2:
+		while have[kind] < want[kind]:
+			var hand: Associate = load(scene_file_path).instantiate()
+			hand.index = have[kind]
+			hand.research = kind == 1
+			add_sibling(hand)
+			have[kind] += 1
+	_staffed = have
 
 
 func _set_off() -> void:
-	var hands := SaveManager.save.hands
-	# Past MAX_VISIBLE the visible hands share the extra hands' trips.
-	_wait = SaveManager.save.associate_interval * minf(1.0, float(MAX_VISIBLE) / hands) / SaveManager.save.hand_output \
+	var save := SaveManager.save
+	var visible_hands := MAX_RESEARCH if research else MAX_VISIBLE
+	# Past the visible ones the visible hands share the extra hands' trips.
+	_wait = save.associate_interval * minf(1.0, float(visible_hands) / _hired()) / save.hand_output \
 			* randf_range(1.0 - WAIT_JITTER, 1.0 + WAIT_JITTER)
 	var claimed := []
+	var lab_trips := 0
 	for other: Associate in get_tree().get_nodes_in_group(&"associates"):
 		if other != self and is_instance_valid(other._target):
 			claimed.append(other._target)
-	var save := SaveManager.save
-	_target = pick_target(get_tree().get_nodes_in_group(&"cabbages"), _entry, Hand.held, claimed, skips_rotten(save))
+			lab_trips += int(other.research)
+	var bay := get_tree().get_first_node_in_group(&"qa_bay") as QaBay
+	# A research hand only sets off for a free bench nobody else is already carrying a unit to.
+	if research and (bay == null or not bay.has_room() or lab_trips >= save.qa_slots):
+		_wait = RETRY
+		return
+	_target = pick_target(get_tree().get_nodes_in_group(&"cabbages"), _entry, Hand.held, claimed, skips_rotten(save),
+			research, save.stamped.has("lab_priority"))
 	if _target == null:
 		_wait = RETRY
 		return
-	var bin := bin_for(_target, SaveManager.save.hands_bin, get_tree().get_first_node_in_group(&"rotten_bin") as RottenBin)
+	if research:
+		_aim = bay_aim(bay.mouth(), randf_range(-1, 1))
+		_release = bay.mouth() + RESEARCH_RELEASE
+		_lob = BAY_LOB
+		_phase = Phase.REACH
+		return
+	var bin := bin_for(_target, save.hands_bin, get_tree().get_first_node_in_group(&"rotten_bin") as RottenBin)
 	if bin != null:
 		_aim = bin.hand_aim()
 		_release = Vector3(_aim.x + BIN_RELEASE.x + randf_range(-0.05, 0.05), RELEASE_Y, _aim.z + BIN_RELEASE.z)
@@ -291,6 +389,13 @@ func _let_go() -> void:
 	_target.freeze = false
 	_target.collision_layer = _layers.x
 	_target.collision_mask = _layers.y
+
+
+## Puts the hand's anchor on `at`. HandModel places its anchor as if this node were unturned, so a
+## turned hand (park_turn) shifts the target by the turned part of the anchor.
+func _place(at: Vector3, delta: float) -> void:
+	var anchor := _model.basis * (HandModel.ANCHORS[_model.pose] as Vector3)
+	_model.move_to(at + anchor - global_basis * anchor, delta)
 
 
 ## Moves the fingertip toward `to`; true once it is there.

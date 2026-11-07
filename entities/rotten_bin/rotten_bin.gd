@@ -19,6 +19,9 @@ const MOUTH := 0.132
 const MODEL_SCALE := 0.935
 ## The built model's rim height; a binned cabbage's centre clears it by CLEAR on its way in.
 const RIM := 0.262
+## The bin is sunk this share of its height into the desk (the node stays at desk level); a black
+## disc at desk level inside the mouth hides the desk top, so it reads as going on down.
+const SINK := 0.5
 const CLEAR := 0.16
 const SLACK := 0.11
 ## Only below this height: one carried high over the bin is not in it yet.
@@ -41,8 +44,26 @@ func _ready() -> void:
 	add_to_group(&"rotten_bin")
 	_rest = position
 	visible = SaveManager.save.stamped.has(CARD)
-	$Model.scale = Vector3.ONE * MODEL_SCALE * SaveManager.save.bin_mouth
+	_size(Vector3.ONE * MODEL_SCALE * SaveManager.save.bin_mouth)
+	var pit := MeshInstance3D.new()
+	var disc := CylinderMesh.new()
+	disc.top_radius = MOUTH / MODEL_SCALE * 0.97
+	disc.bottom_radius = disc.top_radius
+	disc.height = 0.002
+	var black := StandardMaterial3D.new()
+	black.albedo_color = Color.BLACK
+	black.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	disc.material = black
+	pit.mesh = disc
+	pit.position.y = RIM * SINK + 0.002
+	$Model.add_child(pit)
 	_connect_window.call_deferred()
+
+
+## Scales the model to `to` and keeps it sunk SINK of its height into the desk.
+func _size(to: Vector3) -> void:
+	$Model.scale = to
+	$Model.position.y = -RIM * SINK * to.y
 
 
 func _connect_window() -> void:
@@ -63,7 +84,7 @@ func _process(delta: float) -> void:
 		return
 	var mouth := Vector3.ONE * MODEL_SCALE * save.bin_mouth
 	if not $Model.scale.is_equal_approx(mouth):
-		$Model.scale = $Model.scale.move_toward(mouth, delta)
+		_size($Model.scale.move_toward(mouth, delta))
 
 
 func _physics_process(delta: float) -> void:
@@ -101,9 +122,10 @@ static func rebate_for(rebate: float, price: int) -> int:
 
 func _take(cabbage: Cabbage) -> void:
 	var save := SaveManager.save
-	var rim: float = global_position.y + RIM * $Model.scale.y
-	cabbage.drop_into(global_position + Vector3.UP * 0.06, rim + CLEAR, FALL_TIME)
-	save.stock -= 1
+	var rim: float = global_position.y + RIM * (1.0 - SINK) * $Model.scale.y
+	cabbage.drop_into(global_position + Vector3.DOWN * 0.06, rim + CLEAR, FALL_TIME)
+	if not cabbage.mini:
+		save.stock -= 1  # Minis are free: no stock.
 	if cabbage.rotten:
 		save.binned += 1
 		save.coins += rebate_for(save.bin_rebate, save.sale_price)

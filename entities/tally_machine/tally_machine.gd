@@ -11,6 +11,9 @@ signal ticked
 ## The SaveGame field shown, and how many drums show it.
 @export var field := &"coins"
 @export var drums := 9
+## The drums' area (this node's space) and what hovering it explains.
+@export var hover_area := AABB()
+@export_multiline var tooltip := ""
 ## Units per second the drums roll at least, plus this much per unit still to go.
 const MIN_RATE := 8.0
 const CATCH_UP := 4.0
@@ -27,6 +30,8 @@ func _ready() -> void:
 		_bones.append(_skeleton.find_bone("Drum%d" % k))
 	_shown = SaveManager.save.get(field)
 	_pose()
+	if tooltip != "":
+		Interactable.hover_box(self, hover_area, tooltip)
 
 
 func _process(delta: float) -> void:

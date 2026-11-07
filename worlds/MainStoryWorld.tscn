@@ -54,6 +54,8 @@
 [ext_resource type="AudioStream" uid="uid://bbbo22sd4tyyy" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tally_tick_2"]
 [ext_resource type="AudioStream" uid="uid://bgi2p7dr0c3b" path="res://assets/audio/effects/tally_tick_3.wav" id="sfx_tally_tick_3"]
 [ext_resource type="PackedScene" path="res://entities/vacuum/vacuum.tscn" id="supply_vacuums"]
+[ext_resource type="PackedScene" path="res://entities/mini_drop/mini_drop.tscn" id="mini_drop_1"]
+[ext_resource type="PackedScene" path="res://entities/radio/radio.tscn" id="radio_1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.45, 0.58, 0.75, 1)
@@ -405,6 +407,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 1.25, 0.3)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.76, 1.04)
 
 [node name="WindowTargets" parent="." unique_id=660965086 instance=ExtResource("sales_targets")]
+
+[node name="MiniDrop" parent="." node_paths=PackedStringArray("desk", "mat") instance=ExtResource("mini_drop_1")]
+desk = NodePath("../Table/Table")
+mat = NodePath("../Table/cabbage_mat")
+
+[node name="Radio" parent="." instance=ExtResource("radio_1")]
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, -1.162, 0.75, 0.8)
 
 [node name="Overlay" type="CanvasLayer" parent="." unique_id=1259288364]
 

@@ -86,6 +86,16 @@ func _test_vacuum() -> void:
 	_check(pile.pending_value() == 31, "scheduled payout pending: %d" % pile.pending_value())
 	pile._throw_scheduled(Vector3.ZERO, 7)
 	_check(pile.pending_value() == 31 and pile._scheduled == 0, "thrown payout pending: %d" % pile.pending_value())
+	# The MultiMesh grows in CHUNKs; a resting coin that moved to another slot is written there again.
+	pile._upload()
+	_check(pile.multimesh.instance_count == CoinPile.CHUNK and pile.multimesh.visible_instance_count == pile._coins.size(),
+			"multimesh size %d" % pile.multimesh.instance_count)
+	var rest: CoinPile.Coin = pile._coins[0]
+	rest.xf.origin = Vector3(0.3, 0.76, 0.2)
+	pile._coins.push_front(pile._coins.pop_back())
+	pile._upload()
+	_check(Vector3(pile._buffer[CoinPile.FLOATS + 3], pile._buffer[CoinPile.FLOATS + 7], pile._buffer[CoinPile.FLOATS + 11])
+			.is_equal_approx(rest.xf.origin), "a shifted resting coin must be rewritten")
 	pile.free()
 
 

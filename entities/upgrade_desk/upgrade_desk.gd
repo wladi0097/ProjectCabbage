@@ -17,60 +17,81 @@ const CARDS := [
 	# The queue (pacing in tools/pace.py, graph in reports/economy_rework_2026-10-31.md). Cards wait on
 	# each other (`needs`), kept loose enough that the tray usually holds two or three.
 	{id = "price_slate", price = 12, title = "PRICE SLATE",
-		body = "Pricing is your responsibility.\nSet your price. Over ~$3, some units are refused."},
-	{id = "desk_space", price = 20, title = "DESK SPACE REALLOCATION", needs = ["price_slate"],
-		body = "The mat has been re-zoned.\nHolds 2 units at once instead of 1."},
-	{id = "junior_associate", price = 35, title = "HIRE A JUNIOR ASSOCIATE", needs = ["price_slate"],
-		body = "Unpaid. Grateful.\nA hand sells one unit off the mat every 8 s."},
-	{id = "acceptance_meter", price = 40, title = "ACCEPTANCE METER", needs = ["price_slate"],
-		body = "Measured. Managed.\nShows the sale chance. Street accepts prices 20% higher."},
+		body = "Pricing is your responsibility.\nA slate sets your price per unit (cabbage): click < or > for $1 less or more. Up to ~$3 every unit sells; above that, more are refused."},
+	# No effect here: entities/radio/ drops the radio onto the desk once it is stamped.
+	{id = "radio", price = 6, title = "REQUISITION A DESK RADIO", needs = ["price_slate"],
+		body = "Morale is a deliverable.\nA radio on the desk. Top key: play or stop. Bottom key: next song. No other effect."},
+	{id = "desk_space", price = 20, title = "DESK SPACE REALLOCATION", needs = ["radio"],
+		body = "The mat has been re-zoned.\nThe chute (the ramp at bottom right) keeps 2 units waiting on the mat instead of 1."},
+	{id = "junior_associate", price = 35, title = "HIRE A JUNIOR ASSOCIATE", needs = ["radio"],
+		body = "Unpaid. Grateful.\nA hired hand rests at the bottom of the desk. Every 8 s it takes a unit off the mat and throws it out of the window to sell at your price."},
+	{id = "acceptance_meter", price = 40, title = "ACCEPTANCE METER", needs = ["radio"],
+		body = "Measured. Managed.\nA gauge on the slate shows the chance a unit sells at your price. The street also pays 20% more before it refuses units."},
 	{id = "quality_assurance", price = 55, title = "ESTABLISH QUALITY ASSURANCE", needs = ["junior_associate"],
-		body = "Every unit is a lesson.\nFlick units into the bay: 1 Finding (¶) each, 5 s per unit."},
+		body = "Every unit is a lesson.\nA QA bay fills the window's left third. Flick a unit in (it is used up): 5 s later a 1 Finding (¶) token pops out. Sweep your hand over it."},
+	# Minis (entities/mini_drop/): free units, no stock, sold at mini_value of the chalked price; the
+	# tube sells them by itself, its lever sends a share (save.tube_split) to the lab instead.
+	{id = "mini_cabbages", price = 45, title = "PILOT SCHEME: MINI UNITS", needs = ["junior_associate"],
+		body = "Smaller units. Same paperwork.\nAbout every 20 s a free mini unit falls onto the mat (6 at most). It uses no stock and sells for 1/4 of your price."},
 	{id = "street_posters", price = 10, currency = "findings", title = "STREET POSTER CAMPAIGN",
-		needs = ["quality_assurance"], body = "Findings show the street wants cabbage.\nStreet accepts prices 50% higher."},
+		needs = ["quality_assurance"], body = "Findings show the street wants cabbage.\nThe street pays 50% more before it refuses units."},
 	{id = "projector", price = 75, title = "REQUISITION A PROJECTOR", needs = ["quality_assurance"],
-		body = "Attendance is mandatory.\nAdds the projector screen: upgrades you buy with coins."},
+		body = "Attendance is mandatory.\nA PULL tab hangs from the top of the screen: drag it down to open the upgrade tree. Hold the mouse on an upgrade to buy it with coins."},
 	# Research directives (`research`): a projector node naming one in its own `research` is shown
 	# locked until it is stamped. The id stays performance_review for old saves.
 	{id = "research_inspection", price = 10, currency = "findings", research = true, title = "RESEARCH: INSPECTION METHODOLOGY",
-		needs = ["projector"], body = "The inspection is inspected.\nUnlocks the QA upgrades on the projector."},
+		needs = ["projector"], body = "The inspection is inspected.\nOpens the QUALITY ASSURANCE department on the projector: faster analysis, more Findings, more benches."},
 	# Manager + pricing consultant: no effect here, entities/manager/ and entities/consultant/ start
 	# once stamped; their small upgrades are projector nodes.
 	{id = "pricing_consultant", price = 15, currency = "findings", title = "RETAIN A PRICING CONSULTANT",
-		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s it moves your price $1 toward where every unit sells."},
+		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s its hand taps your slate $1 toward the price ~90% of units sell at. Use the arrows and it leaves for 15 s. Switch by the slate: on/off."},
 	# Sales events: no effect here, entities/golden_lamp/, catch_combo/, rotten_bin/ and
 	# window_targets/ start once stamped; their small upgrades are projector nodes. Rotten units
 	# start coming down the chute as soon as the bin card is offered (GameEvents "rotten_units").
 	{id = "catch_combo", price = 15, currency = "findings", title = "INTERCEPTION INCENTIVE SCHEME",
-		needs = ["projector"], body = "Initiative is rewarded.\nEach catch off the chute: sales +10% (max +50%) for 4 s."},
+		needs = ["projector"], body = "Initiative is rewarded.\nGrab a unit in mid-air (a catch): every sale pays +10%, up to +50% after 5 catches. 4 s without a catch and the bonus drains away."},
+	# Research units (Cabbage.research, worlds/components/cabbage_feeder.gd) and the hands that lob
+	# them into the bay (entities/associate/, save.research_hands).
+	{id = "research_cabbage", price = 20, currency = "findings", title = "REQUISITION RESEARCH UNITS",
+		needs = ["quality_assurance", "projector"], body = "Some units are set aside for study.\n1 in 10 units off the chute is blue. Flicked into the QA bay it gives 3× the Findings. Sold, it pays like any unit."},
+	{id = "mini_tube", price = 160, title = "PNEUMATIC DELIVERY TUBE", needs = ["mini_cabbages"],
+		body = "Minis no longer touch the desk.\nMinis fall into a tube instead and roll out of the window by themselves. Refused ones still land on the mat."},
 	{id = "performance_review", price = 25, currency = "findings", research = true, title = "RESEARCH: TIME-AND-MOTION STUDY",
-		needs = ["research_inspection", "pricing_consultant"], body = "Every motion is timed.\nAssociates throw every 4 s, not 8 s. Unlocks Hire V and Brisk Walk II."},
+		needs = ["research_inspection", "pricing_consultant"], body = "Every motion is timed.\nHired hands set off every 4 s instead of 8 s. Unlocks Hire Associate V and Brisk Walk II on the projector."},
 	{id = "rotten_bin", price = 10, currency = "findings", title = "REQUISITION A WASTE BIN",
-		needs = ["catch_combo"], body = "Waste is a process.\nRotten units dropped in it are gone, not fined (a sold one costs 10× its price)."},
+		needs = ["catch_combo"], body = "Waste is a process.\nA bin at the bottom of the mat. Drop rotten units in: gone, no fine (a sold one is seized and costs 10× your price). Fresh units binned are lost."},
 	# Hired hands sell rotten units (fined) until this memo, then leave them on the mat until
 	# WASTE HANDLING PROTOCOL (projector) has them bin them: entities/associate/ (pick_target).
 	{id = "spoilage_memo", price = 40, title = "MEMO: DO NOT HANDLE SPOILED UNITS",
-		needs = ["rotten_bin"], body = "Spoilage is not your concern.
-Hired hands leave rotten units on the mat instead of selling them."},
+		needs = ["rotten_bin"], body = "Spoilage is not your concern.\nHired hands stop throwing rotten units out of the window (10× fines) and leave them on the mat."},
+	{id = "research_assistant", price = 250, title = "HIRE A LAB ASSISTANT", needs = ["research_cabbage"],
+		body = "The lab coat is deducted from pay.\nA lab hand (blue cuff) joins at the bottom left. On the hired hands' timer, when the QA bay has room, it tosses a unit from the mat into it."},
+	{id = "tube_lever", price = 350, title = "TUBE DIVERSION LEVER", needs = ["mini_tube"],
+		body = "Some units are worth more as data.\nA lever by the bin: SALES / SPLIT / RESEARCH (drag or click). RESEARCH files tube minis in the lab for Findings at once; SPLIT, every other one."},
+	{id = "lab_priority", price = 40, currency = "findings", title = "MEMO: LAB PRIORITY", needs = ["research_assistant"],
+		body = "Research units are not for sale.\nLab hands take blue research units first. Other hired hands stop selling them."},
 	{id = "managerial_oversight", price = 30, currency = "findings", title = "REQUEST MANAGERIAL OVERSIGHT",
-		needs = ["performance_review"], body = "Someone will be checking.\nEvery 2.5-4 min a quota for 45 s. Met, it pays quota × price."},
+		needs = ["performance_review"], body = "Someone will be checking.\nEvery 2.5-4 min the manager asks for a quota of units in 45 s (125% of your recent pace). Met: quota × your price in coins. Missed: a memo."},
 	{id = "window_targets", price = 40, currency = "findings", title = "STREET TARGET PRACTICE",
-		needs = ["rotten_bin"], body = "The street is given a target.\nA crate lights every ~60 s. Sales into it pay +10×."},
+		needs = ["rotten_bin"], body = "The street is given a target.\nAbout every 60 s a lamp lights a crate in the street for 15 s. A unit sold out of the window in line with it pays 10× its coins on top."},
 	{id = "research_materials", price = 50, currency = "findings", research = true, title = "RESEARCH: MATERIALS HANDLING",
-		needs = ["managerial_oversight"], body = "Units are found to be heavy.\nUnlocks Pack +5 and the Conveyor on the projector."},
+		needs = ["managerial_oversight"], body = "Units are found to be heavy.\nUnlocks Container Orders (40 more units per pack) and the Conveyor Retrofit on the projector."},
 	# Supply + automation: the console reorders packs on its own (entities/supply_console/), a coin
 	# vacuum docks on the mat (entities/vacuum/); their small upgrades are projector nodes.
 	{id = "auto_procurement", price = 80, currency = "findings", title = "STANDING PURCHASE ORDER",
-		needs = ["research_materials"], body = "Nobody signs anything.\nBuys a pack when stock drops to 3. Toggle with AUTO on the console."},
+		needs = ["research_materials"], body = "Nobody signs anything.\nAt 3 units of stock or fewer, a pack is bought by itself if you can pay. The switch beside the AUTO lamp on the supply console turns it off or on."},
 	{id = "coin_collector", price = 100, currency = "findings", title = "AUTOMATED COIN RECOVERY UNIT",
-		needs = ["research_materials"], body = "It does not ask why.\nA robot picks up coins off the mat, 8 per trip, and banks them."},
+		needs = ["research_materials"], body = "It does not ask why.\nA robot docks at the mat's left edge. It gathers up to 8 coins per trip off the mat and banks them, so you need not sweep."},
+	# No effect here: entities/vacuum/ takes the QA bay's slips once it is stamped.
+	{id = "token_recovery", price = 600, title = "EXPANDED RECOVERY MANDATE",
+		needs = ["coin_collector"], body = "Paper is also money, eventually.\nThe robots also pick up Findings tokens in front of the QA bay (one per coin slot) and file them when they dock."},
 	# No effect here: entities/ledger/ shows the ledger once it is stamped.
 	{id = "stats_ledger", price = 120, currency = "findings", title = "REQUISITION A LEDGER",
-		needs = ["managerial_oversight"], body = "Someone may read it.\nA ledger on the desk lists your figures. No other effect."},
-	{id = "research_sentiment", price = 300, currency = "findings", research = true, title = "RESEARCH: CONSUMER SENTIMENT",
-		needs = ["research_materials"], body = "The street is asked how it feels.\nUnlocks Slogan IV and Brassica for the Masses."},
-	{id = "golden_lamp", price = 700, currency = "findings", title = "REQUISITION A DESK LAMP",
-		needs = ["coin_collector"], body = "Nobody knows why.\nAbout every 150 s it glows gold for 20 s: every sale pays 5×."},
+		needs = ["managerial_oversight"], body = "Someone may read it.\nA binder on the left of the desk: click it to read your sales, coins over time, staff and approvals. No other effect."},
+	{id = "research_sentiment", price = 400, currency = "findings", research = true, title = "RESEARCH: CONSUMER SENTIMENT",
+		needs = ["research_materials"], body = "The street is asked how it feels.\nUnlocks Slogan IV and Brassica for the Masses on the projector (each: the street pays 25% more)."},
+	{id = "golden_lamp", price = 3000, currency = "findings", title = "REQUISITION A DESK LAMP",
+		needs = ["coin_collector"], body = "Nobody knows why.\nA lamp at the back right. About every 150 s it glows gold for 20 s: meanwhile every sale pays 5×."},
 ]
 const OFFERED := 3
 const TRAY_COINS := 15
@@ -240,8 +261,9 @@ static func meter_logged(entries: Array[Dictionary]) -> bool:
 	return false
 
 
-## What stamping card `id` does to the save. Quality assurance, the projector, the ledger and the
-## research cards (performance_review aside) only need to be in `stamped`.
+## What stamping card `id` does to the save. Quality assurance, the projector, the ledger, the radio,
+## the mini and research-unit cards and the research directives (performance_review aside) only need
+## to be in `stamped`.
 static func apply(id: String, save: SaveGame) -> void:
 	match id:
 		"price_slate":
@@ -258,6 +280,8 @@ static func apply(id: String, save: SaveGame) -> void:
 			save.associate_interval *= 0.5
 		"coin_collector":
 			save.vacuums = maxi(save.vacuums, 1)
+		"research_assistant":
+			save.research_hands = maxi(save.research_hands, 1)
 
 
 ## The handle's centre (press space) with the lever cranked `crank` of the way down.

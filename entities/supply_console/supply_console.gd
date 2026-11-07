@@ -8,8 +8,8 @@ extends Node3D
 ## minute before, plus noise. It drops onto the desk once the first UNLOCK_SALES are sold.
 ## Sold out and unable to pay for a pack for BAILOUT_WAIT seconds, the price drops to the coins
 ## left (a bailout) until the next pack is bought or the minute turns.
-## Once the auto_procurement card is stamped an AUTO lamp lights on the screen: pressed, it switches
-## automatic buying on or off (save.auto_buy). On, a pack is bought whenever should_auto_buy says so.
+## Once the auto_procurement card is stamped an AUTO lamp lights on the screen with a light switch
+## beside it: flicked (or the lamp pressed), it switches automatic buying on or off (save.auto_buy). On, a pack is bought whenever should_auto_buy says so.
 
 const Slate := preload("res://entities/price_slate/price_slate.gd")
 
@@ -30,6 +30,8 @@ const BAILOUT_WAIT := 10.0
 const AMBER := Color(1, 0.62, 0.18, 1)
 const DENIED_RED := Color(1, 0.12, 0.08, 1)
 const BLINK_TIME := 0.12
+## Where the AUTO light switch sits, right of the lamp (lamp space).
+const SWITCH_AT := Vector3(0.088, 0.008, 0.0)
 ## Seconds between two automatic buys, and the AUTO lamp's colour when switched off.
 const AUTO_COOLDOWN := 1.0
 const AUTO_OFF := Color(0.3, 0.27, 0.22, 1)
@@ -49,6 +51,7 @@ var _shown_cost := -1
 @onready var _button: Interactable = $Button/Interactable
 @onready var _auto: Label3D = $Auto
 @onready var _auto_switch: Interactable = $AutoSwitch/Interactable
+@onready var _toggle := LightSwitch.new()
 @onready var _price: Label3D = $Price
 @onready var _spark: MeshInstance3D = $Sparkline
 @onready var _skeleton: Skeleton3D = $Model/Armature/Skeleton3D
@@ -61,7 +64,11 @@ func _ready() -> void:
 	_button.grabbed.connect(_push.bind(true))
 	_button.released.connect(_push.bind(false))
 	_auto_switch.grabbed.connect(_toggle_auto)
-	_show_auto()
+	_toggle.position = SWITCH_AT
+	_toggle.tooltip = "Auto-buy switch. Up: a pack is bought by itself whenever stock runs low (and you can pay). Down: you buy by hand."
+	_auto.add_child(_toggle)
+	_toggle.flicked.connect(_toggle_auto)
+	_show_auto(false)
 	var save := SaveManager.save
 	if save.price_history.size() < 2:
 		var steps := PackedFloat32Array()
@@ -148,12 +155,15 @@ func _blink() -> void:
 		_blinking.tween_interval(BLINK_TIME)
 
 
-## The AUTO lamp: there once the card is stamped, amber while on, dark while off.
-func _show_auto() -> void:
+## The AUTO lamp and its light switch: there once the card is stamped; the lamp amber while on,
+## dark while off, the toggle up (on) or down, flicked there unless `animate` is false.
+func _show_auto(animate := true) -> void:
 	var save := SaveManager.save
 	_auto.visible = save.stamped.has("auto_procurement")
 	_auto_switch.enabled = _auto.visible
+	_toggle.set_enabled(_auto.visible)
 	_auto.modulate = AMBER if save.auto_buy else AUTO_OFF
+	_toggle.show_on(save.auto_buy, animate)
 
 
 func _toggle_auto() -> void:

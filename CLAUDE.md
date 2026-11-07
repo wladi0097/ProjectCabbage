@@ -9,7 +9,7 @@ Design docs live in `research/`. Start with `research/index.md`. The build order
 Every agent follows this for art, sound, UI and writing:
 
 - **Dark, dystopian corporate.** Cold, desaturated grey-sage, a bureaucratic mid-century office (think Severance, Brazil, Papers Please). The reference is the capsule art `research/capsule idea.png`. It is never cozy and never a cute suburban house or rustic market (an earlier pass was rejected for exactly that). Later phases get more clinical and oppressive, never cartoon-scary.
-- **The fresh green cabbage is the only saturated thing on screen.**
+- **The fresh green cabbage is the only saturated thing on screen.** One exception: research units glow a cold, clinical cyan (lab-grade, never cute).
 - **One fixed scene:** a camera looking down at an angle onto a big desk that runs off the screen edges, as in `research/camera-reference.webp`. A window to the street (no customers) along the top, above the cabbage mat on the right, with its sill flush with the desk so cabbages go straight out. It stands a little open, showing a glimpse of the street with crates where sold cabbages "land" (visual only). Interactables on the left, a desk mat on the right where the cabbages are handled. No side walls.
 - **Shapes like the reference:** chunky, stylized and readable from above, with lots of physical objects, coins and particles flying.
 - **Humour:** deadpan corporate satire, played straight (invoices, "units", tickers, consultants).

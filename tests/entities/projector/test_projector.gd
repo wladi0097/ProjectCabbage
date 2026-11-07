@@ -85,6 +85,35 @@ func _ready() -> void:
 		failed = true
 		push_error("effects wrong: pack %d, associate %.2f, qa %.2f, findings %d, dispense %.2f, capacity %d" % [fresh.pack_size,
 				fresh.associate_speed, fresh.qa_time, fresh.findings_per_cabbage, fresh.dispense_interval, fresh.desk_capacity])
+	# Minis and research: each step lifts what it improves by 25% or more (research ×3 → 5 → 8 → 12 → 20,
+	# minis 1/4 → 1/3 → 1/2 of the price, every 20 s → ~5.5 s), lab hands one each; gated on their cards.
+	var lab := SaveGame.new()
+	for id: String in ["research_mult_1", "research_mult_2", "research_mult_3", "research_mult_4", "research_chance_1",
+			"research_chance_2", "research_chance_3", "lab_hand_2", "lab_hand_3", "mini_rate_1", "mini_rate_2", "mini_rate_3",
+			"mini_value_1", "mini_value_2", "tube_speed_1"]:
+		Projector.apply(id, lab)
+	if not is_equal_approx(lab.research_mult, 20.0) or not is_equal_approx(lab.research_chance, 0.25) or lab.research_hands != 2 \
+			or not is_equal_approx(lab.mini_value, 0.5) or not is_equal_approx(lab.mini_every, 20.0 * 0.7 * 0.7 * 0.7 * 0.8) \
+			or not is_equal_approx(lab.tube_speed, 1.5):
+		failed = true
+		push_error("research / mini nodes: mult %.1f, chance %.2f, hands %d, value %.2f, every %.2f, tube %.1f" % [lab.research_mult,
+				lab.research_chance, lab.research_hands, lab.mini_value, lab.mini_every, lab.tube_speed])
+	var steps := [3.0]
+	for n in 4:
+		steps.append(steps[-1] + Projector.node_data("research_mult_%d" % (n + 1)).add.research_mult)
+	for n in 4:
+		if steps[n + 1] < steps[n] * 1.25:
+			failed = true
+			push_error("research ×%.0f to ×%.0f is under +25%%" % [steps[n], steps[n + 1]])
+	var gate := SaveGame.new()
+	gate.stamped = PackedStringArray(["projector", "quality_assurance", "research_inspection"])
+	if Projector.is_reachable("research_mult_1", gate) or Projector.is_reachable("mini_rate_1", gate) or Projector.is_reachable("lab_hand_2", gate):
+		failed = true
+		push_error("research and mini nodes should wait for their desk cards")
+	gate.stamped.append_array(["research_cabbage", "research_assistant", "mini_cabbages"])
+	if not Projector.can_hold("research_mult_1", gate) or not Projector.can_hold("lab_hand_2", gate) or not Projector.can_hold("mini_rate_1", gate):
+		failed = true
+		push_error("research and mini nodes should open with their desk cards")
 	# The hire ladder: II needs the junior associate, each adds one hand, each costs more than the last.
 	if Projector.is_reachable("hire_associate_2", save):
 		failed = true
@@ -217,5 +246,18 @@ func _ready() -> void:
 			if Geometry2D.segment_intersects_segment(e[0], e[1], f[0], f[1]) != null:
 				failed = true
 				push_error("edges to %s and %s cross" % [e[2], f[2]])
+	# The pull tugs when more upgrades can be held or paid for, never on the first count.
+	if Projector.offer_grew(Vector2i(-1, -1), Vector2i(5, 5)) or not Projector.offer_grew(Vector2i(3, 1), Vector2i(4, 1)) \
+			or not Projector.offer_grew(Vector2i(3, 1), Vector2i(3, 2)) or Projector.offer_grew(Vector2i(3, 2), Vector2i(2, 1)):
+		failed = true
+		push_error("offer_grew should fire only when held or affordable upgrades grow")
+	var pitch := SaveGame.new()
+	pitch.stamped = PackedStringArray(["projector"])
+	pitch.coins = 0
+	var none := Projector.offers(pitch)
+	pitch.coins = 1000000
+	if Projector.offers(pitch).x != none.x or Projector.offers(pitch).y <= none.y:
+		failed = true
+		push_error("coins should raise the affordable count, not what can be held")
 	print("projector tests failed" if failed else "projector tests passed")
 	get_tree().quit(1 if failed else 0)

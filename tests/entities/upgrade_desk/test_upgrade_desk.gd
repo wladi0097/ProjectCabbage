@@ -7,30 +7,46 @@ func _ready() -> void:
 	if UpgradeDesk.next_cards(PackedStringArray(), 3) != ["price_slate"]:
 		failed = true
 		push_error("only the price slate should be offered before it is stamped")
-	if UpgradeDesk.next_cards(PackedStringArray(["price_slate"]), 3) != ["desk_space", "junior_associate", "acceptance_meter"]:
+	if UpgradeDesk.next_cards(PackedStringArray(["price_slate"]), 3) != ["radio"]:
 		failed = true
-		push_error("the slate should open desk space, the junior associate and the meter")
-	if UpgradeDesk.next_cards(PackedStringArray(["price_slate", "desk_space"]), 3) != ["junior_associate", "acceptance_meter"]:
+		push_error("the slate should open the radio alone")
+	if UpgradeDesk.next_cards(PackedStringArray(["price_slate", "radio"]), 3) != ["desk_space", "junior_associate", "acceptance_meter"]:
+		failed = true
+		push_error("the radio should open desk space, the junior associate and the meter")
+	if UpgradeDesk.next_cards(PackedStringArray(["price_slate", "radio", "desk_space"]), 3) != ["junior_associate", "acceptance_meter"]:
 		failed = true
 		push_error("a stamped card should leave the offer, quality assurance waits for the junior too")
-	if UpgradeDesk.next_cards(PackedStringArray(["price_slate", "desk_space", "acceptance_meter", "junior_associate"]), 3) \
-			!= ["quality_assurance"]:
+	if UpgradeDesk.next_cards(PackedStringArray(["price_slate", "radio", "desk_space", "acceptance_meter", "junior_associate"]), 3) \
+			!= ["quality_assurance", "mini_cabbages"]:
 		failed = true
-		push_error("no hire card: further hands are hired in the projector tree")
-	if UpgradeDesk.next_cards(PackedStringArray(["price_slate", "desk_space", "acceptance_meter", "junior_associate", "quality_assurance"]), 3) \
-			!= ["street_posters", "projector"]:
+		push_error("no hire card: further hands are hired in the projector tree; the junior opens the minis")
+	if UpgradeDesk.next_cards(PackedStringArray(["price_slate", "radio", "desk_space", "acceptance_meter", "junior_associate", "quality_assurance"]), 3) \
+			!= ["mini_cabbages", "street_posters", "projector"]:
 		failed = true
 		push_error("quality assurance should open the posters and the projector")
 	# The chains narrow the tray and widen it again: the time-and-motion study opens three at once.
-	var early := PackedStringArray(["price_slate", "desk_space", "acceptance_meter", "junior_associate", "quality_assurance",
-			"street_posters", "projector", "research_inspection", "pricing_consultant", "catch_combo"])
-	if UpgradeDesk.next_cards(early, 3) != ["performance_review", "rotten_bin"]:
+	var early := PackedStringArray(["price_slate", "radio", "desk_space", "acceptance_meter", "junior_associate", "quality_assurance",
+			"mini_cabbages", "street_posters", "projector", "research_inspection", "pricing_consultant", "catch_combo",
+			"research_cabbage", "mini_tube"])
+	if UpgradeDesk.next_cards(early, 3) != ["performance_review", "rotten_bin", "research_assistant"]:
 		failed = true
-		push_error("inspection, consultant and combo should leave the review and the bin: %s" % [UpgradeDesk.next_cards(early, 3)])
+		push_error("inspection, consultant and combo should leave the review, the bin and the lab assistant: %s" % [UpgradeDesk.next_cards(early, 3)])
 	early.append_array(["performance_review", "rotten_bin"])
-	if UpgradeDesk.next_cards(early, 3) != ["spoilage_memo", "managerial_oversight", "window_targets"]:
+	if UpgradeDesk.next_cards(early, 3) != ["spoilage_memo", "research_assistant", "tube_lever"]:
 		failed = true
-		push_error("the review and the bin should open the memo, the manager and the targets: %s" % [UpgradeDesk.next_cards(early, 3)])
+		push_error("the bin should open the memo, research units the lab assistant, the tube its lever: %s" % [UpgradeDesk.next_cards(early, 3)])
+	# Stamping whatever is dealt first, every card comes round (no softlock), from a new save and from
+	# one that stamped desk space, the junior and the meter before the radio existed (radio still dealt).
+	for start: PackedStringArray in [PackedStringArray(), PackedStringArray(["price_slate", "desk_space", "junior_associate", "acceptance_meter"])]:
+		var stamped := start.duplicate()
+		if not start.is_empty() and UpgradeDesk.next_cards(stamped, 3)[0] != "radio":
+			failed = true
+			push_error("an old save without the radio should be dealt it first: %s" % [UpgradeDesk.next_cards(stamped, 3)])
+		while not UpgradeDesk.next_cards(stamped, 3).is_empty():
+			stamped.append(UpgradeDesk.next_cards(stamped, 3)[0])
+		if stamped.size() != UpgradeDesk.CARDS.size():
+			failed = true
+			push_error("only %d of %d cards ever dealt from %s" % [stamped.size(), UpgradeDesk.CARDS.size(), start])
 	# Every `needs` names a card earlier in the queue, so the queue order is a valid stamping order.
 	for i in UpgradeDesk.CARDS.size():
 		for need: String in UpgradeDesk.CARDS[i].get("needs", []):
@@ -49,7 +65,8 @@ func _ready() -> void:
 	for card: Dictionary in UpgradeDesk.CARDS:
 		UpgradeDesk.apply(card.id, save)
 	if not save.slate_unlocked or save.desk_capacity != 2 or save.pack_size != 10 or save.hands != 1 \
-			or not is_equal_approx(save.marketing, 1.2 * 1.5) or not is_equal_approx(save.associate_interval, interval * 0.5):
+			or not is_equal_approx(save.marketing, 1.2 * 1.5) or not is_equal_approx(save.associate_interval, interval * 0.5) \
+			or save.research_hands != 1:
 		failed = true
 		push_error("card effects wrong: slate %s, desk %d, pack %d, hands %d, marketing %.2f, interval %.1f" % [save.slate_unlocked, save.desk_capacity, save.pack_size, save.hands, save.marketing, save.associate_interval])
 	Associate.add_hand(save)
@@ -91,7 +108,7 @@ func _ready() -> void:
 	if ledger.is_empty() or ledger.get("currency") != "findings" or ledger.get("research", false):
 		failed = true
 		push_error("the ledger should be a ¶ card, not research")
-	if not UpgradeDesk.next_cards(PackedStringArray(["price_slate", "desk_space", "acceptance_meter", "junior_associate",
+	if not UpgradeDesk.next_cards(PackedStringArray(["price_slate", "radio", "desk_space", "acceptance_meter", "junior_associate",
 			"quality_assurance", "projector", "street_posters"]), 3).has("research_inspection"):
 		failed = true
 		push_error("the projector should open the inspection research")

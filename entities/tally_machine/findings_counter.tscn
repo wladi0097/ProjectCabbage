@@ -19,6 +19,8 @@ stream_2/stream = ExtResource("sfx_tally_tick_3")
 script = ExtResource("1_script")
 field = &"findings"
 drums = 6
+hover_area = AABB(-0.362, 0.084, -0.081, 0.45, 0.13, 0.134)
+tooltip = "Findings (¶): research points from the QA bay. Cards priced in ¶ are paid from here. Tokens on the desk only count once you sweep them in."
 
 [node name="Model" parent="." instance=ExtResource("2_model")]
 

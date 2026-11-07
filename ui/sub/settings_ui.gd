@@ -52,6 +52,7 @@ func _ready() -> void:
 	%MusicVolume.value = settings.music_volume
 	%MuteSfx.button_pressed = settings.sfx_muted
 	%SfxVolume.value = settings.sfx_volume
+	%RadioFilter.button_pressed = settings.radio_filter
 
 	%Monitor.selected = settings.monitor_used
 	%Resolution.selected = item_index(_items(%Resolution), settings.display_size)
@@ -184,6 +185,10 @@ func _on_mute_sfx_toggled(toggled_on: bool) -> void:
 func _on_sfx_volume_value_changed(value: float) -> void:
 	settings.sfx_volume = value
 	_play_after_setup(%SfxAudioTest)
+
+
+func _on_radio_filter_toggled(toggled_on: bool) -> void:
+	settings.radio_filter = toggled_on
 
 
 func _on_monitor_item_selected(index: int) -> void:

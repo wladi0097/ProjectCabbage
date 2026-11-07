@@ -25,6 +25,7 @@ buses/default_bus_layout="res://ressources/default_bus_layout.tres"
 
 SaveManager="*res://globalScripts/SaveManager.tscn"
 Hand="*res://globalScripts/hand.gd"
+SteamAchievements="*res://globalScripts/steam_achievements.gd"
 
 [display]
 

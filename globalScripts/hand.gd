@@ -3,6 +3,8 @@ extends Node
 ## release, and drives the 3D hand that replaces the OS cursor (pointing, open over
 ## something, closed on what it holds). Over UI, while a menu in the "blocks_hand" group is
 ## open, or while the window is unfocused, the OS cursor comes back and the hand lets go of the mouse.
+## A hovered Interactable with a `tooltip` gets a small paper slip beside it saying what it does:
+## at once the first time that text is hovered (save.tooltips_seen), after TOOLTIP_DELAY from then on.
 
 const MODEL := preload("res://entities/hand/hand_model.tscn")
 const RAY_LENGTH := 20.0
@@ -24,6 +26,13 @@ const PRESS_LIFT := -0.006
 ## The fingertip touches a button this far toward the player from the hovered spot, so the
 ## glove trails off below it on screen instead of covering it.
 const TIP_BACK := 0.04
+## Seconds of hovering before a tooltip already seen comes up, its slip's width and its offset
+## from the mouse (px).
+const TOOLTIP_DELAY := 1.0
+const TOOLTIP_WIDTH := 300.0
+const TOOLTIP_OFFSET := Vector2(34, -20)
+const TOOLTIP_PAPER := Color(0.72, 0.73, 0.69)
+const TOOLTIP_INK := Color(0.13, 0.15, 0.14)
 
 var hovered: Interactable
 var held: Interactable
@@ -31,11 +40,35 @@ var held: Interactable
 var _model: HandModel
 ## Where the mouse ray last hit the hovered thing; frozen while it is held.
 var _point := Vector3.ZERO
+## The tooltip slip, the text it is waiting to show (or shows), and the hover left before it does.
+var _tip_slip := PanelContainer.new()
+var _tip_label := Label.new()
+var _tip := ""
+var _tip_wait := 0.0
 
 
 func _ready() -> void:
 	_model = MODEL.instantiate()
 	add_child(_model)
+	var layer := CanvasLayer.new()
+	layer.layer = 20
+	add_child(layer)
+	var paper := StyleBoxFlat.new()
+	paper.bg_color = TOOLTIP_PAPER
+	paper.border_color = TOOLTIP_INK.lightened(0.3)
+	paper.set_border_width_all(1)
+	paper.set_content_margin_all(10)
+	paper.shadow_color = Color(0, 0, 0, 0.35)
+	paper.shadow_offset = Vector2(4, 4)
+	_tip_slip.add_theme_stylebox_override(&"panel", paper)
+	_tip_slip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tip_slip.visible = false
+	_tip_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tip_label.custom_minimum_size.x = TOOLTIP_WIDTH
+	_tip_label.add_theme_color_override(&"font_color", TOOLTIP_INK)
+	_tip_label.add_theme_font_size_override(&"font_size", 17)
+	_tip_slip.add_child(_tip_label)
+	layer.add_child(_tip_slip)
 
 
 func _physics_process(_delta: float) -> void:
@@ -55,6 +88,7 @@ func _process(delta: float) -> void:
 			and get_viewport().gui_get_hovered_control() == null and not get_tree().get_nodes_in_group(&"blocks_hand").any(func(n: Node) -> bool:
 				return n is CanvasItem and (n as CanvasItem).is_visible_in_tree())
 	_model.visible = in_game
+	_show_tooltip(hovered.tooltip if in_game and held == null and is_instance_valid(hovered) else "", delta)
 	var mode := Input.MOUSE_MODE_HIDDEN if in_game else Input.MOUSE_MODE_VISIBLE
 	if Input.mouse_mode != mode:
 		Input.mouse_mode = mode
@@ -96,6 +130,36 @@ func _unhandled_input(event: InputEvent) -> void:
 		held = hovered
 		held.grabbed.emit()
 		get_viewport().set_input_as_handled()
+
+
+## The seconds of hovering before tooltip text is shown: none if it has never been `seen`.
+static func tooltip_delay(seen: bool) -> float:
+	return TOOLTIP_DELAY if seen else 0.0
+
+
+## Shows tooltip `text` beside the mouse once it has waited its tooltip_delay ("" hides it).
+func _show_tooltip(text: String, delta: float) -> void:
+	var save := SaveManager.save
+	if text != _tip:
+		_tip = text
+		_tip_wait = tooltip_delay(save.tooltips_seen.has(text))
+		_tip_slip.visible = false
+	if _tip == "":
+		return
+	_tip_wait -= delta
+	if _tip_wait > 0.0:
+		return
+	if not _tip_slip.visible:
+		_tip_label.text = tr(_tip)
+		_tip_slip.reset_size()
+		_tip_slip.visible = true
+		if not save.tooltips_seen.has(_tip):
+			save.tooltips_seen.append(_tip)
+	var view := get_viewport().get_visible_rect().size
+	var at := get_viewport().get_mouse_position() + TOOLTIP_OFFSET
+	if at.x + _tip_slip.size.x > view.x:
+		at.x -= _tip_slip.size.x + TOOLTIP_OFFSET.x * 2.0  # No room right of the mouse: left of it.
+	_tip_slip.position = at.clamp(Vector2.ZERO, view - _tip_slip.size)
 
 
 ## Where the mouse ray crosses the horizontal plane at `height`.

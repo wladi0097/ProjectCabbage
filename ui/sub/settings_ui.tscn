@@ -260,6 +260,19 @@ stream = ExtResource("5_spacebar")
 volume_db = -10.0
 bus = &"SFX"
 
+[node name="RadioFilterRow" type="HBoxContainer" parent="Page/Layout/Pages/Audio/List"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Audio/List/RadioFilterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "settings.radio_filter"
+
+[node name="RadioFilter" type="CheckBox" parent="Page/Layout/Pages/Audio/List/RadioFilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="Video" type="ScrollContainer" parent="Page/Layout/Pages" unique_id=1470106713]
 visible = false
 layout_mode = 1
@@ -582,3 +595,4 @@ confirm_text = "settings.resetProgress.button"
 [connection signal="clicked" from="Page/Layout/Pages/Gameplay/List/ResetRow/ResetProgress" to="ResetConfirm" method="show"]
 [connection signal="cancelled" from="ResetConfirm/Panel" to="ResetConfirm" method="hide"]
 [connection signal="confirmed" from="ResetConfirm/Panel" to="." method="_on_reset_confirmed"]
+[connection signal="toggled" from="Page/Layout/Pages/Audio/List/RadioFilterRow/RadioFilter" to="." method="_on_radio_filter_toggled"]

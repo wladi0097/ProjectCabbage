@@ -5,11 +5,14 @@ extends Node3D
 ## (target_price) and, if they differ, reaches in from the left screen edge and taps the arrow one
 ## step toward it, then hovers by the slate for the next tap. On target it withdraws off screen.
 ## The player outranks it: after a press on the slate it backs off for PLAYER_PAUSE seconds.
-## save.consultant_skill: 0 aims at the textbook full-sale price (mood ignored, every unit sells at
-## a normal mood), 1 reads the street's mood, 2 aims at the best income per unit after pack costs
+## save.consultant_skill: 0 aims at the price the street accepts about TARGET_ACCEPTANCE of the time
+## at a normal mood (most units sell, a few are refused), 1 the same with the street's mood read,
+## 2 aims at the best income per unit after pack costs
 ## and, with hired hands, throttles: while no unit waits on the mat (the hands are starved, supply is
 ## the limit) it asks a step more each time, up to THROTTLE × the full-sale price, and gives a step
 ## back whenever one waits.
+## A light switch on the slate's frame (there once the card is stamped) sends it away or back
+## (save.consultant_on).
 
 enum Phase { AWAY, REACH, TAP, HOVER, WITHDRAW }
 
@@ -22,6 +25,11 @@ const ENTRY := Vector3(-2.6, 1.25, -0.3)
 const SIZE := 0.9
 const PLAYER_PAUSE := 15.0
 const THROTTLE := 1.6
+## Skills 0 and 1 keep the street's acceptance as near this as whole-dollar prices allow.
+const TARGET_ACCEPTANCE := 0.9
+## The on/off switch, lying flat on the desk right of the slate (slate space; face up, its top
+## toward the window), bigger than the console's (the slate is drawn small).
+const SWITCH_AT := Transform3D(Basis(Vector3(2.6, 0, 0), Vector3(0, 0, -2.6), Vector3(0, 2.6, 0)), Vector3(0.36, 0.006, 0.0))
 ## Fingertip distances off an arrow along the slate face's normal (FACE): hovering, and pressed.
 ## From the front, so the finger is not hidden behind the tilted slate.
 const FACE := Vector3(0.0, 0.875, 0.485)
@@ -49,6 +57,7 @@ var _time := 0.0
 var _extra := 0
 
 @onready var _model: HandModel = $Hand
+@onready var _switch := LightSwitch.new()
 
 
 func _ready() -> void:
@@ -64,17 +73,27 @@ func _ready() -> void:
 	_model.pose = HandModel.Pose.POINT
 	_model.visible = false
 	slate.player_rewrote.connect(_back_off)
+	_switch.transform = SWITCH_AT
+	_switch.tooltip = "Pricing consultant switch. Up: it keeps nudging your price toward where about 90% of units sell. Down: it stays away."
+	slate.add_child(_switch)
+	_switch.flicked.connect(_flick)
+	_show_switch(false)
 
 
 func _process(delta: float) -> void:
 	var save := SaveManager.save
+	if _switch.visible != save.stamped.has(CARD):
+		_show_switch(false)
 	if not save.stamped.has(CARD) or not save.slate_unlocked or not slate.visible:
 		return
+	if not save.consultant_on and _phase not in [Phase.AWAY, Phase.WITHDRAW]:
+		_step = 0
+		_phase = Phase.WITHDRAW
 	_time += delta
 	_wait -= delta
 	match _phase:
 		Phase.AWAY, Phase.HOVER:
-			if _wait <= 0.0:
+			if _wait <= 0.0 and save.consultant_on:
 				_decide(save)
 		Phase.REACH:
 			if _move(slate.arrow_at(_step) + FACE * HOVER, delta):
@@ -110,7 +129,11 @@ static func target_price(save: SaveGame, skill: int) -> int:
 	var ref := Slate.ref_price(save.marketing, save.demand_mood if skill >= 1 else 1.0)
 	var top := Slate.max_price(save.marketing)
 	if skill < 2:
-		return clampi(floori(ref + 0.0001), Slate.MIN_PRICE, top)
+		var near := Slate.MIN_PRICE
+		for price in range(Slate.MIN_PRICE, top + 1):
+			if absf(Slate.demand(price, ref) - TARGET_ACCEPTANCE) < absf(Slate.demand(near, ref) - TARGET_ACCEPTANCE) - 0.0001:
+				near = price
+		return near
 	var cost := Console.pack_price(save.price_factor, save.pack_size, save.pack_discount) / float(save.pack_size)
 	var best := Slate.MIN_PRICE
 	for price in range(Slate.MIN_PRICE, top + 1):
@@ -148,6 +171,20 @@ func _decide(save: SaveGame) -> void:
 		_model.visible = true
 	_step = signi(target - save.sale_price)
 	_phase = Phase.REACH
+
+
+## The slate's switch was flicked: the consultant is sent away or called back.
+func _flick() -> void:
+	SaveManager.save.consultant_on = not SaveManager.save.consultant_on
+	_show_switch()
+
+
+## The switch shows once the card is stamped, up while the consultant is on.
+func _show_switch(animate := true) -> void:
+	var save := SaveManager.save
+	_switch.visible = save.stamped.has(CARD)
+	_switch.set_enabled(_switch.visible)
+	_switch.show_on(save.consultant_on, animate)
 
 
 func _back_off() -> void:

@@ -2,13 +2,15 @@ class_name CoinVacuums
 extends Node3D
 ## The coin collector (desk card coin_collector): small grey robot pucks that roam the mat and suck
 ## up the resting coin stacks. This node is the dock on the mat's left edge; it slides in once the
-## card is stamped and parks save.vacuums units, the first backed into the dock, any others in a
-## row beside it. A unit drives (slowly: BASE_SPEED × save.vacuum_speed) to the nearest stack,
+## card is stamped and parks save.vacuums units, each backed into its own charging dock (the first
+## is this node's, every further one a copy ROW_STEP along the mat edge). A unit drives (slowly:
+## BASE_SPEED × save.vacuum_speed) to the nearest stack,
 ## takes up to save.vacuum_capacity coins within save.vacuum_reach as it goes, and when the bag is
 ## full or the mat is clean drives home, beeps and empties: the coins fly from it to the tally.
 ## Its lamp glows while out and blinks when full. The bodies are kinematic, so they nudge cabbages
 ## aside. All the money logic is in CoinPile (vacuum_at, bank_from); coins in a bag still count in
-## pending_value.
+## pending_value. Once TOKEN_CARD is stamped they also take the QA bay's resting report slips (one
+## per bag slot) and, home, the slips fly from them into the Findings counter (QaBay.file_from).
 
 enum State { PARKED, ROAM, RETURN }
 
@@ -34,6 +36,7 @@ const RADIUS := 0.11
 const HEIGHT := 0.07
 const SLIDE_FROM := Vector3(0.0, 0.8, 0.0)
 const SLIDE_TIME := 0.4
+const TOKEN_CARD := "token_recovery"
 
 @export var coins: CoinPile
 
@@ -44,10 +47,14 @@ class Unit:
 	var lamp: StandardMaterial3D
 	## Its parking spot, in the dock's space.
 	var home: Transform3D
+	## Its dock's lamp, glowing while it rests there.
+	var dock_lamp: StandardMaterial3D
 	var state := State.PARKED
 	var goal := Vector3.ZERO
 	var loaded := 0
 	var value := 0
+	## QA report slips in the bag (token_recovery), filed when it empties.
+	var slips: Array[Node3D] = []
 	var wait := 0.0
 
 
@@ -56,8 +63,9 @@ var _time := 0.0
 ## The resting stacks the units can reach, refreshed every RESCAN (and right after a unit takes coins).
 var _spots: Array[Vector3] = []
 var _rescan := 0.0
+## The QA bay, found on the first _bay call.
+var _qa: QaBay
 
-@onready var _dock_lamp: StandardMaterial3D = $Dock/Model/Lamp.material_override
 @onready var _rest := position
 
 
@@ -80,14 +88,22 @@ func _physics_process(delta: float) -> void:
 		# Only the stacks a unit can get close enough to (inside AREA, give or take its reach).
 		var reach := AREA.grow(save.vacuum_reach * 0.9)
 		_spots.clear()
-		for spot in coins.resting_spots():
+		var bay := _bay(save)
+		for spot in coins.resting_spots() + (bay.resting_spots() if bay != null else [] as Array[Vector3]):
 			if reach.has_point(Vector2(spot.x, spot.z)):
 				_spots.append(spot)
-	var resting := false
 	for unit in _units:
 		_drive(unit, _spots, save, delta)
-		resting = resting or (unit.state == State.PARKED and unit.wait > 0.0)
-	_dock_lamp.emission_energy_multiplier = LAMP_ON * 0.5 if resting else 0.0
+		unit.dock_lamp.emission_energy_multiplier = LAMP_ON * 0.5 if unit.state == State.PARKED and unit.wait > 0.0 else 0.0
+
+
+## The QA bay, when the units may take its slips (TOKEN_CARD stamped); else null.
+func _bay(save: SaveGame) -> QaBay:
+	if not save.stamped.has(TOKEN_CARD):
+		return null
+	if _qa == null:
+		_qa = get_tree().get_first_node_in_group(&"qa_bay") as QaBay
+	return _qa
 
 
 static func unlocked(save: SaveGame) -> bool:
@@ -131,6 +147,13 @@ func _drive(unit: Unit, spots: Array[Vector3], save: SaveGame, delta: float) -> 
 		State.ROAM:
 			var got := coins.vacuum_at(at, save.vacuum_reach, save.vacuum_capacity - unit.loaded)
 			unit.loaded += got.x
+			var bay := _bay(save)
+			if bay != null:
+				var slips := bay.vacuum_at(at, save.vacuum_reach, save.vacuum_capacity - unit.loaded)
+				unit.slips.append_array(slips)
+				unit.loaded += slips.size()
+				if not slips.is_empty():
+					_rescan = 0.0
 			if got.x > 0:
 				_rescan = 0.0  # a stack shrank or went: look again next tick
 			unit.value += got.y
@@ -189,6 +212,9 @@ func _unload(unit: Unit) -> void:
 	unit.body.global_transform = global_transform * unit.home
 	unit.state = State.PARKED
 	unit.wait = REST
+	if not unit.slips.is_empty():
+		_bay(SaveManager.save).file_from(unit.slips, unit.body.global_position + Vector3.UP * HEIGHT)
+		unit.slips = []
 	if unit.value > 0:
 		coins.bank_from(unit.body.global_position + Vector3.UP * HEIGHT, unit.value)
 		$Beep.cue(unit.body.global_position)
@@ -217,8 +243,16 @@ func _add_unit() -> void:
 	add_child(unit.body)
 	unit.brush = model.get_node_or_null("Model/Brush")
 	unit.lamp = model.get_node("Model/Lamp").material_override
-	var park: Node3D = $Dock/Park
-	unit.home = Transform3D(park.transform.basis, park.position + Vector3.RIGHT * ROW_STEP * _units.size())
+	var dock: Node3D = $Dock
+	if not _units.is_empty():
+		dock = $Dock.duplicate()
+		dock.position += Vector3.RIGHT * ROW_STEP * _units.size()
+		add_child(dock)
+	var lamp: MeshInstance3D = dock.get_node("Model/Lamp")
+	lamp.material_override = lamp.material_override.duplicate()
+	unit.dock_lamp = lamp.material_override
+	var park: Node3D = dock.get_node("Park")
+	unit.home = Transform3D(park.transform.basis, dock.position + park.position)
 	unit.body.global_transform = global_transform * unit.home
 	_units.append(unit)
 

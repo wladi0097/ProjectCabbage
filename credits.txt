@@ -1,0 +1,24 @@
+Project Cabbage - credits and licences
+
+MUSIC (the desk radio, assets/audio/music/radio/)
+
+"Study And Relax" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
+
+"Hard Boiled" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
+
+"Jazz Brunch" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
+
+"Backbay Lounge" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
+
+"On The Job" from ZapSplat (zapsplat.com)
+Licensed under the ZapSplat Premium licence (paid; no attribution required)
+
+All five were converted to Ogg Vorbis at 32 kHz; otherwise unchanged.

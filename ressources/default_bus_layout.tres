@@ -1,6 +1,38 @@
-[gd_resource type="AudioBusLayout" format=3]
+[gd_resource type="AudioBusLayout" format=3 uid="uid://lnkxrysmtwnw"]
+
+[sub_resource type="AudioEffectHardLimiter" id="MasterLimit"]
+resource_name = "HardLimiter"
+ceiling_db = -1.0
+
+[sub_resource type="AudioEffectCompressor" id="SfxGlue"]
+resource_name = "Compressor"
+threshold = -12.0
+attack_us = 2000.0
+release_ms = 150.0
+
+[sub_resource type="AudioEffectHighPassFilter" id="RadioLowCut"]
+resource_name = "HighPassFilter"
+cutoff_hz = 300.0
+
+[sub_resource type="AudioEffectLowPassFilter" id="RadioHighCut"]
+resource_name = "LowPassFilter"
+cutoff_hz = 3000.0
+
+[sub_resource type="AudioEffectDistortion" id="RadioCrackle"]
+resource_name = "Distortion"
+mode = 3
+pre_gain = 4.0
+drive = 0.25
+post_gain = -4.0
+
+[sub_resource type="AudioEffectCompressor" id="RadioSquash"]
+resource_name = "Compressor"
+threshold = -16.0
+ratio = 3.0
 
 [resource]
+bus/0/effect/0/effect = SubResource("MasterLimit")
+bus/0/effect/0/enabled = true
 bus/1/name = &"Music"
 bus/1/solo = false
 bus/1/mute = false
@@ -13,3 +45,19 @@ bus/2/mute = false
 bus/2/bypass_fx = false
 bus/2/volume_db = 0.0
 bus/2/send = &"Master"
+bus/2/effect/0/effect = SubResource("SfxGlue")
+bus/2/effect/0/enabled = true
+bus/3/name = &"Radio"
+bus/3/solo = false
+bus/3/mute = false
+bus/3/bypass_fx = false
+bus/3/volume_db = 0.0
+bus/3/send = &"Music"
+bus/3/effect/0/effect = SubResource("RadioLowCut")
+bus/3/effect/0/enabled = true
+bus/3/effect/1/effect = SubResource("RadioHighCut")
+bus/3/effect/1/enabled = true
+bus/3/effect/2/effect = SubResource("RadioCrackle")
+bus/3/effect/2/enabled = true
+bus/3/effect/3/effect = SubResource("RadioSquash")
+bus/3/effect/3/enabled = true
