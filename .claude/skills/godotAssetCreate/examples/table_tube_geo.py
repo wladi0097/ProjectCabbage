@@ -11,7 +11,7 @@ INTAKE_X, INTAKE_Z, WELL_HALF = 1.99, -0.07, 0.11  # Godot: right of the mat, ab
 import random
 random.seed(11)
 TOP, THICK = 0.75, 0.075
-X0, X1, Y0, Y1 = -3.2, 3.2, -1.25, 0.75
+X0, X1, Y0, Y1 = -2.0, 3.2, -1.25, 0.75   # main top; the L wing (below) carries on left of X0
 CY = (Y0 + Y1) / 2
 UVS = 0.6          # wood tile = 1.67 m; Godot uv1_scale must match
 SPLIT = -0.58      # divider strip centre between the two sections
@@ -99,6 +99,42 @@ part_box(bm, (wx0, wy0, TOP - 0.2), (wx1, wy1, TOP - 0.19), 0.0, 1)
 for lo, hi in (((wx0 - 0.008, wy0, TOP - 0.2), (wx0, wy1, TOP - 0.002)), ((wx1, wy0, TOP - 0.2), (wx1 + 0.008, wy1, TOP - 0.002)),
                ((wx0, wy0 - 0.008, TOP - 0.2), (wx1, wy0, TOP - 0.002)), ((wx0, wy1, TOP - 0.2), (wx1, wy1 + 0.008, TOP - 0.002))):
     part_box(bm, lo, hi, 0.0, 1)
+# L wing (2026-11-07): the main top stops at X0 = -2.0 and a 45 degree corner step carries on to the
+# left (the farm TV stands on it, facing diagonally at the player), then a short return runs toward
+# the camera. Plan points in Godot (x, z); Blender y = -z. Same wood and steel as the main top.
+WING_STEP = [(-2.0, -0.75), (-3.4, -0.75), (-3.4, 0.6), (-2.7, 0.6), (-2.0, -0.1)]
+WING_RETURN = [(-3.4, 0.6), (-2.7, 0.6), (-2.7, 1.6), (-3.4, 1.6)]
+WING_BANDS = [((-2.0, -0.75), (-3.4, -0.75)), ((-3.4, -0.75), (-3.4, 1.6)), ((-3.4, 1.6), (-2.7, 1.6)),
+              ((-2.7, 1.6), (-2.7, 0.6)), ((-2.7, 0.6), (-2.0, -0.1))]
+
+
+def plan_prism(bm, pts, z0, z1, mat):
+    """A flat Godot-plan polygon (x, z) extruded from z0 to z1 (Blender heights)."""
+    part = bmesh.new()
+    lo = [part.verts.new((x, -z, z0)) for x, z in pts]
+    hi = [part.verts.new((x, -z, z1)) for x, z in pts]
+    part.faces.new(lo); part.faces.new(list(reversed(hi)))
+    n = len(pts)
+    for k in range(n):
+        part.faces.new((lo[k], lo[(k + 1) % n], hi[(k + 1) % n], hi[k]))
+    bmesh.ops.recalc_face_normals(part, faces=part.faces)
+    merge(bm, part, I, mat)
+
+
+for poly in (WING_STEP, WING_RETURN):
+    plan_prism(bm, poly, TOP - THICK, TOP, 0)
+cx, cz = -2.8, 0.3                                   # inside the wing: bands step inward towards it
+for (ax, az), (bx, bz) in WING_BANDS:
+    d = Vector((bx - ax, bz - az)).normalized()
+    n = Vector((-d.y, d.x))
+    if n.dot(Vector((cx - ax, cz - az))) < 0:
+        n = -n
+    plan_prism(bm, [(ax, az), (bx, bz), (bx + n.x * EB, bz + n.y * EB), (ax + n.x * EB, az + n.y * EB)],
+               TOP - THICK - 0.006, TOP + 0.0005, 1)
+for x, z in ((-3.3, -0.65), (-3.3, 1.5), (-2.8, 1.5), (-2.15, -0.25)):  # steel legs
+    part_box(bm, (x - 0.035, -z - 0.035, 0.0), (x + 0.035, -z + 0.035, TOP - THICK), 0.01, 1)
+part_box(bm, (-3.3, 0.6, 0.25), (-2.0, 0.62, TOP - THICK), 0.006, 1)  # modesty panel along the back
+
 ob = finish("table_tube", bm, [wood, steel], (0, CY, 0))
 
 # Offset each board's UVs so the grain never runs continuously across boards.

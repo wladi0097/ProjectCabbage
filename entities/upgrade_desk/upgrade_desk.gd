@@ -44,7 +44,7 @@ const CARDS := [
 	# Manager + pricing consultant: no effect here, entities/manager/ and entities/consultant/ start
 	# once stamped; their small upgrades are projector nodes.
 	{id = "pricing_consultant", price = 15, currency = "findings", title = "RETAIN A PRICING CONSULTANT",
-		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s its hand taps your slate $1 toward the price ~90% of units sell at. Use the arrows and it leaves for 15 s. Switch by the slate: on/off."},
+		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s its hand moves your slate $1 toward the price ~90% of units sell at. Use the arrows yourself and it leaves for 15 s. Its on/off switch is by the slate."},
 	# Sales events: no effect here, entities/golden_lamp/, catch_combo/, rotten_bin/ and
 	# window_targets/ start once stamped; their small upgrades are projector nodes. Rotten units
 	# start coming down the chute as soon as the bin card is offered (GameEvents "rotten_units").
@@ -59,7 +59,7 @@ const CARDS := [
 	{id = "performance_review", price = 25, currency = "findings", research = true, title = "RESEARCH: TIME-AND-MOTION STUDY",
 		needs = ["research_inspection", "pricing_consultant"], body = "Every motion is timed.\nHired hands set off every 4 s instead of 8 s. Unlocks Hire Associate V and Brisk Walk II on the projector."},
 	{id = "rotten_bin", price = 10, currency = "findings", title = "REQUISITION A WASTE BIN",
-		needs = ["catch_combo"], body = "Waste is a process.\nA bin at the bottom of the mat. Drop rotten units in: gone, no fine (a sold one is seized and costs 10× your price). Fresh units binned are lost."},
+		needs = ["catch_combo"], body = "Waste is a process.\nA bin at the bottom of the mat. Rotten units dropped in are gone, with no fine (a sold one is seized and costs 10× your price). Fresh units dropped in are lost."},
 	# Hired hands sell rotten units (fined) until this memo, then leave them on the mat until
 	# WASTE HANDLING PROTOCOL (projector) has them bin them: entities/associate/ (pick_target).
 	{id = "spoilage_memo", price = 40, title = "MEMO: DO NOT HANDLE SPOILED UNITS",
@@ -81,7 +81,7 @@ const CARDS := [
 	{id = "auto_procurement", price = 80, currency = "findings", title = "STANDING PURCHASE ORDER",
 		needs = ["research_materials"], body = "Nobody signs anything.\nAt 3 units of stock or fewer, a pack is bought by itself if you can pay. The switch beside the AUTO lamp on the supply console turns it off or on."},
 	{id = "coin_collector", price = 100, currency = "findings", title = "AUTOMATED COIN RECOVERY UNIT",
-		needs = ["research_materials"], body = "It does not ask why.\nA robot docks at the mat's left edge. It gathers up to 8 coins per trip off the mat and banks them, so you need not sweep."},
+		needs = ["research_materials"], body = "It does not ask why.\nA robot docks at the mat's left edge. It gathers up to 8 coins per trip off the mat and banks them, so you don't have to sweep."},
 	# No effect here: entities/vacuum/ takes the QA bay's slips once it is stamped.
 	{id = "token_recovery", price = 600, title = "EXPANDED RECOVERY MANDATE",
 		needs = ["coin_collector"], body = "Paper is also money, eventually.\nThe robots also pick up Findings tokens in front of the QA bay (one per coin slot) and file them when they dock."},
@@ -92,8 +92,13 @@ const CARDS := [
 		needs = ["research_materials"], body = "The street is asked how it feels.\nUnlocks Slogan IV and Brassica for the Masses on the projector (each: the street pays 25% more)."},
 	{id = "golden_lamp", price = 3000, currency = "findings", title = "REQUISITION A DESK LAMP",
 		needs = ["coin_collector"], body = "Nobody knows why.\nA lamp at the back right. About every 150 s it glows gold for 20 s: meanwhile every sale pays 5×."},
+	# Stage 2 (GameEvents "supply_shock"): only dealt once that event has started (`event`), into a
+	# free tray slot. entities/farm_tv/ shows the remote and the TV, entities/farm_screen/ the farm.
+	{id = "family_farm", price = 2500, title = "ACQUIRE THE FAMILY FARM", event = "supply_shock",
+		body = "Your uncle is selling. Family rates apply.\nA TV and remote arrive: click the remote to look at the farm. Click a square to plant a seed; after 30 s click it again to harvest 3 units into your stock. 10 seeds come with it, more in its seed shop. The wholesalers will not take this well: for 5 min crates cost more than they sell for, then ease back over 5 min."},
 ]
 const OFFERED := 3
+const Events := preload("res://globalScripts/game_events.gd")
 const TRAY_COINS := 15
 ## The card slots in the tray and the card's spot on the press pad, in their own node's space.
 const SLOTS: Array[Vector3] = [Vector3(0.0, 0.02, -0.24), Vector3(0.0, 0.02, 0.0), Vector3(0.0, 0.02, 0.24)]
@@ -129,6 +134,7 @@ const STACK_SIZES: Array[Vector2i] = [Vector2i(3, 2), Vector2i(10, 5), Vector2i(
 const PAPER_NOTE := preload("res://ui/elements/paper_note.tscn")
 ## Then it lies this long on the pad so the APPROVED can be read.
 const SHOW_TIME := 0.45
+const SHOCK_CHECK := 0.5
 
 ## The cards on offer, in slot order (the one on the press included).
 var _offered: Array[UpgradeCard] = []
@@ -150,6 +156,8 @@ var _riffling: Tween
 ## The stack meshes by sheet count, built once.
 static var _stacks := {}
 var _fading: Tween
+## Seconds to the next check whether stage 2 starts (Events.shock_due).
+var _shock_in := 0.0
 
 @onready var _tray: Node3D = $Tray
 @onready var _press: Node3D = $Press
@@ -200,6 +208,13 @@ func _process(delta: float) -> void:
 	if not save.tray_unlocked and save.coins >= TRAY_COINS:
 		save.tray_unlocked = true
 		_drop_tray()
+	_shock_in -= delta
+	if _shock_in <= 0.0 and Events.shock_due(save):
+		save.supply_shock = true
+		SaveManager.log_event("event", "supply_shock")
+		_deal()
+	if _shock_in <= 0.0:
+		_shock_in = SHOCK_CHECK
 	if _cranking:
 		_crank = move_toward(_crank, _crank_under_mouse(), CRANK_SPEED * delta)
 		if _crank >= BOTTOM and not _bottomed:
@@ -217,11 +232,13 @@ func _process(delta: float) -> void:
 		_deal()
 
 
-## The next `count` cards in the queue that are not stamped yet and whose `needs` all are.
-static func next_cards(stamped: PackedStringArray, count: int) -> Array[String]:
+## The next `count` cards in the queue that are not stamped yet and whose `needs` all are. A card
+## with an `event` also waits for that GameEvents event to start in `save` (never without a save).
+static func next_cards(stamped: PackedStringArray, count: int, save: SaveGame = null) -> Array[String]:
 	var out: Array[String] = []
 	for card: Dictionary in CARDS:
-		var open: bool = card.get("needs", []).all(func(need: String) -> bool: return stamped.has(need))
+		var open: bool = card.get("needs", []).all(func(need: String) -> bool: return stamped.has(need)) \
+				and (not card.has("event") or (save != null and Events.due(card.event, save)))
 		if out.size() < count and open and not stamped.has(card.id):
 			out.append(card.id)
 	return out
@@ -282,6 +299,8 @@ static func apply(id: String, save: SaveGame) -> void:
 			save.vacuums = maxi(save.vacuums, 1)
 		"research_assistant":
 			save.research_hands = maxi(save.research_hands, 1)
+		"family_farm":
+			save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME
 
 
 ## The handle's centre (press space) with the lever cranked `crank` of the way down.
@@ -402,7 +421,7 @@ func _pad() -> Vector3:
 ## still on offer up to theirs. `animate` false lays them straight down (loading a save).
 func _deal(animate := true) -> void:
 	var dealt := 0
-	for id in next_cards(SaveManager.save.stamped, OFFERED):
+	for id in next_cards(SaveManager.save.stamped, OFFERED, SaveManager.save):
 		if _offered.any(func(other: UpgradeCard) -> bool: return other.id == id):
 			continue
 		var card := UpgradeCard.new(card_data(id))

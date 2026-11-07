@@ -10,6 +10,9 @@ extends Node3D
 ## left (a bailout) until the next pack is bought or the minute turns.
 ## Once the auto_procurement card is stamped an AUTO lamp lights on the screen with a light switch
 ## beside it: flicked (or the lamp pressed), it switches automatic buying on or off (save.auto_buy). On, a pack is bought whenever should_auto_buy says so.
+## Stage 2 (GameEvents "supply_shock"): a pack unit costs at least crate_share of the street's
+## full-sale price (unit_cost). The standing order then skips packs that would sell at a loss, and
+## while the family farm has seeds or crops the bailout is off (the farm on the TV feeds the desk).
 
 const Slate := preload("res://entities/price_slate/price_slate.gd")
 
@@ -35,6 +38,12 @@ const SWITCH_AT := Vector3(0.088, 0.008, 0.0)
 ## Seconds between two automatic buys, and the AUTO lamp's colour when switched off.
 const AUTO_COOLDOWN := 1.0
 const AUTO_OFF := Color(0.3, 0.27, 0.22, 1)
+## Stage 2 crate prices as a share of the full-sale price (crate_share): after the shock; during the
+## squeeze after the farm is bought (SQUEEZE_TIME s), then easing back over EASE_TIME s.
+const SHOCK_SHARE := 0.6
+const SQUEEZE_SHARE := 1.25
+const SQUEEZE_TIME := 300.0
+const EASE_TIME := 300.0
 
 ## Coins still on the mat or in the air count as money when deciding on a bailout.
 @export var coins: CoinPile
@@ -91,8 +100,9 @@ func _process(delta: float) -> void:
 	if _clock >= PRICE_PERIOD:
 		_clock -= PRICE_PERIOD
 		_tick_price()
-	# Only out of stock is the mat's coin pile worth counting.
-	_broke_for = _broke_for + delta if save.buy_unlocked and _bailout < 0 and save.stock <= 0 and is_broke(save.stock, save.coins + (coins.pending_value() if coins != null else 0), _cost()) else 0.0
+	save.squeeze_left = maxf(save.squeeze_left - delta, 0.0)
+	# Only out of stock is the mat's coin pile worth counting; a farm with seeds or crops feeds the desk.
+	_broke_for = _broke_for + delta if save.buy_unlocked and _bailout < 0 and save.stock <= 0 and not FarmScreen.feeds(save) and is_broke(save.stock, save.coins + (coins.pending_value() if coins != null else 0), _cost()) else 0.0
 	if _broke_for >= BAILOUT_WAIT:
 		_bailout = save.coins
 		_show_price()
@@ -100,7 +110,8 @@ func _process(delta: float) -> void:
 		_show_auto()
 	_auto_wait -= delta
 	if _auto.visible and save.auto_buy and save.buy_unlocked and _auto_wait <= 0.0 \
-			and should_auto_buy(save.stock, save.auto_reserve, save.price_factor, save.auto_max_factor, save.coins, _cost()):
+			and should_auto_buy(save.stock, save.auto_reserve, save.price_factor, save.auto_max_factor, save.coins, _cost()) \
+			and not (save.supply_shock and _cost() / float(save.pack_size) >= save.sale_price):
 		_auto_wait = AUTO_COOLDOWN
 		_press()
 		_push(true)
@@ -113,7 +124,7 @@ func _process(delta: float) -> void:
 
 func _cost() -> int:
 	var save := SaveManager.save
-	return _bailout if _bailout >= 0 else pack_price(save.price_factor, save.pack_size, save.pack_discount)
+	return _bailout if _bailout >= 0 else pack_price(save.price_factor, save.pack_size, save.pack_discount, unit_cost(save))
 
 
 func _tick_price() -> void:
@@ -225,10 +236,25 @@ static func is_broke(stock: int, money: int, cost: int) -> bool:
 
 
 ## What a pack costs: `size` cabbages at UNIT_COST, times the minute's price factor and the
-## cheaper-pack discount; never under $1. Later events that should make supply dearer (shortages,
-## tariffs) multiply in here, not through marketing.
-static func pack_price(factor: float, size: int, discount := 1.0) -> int:
-	return maxi(roundi(factor * UNIT_COST * size * discount), 1)
+## cheaper-pack discount; never under $1. Events that make supply dearer pass a dearer `unit`
+## (unit_cost), not through marketing.
+static func pack_price(factor: float, size: int, discount := 1.0, unit := UNIT_COST) -> int:
+	return maxi(roundi(factor * unit * size * discount), 1)
+
+
+## A pack unit's cost at price factor 1: UNIT_COST, or in stage 2 crate_share of the full-sale price
+## (normal mood).
+static func unit_cost(save: SaveGame) -> float:
+	return maxf(UNIT_COST, crate_share(save.supply_shock, save.squeeze_left) * Slate.ref_price(save.marketing, 1.0))
+
+
+## Stage 2's crate price as a share of the full-sale price: 0 before the shock, SHOCK_SHARE after;
+## with `squeeze_left` seconds of the farm's squeeze left, SQUEEZE_SHARE, easing back to SHOCK_SHARE
+## over its last EASE_TIME seconds.
+static func crate_share(shock: bool, squeeze_left: float) -> float:
+	if not shock:
+		return 0.0
+	return lerpf(SHOCK_SHARE, SQUEEZE_SHARE, clampf(squeeze_left / EASE_TIME, 0.0, 1.0))
 
 
 ## Automatic buying: stock is down to the reserve and the tally can pay; while stock is left it

@@ -472,3 +472,30 @@ All four near-silent (true peaks -28 to -39 dB; "muted" in the prompt is likely 
 | `fine_buzz_B8yv.wav` | (above) | 0.88s | -2.7 dB | 0.48s | fine_notice_2 (cut 0.4 s) |
 | `fine_buzz_27oD.wav` | (above) | 0.88s | -2.8 dB | 0.54s | — |
 | `fine_buzz_f1Z4.wav` | (above) | 0.88s | -9.9 dB | 0.21s | — |
+
+## Farm TV (2026-11-07)
+True peaks (ffmpeg volumedetect). Most CRT takes came out near-silent, as before with "CRT" prompts.
+### tv_on
+> An old 1970s CRT television switched on, one heavy mechanical push switch thunk, then the picture tube's thin high-pitched whine rising in with a soft static crackle, close-mic, dry
+| `tv_on_t6qI.wav` | (above) | 1.60s | -7.4 dB | 0.11s | tv_on |
+| `tv_on_G8ZX.wav` | (above) | 1.60s | -28.9 dB | 1.22s | — (near-silent) |
+| `tv_on_4R25.wav` | (above) | 1.60s | -35.7 dB | 0.30s | — (near-silent) |
+| `tv_on_mm3z.wav` | (above) | 1.60s | -37.6 dB | 0.01s | — (near-silent) |
+### tv_hum (loop)
+> An old CRT television left on in a quiet office, steady soft electrical hum with a faint high tube whine and gentle static hiss, constant, no music, no voices, no clicks, close-mic
+| `tv_hum_nbTo.wav` | (above) | 4.00s | -45.9 dB | — | tv_hum (+30 dB, pure low hum, very level; plus generated pink hiss) |
+| `tv_hum_IUev.wav` | (above) | 4.00s | -18.7 dB | 0.84s | — (swells in at 0.8 s, then fades) |
+| `tv_hum_HwoH.wav` | (above) | 4.00s | -42.9 dB | — | — |
+| `tv_hum_Axzf.wav` | (above) | 4.00s | -46.0 dB | — | — |
+### tv_remote_click
+> A chunky old bakelite TV remote control button pressed with a thumb, one short solid plastic click, close-mic, dry
+| `tv_remote_click_XMQf.wav` | (above) | 0.48s | -0.7 dB | 0.10s | tv_remote_click_1 |
+| `tv_remote_click_ht0q.wav` | (above) | 0.48s | -4.8 dB | 0.01s | tv_remote_click_2 |
+| `tv_remote_click_cU33.wav` | (above) | 0.48s | -4.6 dB | 0.06s | — |
+| `tv_remote_click_x5Ob.wav` | (above) | 0.48s | -5.8 dB | 0.10s | — |
+### tv_off
+> An old CRT television switched off, one mechanical switch clunk and the picture tube's whine dropping away with a soft electric pop, then silence, close-mic, dry
+| `tv_off_Z1mt.wav` | (above) | 1.00s | -5.9 dB | 0.07s | tv_off |
+| `tv_off_Ulx7.wav` | (above) | 1.00s | -13.9 dB | 0.87s | — |
+| `tv_off_Mh8H.wav` | (above) | 1.00s | -17.5 dB | 0.01s | — |
+| `tv_off_ywOH.wav` | (above) | 1.00s | -37.8 dB | 0.01s | — (near-silent) |

@@ -37,13 +37,16 @@ func _ready() -> void:
 		push_error("the bin should open the memo, research units the lab assistant, the tube its lever: %s" % [UpgradeDesk.next_cards(early, 3)])
 	# Stamping whatever is dealt first, every card comes round (no softlock), from a new save and from
 	# one that stamped desk space, the junior and the meter before the radio existed (radio still dealt).
+	# Event cards (the farm) come once their event has started.
+	var started := SaveGame.new()
+	started.supply_shock = true
 	for start: PackedStringArray in [PackedStringArray(), PackedStringArray(["price_slate", "desk_space", "junior_associate", "acceptance_meter"])]:
 		var stamped := start.duplicate()
 		if not start.is_empty() and UpgradeDesk.next_cards(stamped, 3)[0] != "radio":
 			failed = true
 			push_error("an old save without the radio should be dealt it first: %s" % [UpgradeDesk.next_cards(stamped, 3)])
-		while not UpgradeDesk.next_cards(stamped, 3).is_empty():
-			stamped.append(UpgradeDesk.next_cards(stamped, 3)[0])
+		while not UpgradeDesk.next_cards(stamped, 3, started).is_empty():
+			stamped.append(UpgradeDesk.next_cards(stamped, 3, started)[0])
 		if stamped.size() != UpgradeDesk.CARDS.size():
 			failed = true
 			push_error("only %d of %d cards ever dealt from %s" % [stamped.size(), UpgradeDesk.CARDS.size(), start])

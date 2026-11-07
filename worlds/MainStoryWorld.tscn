@@ -56,6 +56,8 @@
 [ext_resource type="PackedScene" path="res://entities/vacuum/vacuum.tscn" id="supply_vacuums"]
 [ext_resource type="PackedScene" path="res://entities/mini_drop/mini_drop.tscn" id="mini_drop_1"]
 [ext_resource type="PackedScene" path="res://entities/radio/radio.tscn" id="radio_1"]
+[ext_resource type="PackedScene" path="res://entities/boss_report/boss_report.tscn" id="boss_report_1"]
+[ext_resource type="PackedScene" path="res://entities/farm_tv/farm_tv.tscn" id="farm_tv_1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.45, 0.58, 0.75, 1)
@@ -414,6 +416,11 @@ mat = NodePath("../Table/cabbage_mat")
 
 [node name="Radio" parent="." instance=ExtResource("radio_1")]
 transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, -1.162, 0.75, 0.8)
+
+[node name="FarmTv" parent="." instance=ExtResource("farm_tv_1")]
+
+[node name="BossReport" parent="." node_paths=PackedStringArray("memo") instance=ExtResource("boss_report_1")]
+memo = NodePath("../MilestoneMemo")
 
 [node name="Overlay" type="CanvasLayer" parent="." unique_id=1259288364]
 

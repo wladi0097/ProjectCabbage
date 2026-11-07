@@ -156,7 +156,7 @@ static func coin_points(save: SaveGame, seconds: int) -> PackedVector2Array:
 static func personnel_rows(save: SaveGame) -> Array:
 	var rows := [["HEADCOUNT", str(save.hands + 1)], ["YOU", "UNDER REVIEW"]]
 	for i in mini(save.hands, 7):
-		rows.append(["ASSOCIATE No. %03d" % (i + 1), "ACTIVE"])
+		rows.append([TranslationServer.translate("ASSOCIATE No. %03d") % (i + 1), "ACTIVE"])
 	if save.hands > 7:
 		rows.append(["FURTHER ASSOCIATES", str(save.hands - 7)])
 	if save.hands > 0:
@@ -342,11 +342,11 @@ func _draw_cover(cover: Rect2) -> void:
 	var label := Rect2(cover.position + cover.size * Vector2(0.22, 0.2), cover.size * Vector2(0.66, 0.24))
 	draw_rect(label, PAPER)
 	draw_rect(label.grow(-6.0), INK, false, 2.0)
-	draw_string(FONT, Vector2(label.position.x, label.position.y + label.size.y * 0.45), "LEDGER",
+	draw_string(FONT, Vector2(label.position.x, label.position.y + label.size.y * 0.45), tr("LEDGER"),
 			HORIZONTAL_ALIGNMENT_CENTER, label.size.x, int(label.size.y * 0.32), INK)
-	draw_string(FONT, Vector2(label.position.x, label.position.y + label.size.y * 0.72), "PERFORMANCE RECORDS",
+	draw_string(FONT, Vector2(label.position.x, label.position.y + label.size.y * 0.72), tr("PERFORMANCE RECORDS"),
 			HORIZONTAL_ALIGNMENT_CENTER, label.size.x, int(label.size.y * 0.12), INK)
-	draw_string(FONT, Vector2(label.position.x, label.position.y + label.size.y * 0.88), "FORM L-1   |   NOT FOR CIRCULATION",
+	draw_string(FONT, Vector2(label.position.x, label.position.y + label.size.y * 0.88), tr("FORM L-1   |   NOT FOR CIRCULATION"),
 			HORIZONTAL_ALIGNMENT_CENTER, label.size.x, int(label.size.y * 0.08), Color(INK, 0.7))
 
 
@@ -370,33 +370,33 @@ func _draw_page(rect: Rect2, index: int, side: int) -> void:
 	var x := margin_x + 14.0
 	var w := rect.end.x - x - rect.size.x * 0.07
 	var text := int(line_h * 0.5)
-	draw_string(FONT, Vector2(x, rect.position.y + line_h * 1.5), page.title, HORIZONTAL_ALIGNMENT_LEFT, w, int(line_h * 0.72), INK)
-	draw_string(_type, Vector2(x, rect.position.y + line_h * 2.6), page.form, HORIZONTAL_ALIGNMENT_LEFT, w, int(line_h * 0.4), Color(INK, 0.7))
-	draw_string(_type, Vector2(x, rect.position.y + line_h * 2.6), "PAGE %d OF %d" % [index + 1, all.size()],
+	draw_string(FONT, Vector2(x, rect.position.y + line_h * 1.5), tr(page.title), HORIZONTAL_ALIGNMENT_LEFT, w, int(line_h * 0.72), INK)
+	draw_string(_type, Vector2(x, rect.position.y + line_h * 2.6), tr(page.form), HORIZONTAL_ALIGNMENT_LEFT, w, int(line_h * 0.4), Color(INK, 0.7))
+	draw_string(_type, Vector2(x, rect.position.y + line_h * 2.6), tr("PAGE %d OF %d") % [index + 1, all.size()],
 			HORIZONTAL_ALIGNMENT_RIGHT, w, int(line_h * 0.4), Color(INK, 0.7))
 	var row_y := func(i: int) -> float: return rect.position.y + (i + 4) * line_h - line_h * 0.25
 	match page.kind:
 		"rows":
 			for i in page.rows.size():
-				draw_string(_type, Vector2(x, row_y.call(i)), page.rows[i][0], HORIZONTAL_ALIGNMENT_LEFT, w, text, INK)
-				draw_string(_type, Vector2(x, row_y.call(i)), page.rows[i][1], HORIZONTAL_ALIGNMENT_RIGHT, w, text, INK)
+				draw_string(_type, Vector2(x, row_y.call(i)), tr(page.rows[i][0]), HORIZONTAL_ALIGNMENT_LEFT, w, text, INK)
+				draw_string(_type, Vector2(x, row_y.call(i)), tr(page.rows[i][1]), HORIZONTAL_ALIGNMENT_RIGHT, w, text, INK)
 			if index == 0:
-				_draw_stamp(Vector2(x + w * 0.62, rect.position.y + line_h * 16.5), "AUDITED", line_h)
+				_draw_stamp(Vector2(x + w * 0.62, rect.position.y + line_h * 16.5), tr("AUDITED"), line_h)
 		"list":
 			if page.rows.is_empty():
-				draw_string(_type, Vector2(x, row_y.call(0)), "NO REQUISITIONS ON FILE.", HORIZONTAL_ALIGNMENT_LEFT, w, text, INK)
+				draw_string(_type, Vector2(x, row_y.call(0)), tr("NO REQUISITIONS ON FILE."), HORIZONTAL_ALIGNMENT_LEFT, w, text, INK)
 			for i in page.rows.size():
 				var row: Array = page.rows[i]
 				draw_string(_type, Vector2(x, row_y.call(i)), row[0], HORIZONTAL_ALIGNMENT_LEFT, w, int(text * 0.8), Color(INK, 0.75))
-				draw_string(_type, Vector2(x + w * 0.27, row_y.call(i)), row[1], HORIZONTAL_ALIGNMENT_LEFT, w * 0.58, int(text * 0.8), INK)
+				draw_string(_type, Vector2(x + w * 0.27, row_y.call(i)), tr(row[1]), HORIZONTAL_ALIGNMENT_LEFT, w * 0.58, int(text * 0.8), INK)
 				draw_string(_type, Vector2(x, row_y.call(i)), row[2], HORIZONTAL_ALIGNMENT_RIGHT, w, int(text * 0.8), INK)
-			draw_string(_type, Vector2(x, row_y.call(REQ_PER_PAGE) + line_h), "%d REQUISITIONS APPROVED IN TOTAL." % _reqs.size(),
+			draw_string(_type, Vector2(x, row_y.call(REQ_PER_PAGE) + line_h), tr("%d REQUISITIONS APPROVED IN TOTAL.") % _reqs.size(),
 					HORIZONTAL_ALIGNMENT_LEFT, w, int(text * 0.8), Color(INK, 0.7))
 		"chart":
 			_draw_chart(Rect2(Vector2(x + 40.0, rect.position.y + line_h * 4.0), Vector2(w - 50.0, line_h * 11.0)),
 					_points + PackedVector2Array([Vector2(seconds, save.coins)]), line_h)
 		"blank":
-			draw_string(_type, Vector2(rect.position.x, rect.get_center().y), "THIS PAGE INTENTIONALLY LEFT BLANK.",
+			draw_string(_type, Vector2(rect.position.x, rect.get_center().y), tr("THIS PAGE INTENTIONALLY LEFT BLANK."),
 					HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, int(text * 0.8), Color(INK, 0.6))
 	# The dog-eared corner to turn by, where there is a page to turn to.
 	if index + side < 0 or index + side >= all.size():
@@ -405,7 +405,7 @@ func _draw_page(rect: Rect2, index: int, side: int) -> void:
 	var ear := line_h * (1.4 if _hover_side == side else 1.0)
 	draw_colored_polygon(PackedVector2Array([corner, corner - Vector2(side * ear, 0.0), corner - Vector2(0.0, ear)]), PAPER.darkened(0.25))
 	draw_string(FONT, Vector2(corner.x - (w * 0.3 if side > 0 else -ear), corner.y - line_h * 0.35),
-			"NEXT >" if side > 0 else "< PREVIOUS", HORIZONTAL_ALIGNMENT_RIGHT if side > 0 else HORIZONTAL_ALIGNMENT_LEFT,
+			tr("NEXT >") if side > 0 else tr("< PREVIOUS"), HORIZONTAL_ALIGNMENT_RIGHT if side > 0 else HORIZONTAL_ALIGNMENT_LEFT,
 			w * 0.3 - ear, int(line_h * 0.42), Color(INK, 0.55 if _hover_side == side else 0.35))
 
 
@@ -431,9 +431,9 @@ func _draw_chart(area: Rect2, points: PackedVector2Array, line_h: float) -> void
 	draw_string(_type, Vector2(area.position.x - 40.0, area.position.y - 8.0), "$%d" % top, HORIZONTAL_ALIGNMENT_LEFT, -1, small, pencil)
 	draw_string(_type, Vector2(area.position.x - 40.0, area.end.y + line_h * 0.6), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, small, pencil)
 	draw_string(_type, Vector2(area.position.x, area.end.y + line_h * 0.6), clock(int(span)), HORIZONTAL_ALIGNMENT_RIGHT, area.size.x, small, pencil)
-	draw_string(_type, Vector2(area.position.x, area.end.y + line_h * 1.3), "TIME ON SHIFT", HORIZONTAL_ALIGNMENT_CENTER, area.size.x, small, pencil)
+	draw_string(_type, Vector2(area.position.x, area.end.y + line_h * 1.3), tr("TIME ON SHIFT"), HORIZONTAL_ALIGNMENT_CENTER, area.size.x, small, pencil)
 	if points.size() < 3:
-		draw_string(_type, Vector2(area.position.x, area.get_center().y), "INSUFFICIENT DATA. CONTINUE WORKING.",
+		draw_string(_type, Vector2(area.position.x, area.get_center().y), tr("INSUFFICIENT DATA. CONTINUE WORKING."),
 				HORIZONTAL_ALIGNMENT_CENTER, area.size.x, small, pencil)
 		return
 	var line := PackedVector2Array()
@@ -442,4 +442,4 @@ func _draw_chart(area: Rect2, points: PackedVector2Array, line_h: float) -> void
 		var wobble := Vector2(sin(i * 12.9898) , cos(i * 78.233)) * 1.5
 		line.append(area.position + Vector2(p.x / span * area.size.x, (1.0 - p.y / top) * area.size.y) + wobble)
 	draw_polyline(line, pencil, 2.5, true)
-	_draw_stamp(area.position + area.size * Vector2(0.75, 0.82), "NOTED", line_h * 0.7)
+	_draw_stamp(area.position + area.size * Vector2(0.75, 0.82), tr("NOTED"), line_h * 0.7)

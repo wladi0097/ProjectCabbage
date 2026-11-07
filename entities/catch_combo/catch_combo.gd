@@ -71,7 +71,7 @@ func _show(save: SaveGame) -> void:
 	if steps == 0:
 		return
 	var capped := factor >= save.combo_cap
-	_label.text = "INTERCEPTS %d\n×%s%s" % [steps, String.num(factor, 2), "  MAX" if capped else ""]
+	_label.text = tr("INTERCEPTS %d") % steps + "\n×%s%s" % [String.num(factor, 2), "  MAX" if capped else ""]
 	var fresh := clampf(1.0 - _idle / maxf(save.combo_window, 0.1), 0.0, 1.0)
 	_label.modulate = Color(INK, 0.35 + 0.65 * fresh)
 	_label.scale = Vector3.ONE * (1.0 + (POP - 1.0) * _pop)

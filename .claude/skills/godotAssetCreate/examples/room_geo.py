@@ -4,7 +4,7 @@
 #   blender -b --factory-startup -P build.py -- <abs room.blend> <abs png dir>   (SAVE=1 saves)
 # Textures (generated, no sources): python room_tex.py <abs assets/textures>
 # Blender coords (Z-up): Godot (x, y, z) = Blender (x, -z, y). +Y here = outside.
-# Wall inner face Godot z=-0.80 -> Blender y=0.80; outer face y=1.05. x -3.6..3.6, height 0..2.6.
+# Wall inner face Godot z=-0.80 -> Blender y=0.80; outer face y=1.05. x -8.0..3.6, height 0..2.6.
 # Window opening x -0.55..1.95 (centred on the mat), height 0.75..1.90.
 # Steel sill: top 0.75 flat from y 0.75 (desk back edge, fills the 5 cm gap) to 0.86, then slopes out and down
 #   to 0.57 at y 1.10 (5 cm past the outer face); x -0.61..2.01.
@@ -31,10 +31,11 @@ nt.links.new(t.outputs["Color"], nt.nodes["Principled BSDF"].inputs["Base Color"
 X0, X1, Z0, Z1 = -0.55, 1.95, 0.75, 1.90       # opening; Z0 = sill top = desk top
 SB = 0.53                                      # underside of the steel sill block, top of the wall below it
 WX, WB, WT_, Y0, Y1 = 3.6, 0.0, 2.6, 0.80, 1.05
+WXL = 8.0                                      # the wall runs further left: behind the farm TV on the desk's L wing
 bm = bmesh.new()
-for lo, hi in [((-WX, Y0, WB), (WX, Y1, SB)),          # below the sill
-               ((-WX, Y0, Z1), (WX, Y1, WT_)),         # above the window
-               ((-WX, Y0, SB), (X0, Y1, Z1)),          # left pier
+for lo, hi in [((-WXL, Y0, WB), (WX, Y1, SB)),          # below the sill
+               ((-WXL, Y0, Z1), (WX, Y1, WT_)),         # above the window
+               ((-WXL, Y0, SB), (X0, Y1, Z1)),          # left pier
                ((X1, Y0, SB), (WX, Y1, Z1))]:          # right pier
     part_box(bm, lo, hi, 0.0, 0)
 finish("room_wall", bm, [m_wall])

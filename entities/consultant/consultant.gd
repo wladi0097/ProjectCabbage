@@ -134,7 +134,9 @@ static func target_price(save: SaveGame, skill: int) -> int:
 			if absf(Slate.demand(price, ref) - TARGET_ACCEPTANCE) < absf(Slate.demand(near, ref) - TARGET_ACCEPTANCE) - 0.0001:
 				near = price
 		return near
-	var cost := Console.pack_price(save.price_factor, save.pack_size, save.pack_discount) / float(save.pack_size)
+	# Stage 2 crates cost more (unit_cost); during the wholesalers' squeeze none are bought (the farm feeds the desk).
+	var unit := Console.UNIT_COST if save.squeeze_left > 0.0 else Console.unit_cost(save)
+	var cost := Console.pack_price(save.price_factor, save.pack_size, save.pack_discount, unit) / float(save.pack_size)
 	var best := Slate.MIN_PRICE
 	for price in range(Slate.MIN_PRICE, top + 1):
 		if income(price, ref, cost) > income(best, ref, cost) + 0.0001:

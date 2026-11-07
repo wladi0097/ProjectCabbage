@@ -1,0 +1,28 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/farm_screen/farm_screen.gd" id="1_script"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_1.wav" id="2_plant"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_grab_2.wav" id="3_harvest"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_1.wav" id="4_buy"]
+
+[node name="FarmScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1024.0
+offset_bottom = 768.0
+script = ExtResource("1_script")
+
+[node name="Plant" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_plant")
+volume_db = -8.0
+bus = &"SFX"
+
+[node name="Harvest" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_harvest")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="Buy" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_buy")
+volume_db = -6.0
+bus = &"SFX"

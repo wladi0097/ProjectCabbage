@@ -78,7 +78,7 @@ const MEMOS := [
 	{id = "research_units_1", stat = "research_units", at = 1, re = "RESEARCH UNIT ANALYSED",
 		how = "Have Quality Assurance analyse a research unit.", icon = "research", note = "It was blue. It is now data."},
 	{id = "minis_1000", stat = "minis_sold", at = 1000, re = "1,000 MINIATURE UNITS", how = "Sell 1,000 mini units.",
-		icon = "mini", note = "Small units, small margins, large volume."},
+		icon = "mini", note = "The units are small. So are the margins."},
 	{id = "lever_split", stat = "tube_split", at = 0.5, re = "OUTPUT DIVERTED", how = "Divert tube minis to research (lever on SPLIT or RESEARCH).",
 		icon = "lever", note = "Half of everything now goes somewhere else."},
 	{id = "fines_1", stat = "fines", at = 1, re = "FIRST FINE", how = "Sell a rotten unit.",
@@ -363,21 +363,21 @@ func _draw_paper() -> void:
 	var w := SIZE.x
 	_paper.draw_rect(Rect2(Vector2(10, 10), SIZE), Color(0, 0, 0, 0.4))
 	_paper.draw_rect(Rect2(Vector2.ZERO, SIZE), PAPER)
-	_paper.draw_string(FONT, Vector2(28, 52), "MEMORANDUM", HORIZONTAL_ALIGNMENT_LEFT, -1, 36, INK)
-	_paper.draw_string(FONT, Vector2(28, 52), "INTERNAL  |  DO NOT REPLY", HORIZONTAL_ALIGNMENT_RIGHT, w - 56, 14, Color(INK, 0.6))
+	_paper.draw_string(FONT, Vector2(28, 52), tr("MEMORANDUM"), HORIZONTAL_ALIGNMENT_LEFT, -1, 36, INK)
+	_paper.draw_string(FONT, Vector2(28, 52), tr("INTERNAL  |  DO NOT REPLY"), HORIZONTAL_ALIGNMENT_RIGHT, w - 56, 14, Color(INK, 0.6))
 	_paper.draw_line(Vector2(28, 66), Vector2(w - 28, 66), INK, 2.0)
-	_paper.draw_string(FONT, Vector2(28, 92), "TO: DESK 4     FROM: MANAGEMENT     RE: " + _memo.re, HORIZONTAL_ALIGNMENT_LEFT, w - 56, 16, Color(INK, 0.8))
-	_paper.draw_string(FONT, Vector2(28, 132), _memo.note, HORIZONTAL_ALIGNMENT_LEFT, w - 56, 21, INK)
-	var line: String = "Effective immediately: " + _memo.bonus if _memo.has("bonus") else NO_BONUS
+	_paper.draw_string(FONT, Vector2(28, 92), tr("TO: DESK 4     FROM: MANAGEMENT     RE: ") + tr(_memo.re), HORIZONTAL_ALIGNMENT_LEFT, w - 56, 16, Color(INK, 0.8))
+	_paper.draw_string(FONT, Vector2(28, 132), tr(_memo.note), HORIZONTAL_ALIGNMENT_LEFT, w - 56, 21, INK)
+	var line: String = tr("Effective immediately: ") + tr(_memo.bonus) if _memo.has("bonus") else tr(NO_BONUS)
 	_paper.draw_string(FONT, Vector2(28, 168), line, HORIZONTAL_ALIGNMENT_LEFT, w - 56, 21, INK)
 	_paper.draw_line(Vector2(28, 196), Vector2(w - 28, 196), Color(INK, 0.3), 1.0)
-	_paper.draw_string(FONT, Vector2(28, 222), "Retain for your records. Records are retained regardless.", HORIZONTAL_ALIGNMENT_LEFT, w - 200, 13, Color(INK, 0.55))
+	_paper.draw_string(FONT, Vector2(28, 222), tr("Retain for your records. Records are retained regardless."), HORIZONTAL_ALIGNMENT_LEFT, w - 200, 13, Color(INK, 0.55))
 	if _stamped:
 		# The stamp thumps down slightly too big and settles.
 		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - (_t - STAMP_AT) / 0.12)
 		_paper.draw_set_transform(Vector2(w - 92, 214), deg_to_rad(-9.0), Vector2(pop, pop))
 		_paper.draw_rect(Rect2(-62, -24, 124, 46), Color(STAMP, 0.8), false, 3.0)
-		_paper.draw_string(FONT, Vector2(-62, 12), "NOTED", HORIZONTAL_ALIGNMENT_CENTER, 124, 30, Color(STAMP, 0.8))
+		_paper.draw_string(FONT, Vector2(-62, 12), tr("NOTED"), HORIZONTAL_ALIGNMENT_CENTER, 124, 30, Color(STAMP, 0.8))
 		_paper.draw_set_transform(Vector2.ZERO)
 
 
@@ -412,8 +412,8 @@ func _set_hover(h: float) -> void:
 func _draw_shade() -> void:
 	var filed := MEMOS.filter(func(m: Dictionary) -> bool: return SaveManager.save.milestones.has(m.id)).size()
 	var w := _shade.size.x
-	_shade.draw_string(FONT, Vector2(0, 70), "PERSONNEL FILE  |  DESK 4", HORIZONTAL_ALIGNMENT_CENTER, w, 40, PAPER)
-	_shade.draw_string(FONT, Vector2(0, 104), "%d / %d FILED" % [filed, MEMOS.size()], HORIZONTAL_ALIGNMENT_CENTER, w, 22, Color(PAPER, 0.7))
+	_shade.draw_string(FONT, Vector2(0, 70), tr("PERSONNEL FILE  |  DESK 4"), HORIZONTAL_ALIGNMENT_CENTER, w, 40, PAPER)
+	_shade.draw_string(FONT, Vector2(0, 104), tr("%d / %d FILED") % [filed, MEMOS.size()], HORIZONTAL_ALIGNMENT_CENTER, w, 22, Color(PAPER, 0.7))
 	# The close button: a dark stamped square with an X, as on the projector.
 	var close := _close_rect()
 	_shade.draw_rect(close, Color(INK, 0.9))
@@ -433,7 +433,7 @@ func _draw_card(card: Control, m: Dictionary) -> void:
 		# Under the writing, so the title and how stay readable through it.
 		card.draw_set_transform(Vector2(CARD.x - 120, CARD.y * 0.55), deg_to_rad(-12.0))
 		card.draw_rect(Rect2(-92, -22, 184, 42), Color(STAMP, 0.6), false, 3.0)
-		card.draw_string(FONT, Vector2(-92, 11), "CLASSIFIED", HORIZONTAL_ALIGNMENT_CENTER, 184, 28, Color(STAMP, 0.6))
+		card.draw_string(FONT, Vector2(-92, 11), tr("CLASSIFIED"), HORIZONTAL_ALIGNMENT_CENTER, 184, 28, Color(STAMP, 0.6))
 		card.draw_set_transform(Vector2.ZERO)
 	var box := Rect2(16, 16, CARD.y - 32, CARD.y - 32)
 	card.draw_rect(box, Color(INK, 0.1))
@@ -441,9 +441,9 @@ func _draw_card(card: Control, m: Dictionary) -> void:
 	_draw_icon(card, m.icon, box.get_center(), box.size.x * 0.32, ink, filed)
 	var x := box.end.x + 18.0
 	var w := CARD.x - x - 18.0
-	card.draw_string(FONT, Vector2(x, 42), m.re, HORIZONTAL_ALIGNMENT_LEFT, w, 24, ink)
-	card.draw_multiline_string(BODY_FONT, Vector2(x, 72), m.how, HORIZONTAL_ALIGNMENT_LEFT, w, 17, 2, Color(ink, 0.85))
-	var foot: String = "Effective: " + m.bonus if m.has("bonus") else (m.note if filed else "")
+	card.draw_string(FONT, Vector2(x, 42), tr(m.re), HORIZONTAL_ALIGNMENT_LEFT, w, 24, ink)
+	card.draw_multiline_string(BODY_FONT, Vector2(x, 72), tr(m.how), HORIZONTAL_ALIGNMENT_LEFT, w, 17, 2, Color(ink, 0.85))
+	var foot: String = tr("Effective: ") + tr(m.bonus) if m.has("bonus") else (tr(m.note) if filed else "")
 	card.draw_multiline_string(FONT, Vector2(x, 122), foot, HORIZONTAL_ALIGNMENT_LEFT, w, 15, 2, Color(ink, 0.7))
 
 

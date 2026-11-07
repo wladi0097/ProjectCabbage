@@ -68,19 +68,19 @@ func _draw_paper() -> void:
 	var w := SIZE.x
 	_paper.draw_rect(Rect2(Vector2(8, 8), SIZE), Color(0, 0, 0, 0.4))
 	_paper.draw_rect(Rect2(Vector2.ZERO, SIZE), PAPER)
-	_paper.draw_string(FONT, Vector2(24, 44), "NOTICE OF PENALTY", HORIZONTAL_ALIGNMENT_LEFT, -1, 30, INK)
+	_paper.draw_string(FONT, Vector2(24, 44), tr("NOTICE OF PENALTY"), HORIZONTAL_ALIGNMENT_LEFT, -1, 30, INK)
 	_paper.draw_string(FONT, Vector2(24, 44), "FORM 11-R", HORIZONTAL_ALIGNMENT_RIGHT, w - 48, 13, Color(INK, 0.6))
 	_paper.draw_line(Vector2(24, 56), Vector2(w - 24, 56), INK, 2.0)
-	_paper.draw_string(FONT, Vector2(24, 80), "RE: UNIT UNFIT FOR SALE", HORIZONTAL_ALIGNMENT_LEFT, w - 48, 15, Color(INK, 0.8))
-	_paper.draw_string(FONT, Vector2(24, 112), "A rotten unit was offered to the public.", HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
-	_paper.draw_string(FONT, Vector2(24, 142), "Penalty: %d × $%d = $%d" % [SaleWindow.FINE, _price, _owed],
+	_paper.draw_string(FONT, Vector2(24, 80), tr("RE: UNIT UNFIT FOR SALE"), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 15, Color(INK, 0.8))
+	_paper.draw_string(FONT, Vector2(24, 112), tr("A rotten unit was offered to the public."), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
+	_paper.draw_string(FONT, Vector2(24, 142), tr("Penalty: %d × $%d = $%d") % [SaleWindow.FINE, _price, _owed],
 			HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
-	var line := "Tally insufficient. Balance set to zero." if _short else "Deducted from your tally."
+	var line := tr("Tally insufficient. Balance set to zero.") if _short else tr("Deducted from your tally.")
 	_paper.draw_string(FONT, Vector2(24, 170), line, HORIZONTAL_ALIGNMENT_LEFT, w - 48, 17, Color(INK, 0.85))
-	_paper.draw_string(FONT, Vector2(24, 202), "Rotten units are to be disposed of, not sold.", HORIZONTAL_ALIGNMENT_LEFT, w - 160, 13, Color(INK, 0.55))
+	_paper.draw_string(FONT, Vector2(24, 202), tr("Rotten units are to be disposed of, not sold."), HORIZONTAL_ALIGNMENT_LEFT, w - 160, 13, Color(INK, 0.55))
 	if _stamped:
 		var pop := 1.0 + 0.25 * maxf(0.0, 1.0 - (_t - STAMP_AT) / 0.12)
 		_paper.draw_set_transform(Vector2(w - 86, 186), deg_to_rad(-11.0), Vector2(pop, pop))
 		_paper.draw_rect(Rect2(-60, -24, 120, 46), Color(STAMP, 0.85), false, 3.0)
-		_paper.draw_string(FONT, Vector2(-60, 12), "FINED", HORIZONTAL_ALIGNMENT_CENTER, 120, 30, Color(STAMP, 0.85))
+		_paper.draw_string(FONT, Vector2(-60, 12), tr("FINED"), HORIZONTAL_ALIGNMENT_CENTER, 120, 30, Color(STAMP, 0.85))
 		_paper.draw_set_transform(Vector2.ZERO)

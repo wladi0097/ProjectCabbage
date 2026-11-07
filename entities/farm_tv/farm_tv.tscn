@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/farm_tv/farm_tv.gd" id="1_tv"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="2_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_drop"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tv_remote_click_1.wav" id="sfx_click_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tv_remote_click_2.wav" id="sfx_click_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tv_on.wav" id="sfx_on"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tv_off.wav" id="sfx_off"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tv_hum.wav" id="sfx_hum"]
+[ext_resource type="PackedScene" path="res://entities/farm_screen/farm_screen.tscn" id="farm_screen_1"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_thud"]
+random_pitch = 1.03
+random_volume_offset_db = 1.5
+streams_count = 1
+stream_0/stream = ExtResource("sfx_drop")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_click"]
+random_pitch = 1.08
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_click_1")
+stream_1/stream = ExtResource("sfx_click_2")
+
+[node name="FarmTv" type="Node3D"]
+script = ExtResource("1_tv")
+screen_scene = ExtResource("farm_screen_1")
+
+[node name="ScreenViewport" type="SubViewport" parent="."]
+disable_3d = true
+size = Vector2i(1024, 768)
+render_target_update_mode = 0
+
+[node name="Thud" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_thud")
+volume_db = -4.0
+bus = &"SFX"
+script = ExtResource("2_cue")
+
+[node name="Click" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_click")
+bus = &"SFX"
+script = ExtResource("2_cue")
+min_interval = 0.05
+
+[node name="TvOn" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_on")
+volume_db = -2.0
+bus = &"SFX"
+script = ExtResource("2_cue")
+
+[node name="TvOff" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_off")
+volume_db = -4.0
+bus = &"SFX"
+script = ExtResource("2_cue")
+
+[node name="Hum" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("sfx_hum")
+bus = &"SFX"

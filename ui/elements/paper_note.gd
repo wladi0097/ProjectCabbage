@@ -34,11 +34,11 @@ var _body := TextParagraph.new()
 
 ## Shows card `card` (an UpgradeDesk.CARDS entry).
 func set_card(card: Dictionary) -> void:
-	_form = UpgradeCard.form_of(card)
-	_title = card.title
+	_form = tr(UpgradeCard.form_of(card))
+	_title = tr(card.title)
 	_body.clear()
 	_body.width = (TEXT_RIGHT - TEXT_LEFT) * SCALE
-	_body.add_string(card.body, BODY_FONT, BODY_SIZE)
+	_body.add_string(tr(card.body), BODY_FONT, BODY_SIZE)
 	custom_minimum_size = Vector2(HEAD.size.x, HEAD.size.y + ROW.size.y * _body.get_line_count() + FOOT.size.y) * SCALE
 	queue_redraw()
 

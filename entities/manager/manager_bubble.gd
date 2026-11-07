@@ -48,7 +48,7 @@ func _draw() -> void:
 	var ink := Color(INK, alpha)
 	var x := box.position.x + 22.0
 	var w := SIZE.x - 44.0
-	draw_string(FONT, Vector2(x, 30), "MANAGEMENT  |  UNIT QUOTA", HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color(ink, alpha * 0.6))
+	draw_string(FONT, Vector2(x, 30), tr("MANAGEMENT  |  UNIT QUOTA"), HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color(ink, alpha * 0.6))
 	var secs := ceili(manager.left)
 	var urgent := manager.phase == Manager.Phase.QUOTA and secs <= Manager.TICK_FROM
 	draw_string(FONT, Vector2(x, 38), "0:%02d" % secs, HORIZONTAL_ALIGNMENT_RIGHT, w, 34, Color(STAMP, alpha) if urgent else ink)
@@ -66,7 +66,7 @@ func _draw() -> void:
 	if manager.phase == Manager.Phase.VERDICT:
 		var thump := 1.0 + 0.3 * (1.0 - ease(_pop, 0.3))
 		draw_set_transform(Vector2(view.x * AT_X, TOP) + Vector2(140, 70) * scale_by, deg_to_rad(-8.0), Vector2.ONE * thump * scale_by)
-		var word := "MET" if manager.met else "NOT MET"
+		var word := tr("MET") if manager.met else tr("NOT MET")
 		draw_rect(Rect2(-74, -26, 148, 50), Color(STAMP, 0.85), false, 3.0)
 		draw_string(FONT, Vector2(-74, 13), word, HORIZONTAL_ALIGNMENT_CENTER, 148, 32, Color(STAMP, 0.85))
 	draw_set_transform(Vector2.ZERO)

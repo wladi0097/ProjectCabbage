@@ -1,0 +1,1021 @@
+keys,en,de
+PRICE SLATE,PRICE SLATE,PREISTAFEL
+"Pricing is your responsibility.
+A slate sets your price per unit (cabbage): click < or > for $1 less or more. Up to ~$3 every unit sells; above that, more are refused.","Pricing is your responsibility.
+A slate sets your price per unit (cabbage): click < or > for $1 less or more. Up to ~$3 every unit sells; above that, more are refused.","Die Preisgestaltung obliegt Ihnen.
+Eine Tafel legt Ihren Preis pro Einheit (Kohlkopf) fest: < oder > für $1 weniger oder mehr. Bis ~$3 wird jede Einheit verkauft, darüber werden mehr abgelehnt."
+REQUISITION A DESK RADIO,REQUISITION A DESK RADIO,ANFORDERUNG: TISCHRADIO
+"Morale is a deliverable.
+A radio on the desk. Top key: play or stop. Bottom key: next song. No other effect.","Morale is a deliverable.
+A radio on the desk. Top key: play or stop. Bottom key: next song. No other effect.","Arbeitsmoral ist ein Leistungsziel.
+Ein Radio auf dem Tisch. Obere Taste: an oder aus. Untere Taste: nächstes Lied. Keine weitere Wirkung."
+DESK SPACE REALLOCATION,DESK SPACE REALLOCATION,NEUZUWEISUNG DER TISCHFLÄCHE
+"The mat has been re-zoned.
+The chute (the ramp at bottom right) keeps 2 units waiting on the mat instead of 1.","The mat has been re-zoned.
+The chute (the ramp at bottom right) keeps 2 units waiting on the mat instead of 1.","Die Matte wurde umgewidmet.
+Die Rutsche (die Rampe unten rechts) hält 2 Einheiten auf der Matte bereit statt 1."
+HIRE A JUNIOR ASSOCIATE,HIRE A JUNIOR ASSOCIATE,EINSTELLUNG: HILFSKRAFT
+"Unpaid. Grateful.
+A hired hand rests at the bottom of the desk. Every 8 s it takes a unit off the mat and throws it out of the window to sell at your price.","Unpaid. Grateful.
+A hired hand rests at the bottom of the desk. Every 8 s it takes a unit off the mat and throws it out of the window to sell at your price.","Unbezahlt. Dankbar.
+Eine Hilfskraft wartet unten am Tisch. Alle 8 s nimmt sie eine Einheit von der Matte und wirft sie zu Ihrem Preis aus dem Fenster."
+ACCEPTANCE METER,ACCEPTANCE METER,AKZEPTANZMESSER
+"Measured. Managed.
+A gauge on the slate shows the chance a unit sells at your price. The street also pays 20% more before it refuses units.","Measured. Managed.
+A gauge on the slate shows the chance a unit sells at your price. The street also pays 20% more before it refuses units.","Gemessen. Gesteuert.
+Eine Anzeige an der Tafel zeigt, wie wahrscheinlich eine Einheit zu Ihrem Preis verkauft wird. Die Straße zahlt außerdem 20% mehr, bevor sie ablehnt."
+ESTABLISH QUALITY ASSURANCE,ESTABLISH QUALITY ASSURANCE,EINRICHTUNG: QUALITÄTSSICHERUNG
+"Every unit is a lesson.
+A QA bay fills the window's left third. Flick a unit in (it is used up): 5 s later a 1 Finding (¶) token pops out. Sweep your hand over it.","Every unit is a lesson.
+A QA bay fills the window's left third. Flick a unit in (it is used up): 5 s later a 1 Finding (¶) token pops out. Sweep your hand over it.","Jede Einheit ist eine Lektion.
+Eine QS-Station belegt das linke Fensterdrittel. Werfen Sie eine Einheit hinein (sie wird verbraucht): 5 s später kommt eine Marke über 1 Befund (¶) heraus. Mit der Hand darüberstreichen."
+PILOT SCHEME: MINI UNITS,PILOT SCHEME: MINI UNITS,PILOTPROJEKT: MINI-EINHEITEN
+"Smaller units. Same paperwork.
+About every 20 s a free mini unit falls onto the mat (6 at most). It uses no stock and sells for 1/4 of your price.","Smaller units. Same paperwork.
+About every 20 s a free mini unit falls onto the mat (6 at most). It uses no stock and sells for 1/4 of your price.","Kleinere Einheiten. Gleicher Papierkram.
+Etwa alle 20 s fällt eine kostenlose Mini-Einheit auf die Matte (höchstens 6). Sie verbraucht keinen Bestand und bringt 1/4 Ihres Preises."
+STREET POSTER CAMPAIGN,STREET POSTER CAMPAIGN,PLAKATKAMPAGNE
+"Findings show the street wants cabbage.
+The street pays 50% more before it refuses units.","Findings show the street wants cabbage.
+The street pays 50% more before it refuses units.","Befunde zeigen: Die Straße will Kohl.
+Die Straße zahlt 50% mehr, bevor sie Einheiten ablehnt."
+REQUISITION A PROJECTOR,REQUISITION A PROJECTOR,ANFORDERUNG: PROJEKTOR
+"Attendance is mandatory.
+A PULL tab hangs from the top of the screen: drag it down to open the upgrade tree. Hold the mouse on an upgrade to buy it with coins.","Attendance is mandatory.
+A PULL tab hangs from the top of the screen: drag it down to open the upgrade tree. Hold the mouse on an upgrade to buy it with coins.","Anwesenheit ist Pflicht.
+Oben am Bildschirm hängt ein ZIEHEN-Wimpel: nach unten ziehen öffnet den Ausbaubaum. Maus auf einem Ausbau gedrückt halten, um ihn mit Münzen zu kaufen."
+RESEARCH: INSPECTION METHODOLOGY,RESEARCH: INSPECTION METHODOLOGY,FORSCHUNG: PRÜFMETHODIK
+"The inspection is inspected.
+Opens the QUALITY ASSURANCE department on the projector: faster analysis, more Findings, more benches.","The inspection is inspected.
+Opens the QUALITY ASSURANCE department on the projector: faster analysis, more Findings, more benches.","Die Prüfung wird geprüft.
+Öffnet die Abteilung QUALITÄTSSICHERUNG am Projektor: schnellere Analyse, mehr Befunde, mehr Prüftische."
+RETAIN A PRICING CONSULTANT,RETAIN A PRICING CONSULTANT,BEAUFTRAGUNG: PREISBERATER
+"Billed by the hour.
+Every 4 s its hand moves your slate $1 toward the price ~90% of units sell at. Use the arrows yourself and it leaves for 15 s. Its on/off switch is by the slate.","Billed by the hour.
+Every 4 s its hand moves your slate $1 toward the price ~90% of units sell at. Use the arrows yourself and it leaves for 15 s. Its on/off switch is by the slate.","Abrechnung nach Stunden.
+Alle 4 s schiebt seine Hand Ihre Tafel um $1 Richtung des Preises, zu dem ~90% verkauft werden. Benutzen Sie die Pfeile selbst, geht er für 15 s. Sein Schalter liegt an der Tafel."
+INTERCEPTION INCENTIVE SCHEME,INTERCEPTION INCENTIVE SCHEME,PRÄMIENPROGRAMM ABFANGEN
+"Initiative is rewarded.
+Grab a unit in mid-air (a catch): every sale pays +10%, up to +50% after 5 catches. 4 s without a catch and the bonus drains away.","Initiative is rewarded.
+Grab a unit in mid-air (a catch): every sale pays +10%, up to +50% after 5 catches. 4 s without a catch and the bonus drains away.","Eigeninitiative wird belohnt.
+Fangen Sie eine Einheit in der Luft: jeder Verkauf bringt +10%, bis +50% nach 5 Fängen. 4 s ohne Fang, und der Bonus verfällt."
+REQUISITION RESEARCH UNITS,REQUISITION RESEARCH UNITS,ANFORDERUNG: FORSCHUNGSEINHEITEN
+"Some units are set aside for study.
+1 in 10 units off the chute is blue. Flicked into the QA bay it gives 3× the Findings. Sold, it pays like any unit.","Some units are set aside for study.
+1 in 10 units off the chute is blue. Flicked into the QA bay it gives 3× the Findings. Sold, it pays like any unit.","Einige Einheiten werden zur Untersuchung abgezweigt.
+1 von 10 Einheiten aus der Rutsche ist blau. In der QS-Station bringt sie 3× die Befunde. Verkauft zählt sie wie jede Einheit."
+PNEUMATIC DELIVERY TUBE,PNEUMATIC DELIVERY TUBE,ROHRPOSTANLAGE
+"Minis no longer touch the desk.
+Minis fall into a tube instead and roll out of the window by themselves. Refused ones still land on the mat.","Minis no longer touch the desk.
+Minis fall into a tube instead and roll out of the window by themselves. Refused ones still land on the mat.","Minis berühren den Tisch nicht mehr.
+Minis fallen in ein Rohr und rollen von selbst aus dem Fenster. Abgelehnte landen weiter auf der Matte."
+RESEARCH: TIME-AND-MOTION STUDY,RESEARCH: TIME-AND-MOTION STUDY,FORSCHUNG: ZEIT-UND-BEWEGUNGSSTUDIE
+"Every motion is timed.
+Hired hands set off every 4 s instead of 8 s. Unlocks Hire Associate V and Brisk Walk II on the projector.","Every motion is timed.
+Hired hands set off every 4 s instead of 8 s. Unlocks Hire Associate V and Brisk Walk II on the projector.","Jede Bewegung wird gestoppt.
+Hilfskräfte starten alle 4 s statt alle 8 s. Schaltet Einstellung V und Zügiger Gang II am Projektor frei."
+REQUISITION A WASTE BIN,REQUISITION A WASTE BIN,ANFORDERUNG: ABFALLEIMER
+"Waste is a process.
+A bin at the bottom of the mat. Rotten units dropped in are gone, with no fine (a sold one is seized and costs 10× your price). Fresh units dropped in are lost.","Waste is a process.
+A bin at the bottom of the mat. Rotten units dropped in are gone, with no fine (a sold one is seized and costs 10× your price). Fresh units dropped in are lost.","Abfall ist ein Prozess.
+Ein Eimer unten an der Matte. Faule Einheiten darin sind weg, ohne Strafe (eine verkaufte wird beschlagnahmt und kostet 10× Ihren Preis). Frische Einheiten darin sind verloren."
+MEMO: DO NOT HANDLE SPOILED UNITS,MEMO: DO NOT HANDLE SPOILED UNITS,VERMERK: KEIN VERDORBENES ANFASSEN
+"Spoilage is not your concern.
+Hired hands stop throwing rotten units out of the window (10× fines) and leave them on the mat.","Spoilage is not your concern.
+Hired hands stop throwing rotten units out of the window (10× fines) and leave them on the mat.","Verderb ist nicht Ihre Angelegenheit.
+Hilfskräfte werfen keine faulen Einheiten mehr aus dem Fenster (10× Strafe) und lassen sie auf der Matte liegen."
+HIRE A LAB ASSISTANT,HIRE A LAB ASSISTANT,EINSTELLUNG: LABORKRAFT
+"The lab coat is deducted from pay.
+A lab hand (blue cuff) joins at the bottom left. On the hired hands' timer, when the QA bay has room, it tosses a unit from the mat into it.","The lab coat is deducted from pay.
+A lab hand (blue cuff) joins at the bottom left. On the hired hands' timer, when the QA bay has room, it tosses a unit from the mat into it.","Der Kittel wird vom Lohn abgezogen.
+Eine Laborkraft (blaue Manschette) kommt unten links dazu. Im Takt der Hilfskräfte wirft sie eine Einheit von der Matte in die QS-Station, wenn dort Platz ist."
+TUBE DIVERSION LEVER,TUBE DIVERSION LEVER,ROHRWEICHENHEBEL
+"Some units are worth more as data.
+A lever by the bin: SALES / SPLIT / RESEARCH (drag or click). RESEARCH files tube minis in the lab for Findings at once; SPLIT, every other one.","Some units are worth more as data.
+A lever by the bin: SALES / SPLIT / RESEARCH (drag or click). RESEARCH files tube minis in the lab for Findings at once; SPLIT, every other one.","Manche Einheiten sind als Daten mehr wert.
+Ein Hebel am Eimer: VERKAUF / TEILEN / FORSCHUNG (ziehen oder klicken). FORSCHUNG schickt Rohr-Minis sofort als Befunde ins Labor, TEILEN jede zweite."
+MEMO: LAB PRIORITY,MEMO: LAB PRIORITY,VERMERK: LABORVORRANG
+"Research units are not for sale.
+Lab hands take blue research units first. Other hired hands stop selling them.","Research units are not for sale.
+Lab hands take blue research units first. Other hired hands stop selling them.","Forschungseinheiten sind unverkäuflich.
+Laborkräfte nehmen zuerst blaue Forschungseinheiten. Andere Hilfskräfte verkaufen sie nicht mehr."
+REQUEST MANAGERIAL OVERSIGHT,REQUEST MANAGERIAL OVERSIGHT,ANTRAG AUF FÜHRUNGSAUFSICHT
+"Someone will be checking.
+Every 2.5-4 min the manager asks for a quota of units in 45 s (125% of your recent pace). Met: quota × your price in coins. Missed: a memo.","Someone will be checking.
+Every 2.5-4 min the manager asks for a quota of units in 45 s (125% of your recent pace). Met: quota × your price in coins. Missed: a memo.","Jemand wird nachsehen.
+Alle 2,5-4 min verlangt der Manager ein Soll an Einheiten in 45 s (125% Ihres letzten Tempos). Erfüllt: Soll × Ihr Preis in Münzen. Verfehlt: ein Vermerk."
+STREET TARGET PRACTICE,STREET TARGET PRACTICE,ZIELÜBUNG STRASSE
+"The street is given a target.
+About every 60 s a lamp lights a crate in the street for 15 s. A unit sold out of the window in line with it pays 10× its coins on top.","The street is given a target.
+About every 60 s a lamp lights a crate in the street for 15 s. A unit sold out of the window in line with it pays 10× its coins on top.","Die Straße erhält ein Ziel.
+Etwa alle 60 s beleuchtet eine Lampe 15 s lang eine Kiste auf der Straße. Eine Einheit, die auf ihrer Linie verkauft wird, bringt zusätzlich 10× ihre Münzen."
+RESEARCH: MATERIALS HANDLING,RESEARCH: MATERIALS HANDLING,FORSCHUNG: MATERIALFLUSS
+"Units are found to be heavy.
+Unlocks Container Orders (40 more units per pack) and the Conveyor Retrofit on the projector.","Units are found to be heavy.
+Unlocks Container Orders (40 more units per pack) and the Conveyor Retrofit on the projector.","Einheiten erweisen sich als schwer.
+Schaltet Containerbestellung (40 Einheiten mehr pro Lieferung) und Förderband-Nachrüstung am Projektor frei."
+STANDING PURCHASE ORDER,STANDING PURCHASE ORDER,DAUERBESTELLUNG
+"Nobody signs anything.
+At 3 units of stock or fewer, a pack is bought by itself if you can pay. The switch beside the AUTO lamp on the supply console turns it off or on.","Nobody signs anything.
+At 3 units of stock or fewer, a pack is bought by itself if you can pay. The switch beside the AUTO lamp on the supply console turns it off or on.","Niemand unterschreibt etwas.
+Bei 3 Einheiten Bestand oder weniger wird automatisch eine Lieferung gekauft, sofern Sie zahlen können. Der Schalter neben der AUTO-Lampe am Bestellpult schaltet das ein oder aus."
+AUTOMATED COIN RECOVERY UNIT,AUTOMATED COIN RECOVERY UNIT,AUTOMATISCHE MÜNZRÜCKGEWINNUNG
+"It does not ask why.
+A robot docks at the mat's left edge. It gathers up to 8 coins per trip off the mat and banks them, so you don't have to sweep.","It does not ask why.
+A robot docks at the mat's left edge. It gathers up to 8 coins per trip off the mat and banks them, so you don't have to sweep.","Er fragt nicht nach dem Warum.
+Ein Roboter dockt am linken Rand der Matte an. Er sammelt bis zu 8 Münzen pro Fahrt ein und verbucht sie. Sie müssen nicht mehr wischen."
+EXPANDED RECOVERY MANDATE,EXPANDED RECOVERY MANDATE,ERWEITERTES RÜCKGEWINNUNGSMANDAT
+"Paper is also money, eventually.
+The robots also pick up Findings tokens in front of the QA bay (one per coin slot) and file them when they dock.","Paper is also money, eventually.
+The robots also pick up Findings tokens in front of the QA bay (one per coin slot) and file them when they dock.","Papier ist irgendwann auch Geld.
+Die Roboter sammeln auch Befundmarken vor der QS-Station ein (eine pro Münzplatz) und legen sie beim Andocken ab."
+REQUISITION A LEDGER,REQUISITION A LEDGER,ANFORDERUNG: HAUPTBUCH
+"Someone may read it.
+A binder on the left of the desk: click it to read your sales, coins over time, staff and approvals. No other effect.","Someone may read it.
+A binder on the left of the desk: click it to read your sales, coins over time, staff and approvals. No other effect.","Vielleicht liest es jemand.
+Ein Ordner links auf dem Tisch: anklicken für Verkäufe, Münzen im Zeitverlauf, Personal und Genehmigungen. Keine weitere Wirkung."
+RESEARCH: CONSUMER SENTIMENT,RESEARCH: CONSUMER SENTIMENT,FORSCHUNG: VERBRAUCHERSTIMMUNG
+"The street is asked how it feels.
+Unlocks Slogan IV and Brassica for the Masses on the projector (each: the street pays 25% more).","The street is asked how it feels.
+Unlocks Slogan IV and Brassica for the Masses on the projector (each: the street pays 25% more).","Die Straße wird nach ihrem Befinden gefragt.
+Schaltet Slogan IV und Brassica für die Massen am Projektor frei (je: die Straße zahlt 25% mehr)."
+REQUISITION A DESK LAMP,REQUISITION A DESK LAMP,ANFORDERUNG: SCHREIBTISCHLAMPE
+"Nobody knows why.
+A lamp at the back right. About every 150 s it glows gold for 20 s: meanwhile every sale pays 5×.","Nobody knows why.
+A lamp at the back right. About every 150 s it glows gold for 20 s: meanwhile every sale pays 5×.","Niemand weiß, warum.
+Eine Lampe hinten rechts. Etwa alle 150 s leuchtet sie 20 s golden: währenddessen bringt jeder Verkauf 5×."
+ACQUIRE THE FAMILY FARM,ACQUIRE THE FAMILY FARM,ÜBERNAHME DES FAMILIENHOFS
+"Your uncle is selling. Family rates apply.
+A TV and remote arrive: click the remote to look at the farm. Click a square to plant a seed; after 30 s click it again to harvest 3 units into your stock. 10 seeds come with it, more in its seed shop. The wholesalers will not take this well: for 5 min crates cost more than they sell for, then ease back over 5 min.","Your uncle is selling. Family rates apply.
+A TV and remote arrive: click the remote to look at the farm. Click a square to plant a seed; after 30 s click it again to harvest 3 units into your stock. 10 seeds come with it, more in its seed shop. The wholesalers will not take this well: for 5 min crates cost more than they sell for, then ease back over 5 min.","Ihr Onkel verkauft. Es gilt der Familientarif.
+Ein Fernseher mit Fernbedienung kommt: Fernbedienung anklicken, um den Hof zu sehen. Feld anklicken, um zu säen; nach 30 s erneut anklicken, um 3 Einheiten in den Bestand zu ernten. 10 Samen liegen bei, mehr im Saatgutladen. Der Großhandel wird das übel nehmen: 5 min lang kosten Kisten mehr, als sie einbringen, dann 5 min Entspannung."
+MARKETING,MARKETING,MARKETING
+"The street is told what it wants.
+Slogans and campaigns: each raises the price the
+street pays before it starts refusing units.","The street is told what it wants.
+Slogans and campaigns: each raises the price the
+street pays before it starts refusing units.","Der Straße wird gesagt, was sie will.
+Slogans und Kampagnen: jede erhöht den Preis, den
+die Straße zahlt, bevor sie Einheiten ablehnt."
+MANUAL HANDLING,MANUAL HANDLING,HANDARBEIT
+"Work you still do yourself.
+Packs, desk space, minis, catches, the bin,
+targets, the lamp and the manager's quotas.","Work you still do yourself.
+Packs, desk space, minis, catches, the bin,
+targets, the lamp and the manager's quotas.","Arbeit, die Sie noch selbst erledigen.
+Lieferungen, Tischfläche, Minis, Fänge, Eimer,
+Ziele, die Lampe und das Soll des Managers."
+QUALITY ASSURANCE,QUALITY ASSURANCE,QUALITÄTSSICHERUNG
+"Every unit is a lesson.
+Faster analysis, more Findings (¶) per unit, more
+benches, research units and lab hands.","Every unit is a lesson.
+Faster analysis, more Findings (¶) per unit, more
+benches, research units and lab hands.","Jede Einheit ist eine Lektion.
+Schnellere Analyse, mehr Befunde (¶) pro Einheit,
+mehr Prüftische, Forschungseinheiten, Laborkräfte."
+AUTOMATION,AUTOMATION,AUTOMATISIERUNG
+"Work that no longer needs you.
+Hired hands, conveyors, auto-buy, coin robots,
+the consultant and the waste protocol.","Work that no longer needs you.
+Hired hands, conveyors, auto-buy, coin robots,
+the consultant and the waste protocol.","Arbeit, die Sie nicht mehr braucht.
+Hilfskräfte, Förderbänder, Autokauf, Münzroboter,
+der Berater und das Abfallprotokoll."
+SLOGAN I,SLOGAN I,SLOGAN I
+"""Cabbage. Because you have to eat.""
+The street pays 25% more before it refuses units.","""Cabbage. Because you have to eat.""
+The street pays 25% more before it refuses units.","""Kohl. Weil Sie essen müssen.""
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+SLOGAN II,SLOGAN II,SLOGAN II
+"""Cabbage. Compliance tastes green.""
+The street pays 25% more before it refuses units.","""Cabbage. Compliance tastes green.""
+The street pays 25% more before it refuses units.","""Kohl. Gehorsam schmeckt grün.""
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+SLOGAN III,SLOGAN III,SLOGAN III
+"""Cabbage. You were expecting something else?""
+The street pays 25% more before it refuses units.","""Cabbage. You were expecting something else?""
+The street pays 25% more before it refuses units.","""Kohl. Hatten Sie etwas anderes erwartet?""
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+SLOGAN IV,SLOGAN IV,SLOGAN IV
+"""Cabbage. It has been decided.""
+The street pays 25% more before it refuses units.","""Cabbage. It has been decided.""
+The street pays 25% more before it refuses units.","""Kohl. Es wurde so beschlossen.""
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+SLOGAN V,SLOGAN V,SLOGAN V
+"""Cabbage. Your household quota is attached.""
+The street pays 25% more before it refuses units.","""Cabbage. Your household quota is attached.""
+The street pays 25% more before it refuses units.","""Kohl. Ihr Haushaltskontingent liegt bei.""
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+SLOGAN VI,SLOGAN VI,SLOGAN VI
+"""Cabbage.""
+The street pays 25% more before it refuses units.","""Cabbage.""
+The street pays 25% more before it refuses units.","""Kohl.""
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+BULK PROCUREMENT,BULK PROCUREMENT,MENGENBESCHAFFUNG
+"Volume is policy.
+Every pack from the supply console holds 3 more
+units: 13 instead of 10.","Volume is policy.
+Every pack from the supply console holds 3 more
+units: 13 instead of 10.","Menge ist Richtlinie.
+Jede Lieferung vom Bestellpult enthält 3 Einheiten
+mehr: 13 statt 10."
+CONTAINER ORDERS,CONTAINER ORDERS,CONTAINERBESTELLUNG
+"A container is parked in the street.
+Every pack holds 40 more units: 53 instead of 13.","A container is parked in the street.
+Every pack holds 40 more units: 53 instead of 13.","Auf der Straße parkt ein Container.
+Jede Lieferung enthält 40 Einheiten mehr: 53 statt 13."
+CONVEYOR RETROFIT,CONVEYOR RETROFIT,FÖRDERBAND-NACHRÜSTUNG
+"The ramp is motorised.
+The chute rolls a unit down every 0.5 s, not 1 s.
+2 more units fit on the mat.","The ramp is motorised.
+The chute rolls a unit down every 0.5 s, not 1 s.
+2 more units fit on the mat.","Die Rampe ist motorisiert.
+Die Rutsche liefert alle 0,5 s eine Einheit, nicht 1 s.
+2 Einheiten mehr passen auf die Matte."
+CONVEYOR II,CONVEYOR II,FÖRDERBAND II
+"A second motor, same belt.
+The chute rolls a unit down every 0.33 s, not 0.5 s.
+2 more units fit on the mat.","A second motor, same belt.
+The chute rolls a unit down every 0.33 s, not 0.5 s.
+2 more units fit on the mat.","Ein zweiter Motor, dasselbe Band.
+Die Rutsche liefert alle 0,33 s, nicht alle 0,5 s.
+2 Einheiten mehr passen auf die Matte."
+CONVEYOR III,CONVEYOR III,FÖRDERBAND III
+"Safety guards removed.
+The chute rolls a unit down every 0.22 s, not 0.33 s.
+2 more units fit on the mat.","Safety guards removed.
+The chute rolls a unit down every 0.22 s, not 0.33 s.
+2 more units fit on the mat.","Schutzgitter entfernt.
+Die Rutsche liefert alle 0,22 s, nicht alle 0,33 s.
+2 Einheiten mehr passen auf die Matte."
+BRISK WALK I,BRISK WALK I,ZÜGIGER GANG I
+"A stopwatch on every associate's desk.
+Hired hands and lab hands move 50% faster.","A stopwatch on every associate's desk.
+Hired hands and lab hands move 50% faster.","Eine Stoppuhr auf jedem Mitarbeitertisch.
+Hilfs- und Laborkräfte bewegen sich 50% schneller."
+BRISK WALK II,BRISK WALK II,ZÜGIGER GANG II
+"Lunch is now a standing meeting.
+Hired hands and lab hands move 50% faster again
+(2.25× the start speed).","Lunch is now a standing meeting.
+Hired hands and lab hands move 50% faster again
+(2.25× the start speed).","Die Mittagspause ist jetzt eine Stehbesprechung.
+Hilfs- und Laborkräfte nochmals 50% schneller
+(2,25× das Anfangstempo)."
+HIRE ASSOCIATE II,HIRE ASSOCIATE II,EINSTELLUNG II
+"Headcount approved.
+One more hired hand throwing units out of the
+window: 1 to 2 hands.","Headcount approved.
+One more hired hand throwing units out of the
+window: 1 to 2 hands.","Stellenplan genehmigt.
+Eine Hilfskraft mehr, die Einheiten aus dem
+Fenster wirft: 1 auf 2 Kräfte."
+HIRE ASSOCIATE III,HIRE ASSOCIATE III,EINSTELLUNG III
+"Another sleeve, same grey.
+One more hired hand throwing units out of the
+window: 2 to 3 hands.","Another sleeve, same grey.
+One more hired hand throwing units out of the
+window: 2 to 3 hands.","Noch ein Ärmel, dasselbe Grau.
+Eine Hilfskraft mehr, die Einheiten aus dem
+Fenster wirft: 2 auf 3 Kräfte."
+HIRE ASSOCIATE IV,HIRE ASSOCIATE IV,EINSTELLUNG IV
+"Interviews were waived.
+One more hired hand throwing units out of the
+window: 3 to 4 hands.","Interviews were waived.
+One more hired hand throwing units out of the
+window: 3 to 4 hands.","Auf Vorstellungsgespräche wurde verzichtet.
+Eine Hilfskraft mehr, die Einheiten aus dem
+Fenster wirft: 3 auf 4 Kräfte."
+HIRE ASSOCIATE V,HIRE ASSOCIATE V,EINSTELLUNG V
+"The desk is now a department.
+One more hired hand throwing units out of the
+window: 4 to 5 hands.","The desk is now a department.
+One more hired hand throwing units out of the
+window: 4 to 5 hands.","Der Tisch ist jetzt eine Abteilung.
+Eine Hilfskraft mehr, die Einheiten aus dem
+Fenster wirft: 4 auf 5 Kräfte."
+HIRE ASSOCIATE VI,HIRE ASSOCIATE VI,EINSTELLUNG VI
+"Names are no longer collected.
+One more hired hand throwing units out of the
+window: 5 to 6 hands.","Names are no longer collected.
+One more hired hand throwing units out of the
+window: 5 to 6 hands.","Namen werden nicht mehr erfasst.
+Eine Hilfskraft mehr, die Einheiten aus dem
+Fenster wirft: 5 auf 6 Kräfte."
+HIRE ASSOCIATE VII,HIRE ASSOCIATE VII,EINSTELLUNG VII
+"A second coat rack is requisitioned.
+One more hired hand throwing units out of the
+window: 6 to 7 hands.","A second coat rack is requisitioned.
+One more hired hand throwing units out of the
+window: 6 to 7 hands.","Ein zweiter Garderobenständer wird angefordert.
+Eine Hilfskraft mehr, die Einheiten aus dem
+Fenster wirft: 6 auf 7 Kräfte."
+HIRE ASSOCIATE VIII,HIRE ASSOCIATE VIII,EINSTELLUNG VIII
+"Full complement. Morale is not tracked.
+One more hired hand throwing units out of the
+window: 7 to 8 hands.","Full complement. Morale is not tracked.
+One more hired hand throwing units out of the
+window: 7 to 8 hands.","Volle Besetzung. Moral wird nicht erfasst.
+Eine Hilfskraft mehr, die Einheiten aus dem
+Fenster wirft: 7 auf 8 Kräfte."
+FASTER ANALYSIS,FASTER ANALYSIS,SCHNELLERE ANALYSE
+"The scan line is told to hurry.
+The QA bay analyses a unit in 3.75 s, not 5 s.","The scan line is told to hurry.
+The QA bay analyses a unit in 3.75 s, not 5 s.","Die Scanlinie wird zur Eile angehalten.
+Die QS-Station prüft eine Einheit in 3,75 s, nicht 5 s."
+MORE FINDINGS,MORE FINDINGS,MEHR BEFUNDE
+"Standards are revised.
+Each unit analysed gives 2 Findings, not 1.","Standards are revised.
+Each unit analysed gives 2 Findings, not 1.","Die Standards werden überarbeitet.
+Jede geprüfte Einheit bringt 2 Befunde, nicht 1."
+QA FAST TRACK,QA FAST TRACK,QS-SCHNELLVERFAHREN
+"Analysis is now a formality.
+The QA bay analyses a unit in 1.9 s, not 3.75 s.","Analysis is now a formality.
+The QA bay analyses a unit in 1.9 s, not 3.75 s.","Die Analyse ist jetzt eine Formsache.
+Die QS-Station prüft eine Einheit in 1,9 s, nicht 3,75 s."
+DOUBLE FINDINGS,DOUBLE FINDINGS,DOPPELTE BEFUNDE
+"Every finding is filed twice.
+Each unit analysed gives 4 Findings, not 2.","Every finding is filed twice.
+Each unit analysed gives 4 Findings, not 2.","Jeder Befund wird doppelt abgelegt.
+Jede geprüfte Einheit bringt 4 Befunde, nicht 2."
+HOT-DESKING,HOT-DESKING,DESK-SHARING
+"Units now share the mat.
+4 more units fit on the mat (the chute keeps it full).","Units now share the mat.
+4 more units fit on the mat (the chute keeps it full).","Einheiten teilen sich jetzt die Matte.
+4 Einheiten mehr passen drauf (die Rutsche füllt nach)."
+CLEAR-DESK POLICY,CLEAR-DESK POLICY,CLEAN-DESK-RICHTLINIE
+"Personal items have been binned.
+4 more units fit on the mat.","Personal items have been binned.
+4 more units fit on the mat.","Persönliche Gegenstände wurden entsorgt.
+4 Einheiten mehr passen auf die Matte."
+MAXIMUM OCCUPANCY,MAXIMUM OCCUPANCY,HÖCHSTBELEGUNG
+"The fire code has been reinterpreted.
+4 more units fit on the mat.","The fire code has been reinterpreted.
+4 more units fit on the mat.","Die Brandschutzordnung wurde neu ausgelegt.
+4 Einheiten mehr passen auf die Matte."
+SUPPLIER REVIEW,SUPPLIER REVIEW,LIEFERANTENPRÜFUNG
+"The supplier is reminded of alternatives.
+Packs cost 15% less. The ticker shows the cut price.","The supplier is reminded of alternatives.
+Packs cost 15% less. The ticker shows the cut price.","Der Lieferant wird an Alternativen erinnert.
+Lieferungen kosten 15% weniger. Die Anzeige
+zeigt den reduzierten Preis."
+EXCLUSIVITY CLAUSE,EXCLUSIVITY CLAUSE,EXKLUSIVKLAUSEL
+"The supplier has no other customers now.
+Packs cost 32% less again: 58% of the full price,
+not 85%.","The supplier has no other customers now.
+Packs cost 32% less again: 58% of the full price,
+not 85%.","Der Lieferant hat jetzt keine anderen Kunden.
+Lieferungen nochmals 32% billiger: 58% des
+vollen Preises, nicht 85%."
+SAFETY STOCK,SAFETY STOCK,SICHERHEITSBESTAND
+"The order is placed earlier.
+Auto-buy orders a pack at 10 units left, not 3.","The order is placed earlier.
+Auto-buy orders a pack at 10 units left, not 3.","Die Bestellung erfolgt früher.
+Autokauf bestellt bei 10 Einheiten Rest, nicht bei 3."
+STRATEGIC PROCUREMENT,STRATEGIC PROCUREMENT,STRATEGISCHE BESCHAFFUNG
+"A second shelf is approved.
+Auto-buy orders at 25 units left, not 10, and waits
+for 20% below base pack price unless stock is out.","A second shelf is approved.
+Auto-buy orders at 25 units left, not 10, and waits
+for 20% below base pack price unless stock is out.","Ein zweites Regal wird genehmigt.
+Autokauf bestellt bei 25 Einheiten Rest, nicht 10,
+und wartet auf 20% unter Grundpreis, außer bei
+leerem Bestand."
+PRICE DISCIPLINE,PRICE DISCIPLINE,PREISDISZIPLIN
+"The order waits for a fair price.
+Auto-buy waits for the base pack price or lower
+(it used to pay up to 150%), unless stock runs out.","The order waits for a fair price.
+Auto-buy waits for the base pack price or lower
+(it used to pay up to 150%), unless stock runs out.","Die Bestellung wartet auf einen fairen Preis.
+Autokauf wartet auf Grundpreis oder weniger
+(bisher bis 150%), außer der Bestand geht aus."
+HIRE ASSOCIATE IX,HIRE ASSOCIATE IX,EINSTELLUNG IX
+"Desks are now shared in shifts.
+One more hired hand throwing units out of the
+window: 8 to 9 hands.","Desks are now shared in shifts.
+One more hired hand throwing units out of the
+window: 8 to 9 hands.","Tische werden jetzt schichtweise geteilt.
+Eine Hilfskraft mehr, die Einheiten aus dem
+Fenster wirft: 8 auf 9 Kräfte."
+HIRE ASSOCIATE X,HIRE ASSOCIATE X,EINSTELLUNG X
+"Headcount is final. For now.
+One more hired hand throwing units out of the
+window: 9 to 10 hands.","Headcount is final. For now.
+One more hired hand throwing units out of the
+window: 9 to 10 hands.","Der Stellenplan ist endgültig. Vorerst.
+Eine Hilfskraft mehr, die Einheiten aus dem
+Fenster wirft: 9 auf 10 Kräfte."
+OPEN-PLAN SEATING I,OPEN-PLAN SEATING I,GROSSRAUMBÜRO I
+"The walls between associates come down.
+Hired hands and lab hands set off 50% more often:
+every 5.3 s, not 8 s (2.7 s, not 4 s, after the study).","The walls between associates come down.
+Hired hands and lab hands set off 50% more often:
+every 5.3 s, not 8 s (2.7 s, not 4 s, after the study).","Die Wände zwischen den Mitarbeitern fallen.
+Hilfs- und Laborkräfte starten 50% öfter:
+alle 5,3 s statt 8 s (nach der Studie 2,7 s statt 4 s)."
+OPEN-PLAN SEATING II,OPEN-PLAN SEATING II,GROSSRAUMBÜRO II
+"Chairs are replaced with a bench.
+Hired hands and lab hands set off 50% more often
+again (e.g. every 1.8 s, not 2.7 s).","Chairs are replaced with a bench.
+Hired hands and lab hands set off 50% more often
+again (e.g. every 1.8 s, not 2.7 s).","Stühle werden durch eine Bank ersetzt.
+Hilfs- und Laborkräfte starten nochmals 50%
+öfter (z. B. alle 1,8 s statt 2,7 s)."
+SYNERGY JINGLE,SYNERGY JINGLE,SYNERGIE-JINGLE
+"Four notes. Staff are asked to hum them.
+The street pays 25% more before it refuses units.","Four notes. Staff are asked to hum them.
+The street pays 25% more before it refuses units.","Vier Töne. Das Personal soll sie summen.
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+LEAF IT TO US,LEAF IT TO US,KOHL-LEKTIV ERFOLGREICH
+"Legal approved the pun.
+The street pays 25% more before it refuses units.","Legal approved the pun.
+The street pays 25% more before it refuses units.","Die Rechtsabteilung hat das Wortspiel genehmigt.
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+CRUCIFEROUS EXCELLENCE,CRUCIFEROUS EXCELLENCE,KREUZBLÜTLER-EXZELLENZ
+"Nobody knows the word. Everyone trusts it.
+The street pays 25% more before it refuses units.","Nobody knows the word. Everyone trusts it.
+The street pays 25% more before it refuses units.","Niemand kennt das Wort. Alle vertrauen ihm.
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+BRASSICA FOR THE MASSES,BRASSICA FOR THE MASSES,BRASSICA FÜR DIE MASSEN
+"Posters in every stairwell.
+The street pays 25% more before it refuses units.","Posters in every stairwell.
+The street pays 25% more before it refuses units.","Plakate in jedem Treppenhaus.
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+TRUSTED BY THE MINISTRY,TRUSTED BY THE MINISTRY,VOM MINISTERIUM GESCHÄTZT
+"The Ministry has not denied it.
+The street pays 25% more before it refuses units.","The Ministry has not denied it.
+The street pays 25% more before it refuses units.","Das Ministerium hat es nicht dementiert.
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+THE ONLY VEGETABLE,THE ONLY VEGETABLE,DAS EINZIGE GEMÜSE
+"Other vegetables are under review.
+The street pays 25% more before it refuses units.","Other vegetables are under review.
+The street pays 25% more before it refuses units.","Anderes Gemüse wird derzeit überprüft.
+Die Straße zahlt 25% mehr, bevor sie ablehnt."
+FIRMWARE UPDATE,FIRMWARE UPDATE,FIRMWARE-UPDATE
+"The unit is told to hurry.
+Coin robots drive 50% faster.","The unit is told to hurry.
+Coin robots drive 50% faster.","Das Gerät wird zur Eile angehalten.
+Münzroboter fahren 50% schneller."
+SECOND UNIT,SECOND UNIT,ZWEITES GERÄT
+"A second unit is unboxed, with a bigger bag.
+A second coin robot docks on the mat.
+Each robot carries 20 coins per trip, not 8.","A second unit is unboxed, with a bigger bag.
+A second coin robot docks on the mat.
+Each robot carries 20 coins per trip, not 8.","Ein zweites Gerät wird ausgepackt, mit größerem Beutel.
+Ein zweiter Münzroboter dockt an der Matte an.
+Jeder Roboter trägt 20 Münzen pro Fahrt, nicht 8."
+FIRMWARE UPDATE II,FIRMWARE UPDATE II,FIRMWARE-UPDATE II
+"Obstacle detection is disabled. The unit is louder.
+Coin robots drive 50% faster again and suck up
+coins from 50% further away.","Obstacle detection is disabled. The unit is louder.
+Coin robots drive 50% faster again and suck up
+coins from 50% further away.","Hinderniserkennung deaktiviert. Das Gerät ist lauter.
+Münzroboter nochmals 50% schneller, sie saugen
+Münzen aus 50% größerer Entfernung an."
+THIRD UNIT,THIRD UNIT,DRITTES GERÄT
+"The units have formed a department.
+A third coin robot docks on the mat.
+Each robot carries 50 coins per trip, not 20.","The units have formed a department.
+A third coin robot docks on the mat.
+Each robot carries 50 coins per trip, not 20.","Die Geräte haben eine Abteilung gegründet.
+Ein dritter Münzroboter dockt an der Matte an.
+Jeder Roboter trägt 50 Münzen pro Fahrt, nicht 20."
+SECOND BENCH,SECOND BENCH,ZWEITER PRÜFTISCH
+"A second bench in the bay.
+The QA bay analyses 2 units at once, not 1.","A second bench in the bay.
+The QA bay analyses 2 units at once, not 1.","Ein zweiter Prüftisch in der Station.
+Die QS-Station prüft 2 Einheiten zugleich, nicht 1."
+THIRD BENCH,THIRD BENCH,DRITTER PRÜFTISCH
+"The bay is now a lab.
+The QA bay analyses 3 units at once, not 2.","The bay is now a lab.
+The QA bay analyses 3 units at once, not 2.","Die Station ist jetzt ein Labor.
+Die QS-Station prüft 3 Einheiten zugleich, nicht 2."
+EXTENDED DEADLINES,EXTENDED DEADLINES,VERLÄNGERTE FRISTEN
+"The manager is shown a calendar.
+Quotas give you 60 s instead of 45 s.","The manager is shown a calendar.
+Quotas give you 60 s instead of 45 s.","Dem Manager wird ein Kalender gezeigt.
+Für das Soll haben Sie 60 s statt 45 s."
+PERFORMANCE BONUS,PERFORMANCE BONUS,LEISTUNGSPRÄMIE
+"Bonuses are now discussed openly.
+Met quotas pay quota × price × 1.5, not × 1.","Bonuses are now discussed openly.
+Met quotas pay quota × price × 1.5, not × 1.","Über Prämien wird jetzt offen gesprochen.
+Erfülltes Soll bringt Soll × Preis × 1,5, nicht × 1."
+REALISTIC TARGETS,REALISTIC TARGETS,REALISTISCHE ZIELE
+"Ambition is capped by memo.
+Quotas ask 115% of your recent pace, not 125%.","Ambition is capped by memo.
+Quotas ask 115% of your recent pace, not 125%.","Ehrgeiz wird per Rundschreiben gedeckelt.
+Das Soll verlangt 115% Ihres Tempos, nicht 125%."
+EMPLOYEE OF THE QUARTER,EMPLOYEE OF THE QUARTER,MITARBEITER DES QUARTALS
+"A frame is purchased. It stays empty.
+Met quotas pay quota × price × 2.25, not × 1.5.","A frame is purchased. It stays empty.
+Met quotas pay quota × price × 2.25, not × 1.5.","Ein Bilderrahmen wird gekauft. Er bleibt leer.
+Erfülltes Soll bringt Soll × Preis × 2,25, nicht × 1,5."
+BILLABLE HOURS,BILLABLE HOURS,ABRECHENBARE STUNDEN
+"The consultant bills by the tap.
+It taps the slate every 2 s instead of 4 s.","The consultant bills by the tap.
+It taps the slate every 2 s instead of 4 s.","Der Berater rechnet pro Antippen ab.
+Er tippt die Tafel alle 2 s an statt alle 4 s."
+READS THE ROOM,READS THE ROOM,LIEST DIE STIMMUNG
+"The consultant looks out of the window.
+It reads the street's mood (it drifts up to ±25%),
+so ~90% of units still sell when the mood turns.","The consultant looks out of the window.
+It reads the street's mood (it drifts up to ±25%),
+so ~90% of units still sell when the mood turns.","Der Berater schaut aus dem Fenster.
+Er erkennt die Laune der Straße (schwankt bis ±25%),
+so verkaufen sich ~90% auch bei Stimmungswechsel."
+YIELD OPTIMISATION,YIELD OPTIMISATION,ERTRAGSOPTIMIERUNG
+"Some units may now be refused.
+It aims for the most coins per unit after pack costs.
+While hired hands find no unit, it asks $1 more a tap
+(up to 1.6× the price at which every unit sells).","Some units may now be refused.
+It aims for the most coins per unit after pack costs.
+While hired hands find no unit, it asks $1 more a tap
+(up to 1.6× the price at which every unit sells).","Einige Einheiten dürfen jetzt abgelehnt werden.
+Er zielt auf die meisten Münzen pro Einheit nach
+Lieferkosten. Finden Hilfskräfte keine Einheit,
+verlangt er pro Tipp $1 mehr (bis 1,6× des Preises,
+zu dem alles verkauft wird)."
+RETAINER,RETAINER,PAUSCHALMANDAT
+"The consultant no longer leaves.
+It taps the slate every 1 s instead of 2 s.","The consultant no longer leaves.
+It taps the slate every 1 s instead of 2 s.","Der Berater geht nicht mehr.
+Er tippt die Tafel jede 1 s an statt alle 2 s."
+GILDED FILAMENT,GILDED FILAMENT,VERGOLDETER GLÜHFADEN
+"The bulb is replaced with a better bulb.
+While the lamp glows, sales pay 8× instead of 5×.","The bulb is replaced with a better bulb.
+While the lamp glows, sales pay 8× instead of 5×.","Die Birne wird durch eine bessere Birne ersetzt.
+Während die Lampe leuchtet, bringen Verkäufe 8× statt 5×."
+EXTENDED BURN,EXTENDED BURN,VERLÄNGERTE BRENNDAUER
+"The lamp's timer is taped down.
+It glows for 30 s instead of 20 s.","The lamp's timer is taped down.
+It glows for 30 s instead of 20 s.","Der Zeitschalter der Lampe wird festgeklebt.
+Sie leuchtet 30 s statt 20 s."
+LOOSE WIRING,LOOSE WIRING,WACKELKONTAKT
+"Maintenance has been told not to look.
+It glows about every 90 s instead of 150 s.","Maintenance has been told not to look.
+It glows about every 90 s instead of 150 s.","Die Haustechnik soll nicht hinsehen.
+Sie leuchtet etwa alle 90 s statt alle 150 s."
+GRACE PERIOD,GRACE PERIOD,KULANZFRIST
+"Interceptions are counted generously.
+The combo holds 6 s after a catch, not 4 s.","Interceptions are counted generously.
+The combo holds 6 s after a catch, not 4 s.","Fänge werden großzügig gezählt.
+Die Serie hält 6 s nach einem Fang, nicht 4 s."
+UNCAPPED ENTHUSIASM,UNCAPPED ENTHUSIASM,UNBEGRENZTER EIFER
+"The ceiling is raised by memo.
+The combo tops out at +100% instead of +50%.","The ceiling is raised by memo.
+The combo tops out at +100% instead of +50%.","Die Obergrenze wird per Rundschreiben angehoben.
+Die Serie endet bei +100% statt +50%."
+REFLEX TRAINING,REFLEX TRAINING,REFLEXSCHULUNG
+"A mandatory seminar on catching things.
+Each catch adds +20% to sales instead of +10%.","A mandatory seminar on catching things.
+Each catch adds +20% to sales instead of +10%.","Ein Pflichtseminar über das Fangen von Dingen.
+Jeder Fang bringt +20% auf Verkäufe statt +10%."
+WIDER RECEPTACLE,WIDER RECEPTACLE,BREITERER BEHÄLTER
+"A larger bin is requisitioned.
+The bin's mouth is 35% wider: units let go nearby
+drop in from further away.","A larger bin is requisitioned.
+The bin's mouth is 35% wider: units let go nearby
+drop in from further away.","Ein größerer Eimer wird angefordert.
+Die Öffnung ist 35% breiter: Einheiten in der Nähe
+fallen auch aus größerem Abstand hinein."
+DISPOSAL REBATE,DISPOSAL REBATE,ENTSORGUNGSRABATT
+"Waste is now a revenue stream.
+A binned rotten unit pays 20% of your price
+(nothing before).","Waste is now a revenue stream.
+A binned rotten unit pays 20% of your price
+(nothing before).","Abfall ist jetzt eine Einnahmequelle.
+Eine entsorgte faule Einheit bringt 20% Ihres
+Preises (vorher nichts)."
+SALVAGE CREDIT,SALVAGE CREDIT,VERWERTUNGSGUTSCHRIFT
+"Rot is reclassified as inventory.
+A binned rotten unit pays 45% of your price
+(20% before).","Rot is reclassified as inventory.
+A binned rotten unit pays 45% of your price
+(20% before).","Fäulnis wird als Lagerbestand umgebucht.
+Eine entsorgte faule Einheit bringt 45% Ihres
+Preises (vorher 20%)."
+COMPOST CONTRACT,COMPOST CONTRACT,KOMPOSTVERTRAG
+"The Ministry buys it by the tonne.
+A binned rotten unit pays 70% of your price
+(45% before).","The Ministry buys it by the tonne.
+A binned rotten unit pays 70% of your price
+(45% before).","Das Ministerium kauft tonnenweise.
+Eine entsorgte faule Einheit bringt 70% Ihres
+Preises (vorher 45%)."
+WASTE MONETISATION,WASTE MONETISATION,ABFALLMONETARISIERUNG
+"Spoilage now has its own quarterly target.
+A binned rotten unit pays 95% of your price
+(70% before).","Spoilage now has its own quarterly target.
+A binned rotten unit pays 95% of your price
+(70% before).","Verderb hat jetzt ein eigenes Quartalsziel.
+Eine entsorgte faule Einheit bringt 95% Ihres
+Preises (vorher 70%)."
+SPOILAGE PREMIUM,SPOILAGE PREMIUM,VERDERBSZUSCHLAG
+"A rotten unit is worth more than a fresh one. Fine.
+A binned rotten unit pays 120% of your price
+(95% before).","A rotten unit is worth more than a fresh one. Fine.
+A binned rotten unit pays 120% of your price
+(95% before).","Eine faule Einheit ist mehr wert als eine frische. Gut.
+Eine entsorgte faule Einheit bringt 120% Ihres
+Preises (vorher 95%)."
+WASTE HANDLING PROTOCOL,WASTE HANDLING PROTOCOL,ABFALLPROTOKOLL
+"Associates are shown where the bin is.
+Hired hands throw rotten units into the bin
+instead of selling them or leaving them.","Associates are shown where the bin is.
+Hired hands throw rotten units into the bin
+instead of selling them or leaving them.","Den Mitarbeitern wird der Eimer gezeigt.
+Hilfskräfte werfen faule Einheiten in den Eimer,
+statt sie zu verkaufen oder liegen zu lassen."
+BROADER FLOODLIGHT,BROADER FLOODLIGHT,BREITERER SCHEINWERFER
+"The street lamp is pointed less carefully.
+Lit crates are 50% wider: more sales land in them.","The street lamp is pointed less carefully.
+Lit crates are 50% wider: more sales land in them.","Die Straßenlampe wird weniger sorgfältig gerichtet.
+Beleuchtete Kisten sind 50% breiter: mehr Treffer."
+STREET COOPERATION,STREET COOPERATION,MITWIRKUNG DER STRASSE
+"The street has been asked to stand still.
+A crate lights about every 36 s, not 60 s.","The street has been asked to stand still.
+A crate lights about every 36 s, not 60 s.","Die Straße wurde gebeten, stillzuhalten.
+Eine Kiste leuchtet etwa alle 36 s, nicht alle 60 s."
+PRIZE CRATES,PRIZE CRATES,PRÄMIENKISTEN
+"The crates are lined with coin.
+A hit adds 20× the sale's coins instead of 10×.","The crates are lined with coin.
+A hit adds 20× the sale's coins instead of 10×.","Die Kisten sind mit Münzen ausgeschlagen.
+Ein Treffer bringt zusätzlich 20× statt 10×."
+MINIATURISATION I,MINIATURISATION I,MINIATURISIERUNG I
+"The units are asked to be smaller, sooner.
+Minis drop 43% more often (every 14 s, not 20 s).","The units are asked to be smaller, sooner.
+Minis drop 43% more often (every 14 s, not 20 s).","Die Einheiten sollen kleiner und früher sein.
+Minis fallen 43% öfter (alle 14 s, nicht 20 s)."
+MINIATURISATION II,MINIATURISATION II,MINIATURISIERUNG II
+"Nobody measured the old ones.
+Minis drop 43% more often (wait between drops
+×0.7, e.g. every 9.8 s, not 14 s).","Nobody measured the old ones.
+Minis drop 43% more often (wait between drops
+×0.7, e.g. every 9.8 s, not 14 s).","Die alten hat niemand vermessen.
+Minis fallen 43% öfter (Wartezeit ×0,7,
+z. B. alle 9,8 s statt 14 s)."
+MINIATURISATION III,MINIATURISATION III,MINIATURISIERUNG III
+"The units are now a rounding error.
+Minis drop 43% more often (wait between drops
+×0.7, e.g. every 6.9 s, not 9.8 s).","The units are now a rounding error.
+Minis drop 43% more often (wait between drops
+×0.7, e.g. every 6.9 s, not 9.8 s).","Die Einheiten sind jetzt ein Rundungsfehler.
+Minis fallen 43% öfter (Wartezeit ×0,7,
+z. B. alle 6,9 s statt 9,8 s)."
+PORTION REVIEW,PORTION REVIEW,PORTIONSPRÜFUNG
+"A mini is reclassified as a third.
+Minis sell for 1/3 of your price, not 1/4.","A mini is reclassified as a third.
+Minis sell for 1/3 of your price, not 1/4.","Ein Mini gilt jetzt als ein Drittel.
+Minis bringen 1/3 Ihres Preises, nicht 1/4."
+HALF-UNIT STANDARD,HALF-UNIT STANDARD,HALBEINHEITEN-NORM
+"The street is told it is half a cabbage.
+Minis sell for 1/2 of your price, not 1/3.","The street is told it is half a cabbage.
+Minis sell for 1/2 of your price, not 1/3.","Der Straße wird gesagt, es sei ein halber Kohl.
+Minis bringen 1/2 Ihres Preises, nicht 1/3."
+PNEUMATIC PRESSURE,PNEUMATIC PRESSURE,ROHRPOSTDRUCK
+"The compressor is set past its label.
+Minis roll through the tube 50% faster and drop
+25% more often (the wait between drops ×0.8).","The compressor is set past its label.
+Minis roll through the tube 50% faster and drop
+25% more often (the wait between drops ×0.8).","Der Kompressor läuft über Nennwert.
+Minis rollen 50% schneller durchs Rohr und fallen
+25% öfter (Wartezeit ×0,8)."
+PEER REVIEW,PEER REVIEW,PEER-REVIEW
+"Each research unit is read by two people.
+Blue research units give 5× the Findings, not 3×.","Each research unit is read by two people.
+Blue research units give 5× the Findings, not 3×.","Jede Forschungseinheit lesen zwei Personen.
+Blaue Forschungseinheiten: 5× Befunde, nicht 3×."
+LONGITUDINAL STUDY,LONGITUDINAL STUDY,LANGZEITSTUDIE
+"The study is extended indefinitely.
+Blue research units give 8× the Findings, not 5×.","The study is extended indefinitely.
+Blue research units give 8× the Findings, not 5×.","Die Studie wird unbefristet verlängert.
+Blaue Forschungseinheiten: 8× Befunde, nicht 5×."
+CONTROL GROUP,CONTROL GROUP,KONTROLLGRUPPE
+"Half the units are told nothing.
+Blue research units give 12× the Findings, not 8×.","Half the units are told nothing.
+Blue research units give 12× the Findings, not 8×.","Der Hälfte der Einheiten wird nichts gesagt.
+Blaue Forschungseinheiten: 12× Befunde, nicht 8×."
+PUBLISH OR PERISH,PUBLISH OR PERISH,PUBLIZIEREN ODER VERGEHEN
+"The findings are published internally.
+Blue research units give 20× the Findings, not 12×.","The findings are published internally.
+Blue research units give 20× the Findings, not 12×.","Die Befunde werden intern veröffentlicht.
+Blaue Forschungseinheiten: 20× Befunde, nicht 12×."
+SAMPLING QUOTA,SAMPLING QUOTA,STICHPROBENQUOTE
+"More units are selected at random.
+1 unit in ~7 off the chute is blue, not 1 in 10.","More units are selected at random.
+1 unit in ~7 off the chute is blue, not 1 in 10.","Mehr Einheiten werden zufällig ausgewählt.
+1 von ~7 Einheiten aus der Rutsche ist blau, nicht 1 von 10."
+SAMPLING QUOTA II,SAMPLING QUOTA II,STICHPROBENQUOTE II
+"Random is redefined.
+1 unit in 5 off the chute is blue, not 1 in ~7.","Random is redefined.
+1 unit in 5 off the chute is blue, not 1 in ~7.","Zufall wird neu definiert.
+1 von 5 Einheiten aus der Rutsche ist blau, nicht 1 von ~7."
+SAMPLING QUOTA III,SAMPLING QUOTA III,STICHPROBENQUOTE III
+"Every unit is now a candidate.
+1 unit in 4 off the chute is blue, not 1 in 5.","Every unit is now a candidate.
+1 unit in 4 off the chute is blue, not 1 in 5.","Jede Einheit ist jetzt ein Kandidat.
+1 von 4 Einheiten aus der Rutsche ist blau, nicht 1 von 5."
+SECOND LAB ASSISTANT,SECOND LAB ASSISTANT,ZWEITE LABORKRAFT
+"A second coat, a smaller size.
+One more lab hand tossing units into the QA bay:
+1 to 2 lab hands.","A second coat, a smaller size.
+One more lab hand tossing units into the QA bay:
+1 to 2 lab hands.","Ein zweiter Kittel, eine Nummer kleiner.
+Eine Laborkraft mehr, die Einheiten in die
+QS-Station wirft: 1 auf 2 Laborkräfte."
+THIRD LAB ASSISTANT,THIRD LAB ASSISTANT,DRITTE LABORKRAFT
+"The lab has a waiting list now.
+One more lab hand tossing units into the QA bay:
+2 to 3 lab hands.","The lab has a waiting list now.
+One more lab hand tossing units into the QA bay:
+2 to 3 lab hands.","Das Labor hat jetzt eine Warteliste.
+Eine Laborkraft mehr, die Einheiten in die
+QS-Station wirft: 2 auf 3 Laborkräfte."
+GROWTH INITIATIVES,GROWTH INITIATIVES,WACHSTUMSINITIATIVEN
+FORM GW-7   |   HOLD TO APPROVE,FORM GW-7   |   HOLD TO APPROVE,FORMULAR GW-7   |   HALTEN ZUM GENEHMIGEN
+BUDGET  $%d,BUDGET  $%d,BUDGET  $%d
+FINDINGS  ¶%d,FINDINGS  ¶%d,BEFUNDE  ¶%d
+DRAG TO MOVE   |   WHEEL TO ZOOM,DRAG TO MOVE   |   WHEEL TO ZOOM,ZIEHEN ZUM VERSCHIEBEN   |   RAD ZUM ZOOMEN
+DOUBLE-CLICK TO RECENTRE,DOUBLE-CLICK TO RECENTRE,DOPPELKLICK ZUM ZENTRIEREN
+NEW,NEW,NEU
+DEPARTMENT,DEPARTMENT,ABTEILUNG
+APPROVED,APPROVED,GENEHMIGT
+COST $%d,COST $%d,KOSTEN $%d
+10 UNITS MOVED,10 UNITS MOVED,10 EINHEITEN ABGESETZT
+Sell 10 units.,Sell 10 units.,10 Einheiten verkaufen.
+Ten units have left the building. This has been noted in triplicate.,Ten units have left the building. This has been noted in triplicate.,Zehn Einheiten haben das Gebäude verlassen. Dreifach vermerkt.
+25 UNITS MOVED,25 UNITS MOVED,25 EINHEITEN ABGESETZT
+Sell 25 units.,Sell 25 units.,25 Einheiten verkaufen.
+Your output has been observed.,Your output has been observed.,Ihre Leistung wurde beobachtet.
+The street accepts prices 25% higher.,The street accepts prices 25% higher.,Die Straße akzeptiert 25% höhere Preise.
+100 UNITS MOVED,100 UNITS MOVED,100 EINHEITEN ABGESETZT
+Sell 100 units.,Sell 100 units.,100 Einheiten verkaufen.
+Management notes your contribution.,Management notes your contribution.,Die Leitung nimmt Ihren Beitrag zur Kenntnis.
+Quality Assurance files twice the Findings.,Quality Assurance files twice the Findings.,Die Qualitätssicherung legt doppelt so viele Befunde ab.
+250 UNITS MOVED,250 UNITS MOVED,250 EINHEITEN ABGESETZT
+Sell 250 units.,Sell 250 units.,250 Einheiten verkaufen.
+Associates were reminded that walking is billable.,Associates were reminded that walking is billable.,Mitarbeiter wurden erinnert: Gehen ist abrechenbar.
+Hired hands move 50% faster.,Hired hands move 50% faster.,Hilfskräfte bewegen sich 50% schneller.
+"1,000 UNITS MOVED","1,000 UNITS MOVED",1.000 EINHEITEN ABGESETZT
+"Sell 1,000 units.","Sell 1,000 units.",1.000 Einheiten verkaufen.
+The board has been informed. It did not respond.,The board has been informed. It did not respond.,Der Vorstand wurde informiert. Er hat nicht reagiert.
+Hired hands make 50% more trips.,Hired hands make 50% more trips.,Hilfskräfte machen 50% mehr Gänge.
+"2,500 UNITS MOVED","2,500 UNITS MOVED",2.500 EINHEITEN ABGESETZT
+"Sell 2,500 units.","Sell 2,500 units.",2.500 Einheiten verkaufen.
+Your figures have been laminated.,Your figures have been laminated.,Ihre Zahlen wurden laminiert.
+"10,000 UNITS MOVED","10,000 UNITS MOVED",10.000 EINHEITEN ABGESETZT
+"Sell 10,000 units.","Sell 10,000 units.",10.000 Einheiten verkaufen.
+A plaque is under consideration.,A plaque is under consideration.,Eine Gedenktafel wird erwogen.
+The street accepts prices twice as high.,The street accepts prices twice as high.,Die Straße akzeptiert doppelt so hohe Preise.
+"50,000 UNITS MOVED","50,000 UNITS MOVED",50.000 EINHEITEN ABGESETZT
+"Sell 50,000 units.","Sell 50,000 units.",50.000 Einheiten verkaufen.
+The plaque has been reconsidered.,The plaque has been reconsidered.,Die Gedenktafel wurde nochmals erwogen.
+"$1,000 ON HAND","$1,000 ON HAND",$1.000 IM BESTAND
+"Hold $1,000 at once.","Hold $1,000 at once.",$1.000 gleichzeitig halten.
+Liquidity has been detected at your desk.,Liquidity has been detected at your desk.,An Ihrem Tisch wurde Liquidität festgestellt.
+"$10,000 ON HAND","$10,000 ON HAND",$10.000 IM BESTAND
+"Hold $10,000 at once.","Hold $10,000 at once.",$10.000 gleichzeitig halten.
+Accounts asks that you stop counting it aloud.,Accounts asks that you stop counting it aloud.,"Die Buchhaltung bittet, nicht mehr laut zu zählen."
+"$100,000 ON HAND","$100,000 ON HAND",$100.000 IM BESTAND
+"Hold $100,000 at once.","Hold $100,000 at once.",$100.000 gleichzeitig halten.
+This sum is now the property of a spreadsheet.,This sum is now the property of a spreadsheet.,Diese Summe gehört jetzt einer Tabelle.
+UNIT INTERCEPTED,UNIT INTERCEPTED,EINHEIT ABGEFANGEN
+Catch a unit as it leaves the chute.,Catch a unit as it leaves the chute.,Eine Einheit beim Verlassen der Rutsche fangen.
+Gravity has been overruled. Gravity has been informed.,Gravity has been overruled. Gravity has been informed.,Die Schwerkraft wurde überstimmt und davon unterrichtet.
+50 INTERCEPTIONS,50 INTERCEPTIONS,50 FÄNGE
+Catch 50 units in mid-air.,Catch 50 units in mid-air.,50 Einheiten in der Luft fangen.
+Your reflexes are company property.,Your reflexes are company property.,Ihre Reflexe sind Firmeneigentum.
+500 INTERCEPTIONS,500 INTERCEPTIONS,500 FÄNGE
+Catch 500 units in mid-air.,Catch 500 units in mid-air.,500 Einheiten in der Luft fangen.
+The chute has filed a complaint.,The chute has filed a complaint.,Die Rutsche hat Beschwerde eingereicht.
+UNIT REFUSED,UNIT REFUSED,EINHEIT ABGELEHNT
+Have the street refuse a unit.,Have the street refuse a unit.,Eine Einheit von der Straße ablehnen lassen.
+The street has an opinion. It is not binding.,The street has an opinion. It is not binding.,Die Straße hat eine Meinung. Sie ist nicht bindend.
+100 REFUSALS,100 REFUSALS,100 ABLEHNUNGEN
+Have the street refuse 100 units.,Have the street refuse 100 units.,100 Einheiten von der Straße ablehnen lassen.
+Pricing remains your responsibility.,Pricing remains your responsibility.,Die Preisgestaltung bleibt Ihre Verantwortung.
+PREMIUM POSITIONING,PREMIUM POSITIONING,PREMIUM-POSITIONIERUNG
+Chalk a price of $10 or more.,Chalk a price of $10 or more.,Einen Preis von $10 oder mehr ansetzen.
+The unit has not changed. Its story has.,The unit has not changed. Its story has.,Die Einheit ist unverändert. Ihre Geschichte nicht.
+FIRST HIRE,FIRST HIRE,ERSTE EINSTELLUNG
+Hire an associate.,Hire an associate.,Eine Hilfskraft einstellen.
+You are now responsible for another person. Sign here.,You are now responsible for another person. Sign here.,Sie verantworten jetzt eine weitere Person. Hier unterschreiben.
+FULL HEADCOUNT,FULL HEADCOUNT,VOLLER STELLENPLAN
+Employ 10 associates.,Employ 10 associates.,10 Hilfskräfte beschäftigen.
+Ten associates. None of them have names on file.,Ten associates. None of them have names on file.,Zehn Hilfskräfte. Keine davon mit Namen in der Akte.
+FIRST FINDING,FIRST FINDING,ERSTER BEFUND
+File a Finding in Quality Assurance.,File a Finding in Quality Assurance.,Einen Befund in der QS ablegen.
+Something has been found. Nobody asked what.,Something has been found. Nobody asked what.,"Etwas wurde gefunden. Niemand hat gefragt, was."
+"1,000 FINDINGS ON FILE","1,000 FINDINGS ON FILE",1.000 BEFUNDE IN DER AKTE
+"Hold 1,000 Findings at once.","Hold 1,000 Findings at once.",1.000 Befunde gleichzeitig halten.
+The filing cabinet has been extended.,The filing cabinet has been extended.,Der Aktenschrank wurde erweitert.
+FIRST RESEARCH DIRECTIVE,FIRST RESEARCH DIRECTIVE,ERSTER FORSCHUNGSAUFTRAG
+Stamp the first research directive.,Stamp the first research directive.,Den ersten Forschungsauftrag stempeln.
+The inspection will be inspected.,The inspection will be inspected.,Die Prüfung wird geprüft werden.
+RESEARCH UNIT ANALYSED,RESEARCH UNIT ANALYSED,FORSCHUNGSEINHEIT GEPRÜFT
+Have Quality Assurance analyse a research unit.,Have Quality Assurance analyse a research unit.,Eine Forschungseinheit in der QS prüfen lassen.
+It was blue. It is now data.,It was blue. It is now data.,Sie war blau. Jetzt ist sie Daten.
+"1,000 MINIATURE UNITS","1,000 MINIATURE UNITS",1.000 MINI-EINHEITEN
+"Sell 1,000 mini units.","Sell 1,000 mini units.",1.000 Mini-Einheiten verkaufen.
+The units are small. So are the margins.,The units are small. So are the margins.,Die Einheiten sind klein. Die Margen auch.
+OUTPUT DIVERTED,OUTPUT DIVERTED,AUSSTOSS UMGELEITET
+Divert tube minis to research (lever on SPLIT or RESEARCH).,Divert tube minis to research (lever on SPLIT or RESEARCH).,Rohr-Minis in die Forschung umleiten (Hebel auf TEILEN oder FORSCHUNG).
+Half of everything now goes somewhere else.,Half of everything now goes somewhere else.,Die Hälfte von allem geht jetzt woandershin.
+FIRST FINE,FIRST FINE,ERSTE STRAFE
+Sell a rotten unit.,Sell a rotten unit.,eine faule Einheit verkaufen.
+The deduction has been made. The lesson has not.,The deduction has been made. The lesson has not.,Der Abzug ist erfolgt. Die Lehre nicht.
+100 UNITS DISPOSED,100 UNITS DISPOSED,100 EINHEITEN ENTSORGT
+Bin 100 rotten units.,Bin 100 rotten units.,100 faule Einheiten entsorgen.
+Waste is a process. You are the process.,Waste is a process. You are the process.,Abfall ist ein Prozess. Sie sind der Prozess.
+QUOTA MET,QUOTA MET,SOLL ERFÜLLT
+Meet a manager's quota.,Meet a manager's quota.,Ein Soll des Managers erfüllen.
+Expectations have been adjusted upward.,Expectations have been adjusted upward.,Die Erwartungen wurden nach oben angepasst.
+25 QUOTAS MET,25 QUOTAS MET,25 SOLLS ERFÜLLT
+Meet 25 of the manager's quotas.,Meet 25 of the manager's quotas.,25 Solls des Managers erfüllen.
+The manager has started to rely on you. This is not a compliment.,The manager has started to rely on you. This is not a compliment.,Der Manager verlässt sich auf Sie. Das ist kein Lob.
+20 SONGS SKIPPED,20 SONGS SKIPPED,20 LIEDER ÜBERSPRUNGEN
+Skip 20 songs on the radio.,Skip 20 songs on the radio.,20 Lieder im Radio überspringen.
+Your taste in music has been entered into your file.,Your taste in music has been entered into your file.,Ihr Musikgeschmack wurde in Ihre Akte eingetragen.
+ONE HOUR OF SILENCE,ONE HOUR OF SILENCE,EINE STUNDE STILLE
+Keep the radio off for an hour in total.,Keep the radio off for an hour in total.,Das Radio insgesamt eine Stunde auslassen.
+Silence is also productivity.,Silence is also productivity.,Stille ist auch Produktivität.
+METHODOLOGY DOUBLED,METHODOLOGY DOUBLED,METHODIK VERDOPPELT
+Buy DOUBLE FINDINGS on the projector.,Buy DOUBLE FINDINGS on the projector.,DOPPELTE BEFUNDE am Projektor kaufen.
+Twice the findings. The same questions.,Twice the findings. The same questions.,Doppelte Befunde. Dieselben Fragen.
+MESSAGING FINALISED,MESSAGING FINALISED,BOTSCHAFT FINALISIERT
+Buy the last slogan on the projector.,Buy the last slogan on the projector.,Den letzten Slogan am Projektor kaufen.
+There is nothing left to say about cabbage.,There is nothing left to say about cabbage.,Über Kohl ist alles gesagt.
+INBOX ZERO,INBOX ZERO,POSTEINGANG LEER
+Stamp every card on the upgrade desk.,Stamp every card on the upgrade desk.,Jedes Formular am Ausbautisch stempeln.
+There is nothing left to approve. Please wait for something.,There is nothing left to approve. Please wait for something.,Es gibt nichts mehr zu genehmigen. Bitte warten Sie auf etwas.
+MEMORANDUM,MEMORANDUM,AKTENNOTIZ
+INTERNAL  |  DO NOT REPLY,INTERNAL  |  DO NOT REPLY,INTERN  |  NICHT ANTWORTEN
+TO: DESK 4     FROM: MANAGEMENT     RE: ,TO: DESK 4     FROM: MANAGEMENT     RE: ,AN: TISCH 4     VON: LEITUNG     BETR.: 
+Effective immediately: ,Effective immediately: ,Ab sofort: 
+Retain for your records. Records are retained regardless.,Retain for your records. Records are retained regardless.,Für Ihre Unterlagen. Unterlagen werden ohnehin aufbewahrt.
+NOTED,NOTED,VERMERKT
+PERSONNEL FILE  |  DESK 4,PERSONNEL FILE  |  DESK 4,PERSONALAKTE  |  TISCH 4
+%d / %d FILED,%d / %d FILED,%d / %d ABGELEGT
+CLASSIFIED,CLASSIFIED,GEHEIM
+Effective: ,Effective: ,Wirkung: 
+ROTTEN UNITS IN THE SUPPLY CHAIN,ROTTEN UNITS IN THE SUPPLY CHAIN,FAULE EINHEITEN IN DER LIEFERKETTE
+Some of our suppliers are shipping rotten cabbages. You will know them by the colour. Never sell one. The street confiscates it and fines us 10× your price. A waste bin has been requisitioned; the form is in your tray.,Some of our suppliers are shipping rotten cabbages. You will know them by the colour. Never sell one. The street confiscates it and fines us 10× your price. A waste bin has been requisitioned; the form is in your tray.,"Einige Lieferanten senden faulen Kohl. Sie erkennen ihn an der Farbe. Verkaufen Sie ihn nie. Die Straße beschlagnahmt ihn und bestraft uns mit 10× Ihrem Preis. Ein Abfalleimer wurde beantragt, das Formular liegt in Ihrer Ablage."
+THE STREET HAS MOODS,THE STREET HAS MOODS,DIE STRASSE HAT LAUNEN
+"Market research confirms the street's mood changes every minute. A price that sold everything a minute ago may now be refused. Watch your slate and adjust. Feelings are not our policy, but they are our problem.","Market research confirms the street's mood changes every minute. A price that sold everything a minute ago may now be refused. Watch your slate and adjust. Feelings are not our policy, but they are our problem.","Die Marktforschung bestätigt: Die Laune der Straße ändert sich jede Minute. Ein Preis, der eben noch alles verkaufte, kann jetzt abgelehnt werden. Beobachten Sie Ihre Tafel und passen Sie an. Gefühle sind nicht unsere Richtlinie, aber unser Problem."
+WHOLESALE PRICES REACT TO YOU,WHOLESALE PRICES REACT TO YOU,DER GROSSHANDEL REAGIERT AUF SIE
+You may now order packs at the supply console. Every pack you order pushes next minute's pack price up. Panic buying will be invoiced accordingly. Spread your orders and watch the ticker.,You may now order packs at the supply console. Every pack you order pushes next minute's pack price up. Panic buying will be invoiced accordingly. Spread your orders and watch the ticker.,Sie dürfen jetzt am Bestellpult Lieferungen bestellen. Jede Bestellung treibt den Preis der nächsten Minute hoch. Panikkäufe werden entsprechend berechnet. Verteilen Sie Ihre Bestellungen und beobachten Sie die Anzeige.
+QUALITY ASSURANCE TAKES THE WINDOW,QUALITY ASSURANCE TAKES THE WINDOW,DIE QUALITÄTSSICHERUNG ÜBERNIMMT DAS FENSTER
+"The QA bay now occupies the left third of the window. Units only sell through the right two thirds. Aim accordingly. Units thrown into the bay are studied, not sold.","The QA bay now occupies the left third of the window. Units only sell through the right two thirds. Aim accordingly. Units thrown into the bay are studied, not sold.","Die QS-Station belegt jetzt das linke Drittel des Fensters. Verkauft wird nur noch durch die rechten zwei Drittel. Zielen Sie entsprechend. Einheiten in der Station werden untersucht, nicht verkauft."
+YOU WILL BE MANAGED,YOU WILL BE MANAGED,SIE WERDEN GEFÜHRT
+"As requested, a manager will visit your window every few minutes with a quota: so many units in 45 s. Meet it and you are paid for it. Miss it and it goes in your file.","As requested, a manager will visit your window every few minutes with a quota: so many units in 45 s. Meet it and you are paid for it. Miss it and it goes in your file.","Wie beantragt, besucht ein Manager alle paar Minuten Ihr Fenster mit einem Soll: so viele Einheiten in 45 s. Erfüllen Sie es, werden Sie bezahlt. Verfehlen Sie es, kommt es in Ihre Akte."
+WHOLESALE PRICES EXPLODE,WHOLESALE PRICES EXPLODE,GROSSHANDELSPREISE EXPLODIEREN
+Demand is up and supply is down. The wholesalers have noticed. A crate unit now costs 60% of what the street pays for one. Margins are thin. My uncle is selling his farm at family rates. The offer is in your tray. We grow our own.,Demand is up and supply is down. The wholesalers have noticed. A crate unit now costs 60% of what the street pays for one. Margins are thin. My uncle is selling his farm at family rates. The offer is in your tray. We grow our own.,"Die Nachfrage steigt, das Angebot sinkt. Der Großhandel hat es bemerkt. Eine Kisteneinheit kostet jetzt 60% dessen, was die Straße dafür zahlt. Die Margen sind dünn. Mein Onkel verkauft seinen Hof zum Familientarif. Das Angebot liegt in Ihrer Ablage. Wir bauen selbst an."
+THE WHOLESALERS RETALIATE,THE WHOLESALERS RETALIATE,DER GROSSHANDEL SCHLÄGT ZURÜCK
+"Word of the farm got out. For 5 minutes crates cost more than a unit sells for, and the standing order will not buy them. Live off the farm: the remote on your desk switches to it. Prices ease back over the 5 minutes after that.","Word of the farm got out. For 5 minutes crates cost more than a unit sells for, and the standing order will not buy them. Live off the farm: the remote on your desk switches to it. Prices ease back over the 5 minutes after that.","Das mit dem Hof hat sich herumgesprochen. 5 Minuten lang kosten Kisten mehr, als eine Einheit einbringt, und die Dauerbestellung kauft nicht. Leben Sie vom Hof: Die Fernbedienung auf Ihrem Tisch schaltet um. Danach entspannen sich die Preise über 5 Minuten."
+WELCOME TO DESK 4,WELCOME TO DESK 4,WILLKOMMEN AN TISCH 4
+"You have been assigned a desk, a window and a supply of cabbages (units). Throw units out of the window to sell them: the street pays in coins. Sweep the coins off the mat to bank them. Further instructions will follow in writing. Sign below to confirm you have understood.","You have been assigned a desk, a window and a supply of cabbages (units). Throw units out of the window to sell them: the street pays in coins. Sweep the coins off the mat to bank them. Further instructions will follow in writing. Sign below to confirm you have understood.","Ihnen wurden ein Tisch, ein Fenster und ein Vorrat an Kohlköpfen (Einheiten) zugewiesen. Werfen Sie Einheiten aus dem Fenster, um sie zu verkaufen: Die Straße zahlt in Münzen. Wischen Sie die Münzen von der Matte, um sie zu verbuchen. Weitere Anweisungen folgen schriftlich. Unterschreiben Sie, dass Sie verstanden haben."
+OFFICE OF THE DIRECTOR,OFFICE OF THE DIRECTOR,BÜRO DES DIREKTORS
+SIGNATURE OF EMPLOYEE,SIGNATURE OF EMPLOYEE,UNTERSCHRIFT DES MITARBEITERS
+Sign here,Sign here,Hier unterschreiben
+SEED CONTRACT,SEED CONTRACT,SAATGUTVERTRAG
+Seeds cost half.,Seeds cost half.,Samen kosten die Hälfte.
+FERTILISER,FERTILISER,DÜNGER
+Squares ripen in 20 s instead of 30 s.,Squares ripen in 20 s instead of 30 s.,Felder reifen in 20 s statt 30 s.
+FARM HAND,FARM HAND,KNECHT
+Plants an empty square every second (uses seeds).,Plants an empty square every second (uses seeds).,Sät jede Sekunde ein leeres Feld (kostet Samen).
+IRRIGATION,IRRIGATION,BEWÄSSERUNG
+Every harvest gives 4 cabbages instead of 3.,Every harvest gives 4 cabbages instead of 3.,Jede Ernte bringt 4 Kohlköpfe statt 3.
+TRACTOR,TRACTOR,TRAKTOR
+Harvests a ripe square every second.,Harvests a ripe square every second.,Erntet jede Sekunde ein reifes Feld.
+GREENHOUSE,GREENHOUSE,GEWÄCHSHAUS
+Squares ripen in 15 s.,Squares ripen in 15 s.,Felder reifen in 15 s.
+Not enough money for seeds.,Not enough money for seeds.,Nicht genug Geld für Samen.
+%d seeds delivered.,%d seeds delivered.,%d Samen geliefert.
+%s approved.,%s approved.,%s genehmigt.
+Not enough money.,Not enough money.,Nicht genug Geld.
+Locked. Clear a plot on the right.,Locked. Clear a plot on the right.,Gesperrt. Rechts ein Feld roden.
+Harvested: +%d cabbages to stock.,Harvested: +%d cabbages to stock.,Geerntet: +%d Kohlköpfe in den Bestand.
+Planted. Ripe in %d s.,Planted. Ripe in %d s.,Gesät. Reif in %d s.
+No seeds. Buy some in the seed shop.,No seeds. Buy some in the seed shop.,Keine Samen. Im Saatgutladen kaufen.
+One more square of soil (%d / %d).,One more square of soil (%d / %d).,Ein Feld Erde mehr (%d / %d).
+OWNED,OWNED,IM BESITZ
+%d seeds    $%d,%d seeds    $%d,%d Samen    $%d
+SEEDS %d   CABBAGES %d,SEEDS %d   CABBAGES %d,SAMEN %d   KOHL %d
+LOCKED,LOCKED,GESPERRT
++ PLANT,+ PLANT,+ SÄEN
+FAMILY FARM - CH 3,FAMILY FARM - CH 3,FAMILIENHOF - KANAL 3
+PROCUREMENT,PROCUREMENT,BESCHAFFUNG
+DESK SPACE,DESK SPACE,TISCHFLÄCHE
+SALES EVENTS,SALES EVENTS,VERKAUFSAKTIONEN
+MANAGEMENT,MANAGEMENT,FÜHRUNG
+CONSULTANCY,CONSULTANCY,BERATUNG
+SUPPLY CHAIN,SUPPLY CHAIN,LIEFERKETTE
+COIN UNITS,COIN UNITS,MÜNZGERÄTE
+ASSOCIATES,ASSOCIATES,MITARBEITER
+HEADCOUNT,HEADCOUNT,PERSONALSTAND
+MINI UNITS,MINI UNITS,MINI-EINHEITEN
+RESEARCH,RESEARCH,FORSCHUNG
+LAB HANDS,LAB HANDS,LABORKRÄFTE
+ASSOCIATE No. %03d,ASSOCIATE No. %03d,HILFSKRAFT Nr. %03d
+LEDGER,LEDGER,HAUPTBUCH
+PERFORMANCE RECORDS,PERFORMANCE RECORDS,LEISTUNGSNACHWEISE
+FORM L-1   |   NOT FOR CIRCULATION,FORM L-1   |   NOT FOR CIRCULATION,FORMULAR L-1   |   NICHT ZUR WEITERGABE
+PAGE %d OF %d,PAGE %d OF %d,SEITE %d VON %d
+AUDITED,AUDITED,GEPRÜFT
+NO REQUISITIONS ON FILE.,NO REQUISITIONS ON FILE.,KEINE ANFORDERUNGEN IN DER AKTE.
+%d REQUISITIONS APPROVED IN TOTAL.,%d REQUISITIONS APPROVED IN TOTAL.,%d ANFORDERUNGEN INSGESAMT GENEHMIGT.
+THIS PAGE INTENTIONALLY LEFT BLANK.,THIS PAGE INTENTIONALLY LEFT BLANK.,DIESE SEITE BLEIBT ABSICHTLICH LEER.
+NEXT >,NEXT >,WEITER >
+< PREVIOUS,< PREVIOUS,< ZURÜCK
+TIME ON SHIFT,TIME ON SHIFT,SCHICHTZEIT
+INSUFFICIENT DATA. CONTINUE WORKING.,INSUFFICIENT DATA. CONTINUE WORKING.,UNZUREICHENDE DATEN. ARBEITEN SIE WEITER.
+ Bonus: $%d., Bonus: $%d., Prämie: $%d.
+A quota of %d units was set. %d were moved.,A quota of %d units was set. %d were moved.,Soll: %d Einheiten. Abgesetzt: %d.
+MANAGEMENT  |  UNIT QUOTA,MANAGEMENT  |  UNIT QUOTA,LEITUNG  |  EINHEITEN-SOLL
+MET,MET,ERFÜLLT
+NOT MET,NOT MET,VERFEHLT
+NOTICE OF PENALTY,NOTICE OF PENALTY,BUSSGELDBESCHEID
+RE: UNIT UNFIT FOR SALE,RE: UNIT UNFIT FOR SALE,BETR.: UNVERKÄUFLICHE EINHEIT
+A rotten unit was offered to the public.,A rotten unit was offered to the public.,Eine faule Einheit wurde öffentlich angeboten.
+Penalty: %d × $%d = $%d,Penalty: %d × $%d = $%d,Strafe: %d × $%d = $%d
+Tally insufficient. Balance set to zero.,Tally insufficient. Balance set to zero.,Guthaben unzureichend. Saldo auf null gesetzt.
+Deducted from your tally.,Deducted from your tally.,Von Ihrem Guthaben abgezogen.
+"Rotten units are to be disposed of, not sold.","Rotten units are to be disposed of, not sold.","Faule Einheiten sind zu entsorgen, nicht zu verkaufen."
+FINED,FINED,GEAHNDET
+OFFER DECLINED,OFFER DECLINED,ANGEBOT ABGELEHNT
+INTERCEPTS %d,INTERCEPTS %d,FÄNGE %d
+Pricing consultant switch. Up: it keeps nudging your price toward where about 90% of units sell. Down: it stays away.,Pricing consultant switch. Up: it keeps nudging your price toward where about 90% of units sell. Down: it stays away.,"Schalter des Preisberaters. Oben: Er schiebt Ihren Preis dorthin, wo etwa 90% verkauft werden. Unten: Er bleibt fern."
+"The ledger: your sales, coins over time, staff and approvals. Click to open.","The ledger: your sales, coins over time, staff and approvals. Click to open.","Das Hauptbuch: Verkäufe, Münzen im Zeitverlauf, Personal und Genehmigungen. Klicken zum Öffnen."
+"Your memos: the ones you have earned and the ones still classified, with how to earn them. Click to open.","Your memos: the ones you have earned and the ones still classified, with how to earn them. Click to open.","Ihre Aktennotizen: die erhaltenen und die noch geheimen, mit Hinweis, wie man sie erhält. Klicken zum Öffnen."
+FILES,FILES,AKTEN
+"Tube lever. SALES: minis roll out of the window and sell. RESEARCH: they go to the QA lab for Findings. SPLIT: every other one. Drag it, or click to step.","Tube lever. SALES: minis roll out of the window and sell. RESEARCH: they go to the QA lab for Findings. SPLIT: every other one. Drag it, or click to step.",Rohrhebel. VERKAUF: Minis rollen aus dem Fenster und werden verkauft. FORSCHUNG: Sie gehen ins QS-Labor für Befunde. TEILEN: jede zweite. Ziehen oder klicken zum Weiterschalten.
+"Your price per unit (cabbage). Click < or > to change it by $1. Higher earns more per sale, but the street refuses more units.","Your price per unit (cabbage). Click < or > to change it by $1. Higher earns more per sale, but the street refuses more units.","Ihr Preis pro Einheit (Kohlkopf). < oder > ändert ihn um $1. Höher bringt mehr pro Verkauf, aber die Straße lehnt mehr ab."
+"Acceptance meter: the chance the street buys a unit at your price right now. Left is never, right is always.","Acceptance meter: the chance the street buys a unit at your price right now. Left is never, right is always.","Akzeptanzmesser: die Chance, dass die Straße jetzt eine Einheit zu Ihrem Preis kauft. Links nie, rechts immer."
+"Lower your price by $1. A lower price means fewer units are refused, but each one earns less.","Lower your price by $1. A lower price means fewer units are refused, but each one earns less.","Preis um $1 senken. Ein niedrigerer Preis bedeutet weniger Ablehnungen, aber jede Einheit bringt weniger."
+"Raise your price by $1. Each unit earns more, but past what the street accepts, more are refused.","Raise your price by $1. Each unit earns more, but past what the street accepts, more are refused.","Preis um $1 erhöhen. Jede Einheit bringt mehr, aber über dem, was die Straße akzeptiert, wird mehr abgelehnt."
+PRICE PER UNIT,PRICE PER UNIT,PREIS PRO EINHEIT
+Pull down to open the projector: the upgrade tree. Hold an upgrade there to buy it with coins.,Pull down to open the projector: the upgrade tree. Hold an upgrade there to buy it with coins.,"Nach unten ziehen öffnet den Projektor mit dem Ausbaubaum. Dort einen Ausbau gedrückt halten, um ihn mit Münzen zu kaufen."
+Play or stop the radio.,Play or stop the radio.,Radio an- oder ausschalten.
+Skip to the next song.,Skip to the next song.,Zum nächsten Lied springen.
+Auto-buy switch. Up: a pack is bought by itself whenever stock runs low (and you can pay). Down: you buy by hand.,Auto-buy switch. Up: a pack is bought by itself whenever stock runs low (and you can pay). Down: you buy by hand.,Autokauf-Schalter. Oben: Bei knappem Bestand wird automatisch eine Lieferung gekauft (sofern Sie zahlen können). Unten: Sie kaufen von Hand.
+"Buy a pack of units (cabbages) for the price on the ticker, paid from your coins. They roll down the chute.","Buy a pack of units (cabbages) for the price on the ticker, paid from your coins. They roll down the chute.","Eine Lieferung Einheiten (Kohlköpfe) zum angezeigten Preis kaufen, bezahlt mit Ihren Münzen. Sie rollen die Rutsche hinunter."
+Auto-buy lamp: amber while on. Click it (or the switch beside it) to turn automatic pack buying on or off.,Auto-buy lamp: amber while on. Click it (or the switch beside it) to turn automatic pack buying on or off.,"Autokauf-Lampe: leuchtet gelb, wenn an. Anklicken (oder den Schalter daneben), um den automatischen Kauf ein- oder auszuschalten."
+Findings (¶): research points from the QA bay. Cards priced in ¶ are paid from here. Tokens on the desk only count once you sweep them in.,Findings (¶): research points from the QA bay. Cards priced in ¶ are paid from here. Tokens on the desk only count once you sweep them in.,"Befunde (¶): Forschungspunkte aus der QS-Station. Formulare mit ¶-Preis werden hiervon bezahlt. Marken auf dem Tisch zählen erst, wenn Sie sie einwischen."
+"Coins: the money you have. Prices in $ (cards, upgrades, packs) are paid from here. Coins on the mat only count once you sweep them in.","Coins: the money you have. Prices in $ (cards, upgrades, packs) are paid from here. Coins on the mat only count once you sweep them in.","Münzen: Ihr Geld. Preise in $ (Formulare, Ausbauten, Lieferungen) werden hiervon bezahlt. Münzen auf der Matte zählen erst, wenn Sie sie einwischen."
+"Approval press. Drag a card from the tray onto the pad, then pull this handle all the way down to pay for and approve it.","Approval press. Drag a card from the tray onto the pad, then pull this handle all the way down to pay for and approve it.","Genehmigungspresse. Formular aus der Ablage auf die Unterlage ziehen, dann diesen Griff ganz nach unten ziehen, um es zu bezahlen und zu genehmigen."
+Approved cards. Click to read every card you have bought.,Approved cards. Click to read every card you have bought.,"Genehmigte Formulare. Klicken, um alle gekauften Formulare zu lesen."
+REQUISITIONS,REQUISITIONS,ANFORDERUNGEN
+APPROVALS,APPROVALS,GENEHMIGUNGEN
+UNITS MOVED,UNITS MOVED,EINHEITEN ABGESETZT
+UNITS INTERCEPTED MID-AIR,UNITS INTERCEPTED MID-AIR,IN DER LUFT GEFANGEN
+INTERCEPTION RATE,INTERCEPTION RATE,FANGQUOTE
+UNITS IN INVENTORY,UNITS IN INVENTORY,EINHEITEN AUF LAGER
+COINS ON HAND,COINS ON HAND,MÜNZBESTAND
+FINDINGS FILED,FINDINGS FILED,ABGELEGTE BEFUNDE
+MARKETING MULTIPLIER,MARKETING MULTIPLIER,MARKETINGFAKTOR
+HANDS EMPLOYED,HANDS EMPLOYED,BESCHÄFTIGTE KRÄFTE
+YOU,YOU,SIE
+FURTHER ASSOCIATES,FURTHER ASSOCIATES,WEITERE HILFSKRÄFTE
+TRIP INTERVAL,TRIP INTERVAL,GANGINTERVALL
+WALKING SPEED,WALKING SPEED,GEHTEMPO
+QUARTERLY PERFORMANCE SUMMARY,QUARTERLY PERFORMANCE SUMMARY,QUARTALSLEISTUNGSBERICHT
+FORM QP-1,FORM QP-1,FORMULAR QP-1
+LIQUIDITY OVER TIME,LIQUIDITY OVER TIME,LIQUIDITÄT IM ZEITVERLAUF
+FORM QP-2,FORM QP-2,FORMULAR QP-2
+PERSONNEL,PERSONNEL,PERSONAL
+FORM HR-4,FORM HR-4,FORMULAR HR-4
+REQUISITIONS APPROVED,REQUISITIONS APPROVED,GENEHMIGTE ANFORDERUNGEN
+FORM RQ-9,FORM RQ-9,FORMULAR RQ-9
+ACTIVE,ACTIVE,AKTIV
+UNDER REVIEW,UNDER REVIEW,IN PRÜFUNG
+I'll need %d units in the next %d seconds.,I'll need %d units in the next %d seconds.,Ich brauche %d Einheiten in den nächsten %d Sekunden.
+Head office wants %d units. You have %d seconds.,Head office wants %d units. You have %d seconds.,Die Zentrale will %d Einheiten. Sie haben %d Sekunden.
+%d units. %d seconds. I'll wait.,%d units. %d seconds. I'll wait.,%d Einheiten. %d Sekunden. Ich warte.
+Let's see %d units before %d seconds are up.,Let's see %d units before %d seconds are up.,Zeigen Sie mir %d Einheiten in %d Sekunden.
+Acceptable.,Acceptable.,Annehmbar.
+That will do.,That will do.,Das genügt.
+Noted. Carry on.,Noted. Carry on.,Vermerkt. Weitermachen.
+I see.,I see.,Aha.
+Disappointing.,Disappointing.,Enttäuschend.
+We'll talk.,We'll talk.,Wir sprechen uns.
+PERFORMANCE CONCERN,PERFORMANCE CONCERN,LEISTUNGSBEDENKEN
+Nothing. This memo is the consequence.,Nothing. This memo is the consequence.,Nichts. Diese Notiz ist die Konsequenz.
+SALES,SALES,VERKAUF
+SPLIT,SPLIT,TEILEN
+PULL,PULL,ZIEHEN
+URGENT,URGENT,DRINGEND
+REQUIRES:,REQUIRES:,ERFORDERT:
+REQUIRES DESK CARD:,REQUIRES DESK CARD:,ERFORDERT TISCHFORMULAR:
+REQUIRES RESEARCH:,REQUIRES RESEARCH:,ERFORDERT FORSCHUNG:
+FORM 7-R  RESEARCH DIRECTIVE,FORM 7-R  RESEARCH DIRECTIVE,FORMULAR 7-R  FORSCHUNGSAUFTRAG
+FORM 7-B  REQUISITION,FORM 7-B  REQUISITION,FORMULAR 7-B  ANFORDERUNG
+CLEAR A PLOT,CLEAR A PLOT,FELD RODEN
+INSPECTION METHODOLOGY,INSPECTION METHODOLOGY,PRÜFMETHODIK
+TIME-AND-MOTION STUDY,TIME-AND-MOTION STUDY,ZEIT-UND-BEWEGUNGSSTUDIE
+MATERIALS HANDLING,MATERIALS HANDLING,MATERIALFLUSS
+CONSUMER SENTIMENT,CONSUMER SENTIMENT,VERBRAUCHERSTIMMUNG
+No action is required. None will be taken.,No action is required. None will be taken.,Es ist nichts zu veranlassen. Es wird nichts veranlasst.
+Click a square to plant a seed (1 seed). Ripe after 30 s: click it to harvest 3 cabbages.,Click a square to plant a seed (1 seed). Ripe after 30 s: click it to harvest 3 cabbages.,"Feld anklicken, um zu säen (1 Samen). Reif nach 30 s: anklicken, um 3 Kohlköpfe zu ernten."
+SEED SHOP,SEED SHOP,SAATGUTLADEN
+"TV remote. Click: watch the farm feed on the set beside the desk. The arrow, Esc or a click beside the screen: back to the desk.","TV remote. Click: watch the farm feed on the set beside the desk. The arrow, Esc or a click beside the screen: back to the desk.","TV-Fernbedienung. Klick: das Farmprogramm auf dem Gerät neben dem Schreibtisch ansehen. Pfeil, Esc oder ein Klick neben den Bildschirm: zurück zum Schreibtisch."
+TO DESK,TO DESK,ZUM PULT
+Back to the desk,Back to the desk,Zurück zum Schreibtisch

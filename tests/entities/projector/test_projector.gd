@@ -259,5 +259,24 @@ func _ready() -> void:
 	if Projector.offers(pitch).x != none.x or Projector.offers(pitch).y <= none.y:
 		failed = true
 		push_error("coins should raise the affordable count, not what can be held")
+	# The tree unfolds: a node shows once reachable (or bought), is NEW until seen, and its theme
+	# heading shows with it.
+	var unfold := SaveGame.new()
+	unfold.stamped = PackedStringArray(["projector", "street_posters"])
+	if not Projector.is_shown("slogan_6", unfold) or Projector.is_shown("mini_rate_1", unfold) or Projector.is_shown("lamp_time", unfold):
+		failed = true
+		push_error("an unlocked feature's whole branch should show, a locked one's none")
+	if not Projector.fresh(unfold).has("slogan_1") or Projector.fresh(unfold).has("slogan_2"):
+		failed = true
+		push_error("only newly reachable nodes should be fresh")
+	unfold.tree_seen = PackedStringArray(Projector.fresh(unfold))
+	unfold.tree_bought.append("slogan_1")
+	if Projector.fresh(unfold) != ["slogan_2"]:
+		failed = true
+		push_error("buying a node should make its child fresh; seen ones are not: %s" % [Projector.fresh(unfold)])
+	var headings := Projector.themes_shown(SaveGame.new()).count(true)
+	if headings == 0 or headings >= Projector.THEMES.size():
+		failed = true
+		push_error("theme headings should show with their first node")
 	print("projector tests failed" if failed else "projector tests passed")
 	get_tree().quit(1 if failed else 0)

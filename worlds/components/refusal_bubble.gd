@@ -64,7 +64,7 @@ func _draw() -> void:
 	draw_rect(box, Color(PAPER, alpha))
 	var x := box.position.x + 16.0
 	var w := SIZE.x - 32.0
-	draw_string(FONT, Vector2(x, 22), "OFFER DECLINED", HORIZONTAL_ALIGNMENT_CENTER, w, 12, Color(INK, 0.6 * alpha))
+	draw_string(FONT, Vector2(x, 22), tr("OFFER DECLINED"), HORIZONTAL_ALIGNMENT_CENTER, w, 12, Color(INK, 0.6 * alpha))
 	# The asked price in red, struck through twice.
 	var red := Color(RED, alpha)
 	var text := "$%d" % _price

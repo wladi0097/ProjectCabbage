@@ -77,7 +77,7 @@ func _init(card: Dictionary) -> void:
 	_look.add_child(paper)
 	_text(form_of(card), Vector3(0, 0.002, -0.0825), 60, TITLE_FONT)
 	# Long titles get a smaller face so they stay on two lines under the form header.
-	_heading = _text(card.title, Vector3(0, 0.002, -0.005), 150 if card.title.length() <= 20 else 118, TITLE_FONT, 0.33)
+	_heading = _text(card.title, Vector3(0, 0.002, -0.005), 150 if tr(card.title).length() <= 20 else 118, TITLE_FONT, 0.33)
 	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_price = _text(price_text(price, currency), Vector3(0.135, 0.002, 0.075), 110, TITLE_FONT)
 	_build_stamp()
@@ -196,7 +196,7 @@ func _build_stamp() -> void:
 	label.reparent(_stamp, false)
 	var ink := StandardMaterial3D.new()
 	ink.albedo_color = STAMP_RED
-	var text := TITLE_FONT.get_string_size("APPROVED", HORIZONTAL_ALIGNMENT_LEFT, -1, 150) * PIXEL
+	var text := TITLE_FONT.get_string_size(tr("APPROVED"), HORIZONTAL_ALIGNMENT_LEFT, -1, 150) * PIXEL
 	var box := Vector2(text.x + 0.024, text.y * 0.78)
 	const RULE := 0.005
 	for side in [Vector3(0, 0, -1), Vector3(0, 0, 1), Vector3(-1, 0, 0), Vector3(1, 0, 0)]:

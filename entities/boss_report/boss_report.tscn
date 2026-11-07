@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/boss_report/boss_report.gd" id="1_script"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_1.wav" id="2_land"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_stamp_1.wav" id="3_stamp"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_1.wav" id="4_rustle"]
+
+[node name="BossReport" type="CanvasLayer"]
+layer = 3
+script = ExtResource("1_script")
+
+[node name="Paper" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 330.0
+
+[node name="Land" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_land")
+bus = &"SFX"
+
+[node name="Stamp" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_stamp")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="Rustle" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_rustle")
+volume_db = -8.0
+bus = &"SFX"

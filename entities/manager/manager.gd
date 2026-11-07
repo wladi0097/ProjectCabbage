@@ -126,7 +126,7 @@ func _arrive(save: SaveGame) -> void:
 	quota = quota_for(_samples, save.sold, save.manager_time, save.manager_raise, _sample_clock)
 	sold_at = save.sold
 	left = save.manager_time
-	line = ASKS.pick_random() % [quota, roundi(save.manager_time)]
+	line = tr(ASKS.pick_random()) % [quota, roundi(save.manager_time)]
 	_ticked = 0
 	_t = 0.0
 	phase = Phase.ARRIVING
@@ -142,15 +142,15 @@ func _verdict(save: SaveGame, success: bool) -> void:
 	var moved := save.sold - sold_at
 	if success:
 		bonus = bonus_for(quota, save.sale_price, save.manager_reward)
-		line = PRAISE.pick_random() + " Bonus: $%d." % bonus
+		line = tr(PRAISE.pick_random()) + tr(" Bonus: $%d.") % bonus
 		save.quotas_met += 1
 		SaveManager.log_event("quota_met", "", bonus)
 		coins.throw_in_after(0.5, COINS_FROM, bonus)
 	else:
-		line = SCORN.pick_random()
+		line = tr(SCORN.pick_random())
 		save.quotas_missed += 1
 		SaveManager.log_event("quota_missed", "", quota)
-		memo.post({re = "PERFORMANCE CONCERN", note = "A quota of %d units was set. %d were moved." % [quota, moved],
+		memo.post({re = "PERFORMANCE CONCERN", note = tr("A quota of %d units was set. %d were moved.") % [quota, moved],
 				bonus = "Nothing. This memo is the consequence."})
 	$Stamp.play()
 	_bubble.pop()

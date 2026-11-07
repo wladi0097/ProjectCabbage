@@ -9,10 +9,14 @@ extends Control
 ## Round the hub sit the departments (`dept`): bigger double-rimmed sub-hubs, free, never bought,
 ## greyed until their own `needs` / `research` are stamped; every upgrade hangs under one of them.
 ## Each node: a circle with a glyph and its name above; hovered, a block with name, description and
-## cost; held for HOLD_TIME, it is bought with coins. Every node is drawn; one not yet reachable
-## (parent not bought or its department closed, a desk card it `needs` not stamped) is greyed and
-## can't be held, its popup naming what it waits for. A node with `research` (a research card on the desk) is reachable but
-## locked until that card is stamped: a padlock, and a hold is refused. Like a phone map, a held
+## cost; held for HOLD_TIME, it is bought with coins. A feature's whole branch stays hidden until
+## the feature is unlocked: a node shows once every desk card it and its ancestors `need` is stamped
+## (is_shown), a theme's heading with its first node. Then the whole branch shows, the part not yet
+## reachable (parent not bought, department closed) greyed with dashed edges, its popup naming what it
+## waits for, so the path ahead can be seen. One that becomes reachable for the first time is marked
+## NEW (a pulsing ring) until the screen is rolled up (save.tree_seen). A node with `research` (a
+## research card on the desk) is reachable but locked until that card is stamped: a padlock, and a
+## hold is refused. Like a phone map, a held
 ## press dragged across the slide pans the tree (kept on the slide) and the wheel zooms it; a
 ## double-click recentres.
 ##
@@ -366,6 +370,8 @@ const TUG_FIRST := 5.0
 const TUG_OFFER := 3.0
 const TUG_TIME := 3.0
 const OFFER_CHECK := 0.5
+## Seconds per beat of a NEW node's pulsing ring.
+const NEW_PULSE := 1.4
 ## The pennant's width and height (m), and how far its face is tipped back toward the camera (rad):
 ## at rest, and lifted nearly flat while the hand pinches it.
 const TAB := Vector2(0.13, 0.11)
@@ -426,6 +432,12 @@ var _tree := Control.new()
 var _layer := Node2D.new()
 var _top := Control.new()
 var _layer_key := []
+## Nodes showing for the first time since the screen came down (marked NEW until it rolls up).
+var _fresh: Array[String] = []
+## THEMES that have a node showing (headings drawn), by index, and the ids showing (is_shown),
+## both worked out when the layer is.
+var _themes_shown: Array[bool] = []
+var _shown := {}
 ## The sheet was down at the last redraw (rolled up, _draw is empty and needs no redraw).
 var _sheet_drawn := true
 ## Node prices sorted, to count the affordable ones cheaply (they change the drawing).
@@ -486,6 +498,10 @@ func _ready() -> void:
 	visible = false
 	if unlocked(SaveManager.save):
 		_show(false)
+	# A save from before nodes were marked NEW: everything showing now counts as seen.
+	var save: SaveGame = SaveManager.save
+	if save.tree_seen.is_empty() and not save.tree_bought.is_empty():
+		save.tree_seen = PackedStringArray(fresh(save))
 
 
 func _process(delta: float) -> void:
@@ -539,6 +555,15 @@ func _process(delta: float) -> void:
 		var key := [_zoom, area.size, save.get_instance_id(), save.stamped.size(), save.tree_bought.size(), affordable(save.coins)]
 		if key != _layer_key:
 			_layer_key = key
+			_themes_shown = themes_shown(save)
+			_shown.clear()
+			for node: Dictionary in NODES:
+				if is_shown(node.id, save):
+					_shown[node.id] = true
+			if _lamp > 0.0:
+				for id in fresh(save):
+					if not _fresh.has(id):
+						_fresh.append(id)
 			_layer.queue_redraw()
 		_top.queue_redraw()
 	# Rolled up, _draw draws nothing: one last redraw clears the sheet, then none.
@@ -548,11 +573,12 @@ func _process(delta: float) -> void:
 
 
 ## The pull: while dragged it sits under the mouse; otherwise it swings on its cord, in fixed STEPs.
-## Shown only while the screen is not fully down (open, the overlay, X and Esc close it).
+## Shown only while the screen is not fully down (open, the overlay, X and Esc close it), and not
+## while the camera is at the farm TV.
 func _move_pull(delta: float) -> void:
 	if _grip == null:
 		return
-	var shown := _drop < 1.0 or _dragging
+	var shown := (_drop < 1.0 or _dragging) and not FarmTv.away
 	_grip.visible = shown
 	_cord.visible = shown
 	_handle.enabled = shown
@@ -623,7 +649,39 @@ static func node_data(id: String) -> Dictionary:
 	return _by_id.get(id, {})
 
 
-## Reachable (drawn full, not greyed): the parent is open and every desk card it needs is stamped.
+## Shown on the tree: its feature is unlocked, i.e. every desk card it and its ancestors need is stamped.
+static func is_shown(id: String, save: SaveGame) -> bool:
+	var node := node_data(id)
+	return not node.is_empty() and node.get("needs", []).all(func(card: String) -> bool: return save.stamped.has(card)) \
+			and (node.parent == "" or is_shown(node.parent, save))
+
+
+## The nodes reachable in `save` that it has not seen reachable yet (save.tree_seen), in NODES order.
+static func fresh(save: SaveGame) -> Array[String]:
+	var out: Array[String] = []
+	for node: Dictionary in NODES:
+		if not save.tree_seen.has(node.id) and is_reachable(node.id, save):
+			out.append(node.id)
+	return out
+
+
+## Which THEMES have a node showing: each node counts for the theme heading nearest it.
+static func themes_shown(save: SaveGame) -> Array[bool]:
+	var out: Array[bool] = []
+	out.resize(THEMES.size())
+	out.fill(false)
+	for node: Dictionary in NODES:
+		if node.get("dept", false) or not is_shown(node.id, save):
+			continue
+		var best := 0
+		for i in THEMES.size():
+			if node.at.distance_to(THEMES[i][1]) < node.at.distance_to(THEMES[best][1]):
+				best = i
+		out[best] = true
+	return out
+
+
+## Reachable: the parent is open and every desk card it needs is stamped.
 static func is_reachable(id: String, save: SaveGame) -> bool:
 	var node := node_data(id)
 	return not node.is_empty() and (node.parent == "" or is_open(node.parent, save)) \
@@ -988,6 +1046,11 @@ func _settle(down: bool) -> void:
 
 
 func _lamp_off() -> void:
+	# Rolled up: what was marked NEW has been seen.
+	for id in _fresh:
+		SaveManager.save.tree_seen.append(id)
+	_fresh.clear()
+	_layer_key = []
 	_lamp = 0.0
 	_hovered = ""
 	_holding = ""
@@ -1114,7 +1177,7 @@ func _node_at(point: Vector2) -> String:
 	var wheel := _wheel()
 	var r: float = wheel[2]
 	for node: Dictionary in NODES:
-		if point.distance_to(wheel[0] + node.at * wheel[1]) < _size(node.id, r) * 1.2:
+		if _shown.has(node.id) and point.distance_to(wheel[0] + node.at * wheel[1]) < _size(node.id, r) * 1.2:
 			return node.id
 	return ""
 
@@ -1174,14 +1237,14 @@ func _draw_content(save: SaveGame, fabric: Rect2) -> void:
 	var ink := Color(INK, _lamp)
 	var top := fabric.position.y + fabric.size.y * 0.04
 	var head := clampf(fabric.size.x * 0.035, 22.0, 44.0)
-	draw_string(FONT, Vector2(fabric.position.x, top + head), "GROWTH INITIATIVES", HORIZONTAL_ALIGNMENT_CENTER, fabric.size.x, int(head), ink)
-	draw_string(FONT, Vector2(fabric.position.x, top + head * 1.6), "FORM GW-7   |   HOLD TO APPROVE",
+	draw_string(FONT, Vector2(fabric.position.x, top + head), tr("GROWTH INITIATIVES"), HORIZONTAL_ALIGNMENT_CENTER, fabric.size.x, int(head), ink)
+	draw_string(FONT, Vector2(fabric.position.x, top + head * 1.6), tr("FORM GW-7   |   HOLD TO APPROVE"),
 			HORIZONTAL_ALIGNMENT_CENTER, fabric.size.x, int(head * 0.42), Color(INK, _lamp * 0.75))
 	# What there is to spend, live, in the sheet's top-left corner.
 	var stat := int(head * 0.62)
 	var corner := Vector2(fabric.position.x + 22.0, top + stat)
-	draw_string(FONT, corner, "BUDGET  $%d" % save.coins, HORIZONTAL_ALIGNMENT_LEFT, -1, stat, ink)
-	draw_string(FONT, corner + Vector2(0.0, stat * 1.2), "FINDINGS  ¶%d" % save.findings, HORIZONTAL_ALIGNMENT_LEFT, -1, stat, ink)
+	draw_string(FONT, corner, tr("BUDGET  $%d") % save.coins, HORIZONTAL_ALIGNMENT_LEFT, -1, stat, ink)
+	draw_string(FONT, corner + Vector2(0.0, stat * 1.2), tr("FINDINGS  ¶%d") % save.findings, HORIZONTAL_ALIGNMENT_LEFT, -1, stat, ink)
 	# The close button: a dark stamped square with an X, top right.
 	var close := _close_rect()
 	draw_rect(close, Color(INK, _lamp * (1.0 if _close_hot else 0.8)))
@@ -1201,6 +1264,8 @@ func _draw_layer() -> void:
 	var faint := PackedVector2Array()
 	var locked := PackedVector2Array()
 	for node: Dictionary in NODES:
+		if not _shown.has(node.id):
+			continue
 		# Edge to edge: the line stops at both circles instead of running into them.
 		var from: Vector2 = Vector2.ZERO if node.parent == "" else node_data(node.parent).at * unit
 		var to: Vector2 = node.at * unit
@@ -1222,15 +1287,19 @@ func _draw_layer() -> void:
 		_layer.draw_multiline(locked, Color(INK, 0.35), 3.0)
 	# Each theme's faint heading past the end of its branch.
 	var heading := int(clampf(r * 0.8, 12.0, 44.0))
-	for theme: Array in THEMES:
-		_layer.draw_string(FONT, theme[1] * unit - Vector2(300.0, 0.0), theme[0], HORIZONTAL_ALIGNMENT_CENTER, 600.0, heading, Color(INK, 0.22))
+	for i in THEMES.size():
+		if i >= _themes_shown.size() or not _themes_shown[i]:
+			continue
+		var theme: Array = THEMES[i]
+		_layer.draw_string(FONT, theme[1] * unit - Vector2(300.0, 0.0), tr(theme[0]), HORIZONTAL_ALIGNMENT_CENTER, 600.0, heading, Color(INK, 0.22))
 	# The hub: a cabbage cross-section, the one green thing on the slide.
 	_layer.draw_circle(Vector2.ZERO, r * 1.1, CABBAGE)
 	_layer.draw_circle(Vector2.ZERO, r * 1.1, INK, false, 3.0, true)
 	for i in 3:
 		_layer.draw_arc(Vector2(r * 0.15, 0), r * (0.3 + i * 0.25), PI * 0.6, PI * 1.9, 16, Color(0.9, 1.0, 0.8, 0.8), 2.0, true)
 	for node: Dictionary in NODES:
-		_draw_node(node, node.at * unit, r, save)
+		if _shown.has(node.id):
+			_draw_node(node, node.at * unit, r, save)
 
 
 ## Dash segments from `from` to `to` (`dash` long, same gap) added to a multiline batch.
@@ -1252,7 +1321,7 @@ func _draw_top() -> void:
 	var wheel := _wheel()
 	var r: float = wheel[2]
 	var area := _tree_rect()
-	var hint := "DRAG TO MOVE   |   WHEEL TO ZOOM" if _pan == Vector2.ZERO and is_equal_approx(_zoom, 1.0) else "DOUBLE-CLICK TO RECENTRE"
+	var hint := tr("DRAG TO MOVE   |   WHEEL TO ZOOM") if _pan == Vector2.ZERO and is_equal_approx(_zoom, 1.0) else tr("DOUBLE-CLICK TO RECENTRE")
 	_top.draw_string(FONT, area.end - Vector2(area.size.x, 12.0), hint, HORIZONTAL_ALIGNMENT_RIGHT, area.size.x - 14.0, 15, Color(INK, _lamp * 0.55))
 	if _holding != "":
 		var at: Vector2 = wheel[0] + node_data(_holding).at * wheel[1]
@@ -1260,6 +1329,13 @@ func _draw_top() -> void:
 			_top.draw_arc(at, r + 4.0, 0.0, TAU, 32, Color(DENIED, _lamp), 4.0, true)
 		elif _hold > 0.0:
 			_top.draw_arc(at, r + 6.0, -PI / 2.0, -PI / 2.0 + TAU * _hold, 40, Color(INK, _lamp), 5.0, true)
+	# NEW: a ring pulsing out from each node showing for the first time.
+	var beat := fmod(Time.get_ticks_msec() / 1000.0, NEW_PULSE) / NEW_PULSE
+	for id in _fresh:
+		var at: Vector2 = wheel[0] + node_data(id).at * wheel[1]
+		var size := _size(id, r)
+		_top.draw_arc(at, size * (1.15 + 0.35 * beat), 0.0, TAU, 40, Color(INK, _lamp * 0.7 * (1.0 - beat)), 3.0, true)
+		_top.draw_string(FONT, at + Vector2(size * 0.8, size * 1.05), tr("NEW"), HORIZONTAL_ALIGNMENT_LEFT, -1, int(clampf(r * 0.6, 14.0, 28.0)), Color(INK, _lamp))
 	if _hovered != "":
 		var at: Vector2 = wheel[0] + node_data(_hovered).at * wheel[1]
 		var size := _size(_hovered, r)
@@ -1297,7 +1373,7 @@ func _draw_node(node: Dictionary, at: Vector2, r: float, save: SaveGame) -> void
 	# Bought shows as the filled disc (the popup says APPROVED): a word under it would run into
 	# the next node's title in the vertical chains.
 	var font_size := int(clampf(r * 0.6, 9.0, 34.0))
-	_layer.draw_string(FONT, at + Vector2(-200.0, -r - 8.0), node.title, HORIZONTAL_ALIGNMENT_CENTER, 400.0, font_size, ink)
+	_layer.draw_string(FONT, at + Vector2(-200.0, -r - 8.0), tr(node.title), HORIZONTAL_ALIGNMENT_CENTER, 400.0, font_size, ink)
 
 
 ## A department: a big tinted disc in a double rim, its name in large type, never filled as bought.
@@ -1318,7 +1394,7 @@ func _draw_dept(node: Dictionary, at: Vector2, r: float, save: SaveGame) -> void
 	_layer.draw_arc(at, r * 0.84, 0.0, TAU, 32, ink, 1.5, true)
 	_draw_icon("padlock" if locked else node.icon, at, r * 0.5, ink)
 	var font_size := int(clampf(r * 0.5, 12.0, 46.0))
-	_layer.draw_string(FONT, at + Vector2(-250.0, -r - 10.0), node.title, HORIZONTAL_ALIGNMENT_CENTER, 500.0, font_size, ink)
+	_layer.draw_string(FONT, at + Vector2(-250.0, -r - 10.0), tr(node.title), HORIZONTAL_ALIGNMENT_CENTER, 500.0, font_size, ink)
 
 
 ## Simple line glyphs, centred on `at`, about `s` from the centre to the edge.
@@ -1381,7 +1457,7 @@ func _draw_icon(icon: String, at: Vector2, s: float, color: Color) -> void:
 
 func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, light: float, fabric: Rect2) -> void:
 	var width := 430.0
-	var lines: PackedStringArray = node.body.split("\n")
+	var lines: PackedStringArray = tr(node.body).split("\n")
 	var needs := requirement(node.id, save)
 	var height := 100.0 + lines.size() * 27.0 + (32.0 if not needs.is_empty() else 0.0)
 	var pos := at + Vector2(r + 14.0, -height / 2.0)
@@ -1392,20 +1468,20 @@ func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, light:
 	var box := Rect2(pos, Vector2(width, height))
 	_top.draw_rect(box, Color(INK, light * 0.92))
 	var paper := Color(BEAM, light)
-	_top.draw_string(FONT, pos + Vector2(16, 38), node.title, HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 30, paper)
+	_top.draw_string(FONT, pos + Vector2(16, 38), tr(node.title), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 30, paper)
 	for i in lines.size():
 		_top.draw_string(FONT, pos + Vector2(16, 70 + i * 27), lines[i], HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 21, Color(paper, light * 0.8))
 	if not needs.is_empty():
 		# What it waits for, on one line, its name under it.
 		var red := Color(0.85, 0.35, 0.3, light)
-		_top.draw_string(FONT, pos + Vector2(16, height - 48), needs[0], HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 21, red)
-		_top.draw_string(FONT, pos + Vector2(16, height - 16), needs[1], HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, red)
+		_top.draw_string(FONT, pos + Vector2(16, height - 48), tr(needs[0]), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 21, red)
+		_top.draw_string(FONT, pos + Vector2(16, height - 16), tr(needs[1]), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, red)
 		return
 	if node.get("dept", false):
-		_top.draw_string(FONT, pos + Vector2(16, height - 16), "DEPARTMENT", HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, paper)
+		_top.draw_string(FONT, pos + Vector2(16, height - 16), tr("DEPARTMENT"), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, paper)
 		return
 	var bought: bool = save.tree_bought.has(node.id)
-	var price := "APPROVED" if bought else "COST $%d" % node.price
+	var price := tr("APPROVED") if bought else tr("COST $%d") % node.price
 	var short: bool = not bought and save.coins < node.price
 	_top.draw_string(FONT, pos + Vector2(16, height - 16), price, HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24,
 			Color(0.85, 0.35, 0.3, light) if short else paper)

@@ -53,6 +53,8 @@ extends Resource
 @export var tree_bought := PackedStringArray()
 ## The projector screen has been pulled down once (until then its pull swings hard to be noticed).
 @export var projector_opened := false
+## Projector nodes the player has seen reachable (rolled the screen up after); newly reachable ones show as NEW.
+@export var tree_seen := PackedStringArray()
 ## Memos filed (ids from MilestoneMemo's MEMOS, also the Steam achievements), each reward applied once.
 @export var milestones := PackedStringArray()
 ## Tooltips already shown once (their text): from then on they wait a second of hovering (Hand).
@@ -137,6 +139,19 @@ extends Resource
 @export var radio_track := 0
 @export var songs_skipped := 0
 @export var radio_silent := 0.0
+## Stage 2 (globalScripts/game_events.gd): wholesale prices have exploded (SupplyConsole.crate_share),
+## and seconds left of the wholesalers' squeeze after the family farm was bought.
+@export var supply_shock := false
+@export var squeeze_left := 0.0
+## The family farm on the TV (entities/farm_screen/): seeds, open squares (0: not set up yet), each
+## open square's seconds grown (-1 empty), the farm upgrades bought, and harvests so far.
+@export var farm_seeds := 0
+@export var farm_plots := 0
+@export var farm_growth := PackedFloat32Array()
+@export var farm_bought := PackedStringArray()
+@export var farm_harvests := 0
+## Big events whose boss report has been shown or filed (entities/boss_report/), GameEvents ids.
+@export var reports := PackedStringArray()
 ## For playtests: every purchase, session start and a snapshot every SaveManager.LOG_EVERY seconds,
 ## each with the play time and the state after it (log_entry). Also written as playtest_log.csv.
 @export var playtest_log: Array[Dictionary] = []
