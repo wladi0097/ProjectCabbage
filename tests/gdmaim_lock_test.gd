@@ -9,11 +9,14 @@ const SOURCE_DIRS := ["res://entities", "res://globalScripts", "res://ui", "res:
 		"res://ressources"]
 const IGNORE_LIST := "res://addons/gdmaim/user/ignore_tokens.txt"
 const GDMAIM_CONFIG := "res://.gdmaim/export.cfg"
-## Members named in a string: tweens, method checks, string get/set/call.
+## Members named in a string: tweens (also "member:sub"), method/signal checks, string
+## get/set/call/connect, group and propagated calls, Callables.
 const NAMED_IN_STRING := [
-	"tween_property\\([^,]+,\\s*&?\"(\\w+)\"",
-	"has_method\\(\\s*&?\"(\\w+)\"",
-	"\\.(?:get|set|call|call_deferred|set_deferred)\\(\\s*&?\"(\\w+)\"",
+	"tween_property\\([^,]+,\\s*&?\"(\\w+)[\":]",
+	"(?:has_method|has_signal|emit_signal|callv|get_indexed|set_indexed|propagate_call)\\(\\s*&?\"(\\w+)[\":]",
+	"\\.(?:get|set|call|call_deferred|set_deferred|connect)\\(\\s*&?\"(\\w+)\"",
+	"call_group(?:_flags)?\\([^,]+,\\s*(?:[^,]+,\\s*)?&?\"(\\w+)\"",
+	"Callable\\([^,]+,\\s*&?\"(\\w+)\"",
 ]
 
 
@@ -43,12 +46,23 @@ func test_the_obfuscator_keeps_what_the_release_build_needs() -> void:
 	assert_bool(config.get_value("post_process", "strip_static_typing", true)).is_false()
 	# Text, not binary: binary scenes lose material overrides on nodes inside instanced models.
 	assert_int(config.get_value("post_process", "export_mode", 2)).is_equal(0)
+	# A private seed: with seed 0 anyone with the public addon can hash likely names back.
+	assert_int(config.get_value("id", "seed", 0)).is_not_equal(0)
 
 
 ## Our patch in the addon: an editor started before a settings change must not export with the old ones.
 func test_every_export_rereads_the_obfuscator_settings() -> void:
 	var source := FileAccess.get_file_as_string("res://addons/gdmaim/export_plugin.gd")
 	assert_str(source).contains("settings.initialize_settings(true)\n\tsettings.deserialize()")
+
+
+func test_a_method_called_through_a_group_or_a_tween_sub_path_counts_as_named_in_a_string() -> void:
+	var found: Array[String] = []
+	for pattern in NAMED_IN_STRING:
+		for hit in RegEx.create_from_string(pattern).search_all(
+				'get_tree().call_group(&"combo", &"caught", at)\ntween_property(self, "_open:x", 1.0, 0.2)\nCallable(self, "_on_hit")'):
+			found.append(hit.get_string(1))
+	assert_array(found).contains(["caught", "_open", "_on_hit"])
 
 
 func test_dictionary_keys_are_found_in_both_spellings_and_only_inside_braces() -> void:

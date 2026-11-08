@@ -179,6 +179,12 @@ func test_a_delayed_payout_counts_as_pending_before_and_after_it_is_thrown() -> 
 	assert_int(pile.pending_value()).is_equal(7)
 
 
+func test_a_delayed_pop_out_counts_as_pending_before_it_pops() -> void:
+	var pile := _pile_with([])
+	pile.pop_out_after(60.0, Vector3.ZERO, Vector3.ZERO, 5)
+	assert_int(pile.pending_value()).is_equal(5)
+
+
 func test_the_autosave_counts_the_coins_still_on_the_mat() -> void:
 	var pile := _pile_with([[Vector2i(0, 0), [10, 5]]])
 	assert_int(SaveManager.pending_coins.call()).is_equal(15)

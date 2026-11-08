@@ -21,6 +21,8 @@ var _log_timer := 0.0
 
 
 func _init() -> void:
+	if writes_allowed():
+		adopt_old_files(OS.get_data_dir().path_join("Godot/app_userdata/ProjectCabbage"), OS.get_user_data_dir())
 	load_settings()
 	load_save()
 
@@ -49,6 +51,14 @@ func _process(delta: float) -> void:
 ## (id = seconds away) or a "snapshot".
 func log_event(kind: String, id := "", price := 0, currency := "") -> void:
 	save.playtest_log.append(save.log_entry(played_now(), kind, id, price, currency))
+
+
+## Builds before the custom user folder kept the save and settings under Godot's own folder
+## (`old_dir`): each one missing in `new_dir` is copied over once, so nobody loses their progress.
+static func adopt_old_files(old_dir: String, new_dir: String) -> void:
+	for file in ["savegame.tres", "settings.tres"]:
+		if FileAccess.file_exists(old_dir.path_join(file)) and not FileAccess.file_exists(new_dir.path_join(file)):
+			DirAccess.copy_absolute(old_dir.path_join(file), new_dir.path_join(file))
 
 
 ## Test scenes and -s probe scripts never write the player's save, on any path (autosave, quit, reset).

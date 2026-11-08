@@ -221,10 +221,16 @@ func test_a_flying_cabbage_that_hits_something_is_no_longer_catchable() -> void:
 	assert_bool((cabbage.get_node("Interactable") as Interactable).catchable).is_false()
 
 
-## Counts the misses reported to the "catch_combo" group.
+## Counts the misses reported to the "catch_combo" group (a bare CatchCombo: no scene, no label).
 class MissLog:
-	extends Node
+	extends CatchCombo
 	var misses := 0
+
+	func _ready() -> void:
+		pass
+
+	func _process(_delta: float) -> void:
+		pass
 
 	func missed() -> void:
 		misses += 1

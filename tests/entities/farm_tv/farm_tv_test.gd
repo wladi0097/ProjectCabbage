@@ -200,3 +200,12 @@ func test_only_the_back_button_takes_the_camera_back_to_the_desk() -> void:
 
 func test_switching_channels_takes_only_a_short_burst_of_static() -> void:
 	assert_float(FarmTv.STATIC_TIME).is_less_equal(0.15)
+
+
+func test_a_scene_reload_starts_with_the_camera_at_the_desk_not_the_tv() -> void:
+	FarmTv.away = true  # Static: it outlives reload_current_scene (a reset or a debug start).
+	var camera := Camera3D.new()
+	add_child(auto_free(camera))
+	camera.make_current()
+	add_child(auto_free(load("res://entities/farm_tv/farm_tv.tscn").instantiate()))
+	assert_bool(FarmTv.away).is_false()

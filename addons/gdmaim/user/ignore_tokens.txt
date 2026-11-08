@@ -233,3 +233,5 @@ _fly
 _tug
 farm_readout
 farm_seeds_carried
+albedo_color
+modulate

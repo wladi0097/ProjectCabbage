@@ -19,6 +19,9 @@ const VISIT_EVERY := Vector2(150.0, 240.0)
 ## Sales are sampled every SAMPLE_EVERY seconds; the quota looks back QUOTA_WINDOW seconds.
 const SAMPLE_EVERY := 5.0
 const QUOTA_WINDOW := 300.0
+## The pace is never read off less than MIN_SPAN seconds: the first visit, CARD_VISIT after the
+## stamp, would otherwise scale a single 5 s sample into a random quota.
+const MIN_SPAN := 30.0
 const MIN_QUOTA := 3
 const ARRIVE_TIME := 1.4
 const LEAVE_TIME := 1.2
@@ -113,9 +116,10 @@ func _process(delta: float) -> void:
 
 
 ## Units sold in the last stretch of `samples` (save.sold every SAMPLE_EVERY s, oldest first, the
-## last one `since` seconds ago), scaled to `time` seconds and raised by `raise`; never below MIN_QUOTA.
+## last one `since` seconds ago), scaled to `time` seconds and raised by `raise`; never below MIN_QUOTA. The stretch counts
+## as at least MIN_SPAN seconds.
 static func quota_for(samples: PackedInt32Array, sold: int, time: float, raise: float, since := 0.0) -> int:
-	var span := maxf((samples.size() - 1) * SAMPLE_EVERY + since, SAMPLE_EVERY)
+	var span := maxf((samples.size() - 1) * SAMPLE_EVERY + since, MIN_SPAN)
 	var recent := sold - samples[0] if not samples.is_empty() else 0
 	return maxi(MIN_QUOTA, ceili(recent / span * time * raise))
 

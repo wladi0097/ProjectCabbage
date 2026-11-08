@@ -60,8 +60,6 @@ var _blinking: Tween
 var _auto_wait := 0.0
 ## The auto_buy the lamp and switch show.
 var _auto_on := true
-## The cost the ticker shows, so it is only reformatted when it changes.
-var _shown_cost := -1
 
 @onready var _button: Interactable = $Button/Interactable
 @onready var _auto: Label3D = $Auto
@@ -114,7 +112,8 @@ func _process(delta: float) -> void:
 		_show_auto()
 	_auto_wait -= delta
 	if _auto.visible and save.auto_buy and save.buy_unlocked and _auto_wait <= 0.0 \
-			and fits(save.stock, save.pack_size, save.storage_cap) 			and should_auto_buy(save.stock, save.auto_reserve, save.price_factor, save.auto_max_factor, save.coins, _cost()) \
+			and fits(save.stock, save.pack_size, save.storage_cap) \
+			and should_auto_buy(save.stock, save.auto_reserve, save.price_factor, save.auto_max_factor, save.coins, _cost()) \
 			and not (save.supply_shock and _cost() / float(save.pack_size) >= save.sale_price):
 		_auto_wait = AUTO_COOLDOWN
 		_press()
@@ -122,7 +121,6 @@ func _process(delta: float) -> void:
 		get_tree().create_timer(0.12).timeout.connect(_push.bind(false))
 	# Pack size and discount change between ticks; the ticker follows at once.
 	if _price.text != _price_text():
-		_shown_cost = _cost()
 		_price.text = _price_text()
 
 
@@ -225,7 +223,6 @@ func _drop() -> void:
 
 func _show_price() -> void:
 	var save := SaveManager.save
-	_shown_cost = _cost()
 	_price.text = _price_text()
 	var mesh := ImmediateMesh.new()
 	var points := sparkline(save.price_history, HISTORY, Vector2(0.14, 0.03))

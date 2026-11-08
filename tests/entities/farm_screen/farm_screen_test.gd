@@ -192,7 +192,7 @@ func test_every_hint_line_fits_the_screen_in_german_and_a_short_one_keeps_the_fu
 	add_child(screen)
 	TranslationServer.set_locale("de")
 	var tr_ := func(text: String) -> String: return TranslationServer.translate(text)
-	var hints: Array[String] = [tr_.call(screen._msg), tr_.call("Not enough money for seeds."), tr_.call("Not enough money."),
+	var hints: Array[String] = [tr_.call(FarmScreen.OPENING) % [30, 3], tr_.call("Not enough money for seeds."), tr_.call("Not enough money."),
 			tr_.call("Clear the squares in order."), tr_.call("No seeds. Buy a pack under the seed box."),
 			tr_.call("%d seeds delivered.") % 99999, tr_.call("Harvested: +%d cabbages to stock.") % 99,
 			tr_.call("Planted. Ripe in %d s.") % 30, tr_.call("Square cleared."), tr_.call("Seed back in the box."),
@@ -741,7 +741,6 @@ func test_the_seed_pack_buttons_are_pixel_plates_like_the_crate() -> void:
 		assert_object(button.get_theme_stylebox("normal")).is_instanceof(StyleBoxTexture)
 		assert_object(button.get_theme_stylebox("pressed")).is_instanceof(StyleBoxTexture)
 		assert_int((button.get_node("Row") as HBoxContainer).alignment).is_equal(BoxContainer.ALIGNMENT_CENTER)
-	assert_object(screen._seed_icon).is_equal(FarmScreen.SEED_SPRITE)
 
 
 func test_seeds_in_a_hands_glove_are_kept_in_the_save_and_go_back_to_the_crate_on_load() -> void:

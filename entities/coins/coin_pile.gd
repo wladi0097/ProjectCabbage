@@ -119,6 +119,14 @@ func _throw_scheduled(origin: Vector3, amount: int) -> void:
 	throw_in(origin, amount)
 
 
+## Pops `amount` out after `delay` seconds; until then pending_value counts it (so it is banked on quit).
+func pop_out_after(delay: float, origin: Vector3, spot: Vector3, amount: int) -> void:
+	_scheduled += amount
+	get_tree().create_timer(delay).timeout.connect(func() -> void:
+		_scheduled -= amount
+		pop_out(origin, spot, amount))
+
+
 ## Throws `amount` worth of coins in from `origin` (out of sight below the sill): up to the gap,
 ## then in, all onto one spot.
 func throw_in(origin: Vector3, amount: int) -> void:

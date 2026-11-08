@@ -34,8 +34,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	var save := SaveManager.save
 	_label.visible = save.stamped.has(CARD)
-	if _pop > 0.0:
-		_pop = maxf(0.0, _pop - delta * 4.0)
+	_pop = maxf(0.0, _pop - delta * 4.0)
+	# Every frame, so a combo_step/combo_cap bought mid-combo or a language switch shows at once.
+	if _label.visible:
 		_show(save)
 
 

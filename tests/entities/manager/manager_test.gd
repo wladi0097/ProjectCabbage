@@ -70,10 +70,16 @@ func test_more_time_or_a_bigger_raise_asks_for_more_units() -> void:
 
 
 func test_the_time_since_the_last_sample_counts_toward_the_pace() -> void:
-	var samples := PackedInt32Array([0, 10])
+	var samples := PackedInt32Array([0, 10, 10, 10, 10, 10, 10])
 
-	assert_int(Manager.quota_for(samples, 20, 45.0, 1.0, 5.0)).is_equal(90)
-	assert_int(Manager.quota_for(samples, 20, 45.0, 1.0, 0.0)).is_equal(180)
+	# 20 sold over 30 s + 5 s since: ceil(25.7); over 30 s: 30.
+	assert_int(Manager.quota_for(samples, 20, 45.0, 1.0, 5.0)).is_equal(26)
+	assert_int(Manager.quota_for(samples, 20, 45.0, 1.0, 0.0)).is_equal(30)
+
+
+func test_the_first_visit_right_after_the_card_reads_the_pace_over_at_least_thirty_seconds() -> void:
+	# 3 sold in the 5 s since the stamp: read over 30 s, 45 s at x1.25 asks ceil(5.6), not 34.
+	assert_int(Manager.quota_for(PackedInt32Array([0]), 3, 45.0, 1.25, 5.0)).is_equal(6)
 
 
 func test_the_bonus_is_quota_times_price_times_reward_rounded_up() -> void:

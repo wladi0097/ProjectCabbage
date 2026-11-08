@@ -464,3 +464,10 @@ func test_an_old_save_with_only_the_farm_hand_gets_no_tractor() -> void:
 func test_the_chute_control_card_is_dealt_once_the_family_farm_is_bought() -> void:
 	assert_array(_next(THROUGH_QA, 10)).not_contains(["chute_control"])
 	assert_array(_next(["family_farm"])).contains(["chute_control"])
+
+
+func test_an_old_save_with_the_first_three_bin_rebates_gets_five_dollars_a_rotten_unit() -> void:
+	var old := SaveGame.new()
+	old.tree_bought = PackedStringArray(["bin_mouth", "bin_rebate", "bin_rebate_2", "bin_rebate_3"])
+	UpgradeDesk.migrate(old)
+	assert_int(old.bin_coins).is_equal(5)

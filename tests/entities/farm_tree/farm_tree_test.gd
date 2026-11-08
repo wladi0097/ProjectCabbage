@@ -117,6 +117,12 @@ func test_a_node_waits_for_its_parent_and_is_bought_only_once() -> void:
 	assert_bool(FarmTree.buy("greenhouse", save)).is_true()
 
 
+func test_a_node_an_old_save_bought_without_its_parent_still_shows_as_bought() -> void:
+	var save := _save(["farm_terminal"])
+	save.farm_bought.append("greenhouse")  # From the old flat farm list, no fertiliser.
+	assert_array(FarmTree.requirement("greenhouse", save)).is_empty()
+
+
 func test_every_node_costs_something_and_coin_prices_stay_near_the_old_farm_list() -> void:
 	for node: Dictionary in FarmTree.NODES:
 		assert_int(node.price).override_failure_message(node.id).is_greater(0)

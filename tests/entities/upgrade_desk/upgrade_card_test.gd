@@ -74,3 +74,9 @@ func test_a_stage_changing_card_is_an_oxblood_priority_form_and_the_rest_plain_s
 	for card: Dictionary in UpgradeDesk.CARDS:
 		if not card.has("event"):
 			assert_object(UpgradeCard.paper_tint(card)).override_failure_message(card.id).is_equal(Color.WHITE)
+
+
+func test_the_card_print_is_lit_by_the_lamp_like_the_paper_it_is_on() -> void:
+	var card := auto_free(preload("res://entities/upgrade_desk/upgrade_card.tscn").instantiate()) as Node
+	for path in ["Look/Form", "Look/Heading", "Look/Price"]:
+		assert_bool((card.get_node(path) as Label3D).shaded).override_failure_message(path).is_true()

@@ -182,3 +182,11 @@ func test_every_fifth_catch_in_a_row_plays_the_combo_sting_rising_a_little_each_
 	assert_float(Combo.sting_pitch(5)).is_equal(1.0)
 	assert_float(Combo.sting_pitch(10)).is_greater(Combo.sting_pitch(5))
 	assert_float(Combo.sting_pitch(500)).is_equal(Combo.COMBO_PITCH_MAX)
+
+
+func test_every_fifth_catch_in_a_row_plays_the_combo_sting() -> void:
+	var combo := spawn()
+	catch_times(combo, 4)
+	assert_bool((combo.get_node("Combo") as AudioStreamPlayer).playing).is_false()
+	catch_times(combo, 1)
+	assert_bool((combo.get_node("Combo") as AudioStreamPlayer).playing).is_true()

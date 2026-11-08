@@ -153,7 +153,7 @@ func _take(cabbage: Cabbage) -> void:
 		if save.bin_coins > 0 and coins != null:
 			var mouth := global_position + Vector3.UP * RIM * (1.0 - SINK)
 			var spot := global_position + Vector3(randf_range(-0.3, 0.0), 0.0, randf_range(-0.32, -0.22))
-			get_tree().create_timer(FALL_TIME).timeout.connect(coins.pop_out.bind(mouth, spot, save.bin_coins))
+			coins.pop_out_after(FALL_TIME, mouth, spot, save.bin_coins)
 	get_tree().create_timer(FALL_TIME * 0.9).timeout.connect(func() -> void:
 		$Drop.cue(global_position)
 		var wobble := create_tween()

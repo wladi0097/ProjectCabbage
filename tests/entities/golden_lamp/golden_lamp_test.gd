@@ -114,3 +114,13 @@ func test_the_lamp_has_a_hover_box_for_its_explanation() -> void:
 	var lamp: Node = auto_free(load("res://entities/golden_lamp/golden_lamp.tscn").instantiate())
 	assert_object(lamp.get_node("Hit/Interactable")).is_not_null()
 	assert_int((lamp.get_node("Hit") as StaticBody3D).collision_layer).is_equal(Interactable.HOVER_LAYER)
+
+
+func test_the_hidden_lamp_does_not_block_clicks_until_its_card_brings_it_in() -> void:
+	var lamp := spawn()
+	assert_bool((lamp.get_node("Hit/Shape") as CollisionShape3D).disabled).is_true()
+
+	stamp()
+	lamp._process(0.0)
+
+	assert_bool((lamp.get_node("Hit/Shape") as CollisionShape3D).disabled).is_false()

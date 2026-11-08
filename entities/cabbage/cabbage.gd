@@ -111,7 +111,8 @@ func _ready() -> void:
 	$Interactable.released.connect(_on_released)
 	body_entered.connect(func(_body: Node) -> void:
 		if in_flight and not mini:
-			get_tree().call_group(&"catch_combo", &"missed")
+			for combo: CatchCombo in get_tree().get_nodes_in_group(&"catch_combo"):
+				combo.missed()
 		in_flight = false
 		bumped.emit(linear_velocity.length()))
 	bumped.connect(func(speed: float) -> void: $Bump.cue(global_position, speed))
@@ -257,7 +258,8 @@ func _on_grabbed() -> void:
 	if in_flight:
 		in_flight = false
 		SaveManager.save.catches += 1
-		get_tree().call_group(&"catch_combo", &"caught", global_position)
+		for combo: CatchCombo in get_tree().get_nodes_in_group(&"catch_combo"):
+			combo.caught(global_position)
 		if _spinning != null:
 			_spinning.kill()
 		_spinning = create_tween()

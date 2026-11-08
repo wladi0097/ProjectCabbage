@@ -175,6 +175,8 @@ static func buy(id: String, save: SaveGame) -> bool:
 
 ## What node `id` waits for, as [heading, name] for its popup, or [] if nothing.
 static func requirement(id: String, save: SaveGame) -> Array:
+	if is_bought(id, save):
+		return []  # Old saves bought from the flat list, parents or not.
 	var node := node_data(id)
 	if node.parent != "" and not is_bought(node.parent, save):
 		return ["REQUIRES:", node_data(node.parent).title]

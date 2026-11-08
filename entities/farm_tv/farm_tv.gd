@@ -3,7 +3,7 @@ extends Node3D
 ## Stage 2's way to the farm: a TV remote drops onto the desk once card `family_farm` is stamped.
 ## Clicked, the camera glides left to an old CRT standing at 45 degrees in the back-left corner of the
 ## L desk (table.blend's left arm, left of the desk view) and frames its glass; the set powers on. The glass shows `ScreenViewport`, a 2D
-## SubViewport (`screen_scene`, or a NO SIGNAL placeholder), and mouse input over the glass is
+## SubViewport (`screen_scene`), and mouse input over the glass is
 ## passed into it. The BACK button on the set (right of the glass) or Esc pans back (a click
 ## elsewhere off the glass does nothing). The TV corner (`Corner`) is its own
 ## node so the farm section can be built onto it later. Sits at the world origin; the remote, the set,
@@ -54,7 +54,6 @@ const ARROW_LIFT := 0.0015
 const REMOTE_LIFT := 0.03
 const REMOTE_TILT := 0.14
 const REMOTE_HOVER_TIME := 0.15
-const STATIC_SHADER := preload("res://assets/shaders/tv_static.gdshader")
 const STATIC_TIME := 0.12
 ## A channel key's pilot window glow (a pale phosphor green, the keys' material): off, the channel
 ## showing (times the set's power: dark with the set off), hovered.
@@ -116,6 +115,7 @@ var _desk_view: Transform3D
 
 
 func _ready() -> void:
+	away = false  # Static: a scene reload (reset, debug start) must not keep the camera "at the TV".
 	_camera = get_viewport().get_camera_3d()
 	_desk_view = _camera.transform
 	for light in _lamps:
@@ -129,7 +129,7 @@ func _ready() -> void:
 	for shape: Input.CursorShape in CURSORS:
 		Input.set_custom_mouse_cursor(CURSORS[shape][0], shape, CURSORS[shape][1])
 	for scene: PackedScene in [screen_scene, tree_scene]:
-		var channel: CanvasItem = scene.instantiate() if scene != null else _placeholder()
+		var channel: CanvasItem = scene.instantiate()
 		_screen.add_child(channel)
 		_channels.append(channel)
 	_show_channel()
@@ -301,7 +301,7 @@ func _set_cursor() -> void:
 	DisplayServer.cursor_set_shape(int(shape) as DisplayServer.CursorShape)
 
 
-## The SubViewport shown on the glass; its content is `screen_scene` (or the placeholder).
+## The SubViewport shown on the glass; its content is `screen_scene`.
 func screen_viewport() -> SubViewport:
 	return _screen
 
@@ -439,32 +439,6 @@ func _drop() -> void:
 	tween.tween_callback(func() -> void: $Thud.cue(_remote.global_position))
 	tween.tween_property(_model, "scale", Vector3(1.06, 0.8, 1.06), 0.06)
 	tween.tween_property(_model, "scale", Vector3.ONE, 0.3).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-
-
-## NO SIGNAL static until the farm feed scene exists.
-func _placeholder() -> Control:
-	var root := Control.new()
-	root.size = SCREEN_PIXELS
-	var noise := ColorRect.new()
-	noise.size = SCREEN_PIXELS
-	noise.material = ShaderMaterial.new()
-	(noise.material as ShaderMaterial).shader = STATIC_SHADER
-	root.add_child(noise)
-	var font := load("res://assets/fonts/Oswald.ttf")
-	for spec in [["FARM FEED — CHANNEL 3", 44, 70.0], ["NO SIGNAL", 120, 300.0]]:
-		var label := Label.new()
-		label.text = spec[0]
-		label.add_theme_font_override(&"font", font)
-		label.add_theme_font_size_override(&"font_size", spec[1])
-		label.add_theme_color_override(&"font_color", Color(0.85, 0.9, 0.88))
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.position = Vector2(0, spec[2])
-		label.size = Vector2(SCREEN_PIXELS.x, 160)
-		root.add_child(label)
-		if spec[0] == "NO SIGNAL":
-			var blink := create_tween().set_loops()
-			blink.tween_callback(func() -> void: label.visible = not label.visible).set_delay(0.7)
-	return root
 
 
 ## Lights the BACK arrow and turns the cursor into a pointing hand while the mouse is on it.

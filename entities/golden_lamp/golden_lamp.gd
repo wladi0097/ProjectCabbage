@@ -46,16 +46,17 @@ func _ready() -> void:
 	_bulb.material_override = _bulb_material
 	_glow.light_color = GOLD
 	visible = SaveManager.save.stamped.has(CARD)
+	$Hit/Shape.disabled = not visible  # Hidden before its card: no invisible box eating clicks.
 	_light(0.0)
 
 
 func _process(delta: float) -> void:
-	_hint.tooltip = hint(SaveManager.save)
 	var save := SaveManager.save
 	if not visible:
 		if save.stamped.has(CARD):
 			_arrive()
 		return
+	_hint.tooltip = hint(save)
 	if not glowing:
 		_wait -= delta
 		if _wait <= 0.0:
@@ -118,6 +119,7 @@ func _light(amount: float) -> void:
 
 func _arrive() -> void:
 	visible = true
+	$Hit/Shape.disabled = false
 	_wait = FIRST_WAIT
 	position = _rest + Vector3.UP * DROP_HEIGHT
 	var tween := create_tween()

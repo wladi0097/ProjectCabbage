@@ -101,7 +101,6 @@ const DIM := Color(0.62, 0.68, 0.63)
 const LINE := Color(0.34, 0.4, 0.37)
 const SOIL := Color(0.22, 0.21, 0.18)
 const SOIL_HI := Color(0.3, 0.29, 0.24)
-const SPROUT := Color(0.31, 0.42, 0.25)
 ## The workers' pixel sprites: the farm hand's glove open (walking empty), carrying seeds, pressing
 ## one in, at WORKER_PIXEL screen px per pixel; the tractor facing right and left, two wheel frames
 ## each, at TRACTOR_PIXEL. The frame changes every WALK_STEP px moved (wheels turn, the glove bobs).
@@ -169,11 +168,11 @@ var _tug := Vector2.ZERO
 ## The pop's bits ([position, velocity, is_leaf]) and the seconds they still fly.
 var _bits: Array = []
 var _burst_left := 0.0
-var _msg := "Drag a seed from the box on the right onto an empty square. Ripe after 30 s: pull the cabbage out to harvest 3."
+## The opening hint, filled with the current grow time and yield when drawn.
+const OPENING := "Drag a seed from the box on the right onto an empty square. Ripe after %d s: pull the cabbage out to harvest %d."
+var _msg := OPENING
 var _workers: Array[Worker] = []
 @onready var _seed_buttons: Array[Button] = [$Packs/Seeds0, $Packs/Seeds1]
-## The seed held on the cursor, flying back and in a planting hand's grip (pixel art, 3x).
-var _seed_icon: Texture2D = SEED_SPRITE
 ## Seconds the SEEDS count still blinks red.
 var _seed_blink := 0.0
 ## Seconds the hint line still shakes.
@@ -202,6 +201,8 @@ func _process(delta: float) -> void:
 		bit[0] += bit[1] * delta
 		bit[1].y += 900.0 * delta
 	# The button went up where the screen didn't see it (off the glass): let go there.
+	if _pull >= 0 and not is_ripe(save, _pull):
+		_pull = -1  # A tractor harvested it under the cursor.
 	if (_held or _pull >= 0) and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		_release(_mouse)
 	# Only redrawn while the TV's viewport renders (the camera is off the desk) or shown on its own.
@@ -230,7 +231,7 @@ static func ensure(save: SaveGame) -> void:
 
 ## Whether the farm (once bought) can still feed the desk: seeds to plant or a square planted.
 static func feeds(save: SaveGame) -> bool:
-	return save.stamped.has("family_farm") and (save.farm_seeds > 0 or Array(save.farm_growth).any(func(g: float) -> bool: return g >= 0.0))
+	return save.stamped.has("family_farm") and (save.farm_seeds + save.farm_seeds_carried > 0 or Array(save.farm_growth).any(func(g: float) -> bool: return g >= 0.0))
 
 
 static func grow_time(save: SaveGame) -> float:
@@ -396,9 +397,9 @@ static func sync_workers(workers: Array[Worker], save: SaveGame) -> void:
 ## What worker `w` heads for next (a square, CRATE or -1). A farm hand without seeds goes to the
 ## crate, but only while it has seeds and an empty square waits; one with seeds picks a square.
 static func next_job(w: Worker, workers: Array[Worker], save: SaveGame) -> int:
-	if not w.tractor and w.seeds == 0:
-		return CRATE if save.farm_seeds > 0 and target_for(save, false, 1, []) >= 0 else -1
 	var taken := workers.filter(func(o: Worker) -> bool: return o != w and o.tractor == w.tractor).map(func(o: Worker) -> int: return o.target)
+	if not w.tractor and w.seeds == 0:
+		return CRATE if save.farm_seeds > 0 and target_for(save, false, 1, taken) >= 0 else -1
 	return target_for(save, w.tractor, save.farm_tractor_route if w.tractor else save.farm_hand_route, taken)
 
 
@@ -423,7 +424,7 @@ static func work(workers: Array[Worker], save: SaveGame, delta: float) -> void:
 			if w.busy <= 0.0:
 				_finish(w, save)
 			continue
-		if not w.going_home and (w.target == -1 or w.target >= save.farm_plots):
+		if not w.going_home and w.target == -1:
 			w.target = next_job(w, workers, save)
 		var goal := goal_of(w)
 		var step := (TRACTOR_SPEED if w.tractor else HAND_SPEED) * mult * delta
@@ -728,10 +729,10 @@ func _draw() -> void:
 			var ink: Color = CABBAGE if bit[2] else SOIL_INK
 			draw_rect(Rect2(bit[0] - Vector2(4, 4), Vector2(8, 8) * (0.5 + fade * 0.5)), Color(ink, fade))
 	if _held:
-		draw_texture(_seed_icon, _mouse - _seed_icon.get_size() * 0.5)
+		draw_texture(SEED_SPRITE, _mouse - SEED_SPRITE.get_size() * 0.5)
 	elif _flying:
-		draw_texture(_seed_icon, _fly - _seed_icon.get_size() * 0.5)
-	var msg := tr(_msg)
+		draw_texture(SEED_SPRITE, _fly - SEED_SPRITE.get_size() * 0.5)
+	var msg := tr(_msg) % [roundi(grow_time(save)), yield_of(save)] if _msg == OPENING else tr(_msg)
 	draw_string(_font, Vector2(36 + shake_offset(_shake), SIZE.y - 30), msg, HORIZONTAL_ALIGNMENT_LEFT, SIZE.x - 72, msg_size(_font, msg, SIZE.x - 72), PHOSPHOR)
 
 

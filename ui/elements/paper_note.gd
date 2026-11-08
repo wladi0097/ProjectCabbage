@@ -52,8 +52,7 @@ func set_card(card: Dictionary) -> void:
 	_body.width = (TEXT_RIGHT - TEXT_LEFT) * SCALE
 	var parts := flavour_split(tr(card.body))
 	if parts[0] != "":
-		_body.add_string(parts[0] + ("
-" if parts[1] != "" else ""), italic(BODY_FONT), BODY_SIZE)
+		_body.add_string(parts[0] + ("\n" if parts[1] != "" else ""), italic(BODY_FONT), BODY_SIZE)
 	_body.add_string(parts[1], BODY_FONT, BODY_SIZE)
 	custom_minimum_size = Vector2(HEAD.size.x, HEAD.size.y + ROW.size.y * _body.get_line_count() + BLANK.size.y + FOOT.size.y) * SCALE
 	queue_redraw()
@@ -62,8 +61,7 @@ func set_card(card: Dictionary) -> void:
 ## An upgrade body split into its flavour line (the first, before a line break) and the
 ## description; a body without a line break is all description.
 static func flavour_split(body: String) -> PackedStringArray:
-	var at := body.find("
-")
+	var at := body.find("\n")
 	return PackedStringArray(["", body]) if at < 0 else PackedStringArray([body.left(at), body.substr(at + 1)])
 
 

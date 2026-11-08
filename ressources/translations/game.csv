@@ -1249,12 +1249,12 @@ FARM ADMINISTRATION TERMINAL,FARM ADMINISTRATION TERMINAL,FARMVERWALTUNGSTERMINA
 "The farm is now managed remotely.
 Channel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with coins or Findings (¶).","The farm is now managed remotely.
 Channel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with coins or Findings (¶).","Der Hof wird jetzt aus der Ferne verwaltet.
-Kanal 2 am Fernseher: der eigene Upgrade-Baum des Hofs. Halte die Maus auf ein Upgrade, um es mit Münzen oder Befunden (¶) zu kaufen."
+Kanal 2 am Fernseher: der eigene Upgrade-Baum des Hofs. Halten Sie die Maus auf ein Upgrade, um es mit Münzen oder Befunden (¶) zu kaufen."
 AUTHORISE A SEASONAL WORKFORCE,AUTHORISE A SEASONAL WORKFORCE,SAISONKRÄFTE GENEHMIGEN
 "Seasonal. Indefinitely.
 A farm hand walks onto the fields (channel 1) and plants empty squares with your seeds. More hands on channel 2.","Seasonal. Indefinitely.
 A farm hand walks onto the fields (channel 1) and plants empty squares with your seeds. More hands on channel 2.","Saisonal. Auf unbestimmte Zeit.
-Ein Knecht betritt die Felder (Kanal 1) und bepflanzt leere Felder mit deinem Saatgut. Mehr Knechte auf Kanal 2."
+Ein Knecht betritt die Felder (Kanal 1) und bepflanzt leere Felder mit Ihrem Saatgut. Mehr Knechte auf Kanal 2."
 MECHANISATION PROGRAMME,MECHANISATION PROGRAMME,MECHANISIERUNGSPROGRAMM
 "The horse has been informed.
 A tractor drives onto the fields (channel 1) and harvests ripe squares. More tractors on channel 2.","The horse has been informed.
@@ -1324,7 +1324,7 @@ Every harvest gives 1 more cabbage.","Das Wasser wird tropfenweise abgerechnet.
 Jede Ernte bringt 1 Kohlkopf mehr."
 "A supplier has been found. Do not ask which.
 Seed packs cost half.","A supplier has been found. Do not ask which.
-Seed packs cost half.","Ein Lieferant wurde gefunden. Frag nicht, welcher.
+Seed packs cost half.","Ein Lieferant wurde gefunden. Fragen Sie nicht, welcher.
 Saatgutpackungen kosten die Hälfte."
 FARM HANDS,FARM HANDS,KNECHTE
 TRACTORS,TRACTORS,TRAKTOREN
@@ -1378,7 +1378,7 @@ FARM TELEMETRY PACKAGE,FARM TELEMETRY PACKAGE,TELEMETRIEPAKET FÜR DEN HOF
 A status line along the top of channel 1 (the fields): seeds, cabbages in stock against storage, and money, always in view.","What is measured can be reported.
 A status line along the top of channel 1 (the fields): seeds, cabbages in stock against storage, and money, always in view.","Was gemessen wird, kann berichtet werden.
 Eine Statuszeile oben auf Kanal 1 (die Felder): Samen, Kohlköpfe im Lager gegen die Lagergrenze und Geld, immer im Blick."
-Drag a seed from the box on the right onto an empty square. Ripe after 30 s: pull the cabbage out to harvest 3.,Drag a seed from the box on the right onto an empty square. Ripe after 30 s: pull the cabbage out to harvest 3.,"Samen aus der Kiste rechts auf ein leeres Feld ziehen. Nach 30 s reif: Kohlkopf herausziehen, um 3 zu ernten."
+Drag a seed from the box on the right onto an empty square. Ripe after %d s: pull the cabbage out to harvest %d.,Drag a seed from the box on the right onto an empty square. Ripe after %d s: pull the cabbage out to harvest %d.,"Samen aus der Kiste rechts auf ein leeres Feld ziehen. Nach %d s reif: Kohlkopf herausziehen, um %d zu ernten."
 Seed in hand. Let go over an empty square to plant it.,Seed in hand. Let go over an empty square to plant it.,"Samen in der Hand. Über einem leeren Feld loslassen, um zu säen."
 Drag a seed from the box onto an empty square.,Drag a seed from the box onto an empty square.,Einen Samen aus der Kiste auf ein leeres Feld ziehen.
 Grab the cabbage and yank it off its square.,Grab the cabbage and yank it off its square.,Den Kohl packen und mit einem Ruck vom Feld reißen.

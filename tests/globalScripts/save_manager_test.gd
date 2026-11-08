@@ -23,6 +23,25 @@ func test_saves_live_in_appdata_projectcabbage_not_under_godot() -> void:
 			.is_equal(OS.get_data_dir().replace("\\", "/").path_join("ProjectCabbage"))
 
 
+func test_a_save_from_the_old_godot_folder_is_copied_over_once_and_never_over_a_newer_one() -> void:
+	var old := OS.get_user_data_dir().path_join("adopt_test_old")
+	var new := OS.get_user_data_dir().path_join("adopt_test_new")
+	DirAccess.make_dir_recursive_absolute(old)
+	DirAccess.make_dir_recursive_absolute(new)
+	FileAccess.open(old.path_join("savegame.tres"), FileAccess.WRITE).store_string("old save")
+	FileAccess.open(old.path_join("settings.tres"), FileAccess.WRITE).store_string("old settings")
+	FileAccess.open(new.path_join("settings.tres"), FileAccess.WRITE).store_string("new settings")
+
+	SaveManagerScript.adopt_old_files(old, new)
+
+	assert_str(FileAccess.get_file_as_string(new.path_join("savegame.tres"))).is_equal("old save")
+	assert_str(FileAccess.get_file_as_string(new.path_join("settings.tres"))).is_equal("new settings")
+	for dir in [old, new]:
+		for file in DirAccess.get_files_at(dir):
+			DirAccess.remove_absolute(dir.path_join(file))
+		DirAccess.remove_absolute(dir)
+
+
 func test_play_time_counts_whole_seconds_on_top_of_the_saved_time() -> void:
 	assert_int(SaveManagerScript.played_seconds(100, 5000, 5000)).is_equal(100)
 	assert_int(SaveManagerScript.played_seconds(100, 5000, 7999)).is_equal(102)
