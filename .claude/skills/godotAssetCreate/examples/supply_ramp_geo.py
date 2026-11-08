@@ -124,7 +124,7 @@ for s in (0.2, 0.55):                                                           
 # --- Stock counter: a small steel drum bar hung right under the chute's front edge, its window
 #     tilted toward the camera, the number row along the wall (x = TW, ones at the top end). The
 #     bar's body tucks under the chute floor, so no steel shows between the wall and the numbers.
-S_C = 0.28
+S_C = 0.17
 TW = CH3 @ Vector((LEN, H0 - H1, 0)).normalized()             # along the front wall
 WO = CH3 @ Vector((H0 - H1, -LEN, 0)).normalized()            # front wall outward normal
 NRM = (WO * math.cos(math.radians(35)) + N * math.sin(math.radians(35))).normalized()   # faces the camera

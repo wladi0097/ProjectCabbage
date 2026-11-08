@@ -3,13 +3,19 @@ extends Node3D
 ## A small desk lamp at the back right, there once the "golden_lamp" card is stamped (it drops in).
 ## About every save.lamp_every seconds it turns gold for save.lamp_time seconds; meanwhile every
 ## sale pays ×save.lamp_mult (the SaleWindow's "lamp" boost) and the whole desk light warms to
-## gold. It flickers for its last FADE_LEFT seconds before going out.
+## gold. Through its last FADE_LEFT seconds it dims softly, pulsing slowly (PULSE_HZ), before going out:
+## never a fast flicker (photosensitivity: nothing on screen blinks at 3 Hz or more).
 
 const CARD := "golden_lamp"
 const GOLD := Color(1.0, 0.78, 0.29)
 ## The first glow after it arrives (or after loading) comes sooner, so a new lamp shows what it does.
 const FIRST_WAIT := 12.0
 const FADE_LEFT := 3.0
+## The gentle dimming pulse in the last seconds (Hz, well under 3) and how deep it dips.
+const PULSE_HZ := 1.2
+const PULSE_DEPTH := 0.15
+## How dim it gets by the end of the fade (of full).
+const FADE_TO := 0.35
 const DROP_HEIGHT := 1.2
 const DROP_TIME := 0.4
 const GLOW_ENERGY := 2.5
@@ -26,6 +32,7 @@ var _bulb_material := StandardMaterial3D.new()
 
 @onready var _bulb: MeshInstance3D = $Model.find_child("Bulb", true, false)
 @onready var _glow: OmniLight3D = $Glow
+@onready var _hint: Interactable = $Hit/Interactable
 
 
 func _ready() -> void:
@@ -43,6 +50,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_hint.tooltip = hint(SaveManager.save)
 	var save := SaveManager.save
 	if not visible:
 		if save.stamped.has(CARD):
@@ -73,12 +81,18 @@ static func next_wait(every: float, roll: float) -> float:
 	return every * (0.6 + 0.8 * roll)
 
 
-## How bright the lamp is with `left` seconds of glow to go at clock `time`: full, flickering
-## harder through the last FADE_LEFT seconds.
+## The hover text: what it does, with today's (upgraded) numbers from `save`.
+static func hint(save: SaveGame) -> String:
+	return TranslationServer.translate("Desk lamp. About every %d s it glows gold for %d s: while it does, every sale pays %s×.") % [roundi(save.lamp_every), roundi(save.lamp_time), String.num(save.lamp_mult, 1)]
+
+
+## How bright the lamp is with `left` seconds of glow to go at clock `time`: full, then through the
+## last FADE_LEFT seconds dimming to FADE_TO with a slow soft pulse.
 static func glow_at(left: float, time: float) -> float:
 	if left >= FADE_LEFT:
 		return 1.0
-	return 0.55 + 0.45 * signf(sin(time * lerpf(9.0, 23.0, 1.0 - left / FADE_LEFT)))
+	var pulse := 1.0 - PULSE_DEPTH * 0.5 * (1.0 - cos(time * TAU * PULSE_HZ))
+	return lerpf(FADE_TO, 1.0, maxf(left, 0.0) / FADE_LEFT) * pulse
 
 
 func _window_boost(factor: float) -> void:

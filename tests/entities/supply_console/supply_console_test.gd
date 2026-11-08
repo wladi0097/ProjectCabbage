@@ -69,7 +69,7 @@ func test_neither_the_pack_discount_nor_a_low_ticker_cheapens_a_stage_two_crate(
 	var street := Slate.ref_price(save.marketing, 1.0)
 	var shock := Console.pack_price(0.5, 10, 0.7, Console.UNIT_COST, Console.crate_floor(save)) / 10.0
 	assert_float(shock).is_equal_approx(Console.SHOCK_SHARE * street, 0.1)
-	save.squeeze_left = Console.SQUEEZE_TIME + Console.EASE_TIME
+	save.squeeze_left = Console.SQUEEZE_TIME + Console.LULL_TIME
 	save.sale_price = roundi(street)
 	var squeeze := Console.pack_price(0.5, 10, 0.7, Console.UNIT_COST, Console.crate_floor(save)) / 10.0
 	assert_float(squeeze).is_greater(save.sale_price)
@@ -78,17 +78,23 @@ func test_neither_the_pack_discount_nor_a_low_ticker_cheapens_a_stage_two_crate(
 func test_during_the_squeeze_a_crate_unit_costs_more_than_the_street_pays_for_it() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
-	save.squeeze_left = Console.SQUEEZE_TIME + Console.EASE_TIME
+	save.squeeze_left = Console.SQUEEZE_TIME + Console.LULL_TIME
 	assert_float(Console.crate_floor(save)).is_greater(Slate.ref_price(save.marketing, 1.0))
-	save.squeeze_left = Console.EASE_TIME
+	save.squeeze_left = Console.LULL_TIME + 1.0
 	assert_float(Console.crate_share(true, save.squeeze_left)).is_equal_approx(Console.SQUEEZE_SHARE, 0.0001)
 
 
-func test_the_squeeze_eases_back_to_the_shock_share_over_its_last_minutes() -> void:
-	var half := Console.crate_share(true, Console.EASE_TIME * 0.5)
-	assert_float(half).is_equal_approx((Console.SHOCK_SHARE + Console.SQUEEZE_SHARE) * 0.5, 0.0001)
-	assert_float(Console.crate_share(true, Console.EASE_TIME * 0.25)).is_less(half)
-	assert_float(Console.crate_share(true, 0.0)).is_equal_approx(Console.SHOCK_SHARE, 0.0001)
+func test_the_squeeze_is_ten_minutes_dear_then_one_minute_at_the_shock_price() -> void:
+	assert_float(Console.SQUEEZE_TIME).is_equal(600.0)
+	assert_float(Console.LULL_TIME).is_equal(60.0)
+	assert_float(Console.crate_share(true, Console.LULL_TIME)).is_equal(Console.SHOCK_SHARE)
+	assert_float(Console.crate_share(true, 0.0)).is_equal(Console.SHOCK_SHARE)
+
+
+func test_after_the_lull_the_squeeze_starts_again_while_the_farm_and_shock_are_in() -> void:
+	assert_float(Console.next_squeeze(-0.5, true)).is_equal_approx(Console.SQUEEZE_TIME + Console.LULL_TIME - 0.5, 0.0001)
+	assert_float(Console.next_squeeze(-0.5, false)).is_equal(0.0)
+	assert_float(Console.next_squeeze(30.0, true)).is_equal(30.0)
 
 
 func test_with_no_stock_and_not_enough_coins_for_a_pack_the_desk_is_broke() -> void:
@@ -96,6 +102,13 @@ func test_with_no_stock_and_not_enough_coins_for_a_pack_the_desk_is_broke() -> v
 	assert_bool(Console.is_broke(0, 6, 6)).is_false()
 	assert_bool(Console.is_broke(1, 0, 6)).is_false()
 	assert_bool(Console.is_broke(0, 0, 0)).is_false()
+
+
+func test_a_pack_is_only_bought_while_it_fits_in_storage() -> void:
+	assert_int(SaveGame.new().storage_cap).is_equal(20)
+	assert_bool(SupplyConsole.fits(10, 10, 20)).is_true()
+	assert_bool(SupplyConsole.fits(11, 10, 20)).is_false()
+	assert_bool(SupplyConsole.fits(0, 53, 20)).is_false()
 
 
 func test_auto_buy_waits_until_stock_is_down_to_the_reserve_and_the_tally_can_pay() -> void:
@@ -139,3 +152,8 @@ func test_the_auto_lamp_and_switch_follow_the_standing_order_when_the_shock_swit
 	assert_bool(save.auto_buy).is_false()
 	assert_that(console._auto.modulate).is_equal(Console.AUTO_OFF)
 	assert_float(console._toggle._pivot.rotation.x).is_equal_approx(LightSwitch.TILT, 0.001)
+
+
+func test_from_130_units_in_stock_a_pack_costs_five_times_as_much_at_once() -> void:
+	assert_int(Console.overstock_price(20, 129)).is_equal(20)
+	assert_int(Console.overstock_price(20, 130)).is_equal(100)

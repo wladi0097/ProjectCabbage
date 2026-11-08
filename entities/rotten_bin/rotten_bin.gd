@@ -8,7 +8,8 @@ extends Node3D
 ## console: a unit the player lets go of (or a hired hand lobs) near its mouth is
 ## lifted over the rim and dropped in (Cabbage.drop_into), and is gone (stock −1). One that only
 ## rolled or was bumped in (Cabbage.meant_for_bin false) is popped back out onto the desk. A rotten one pays
-## a rebate (save.bin_rebate × the chalked price, counted in save.binned); a fresh one is simply
+## a rebate once DISPOSAL REBATE is bought: save.bin_coins dollars, whatever the price, popped out of
+## the mouth as coins onto the mat (counted in save.binned); a fresh one is simply
 ## wasted, for nothing. The mouth grows with save.bin_mouth. Hired hands sell rotten units too
 ## (fined) until save.hands_bin, then lob them at hand_aim(); they never bin fresh ones (bin_for).
 
@@ -38,6 +39,9 @@ const CHECK_EVERY := 0.1
 ## A unit that only rolled in is popped back out this fast (m/s) sideways and up.
 const REJECT_SPEED := 1.2
 const REJECT_LIFT := 1.5
+
+## Where the rebate's coins go.
+@export var coins: CoinPile
 
 var _rest := Vector3.ZERO
 ## The stamped count rotten_due was last checked at (it only changes with a stamp).
@@ -130,20 +134,26 @@ static func in_mouth(bin: Vector3, at: Vector3, reach: float) -> bool:
 	return at.y < TOP_Y and Vector2(at.x - bin.x, at.z - bin.z).length() < reach
 
 
-## The rebate for one binned unit: `rebate` chalked prices.
-static func rebate_for(rebate: float, price: int) -> int:
-	return roundi(rebate * price)
+## The rebate tiers bought in `bought` (projector ids), summed: what save.bin_coins should be.
+static func bin_coins_for(bought: PackedStringArray) -> int:
+	var total := 0
+	for id in bought:
+		total += Projector.node_data(id).get("add", {}).get("bin_coins", 0)
+	return total
 
 
 func _take(cabbage: Cabbage) -> void:
 	var save := SaveManager.save
 	var rim: float = global_position.y + RIM * (1.0 - SINK) * $Model.scale.y
 	cabbage.drop_into(global_position + Vector3.DOWN * 0.06, rim + CLEAR, FALL_TIME)
-	if not cabbage.mini:
-		save.stock -= 1  # Minis are free: no stock.
+	if cabbage.is_stock():
+		save.stock -= 1  # Minis (and grown ones) are free: no stock.
 	if cabbage.rotten:
 		save.binned += 1
-		save.coins += rebate_for(save.bin_rebate, save.sale_price)
+		if save.bin_coins > 0 and coins != null:
+			var mouth := global_position + Vector3.UP * RIM * (1.0 - SINK)
+			var spot := global_position + Vector3(randf_range(-0.3, 0.0), 0.0, randf_range(-0.32, -0.22))
+			get_tree().create_timer(FALL_TIME).timeout.connect(coins.pop_out.bind(mouth, spot, save.bin_coins))
 	get_tree().create_timer(FALL_TIME * 0.9).timeout.connect(func() -> void:
 		$Drop.cue(global_position)
 		var wobble := create_tween()

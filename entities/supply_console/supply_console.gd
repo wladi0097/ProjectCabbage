@@ -2,6 +2,7 @@ class_name SupplyConsole
 extends Node3D
 ## The supply chain's console: an amber ticker with the current pack price and the buy-pack button
 ## (a "$" and a green cabbage, no text). Pressing it pays the price from the tally and adds pack_size to the stock.
+## A pack that would not fit under save.storage_cap is refused: the ticker reads FULL meanwhile.
 ## A pack's cabbage costs UNIT_COST times the price factor. Marketing does not touch it: it only
 ## raises what a sale brings, so every marketing upgrade is pure margin (see pack_price).
 ## Every minute the price moves: around the base, ±50%, pushed up by the packs bought in the
@@ -37,11 +38,16 @@ const BLINK_TIME := 0.12
 const AUTO_COOLDOWN := 1.0
 const AUTO_OFF := Color(0.3, 0.27, 0.22, 1)
 ## Stage 2 crate prices as a share of the full-sale price (crate_share): after the shock; during the
-## squeeze once both the shock and the farm are in (SQUEEZE_TIME s), then easing back over EASE_TIME s.
+## squeeze once both the shock and the farm are in: SQUEEZE_TIME s dear, then a LULL_TIME s lull at
+## the shock price, then dear again, round and round (next_squeeze).
 const SHOCK_SHARE := 0.6
 const SQUEEZE_SHARE := 1.25
-const SQUEEZE_TIME := 300.0
-const EASE_TIME := 300.0
+const SQUEEZE_TIME := 600.0
+const LULL_TIME := 60.0
+## Overstock: from OVERSTOCK units in stock on, a pack costs OVERSTOCK_MUL times as much, at once
+## (the ticker jumps), so hoarding packs never pays. The farm's harvests are not charged.
+const OVERSTOCK := 130
+const OVERSTOCK_MUL := 5
 
 ## Coins still on the mat or in the air count as money when deciding on a bailout.
 @export var coins: CoinPile
@@ -97,7 +103,7 @@ func _process(delta: float) -> void:
 	if _clock >= PRICE_PERIOD:
 		_clock -= PRICE_PERIOD
 		_tick_price()
-	save.squeeze_left = maxf(save.squeeze_left - delta, 0.0)
+	save.squeeze_left = next_squeeze(save.squeeze_left - delta, save.supply_shock and save.stamped.has("family_farm"))
 	# Only out of stock is the mat's coin pile worth counting; a farm with seeds or crops feeds the desk.
 	_broke_for = _broke_for + delta if save.buy_unlocked and _bailout < 0 and save.stock <= 0 and not FarmScreen.feeds(save) and is_broke(save.stock, save.coins + (coins.pending_value() if coins != null else 0), _cost()) else 0.0
 	if _broke_for >= BAILOUT_WAIT:
@@ -108,21 +114,32 @@ func _process(delta: float) -> void:
 		_show_auto()
 	_auto_wait -= delta
 	if _auto.visible and save.auto_buy and save.buy_unlocked and _auto_wait <= 0.0 \
-			and should_auto_buy(save.stock, save.auto_reserve, save.price_factor, save.auto_max_factor, save.coins, _cost()) \
+			and fits(save.stock, save.pack_size, save.storage_cap) 			and should_auto_buy(save.stock, save.auto_reserve, save.price_factor, save.auto_max_factor, save.coins, _cost()) \
 			and not (save.supply_shock and _cost() / float(save.pack_size) >= save.sale_price):
 		_auto_wait = AUTO_COOLDOWN
 		_press()
 		_push(true)
 		get_tree().create_timer(0.12).timeout.connect(_push.bind(false))
 	# Pack size and discount change between ticks; the ticker follows at once.
-	if _cost() != _shown_cost:
+	if _price.text != _price_text():
 		_shown_cost = _cost()
-		_price.text = "$%d" % _shown_cost
+		_price.text = _price_text()
+
+
+## The ticker: the pack price, or FULL while a pack would not fit in storage.
+func _price_text() -> String:
+	var save := SaveManager.save
+	return "$%d" % _cost() if fits(save.stock, save.pack_size, save.storage_cap) else tr("FULL")
+
+
+## Whether a pack of `pack` units fits on top of `stock` under the storage cap `cap`.
+static func fits(stock: int, pack: int, cap: int) -> bool:
+	return stock + pack <= cap
 
 
 func _cost() -> int:
 	var save := SaveManager.save
-	return _bailout if _bailout >= 0 else pack_price(save.price_factor, save.pack_size, save.pack_discount, UNIT_COST, crate_floor(save))
+	return _bailout if _bailout >= 0 else overstock_price(pack_price(save.price_factor, save.pack_size, save.pack_discount, UNIT_COST, crate_floor(save)), save.stock)
 
 
 func _tick_price() -> void:
@@ -139,7 +156,7 @@ func _tick_price() -> void:
 func _press() -> void:
 	var save := SaveManager.save
 	var cost := _cost()
-	if save.coins < cost:
+	if save.coins < cost or not fits(save.stock, save.pack_size, save.storage_cap):
 		$Denied.cue($Button.global_position)
 		_blink()
 		return
@@ -150,6 +167,11 @@ func _press() -> void:
 	save.stock += save.pack_size
 	save.price_pressure += PRESSURE_PER_PACK
 	$Press.cue($Button.global_position)
+
+
+## A pack's `price` with `stock` units already in stock: OVERSTOCK_MUL times it from OVERSTOCK on.
+static func overstock_price(price: int, stock: int) -> int:
+	return price * OVERSTOCK_MUL if stock >= OVERSTOCK else price
 
 
 ## Not enough coins: the price flashes red twice.
@@ -204,7 +226,7 @@ func _drop() -> void:
 func _show_price() -> void:
 	var save := SaveManager.save
 	_shown_cost = _cost()
-	_price.text = "$%d" % _shown_cost
+	_price.text = _price_text()
 	var mesh := ImmediateMesh.new()
 	var points := sparkline(save.price_history, HISTORY, Vector2(0.14, 0.03))
 	if points.size() >= 2:
@@ -247,12 +269,19 @@ static func crate_floor(save: SaveGame) -> float:
 
 
 ## Stage 2's crate price as a share of the full-sale price: 0 before the shock, SHOCK_SHARE after;
-## with `squeeze_left` seconds of the farm's squeeze left, SQUEEZE_SHARE, easing back to SHOCK_SHARE
-## over its last EASE_TIME seconds.
+## SQUEEZE_SHARE while more than the lull (LULL_TIME) of the farm's squeeze (`squeeze_left`) is left.
 static func crate_share(shock: bool, squeeze_left: float) -> float:
 	if not shock:
 		return 0.0
-	return lerpf(SHOCK_SHARE, SQUEEZE_SHARE, clampf(squeeze_left / EASE_TIME, 0.0, 1.0))
+	return SQUEEZE_SHARE if squeeze_left > LULL_TIME else SHOCK_SHARE
+
+
+## The squeeze's seconds left (`left`, already counted down): once it runs out while it is `on` (the
+## shock and the farm both in) the next round starts, SQUEEZE_TIME dear then LULL_TIME lull.
+static func next_squeeze(left: float, on: bool) -> float:
+	if left > 0.0:
+		return left
+	return left + SQUEEZE_TIME + LULL_TIME if on else 0.0
 
 
 ## Automatic buying: stock is down to the reserve and the tally can pay; while stock is left it

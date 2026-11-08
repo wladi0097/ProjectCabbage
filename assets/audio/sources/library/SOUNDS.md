@@ -499,3 +499,21 @@ True peaks (ffmpeg volumedetect). Most CRT takes came out near-silent, as before
 | `tv_off_Ulx7.wav` | (above) | 1.00s | -13.9 dB | 0.87s | — |
 | `tv_off_Mh8H.wav` | (above) | 1.00s | -17.5 dB | 0.01s | — |
 | `tv_off_ywOH.wav` | (above) | 1.00s | -37.8 dB | 0.01s | — (near-silent) |
+### combo_rise
+> A quick bright rising swoosh sweeping upward, airy metallic shimmer building in pitch, no impact, close-mic, dry
+| `combo_rise_6mlq.wav` | (above) | 0.48s | -1.7 dB | 0.07s | combo_sting_2 |
+| `combo_rise_Wy5b.wav` | (above) | 0.48s | -6.1 dB | 0.11s | combo_sting_1 |
+| `combo_rise_Fevu.wav` | (above) | 0.48s | -5.7 dB | 0.15s | — |
+| `combo_rise_QTnC.wav` | (above) | 0.48s | -6.9 dB | 0.08s | — |
+### combo_ding
+> A bright loud mechanical cash register bell ding, one crisp punchy metallic hit with a short sparkling ring out, no music, close-mic, dry
+| `combo_ding_zsUu.wav` | (above) | 0.80s | -21.1 dB (true -4.4) | 0.00s | combo_sting_1 |
+| `combo_ding_nn0C.wav` | (above) | 0.80s | -18.7 dB (true -7.1) | 0.00s | combo_sting_2 |
+| `combo_ding_qKkL.wav` | (above) | 0.80s | -33.3 dB (true -7.4) | 0.00s | — |
+| `combo_ding_TtvZ.wav` | (above) | 0.80s | -35.0 dB (true -18.7) | 0.00s | — |
+### combo_sting
+> Short punchy arcade combo reward sting, a fast upward metallic swoosh landing on a bright loud bell chime hit, satisfying, no melody, close-mic, dry
+| `combo_sting_WrQz.wav` | (above) | 0.88s | -0.7 dB | 0.09s | combo_sting_3 |
+| `combo_sting_35gY.wav` | (above) | 0.88s | -0.5 dB | 0.02s | — |
+| `combo_sting_nayt.wav` | (above) | 0.88s | -0.9 dB | 0.04s | — |
+| `combo_sting_D62x.wav` | (above) | 0.88s | -3.5 dB | 0.08s | — |

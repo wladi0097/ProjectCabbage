@@ -7,6 +7,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/projector_denied.wav" id="5_denied"]
 [ext_resource type="Script" path="res://entities/components/interactable.gd" id="6_interactable"]
 [ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="7_font"]
+[ext_resource type="PackedScene" path="res://entities/components/upgrade_tree/upgrade_tree.tscn" id="8_tree"]
 
 [sub_resource type="Gradient" id="BeamFade"]
 colors = PackedColorArray(0.78, 0.84, 0.84, 0.42, 0.78, 0.84, 0.84, 0.04)
@@ -91,18 +92,9 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.07, 0.08, 0.08, 0)
 
-[node name="Tree" type="Control" parent="Screen"]
-clip_contents = true
-layout_mode = 3
-anchors_preset = 0
-mouse_filter = 2
-
-[node name="Layer" type="Node2D" parent="Screen/Tree"]
-
-[node name="Top" type="Control" parent="Screen/Tree"]
-layout_mode = 3
-anchors_preset = 0
-mouse_filter = 2
+[node name="Tree" parent="Screen" instance=ExtResource("8_tree")]
+layout_mode = 0
+shimmer = true
 
 [node name="Sfx" type="AudioStreamPlayer" parent="Screen"]
 bus = &"SFX"

@@ -3,6 +3,7 @@ extends Control
 ## An upgrade card as flat 2D paper, cut from the 3D card's own texture: the form line and title in
 ## the green header band, then the body written on the ruled lines, one texture row per wrapped
 ## line, so every line of text sits on a ruling. Never takes the mouse, so the hand under it keeps going.
+## The body's first line is flavour (deadpan, no rules in it): it is slanted (italic), the rest upright.
 
 const PAPER := preload("res://assets/textures/card_paper/card_paper_albedo.png")
 const TITLE_FONT := preload("res://assets/fonts/Oswald.ttf")
@@ -38,6 +39,7 @@ var _price := ""
 ## The card paper's dye (UpgradeCard.paper_tint): a priority form is oxblood here too.
 var _tint := Color.WHITE
 var _body := TextParagraph.new()
+static var _italics := {}
 
 
 ## Shows card `card` (an UpgradeDesk.CARDS entry).
@@ -48,9 +50,31 @@ func set_card(card: Dictionary) -> void:
 	_price = UpgradeCard.price_text(card.price, card.get("currency", "coins"))
 	_body.clear()
 	_body.width = (TEXT_RIGHT - TEXT_LEFT) * SCALE
-	_body.add_string(tr(card.body), BODY_FONT, BODY_SIZE)
+	var parts := flavour_split(tr(card.body))
+	if parts[0] != "":
+		_body.add_string(parts[0] + ("
+" if parts[1] != "" else ""), italic(BODY_FONT), BODY_SIZE)
+	_body.add_string(parts[1], BODY_FONT, BODY_SIZE)
 	custom_minimum_size = Vector2(HEAD.size.x, HEAD.size.y + ROW.size.y * _body.get_line_count() + BLANK.size.y + FOOT.size.y) * SCALE
 	queue_redraw()
+
+
+## An upgrade body split into its flavour line (the first, before a line break) and the
+## description; a body without a line break is all description.
+static func flavour_split(body: String) -> PackedStringArray:
+	var at := body.find("
+")
+	return PackedStringArray(["", body]) if at < 0 else PackedStringArray([body.left(at), body.substr(at + 1)])
+
+
+## `font` slanted like italic (one FontVariation per font, shared).
+static func italic(font: Font) -> Font:
+	if not _italics.has(font):
+		var slanted := FontVariation.new()
+		slanted.base_font = font
+		slanted.variation_transform = Transform2D(Vector2(1.0, 0.2), Vector2(0.0, 1.0), Vector2.ZERO)
+		_italics[font] = slanted
+	return _italics[font]
 
 
 func _draw() -> void:

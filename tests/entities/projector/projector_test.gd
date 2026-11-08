@@ -65,16 +65,16 @@ func test_every_sales_event_tree_node_changes_a_real_save_number() -> void:
 			assert_bool(save.get(stat) != was[stat]).override_failure_message("node %s stat %s" % [id, stat]).is_true()
 
 
-func test_disposal_rebate_tiers_climb_from_20_to_120_percent_in_25_point_steps() -> void:
+func test_disposal_rebate_tiers_pay_2_3_5_8_12_dollars_each_a_felt_step() -> void:
 	var save := SaveGame.new()
-	var tiers: Array[float] = []
+	var tiers: Array[int] = []
 	for id in ["bin_rebate", "bin_rebate_2", "bin_rebate_3", "bin_rebate_4", "bin_rebate_5"]:
 		Projector.apply(id, save)
-		tiers.append(save.bin_rebate)
-	var want: Array[float] = [0.2, 0.45, 0.7, 0.95, 1.2]
+		tiers.append(save.bin_coins)
 
-	for i in want.size():
-		assert_float(tiers[i]).is_equal_approx(want[i], 0.0001)
+	assert_array(tiers).is_equal([2, 3, 5, 8, 12])
+	for i in range(1, tiers.size()):
+		assert_float(float(tiers[i]) / tiers[i - 1]).is_greater_equal(1.25)
 
 
 func test_a_node_is_found_by_its_id_and_an_unknown_id_finds_nothing() -> void:
@@ -371,6 +371,34 @@ func test_a_bought_mat_step_is_never_bought_again() -> void:
 	assert_int(save.desk_capacity).is_equal(4)
 
 
+func test_storage_grows_from_20_to_9999_in_six_steps_each_at_least_doubling() -> void:
+	var save := _save(["projector"], 1000000000)
+	var caps := [save.storage_cap]
+	assert_bool(Projector.buy("pack_1", save)).is_true()
+	for step in range(1, 7):
+		assert_bool(Projector.buy("storage_%d" % step, save)).override_failure_message("step %d" % step).is_true()
+		caps.append(save.storage_cap)
+	assert_array(caps).is_equal([20, 75, 200, 500, 1500, 4000, 9999])
+	for i in range(1, caps.size()):
+		assert_float(float(caps[i]) / caps[i - 1]).is_greater_equal(2.0)
+
+
+func test_container_orders_wait_for_the_stock_room_since_53_units_would_not_fit_in_20() -> void:
+	assert_str(Projector.node_data("pack_2").parent).is_equal("storage_1")
+	var cap: int = SaveGame.new().storage_cap + Projector.node_data("storage_1").add.storage_cap
+	var pack: int = SaveGame.new().pack_size + Projector.node_data("pack_1").add.pack_size + Projector.node_data("pack_2").add.pack_size
+	assert_int(cap).is_greater_equal(pack + 10)  # Room for the pack above the safety-stock reserve.
+
+
+func test_an_old_save_with_container_orders_gets_the_stock_room_once() -> void:
+	var save := _save(["projector"])
+	save.tree_bought = PackedStringArray(["pack_1", "pack_2"])
+	Projector.migrate_storage(save)
+	Projector.migrate_storage(save)
+	assert_int(save.tree_bought.count("storage_1")).is_equal(1)
+	assert_int(save.storage_cap).is_equal(75)
+
+
 func test_an_old_save_counts_its_mat_units_as_bought_chain_nodes_and_pays_for_the_next_from_there() -> void:
 	var save := _save(["projector", "mat_allowance"], 1000000000)
 	save.desk_capacity = 8
@@ -479,7 +507,7 @@ func test_the_affordable_count_is_the_number_of_upgrades_a_budget_covers() -> vo
 
 func test_the_lamp_pulse_stays_gentle() -> void:
 	for i in 100:
-		assert_float(Projector.pulse(i * 0.37)).is_between(0.94, 1.0)
+		assert_float(UpgradeTree.pulse(i * 0.37)).is_between(0.94, 1.0)
 
 
 func test_the_tree_layer_is_a_node2d_so_it_is_not_culled_by_an_empty_rect() -> void:
@@ -598,7 +626,7 @@ func test_a_department_is_an_info_only_plate_that_is_never_held_and_fits_its_nam
 		if not node.get("dept", false):
 			continue
 		assert_bool(Projector.can_hold(node.id, save)).override_failure_message(node.id).is_false()
-		var box := Projector.plate(node.id, Vector2(100, 50), 30.0)
+		var box := UpgradeTree.plate(node.title, Vector2(100, 50), 30.0)
 		assert_vector(box.get_center()).is_equal_approx(Vector2(100, 50), Vector2.ONE * 0.01)
 		var text := Projector.FONT.get_string_size(node.title, HORIZONTAL_ALIGNMENT_LEFT, -1, 21).x
 		assert_bool(box.size.x > text and box.size.x > box.size.y).override_failure_message(node.id).is_true()
@@ -620,11 +648,18 @@ func test_after_the_first_open_a_newly_reachable_node_is_still_marked_new() -> v
 	assert_array(Projector.fresh(save)).is_equal(["slogan_2"])
 
 
-## Every edge of the tree as [from, to, id] at wheel scale `unit`.
+## Every edge of the tree as [from, to, id, theme] at wheel scale `unit`, as drawn: an edge to a
+## theme's first node runs through its heading (theme is that heading's index, else -1).
 func _edges(unit: Vector2) -> Array:
 	var out := []
 	for node: Dictionary in Projector.NODES:
-		out.append([Vector2.ZERO if node.parent == "" else Projector.node_data(node.parent).at * unit, node.at * unit, node.id])
+		var from: Vector2 = Vector2.ZERO if node.parent == "" else Projector.node_data(node.parent).at * unit
+		var theme := UpgradeTree.theme_of(Projector.THEMES, node.id)
+		if theme >= 0:
+			var spot: Vector2 = Projector.THEMES[theme][1] * unit
+			out.append([from, spot, node.id, theme])
+			from = spot
+		out.append([from, node.at * unit, node.id, theme])
 	return out
 
 
@@ -632,7 +667,7 @@ func _edges(unit: Vector2) -> Array:
 func _node_box(node: Dictionary, unit: Vector2, r: float) -> Rect2:
 	var at: Vector2 = node.at * unit
 	if node.get("dept", false):
-		return Projector.plate(node.id, at, r)
+		return UpgradeTree.plate(node.title, at, r)
 	var font := int(clampf(r * 0.6, 9.0, 34.0))
 	var width := Projector.FONT.get_string_size(TranslationServer.translate(node.title), HORIZONTAL_ALIGNMENT_LEFT, -1, font).x
 	return Rect2(at - Vector2(r, r), Vector2(r, r) * 2.0).merge(Rect2(at.x - width / 2.0, at.y - r - 8.0 - font, width, font + 8.0))
@@ -648,13 +683,13 @@ func _segment_hits_rect(from: Vector2, to: Vector2, box: Rect2) -> bool:
 	return false
 
 
-func test_theme_heading_plates_cover_no_node_edge_or_other_heading_in_english_or_german() -> void:
+func test_theme_heading_plates_cover_no_node_other_edge_or_other_heading_in_english_or_german() -> void:
 	var unit := Vector2(480.0, 300.0)
 	var r := 30.0
 	for locale: String in ["en", "de"]:
 		TranslationServer.set_locale(locale)
 		for i in Projector.THEMES.size():
-			var box := Projector.theme_plate(i, unit, r)
+			var box := UpgradeTree.theme_plate(Projector.THEMES[i], unit, r)
 			var theme: String = Projector.THEMES[i][0]
 			assert_bool(box.size.x > box.size.y).override_failure_message(theme).is_true()
 			assert_bool(box.intersects(Rect2(-Vector2.ONE * r * 1.1, Vector2.ONE * r * 2.2))).override_failure_message("%s covers the hub" % theme).is_false()
@@ -662,10 +697,12 @@ func test_theme_heading_plates_cover_no_node_edge_or_other_heading_in_english_or
 				assert_bool(box.intersects(_node_box(node, unit, r))) \
 						.override_failure_message("%s (%s) covers %s" % [theme, locale, node.id]).is_false()
 			for edge: Array in _edges(unit):
+				if edge[3] == i:
+					continue  # Its own branch runs through it.
 				assert_bool(_segment_hits_rect(edge[0], edge[1], box)) \
 						.override_failure_message("%s (%s) covers the edge to %s" % [theme, locale, edge[2]]).is_false()
 			for j in range(i + 1, Projector.THEMES.size()):
-				assert_bool(box.intersects(Projector.theme_plate(j, unit, r))) \
+				assert_bool(box.intersects(UpgradeTree.theme_plate(Projector.THEMES[j], unit, r))) \
 						.override_failure_message("%s and %s overlap" % [theme, Projector.THEMES[j][0]]).is_false()
 
 
@@ -721,13 +758,13 @@ func test_every_popup_body_wraps_to_the_popup_width_in_english_and_german() -> v
 		TranslationServer.set_locale(locale)
 		for node: Dictionary in Projector.NODES:
 			var shown := TranslationServer.translate(node.body)
-			var lines := Projector.popup_lines(shown)
+			var lines := UpgradeTree.popup_lines(shown)
 			assert_str(" ".join(lines).replace(" ", "")).override_failure_message("%s (%s) lost words" % [node.id, locale]) \
 					.is_equal(shown.replace("\n", "").replace(" ", ""))
 			for line in lines:
-				var wide := Projector.FONT.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, Projector.POPUP_BODY).x
+				var wide := Projector.FONT.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, UpgradeTree.POPUP_BODY).x
 				assert_float(wide).override_failure_message("%s (%s): \"%s\" is %d px" % [node.id, locale, line, wide]) \
-						.is_less_equal(Projector.POPUP_TEXT)
+						.is_less_equal(UpgradeTree.POPUP_TEXT)
 
 
 func test_the_pull_word_fits_its_pennant_in_english_and_german() -> void:
@@ -769,3 +806,22 @@ func test_a_save_from_before_any_merge_with_the_first_two_old_discounts_gets_the
 	first.pack_discount = 0.85
 	UpgradeDesk.migrate(first)
 	assert_float(first.pack_discount).is_equal_approx(0.7, 0.0001)
+
+
+func test_frictionless_handling_takes_all_the_weight_off_a_held_unit() -> void:
+	var save := SaveGame.new()
+	Projector.apply("free_carry", save)
+	assert_float(save.carry_weight).is_equal(0.0)
+
+
+func test_each_theme_heading_sits_on_its_branch_between_the_parent_and_its_first_nodes() -> void:
+	for theme: Array in Projector.THEMES:
+		assert_bool(theme[2].is_empty()).override_failure_message(theme[0]).is_false()
+		for id: String in theme[2]:
+			assert_bool(Projector.node_data(id).is_empty()).override_failure_message("%s: %s" % [theme[0], id]).is_false()
+		assert_float(UpgradeTree.heading_bend(Projector, theme)).override_failure_message(theme[0]).is_less_equal(30.5)
+
+
+func test_an_edge_to_a_branchs_first_node_is_routed_through_its_heading() -> void:
+	assert_int(UpgradeTree.theme_of(Projector.THEMES, "mini_rate_1")).is_greater_equal(0)
+	assert_int(UpgradeTree.theme_of(Projector.THEMES, "mini_rate_2")).is_equal(-1)

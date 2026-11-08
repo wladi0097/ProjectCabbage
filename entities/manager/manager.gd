@@ -11,7 +11,9 @@ extends Node3D
 enum Phase { AWAY, ARRIVING, QUOTA, VERDICT, LEAVING }
 
 const CARD := "managerial_oversight"
-## Seconds after the card (or a load) before the first visit, then between visits (min..max).
+## Seconds before the first visit: just after the card is stamped CARD_VISIT, after a load
+## FIRST_VISIT; then between visits (min..max).
+const CARD_VISIT := 5.0
 const FIRST_VISIT := 60.0
 const VISIT_EVERY := Vector2(150.0, 240.0)
 ## Sales are sampled every SAMPLE_EVERY seconds; the quota looks back QUOTA_WINDOW seconds.
@@ -59,6 +61,7 @@ var _ticked := 0
 func _ready() -> void:
 	_shadow.visible = false
 	_bubble.manager = self
+	_wait = first_wait(SaveManager.save.stamped.has(CARD))
 
 
 func _process(delta: float) -> void:
@@ -115,6 +118,12 @@ static func quota_for(samples: PackedInt32Array, sold: int, time: float, raise: 
 	var span := maxf((samples.size() - 1) * SAMPLE_EVERY + since, SAMPLE_EVERY)
 	var recent := sold - samples[0] if not samples.is_empty() else 0
 	return maxi(MIN_QUOTA, ceili(recent / span * time * raise))
+
+
+## Seconds to the first visit: FIRST_VISIT when the card was `stamped` before the load, else CARD_VISIT
+## (the wait only runs once the card is stamped, so he comes just after it).
+static func first_wait(stamped: bool) -> float:
+	return FIRST_VISIT if stamped else CARD_VISIT
 
 
 ## The coins thrown in for a met quota of `units` at `price` each.

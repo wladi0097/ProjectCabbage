@@ -36,13 +36,17 @@ func test_the_lamp_glows_full_until_its_last_seconds() -> void:
 	assert_float(Lamp.glow_at(Lamp.FADE_LEFT, 1.0)).is_equal(1.0)
 
 
-func test_the_lamp_flickers_but_never_goes_dark_in_its_last_seconds() -> void:
+func test_the_lamp_dims_softly_in_its_last_seconds_never_going_dark_or_flickering_fast() -> void:
 	var dimmed := false
-	for i in 100:
-		var glow := Lamp.glow_at(Lamp.FADE_LEFT * 0.5, i * 0.013)
-		assert_float(glow).is_between(0.1 - 0.0001, 1.0 + 0.0001)
-		dimmed = dimmed or glow < 1.0
+	var last := Lamp.glow_at(Lamp.FADE_LEFT * 0.5, 0.0)
+	for i in 120:  # Two seconds at 60 fps: never dark, never a jump between frames (no strobe).
+		var glow := Lamp.glow_at(Lamp.FADE_LEFT * 0.5 - i / 60.0, i / 60.0)
+		assert_float(glow).is_between(0.2, 1.0 + 0.0001)
+		assert_float(absf(glow - last)).is_less(0.05)
+		dimmed = dimmed or glow < 0.9
+		last = glow
 	assert_bool(dimmed).is_true()
+	assert_float(Lamp.PULSE_HZ).is_less(3.0)
 
 
 func test_no_lamp_stands_on_the_desk_before_its_card_is_stamped() -> void:
@@ -95,3 +99,18 @@ func test_a_glow_lasts_lamp_time_then_the_next_comes_within_the_wait_spread() ->
 	lamp._process(save.lamp_every * 0.8 + 0.2)
 
 	assert_bool(lamp.glowing).is_true()
+
+
+func test_hovering_the_lamp_explains_it_with_the_current_upgraded_numbers() -> void:
+	var save := SaveGame.new()
+	save.lamp_every = 90.0
+	save.lamp_time = 25.0
+	save.lamp_mult = 7.5
+	var text := Lamp.hint(save)
+	assert_str(text).contains("90 s").contains("25 s").contains("7.5×")
+
+
+func test_the_lamp_has_a_hover_box_for_its_explanation() -> void:
+	var lamp: Node = auto_free(load("res://entities/golden_lamp/golden_lamp.tscn").instantiate())
+	assert_object(lamp.get_node("Hit/Interactable")).is_not_null()
+	assert_int((lamp.get_node("Hit") as StaticBody3D).collision_layer).is_equal(Interactable.HOVER_LAYER)

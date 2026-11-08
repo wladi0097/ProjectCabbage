@@ -9,7 +9,8 @@ extends Node3D
 ## sends fresh ones only, so they never pile up. Once the research_cabbage card is stamped, a fresh
 ## unit comes down a research unit with the save's research_chance (still stock, sold as usual).
 ## When that share grows (the card stamped, a sampling quota bought) a research unit comes down at
-## once, even onto a full mat.
+## once, even onto a full mat. While the chute lever is pulled (save.chute_blocked, card
+## chute_control, entities/chute_lever/) nothing comes down: stock just piles up.
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
 const PLAY_AREA_LAYER := 2
@@ -86,7 +87,7 @@ func _physics_process(delta: float) -> void:
 	_research_share = share
 	# A research unit owed comes down even onto a full mat (one over desk_capacity).
 	var capacity := save.desk_capacity + (1 if _research_due else 0)
-	if _cooldown > 0.0 or not should_dispense(_on_desk.size() - _rotten_on_desk, _on_desk.size(), capacity, save.stock):
+	if _cooldown > 0.0 or not should_dispense(_on_desk.size() - _rotten_on_desk, _on_desk.size(), capacity, save.stock, save.chute_blocked):
 		return
 	_cooldown = save.dispense_interval
 	_roll()
@@ -113,9 +114,9 @@ static func research_share(save: SaveGame) -> float:
 
 
 ## Room on the mat for `fresh` units (rotten ones don't count), and stock that isn't on it yet
-## (`on_desk` counts every unit there).
-static func should_dispense(fresh: int, on_desk: int, capacity: int, stock: int) -> bool:
-	return fresh < capacity and on_desk < stock
+## (`on_desk` counts every unit there); never while the chute is `blocked`.
+static func should_dispense(fresh: int, on_desk: int, capacity: int, stock: int, blocked := false) -> bool:
+	return not blocked and fresh < capacity and on_desk < stock
 
 
 func _roll() -> void:

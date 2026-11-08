@@ -161,7 +161,8 @@ func _judge(cabbage: Cabbage) -> void:
 		save.minis_sold += 1
 		paid = payout(price * save.mini_value, boosts)
 	else:
-		save.stock -= 1
+		if cabbage.is_stock():  # A grown mini (growing station) is a full unit but no stock.
+			save.stock -= 1
 		save.sold += 1
 		paid = payout(price, boosts)
 	sold.emit(cabbage, paid)

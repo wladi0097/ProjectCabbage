@@ -139,7 +139,7 @@ func test_a_farm_bought_before_the_shock_starts_the_squeeze_at_the_shock() -> vo
 	save.stamped.append("family_farm")
 	assert_float(save.squeeze_left).is_equal(0.0)
 	UpgradeDesk.start_shock(save)
-	assert_float(save.squeeze_left).is_equal(SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME)
+	assert_float(save.squeeze_left).is_equal(SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME)
 
 
 func test_a_farm_bought_after_the_shock_starts_the_squeeze_at_once() -> void:
@@ -148,7 +148,7 @@ func test_a_farm_bought_after_the_shock_starts_the_squeeze_at_once() -> void:
 	UpgradeDesk.start_shock(save)
 	assert_float(save.squeeze_left).is_equal(0.0)
 	UpgradeDesk.apply("family_farm", save)
-	assert_float(save.squeeze_left).is_equal(SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME)
+	assert_float(save.squeeze_left).is_equal(SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME)
 
 
 func test_an_old_save_past_the_shock_files_the_warning_unread_and_keeps_its_farm_card() -> void:
@@ -177,12 +177,11 @@ func test_crates_cost_nothing_extra_before_the_shock_and_the_shock_share_after()
 	assert_float(SupplyConsole.crate_share(true, 0.0)).is_equal(SupplyConsole.SHOCK_SHARE)
 
 
-func test_the_farm_squeeze_holds_then_eases_back_to_the_shock_share() -> void:
-	var squeeze := SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME
+func test_the_farm_squeeze_holds_then_falls_to_the_shock_share_for_the_lull() -> void:
+	var squeeze := SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME
 	assert_float(SupplyConsole.crate_share(true, squeeze)).is_equal(SupplyConsole.SQUEEZE_SHARE)
-	assert_float(SupplyConsole.crate_share(true, SupplyConsole.EASE_TIME)).is_equal(SupplyConsole.SQUEEZE_SHARE)
-	assert_float(SupplyConsole.crate_share(true, SupplyConsole.EASE_TIME * 0.5)) \
-			.is_equal_approx((SupplyConsole.SHOCK_SHARE + SupplyConsole.SQUEEZE_SHARE) * 0.5, 0.0001)
+	assert_float(SupplyConsole.crate_share(true, SupplyConsole.LULL_TIME + 1.0)).is_equal(SupplyConsole.SQUEEZE_SHARE)
+	assert_float(SupplyConsole.crate_share(true, SupplyConsole.LULL_TIME * 0.5)).is_equal(SupplyConsole.SHOCK_SHARE)
 
 
 func test_a_shocked_unit_still_sells_at_a_profit_until_the_farm_squeeze_makes_it_a_loss() -> void:

@@ -25,6 +25,19 @@ func test_a_disabled_switch_does_not_catch_the_hand() -> void:
 	assert_object(Interactable.of(switch)).is_not_null()
 
 
+func test_a_switch_that_is_on_lights_its_own_lamp_only() -> void:
+	var on := _switch("Desk lamp")
+	var off := _switch("Radio")
+	on.show_on(true, false)
+	off.show_on(false, false)
+	assert_float(_glow(on)).is_greater(0.0)
+	assert_float(_glow(off)).is_equal(0.0)
+
+
+func _glow(switch: LightSwitch) -> float:
+	return ((switch.get_node("Lamp") as MeshInstance3D).material_override as StandardMaterial3D).emission_energy_multiplier
+
+
 func _switch(text: String) -> LightSwitch:
 	var switch: LightSwitch = auto_free(load("res://entities/components/light_switch.tscn").instantiate())
 	switch.tooltip = text

@@ -41,6 +41,8 @@ const HOME_LIFT := 0.3
 ## Seconds a thrown coin rises from below the sill to the gap.
 const TOSS_TIME := 0.14
 const THROW_STAGGER := 0.05
+## Seconds a coin popped out of the bin (pop_out) takes from the mouth to the desk.
+const POP_TIME := 0.45
 const PICKUP_RADIUS := 0.1
 
 @export var desk_height := 0.76
@@ -136,6 +138,26 @@ func throw_in(origin: Vector3, amount: int) -> void:
 		coin.inbound = ballistic(gap, target, randf_range(throw_time.x, throw_time.y))
 		coin.velocity = ballistic(origin, gap, TOSS_TIME)
 		coin.toss = TOSS_TIME
+		coin.spin = Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)).normalized() * randf_range(10, 20)
+		coin.delay = i * THROW_STAGGER
+		_coins.append(coin)
+
+
+## Pops `amount` worth of coins up out of `origin` (the bin's mouth) in a short arc onto one spot
+## around `spot` on the desk, to be swept up like any payout.
+func pop_out(origin: Vector3, spot: Vector3, amount: int) -> void:
+	var values := coin_values(amount)
+	thrown.emit(origin, values.size())
+	for i in values.size():
+		if _coins.size() >= MAX_COINS:
+			_deposit_now(values[i])
+			continue
+		var coin := Coin.new()
+		coin.value = values[i]
+		coin.cell = cell_of(spot)
+		coin.xf = Transform3D(Basis(Quaternion.from_euler(Vector3(randf(), randf(), randf()) * TAU)), origin)
+		var target := Vector3(spot.x, desk_height, spot.z) + Vector3(randf_range(-1, 1), 0.0, randf_range(-1, 1)) * AIM_JITTER * CELL
+		coin.velocity = ballistic(origin, target, POP_TIME)
 		coin.spin = Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)).normalized() * randf_range(10, 20)
 		coin.delay = i * THROW_STAGGER
 		_coins.append(coin)

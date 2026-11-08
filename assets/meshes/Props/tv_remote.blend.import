@@ -43,13 +43,13 @@ _subresources={
 "materials": {
 "machine_metal": {
 "use_external/enabled": true,
-"use_external/fallback_path": "res://assets/materials/machine_metal.tres",
-"use_external/path": "res://assets/materials/machine_metal.tres"
+"use_external/fallback_path": "res://assets/materials/tv_chrome.tres",
+"use_external/path": "res://assets/materials/tv_chrome.tres"
 },
 "machine_paint": {
 "use_external/enabled": true,
-"use_external/fallback_path": "res://assets/materials/machine_paint_matte.tres",
-"use_external/path": "res://assets/materials/machine_paint_matte.tres"
+"use_external/fallback_path": "res://assets/materials/remote_plastic.tres",
+"use_external/path": "res://assets/materials/remote_plastic.tres"
 }
 }
 }

@@ -59,7 +59,7 @@ enum ShadowQuality { LOW, MEDIUM, HIGH }
 		fidelity_fx = new_f
 		map_specific_settings_changed.emit()
 
-@export var use_fidelity_fx := true:
+@export var use_fidelity_fx := false:
 	set(use):
 		use_fidelity_fx = use
 		map_specific_settings_changed.emit()

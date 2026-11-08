@@ -98,10 +98,13 @@ func test_once_the_boss_warns_the_farm_card_is_dealt_before_the_rest() -> void:
 
 
 func test_stamping_whatever_is_dealt_first_eventually_deals_every_card() -> void:
+	var due := _warned()  # Every timed card due: the warning given, the farm harvested long ago.
+	due.farm_first_harvest = 0.0
+	due.farm_seconds = 1000.0
 	for start: Array in [[], BEFORE_RADIO]:
 		var stamped := PackedStringArray(start)
-		while not UpgradeDesk.next_cards(stamped, UpgradeDesk.OFFERED, _warned()).is_empty():
-			stamped.append(UpgradeDesk.next_cards(stamped, UpgradeDesk.OFFERED, _warned())[0])
+		while not UpgradeDesk.next_cards(stamped, UpgradeDesk.OFFERED, due).is_empty():
+			stamped.append(UpgradeDesk.next_cards(stamped, UpgradeDesk.OFFERED, due)[0])
 
 		assert_int(stamped.size()).override_failure_message("softlocked from %s" % [start]).is_equal(UpgradeDesk.CARDS.size())
 
@@ -206,7 +209,7 @@ func test_buying_the_family_farm_after_the_shock_starts_the_wholesalers_squeeze_
 	var save := SaveGame.new()
 	save.supply_shock = true
 	UpgradeDesk.apply("family_farm", save)
-	assert_float(save.squeeze_left).is_equal(SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME)
+	assert_float(save.squeeze_left).is_equal(SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME)
 
 
 func test_stamping_every_card_once_adds_up_to_the_listed_effects_and_nothing_else() -> void:
@@ -222,6 +225,8 @@ func test_stamping_every_card_once_adds_up_to_the_listed_effects_and_nothing_els
 	assert_float(save.marketing).is_equal_approx(1.2 * 1.5, 0.0001)
 	assert_float(save.associate_interval).is_equal_approx(interval * 0.5, 0.0001)
 	assert_int(save.research_hands).is_equal(1)
+	assert_int(save.farm_hands).is_equal(1)
+	assert_int(save.farm_tractors).is_equal(1)
 	assert_int(save.coins).is_equal(0)
 	assert_int(save.findings).is_equal(0)
 
@@ -383,3 +388,79 @@ func _all_stamped_but(ids: Array) -> SaveGame:
 		if card.id not in ids:
 			save.stamped.append(card.id)
 	return save
+
+
+func test_a_double_click_right_after_dropping_a_card_stamps_it_free_only_in_a_debug_build() -> void:
+	assert_bool(UpgradeDesk.debug_free(true, 0.3)).is_true()
+	assert_bool(UpgradeDesk.debug_free(true, UpgradeDesk.DEBUG_DOUBLE + 0.5)).is_false()
+	assert_bool(UpgradeDesk.debug_free(false, 0.3)).is_false()
+
+
+func test_a_save_that_bought_grace_period_as_a_timer_gets_its_new_half_kept_on_a_miss() -> void:
+	var save := SaveGame.new()
+	save.tree_bought.append("combo_window")
+	UpgradeDesk.migrate(save)
+	assert_float(save.miss_keep).is_equal(0.5)
+
+
+func _farmed(first_harvest: float, seconds: float) -> SaveGame:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["family_farm"])
+	save.farm_first_harvest = first_harvest
+	save.farm_seconds = seconds
+	return save
+
+
+func test_the_farm_terminal_card_is_dealt_right_after_the_farm_is_bought() -> void:
+	assert_array(_next([], UpgradeDesk.CARDS.size())).not_contains(["farm_terminal"])
+	# Every card up to the farm stamped, no harvest yet: the terminal is the next one in the row.
+	var save := _farmed(-1.0, 0.0)
+	for card: Dictionary in UpgradeDesk.CARDS:
+		save.stamped.append(card.id)
+		if card.id == "family_farm":
+			break
+	assert_str(_next(save.stamped, UpgradeDesk.CARDS.size(), save)[0]).is_equal("farm_terminal")
+
+
+func test_the_workforce_and_mechanisation_come_together_right_after_the_terminal() -> void:
+	assert_array(_next(["family_farm"], UpgradeDesk.CARDS.size())).not_contains(["seasonal_workforce", "mechanisation"])
+	assert_array(_next(["family_farm", "farm_terminal"], UpgradeDesk.CARDS.size())).contains(["seasonal_workforce", "mechanisation"])
+
+
+func test_the_workforce_card_sends_one_farm_hand_and_mechanisation_one_tractor_never_fewer() -> void:
+	var save := SaveGame.new()
+	UpgradeDesk.apply("seasonal_workforce", save)
+	UpgradeDesk.apply("mechanisation", save)
+	assert_int(save.farm_hands).is_equal(1)
+	assert_int(save.farm_tractors).is_equal(1)
+	save.farm_hands = 3
+	UpgradeDesk.apply("seasonal_workforce", save)
+	assert_int(save.farm_hands).is_equal(3)
+
+
+func test_an_old_save_with_the_farm_hand_and_tractor_gets_their_cards_and_workers() -> void:
+	var old := SaveGame.new()
+	old.migration = 3
+	old.stamped = PackedStringArray(["family_farm"])
+	old.farm_bought = PackedStringArray(["seed_contract", "farm_hand", "tractor"])
+	UpgradeDesk.migrate(old)
+	UpgradeDesk.migrate(old)
+	assert_int(old.stamped.count("seasonal_workforce")).is_equal(1)
+	assert_int(old.stamped.count("mechanisation")).is_equal(1)
+	assert_int(old.farm_hands).is_equal(1)
+	assert_int(old.farm_tractors).is_equal(1)
+	assert_bool(old.farm_bought.has("seed_contract")).is_true()
+
+
+func test_an_old_save_with_only_the_farm_hand_gets_no_tractor() -> void:
+	var old := SaveGame.new()
+	old.migration = 3
+	old.farm_bought = PackedStringArray(["farm_hand"])
+	UpgradeDesk.migrate(old)
+	assert_bool(old.stamped.has("mechanisation")).is_false()
+	assert_int(old.farm_tractors).is_equal(0)
+
+
+func test_the_chute_control_card_is_dealt_once_the_family_farm_is_bought() -> void:
+	assert_array(_next(THROUGH_QA, 10)).not_contains(["chute_control"])
+	assert_array(_next(["family_farm"])).contains(["chute_control"])

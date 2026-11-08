@@ -46,7 +46,7 @@ func test_the_summary_reports_the_save_as_written_figures() -> void:
 	assert_str(rows["UNITS MOVED"]).is_equal("40")
 	assert_str(rows["UNITS INTERCEPTED MID-AIR"]).is_equal("10")
 	assert_str(rows["INTERCEPTION RATE"]).is_equal("25%")
-	assert_str(rows["UNITS IN INVENTORY"]).is_equal(str(save.stock))
+	assert_str(rows["UNITS IN INVENTORY"]).is_equal("%d / 20" % save.stock)
 	assert_str(rows["COINS ON HAND"]).is_equal("$120")
 	assert_str(rows["FINDINGS FILED"]).is_equal("¶7")
 	assert_str(rows["PRICE PER UNIT"]).is_equal("$5")

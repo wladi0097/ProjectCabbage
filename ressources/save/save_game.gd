@@ -10,6 +10,9 @@ extends Resource
 @export var coins := 0
 ## Unsold cabbages, the ones on the mat included. The game starts with 10 to sell.
 @export var stock := 10
+## The most units the stock may hold: no pack is bought and no farm square harvested past it.
+## 20 at the start; the projector's storage chain (storage_1..6) raises it up to 9999.
+@export var storage_cap := 20
 @export var sold := 0
 ## Cabbages grabbed in mid-air as they fly off the chute.
 @export var catches := 0
@@ -81,16 +84,20 @@ extends Resource
 @export var lamp_mult := 5.0
 @export var lamp_time := 20.0
 @export var lamp_every := 150.0
-## Catch combo: seconds a catch keeps the combo, the most it multiplies a sale, and what each catch adds.
-@export var combo_window := 4.0
+## Catch combo: the share of its steps a miss keeps (0 none, GRACE PERIOD 0.5), the most it
+## multiplies a sale, and what each catch adds.
+@export var miss_keep := 0.0
 @export var combo_cap := 1.5
 @export var combo_step := 0.1
+## How heavily a held unit lags the hand: 1 heavy (Cabbage.follow, max_accel), 0 none (projector
+## node free_carry).
+@export var carry_weight := 1.0
 ## Rotten units come down the chute once the bin card has been offered. The bin's mouth size (×),
-## the rebate per binned unit (times the chalked price), whether hired hands bin rotten units (0/1),
+## the rebate per binned rotten unit in dollars (whatever the price), whether hired hands bin rotten units (0/1),
 ## and the fines paid and units binned so far.
 @export var rotten_unlocked := false
 @export var bin_mouth := 1.0
-@export var bin_rebate := 0.0
+@export var bin_coins := 0
 @export var hands_bin := 0
 @export var fines := 0
 @export var binned := 0
@@ -126,6 +133,9 @@ extends Resource
 @export var tube_speed := 1.0
 @export var tube_split := 0.0
 @export var minis_sold := 0
+## The mini growing station (desk card mini_station): the chance a tube mini passing through it comes
+## out a full-size unit (still no stock, sold at the full price). Upgradeable (projector tree).
+@export var mini_grow_chance := 0.05
 ## Research units (blue, desk card research_cabbage): the chance a unit off the chute is one, the
 ## Findings it yields times a normal unit's, and how many have been analysed.
 @export var research_chance := 0.1
@@ -151,19 +161,41 @@ extends Resource
 ## The family farm on the TV (entities/farm_screen/): seeds, open squares (0: not set up yet), each
 ## open square's seconds grown (-1 empty), the farm upgrades bought, and harvests so far.
 @export var farm_seeds := 0
+## Seeds out of the crate in farm hands' gloves (FarmScreen workers aren't saved): put back into
+## farm_seeds when the farm screen next comes up, so quitting mid-trip loses none.
+@export var farm_seeds_carried := 0
 @export var farm_plots := 0
 @export var farm_growth := PackedFloat32Array()
 @export var farm_bought := PackedStringArray()
 @export var farm_harvests := 0
 ## Seconds played since the family farm was bought (the demo ends Demo.END_AFTER of them later).
 @export var farm_seconds := 0.0
+## farm_seconds at the first harvest (-1: none yet); the farm terminal card (CH2) comes some time later.
+@export var farm_first_harvest := -1.0
+## The farm's workers walking CH1: farm hands (plant) and tractors (harvest), how fast they move
+## (1.0 = base), and how they pick a square (0: at random, 1: straight to the right one).
+@export var farm_hands := 0
+@export var farm_tractors := 0
+@export var farm_hand_speed := 1.0
+@export var farm_tractor_speed := 1.0
+@export var farm_hand_route := 0
+@export var farm_tractor_route := 0
+## Jobs a farm hand (squares planted, seeds carried from the crate) or a tractor (squares harvested)
+## does on one trip before it walks back to the yard (1 = back after every job; farm tree raises it).
+@export var farm_hand_shift := 1
+@export var farm_tractor_shift := 1
+## The TV channel last shown (1: the fields, 2: the farm tree).
+@export var farm_channel := 1
+## The chute lever (card chute_control) is pulled: a metal blocker sits on the chute and no unit
+## comes down it; stock only piles up.
+@export var chute_blocked := false
 ## Big events whose boss report has been shown or filed (entities/boss_report/), GameEvents ids.
 @export var reports := PackedStringArray()
 ## For playtests: every purchase, session start and a snapshot every SaveManager.LOG_EVERY seconds,
 ## each with the play time and the state after it (log_entry). Also written as playtest_log.csv.
 @export var playtest_log: Array[Dictionary] = []
 
-const MIGRATION := 3
+const MIGRATION := 4
 ## Snapshots older than THIN_AFTER play seconds are kept one per THIN_EVERY seconds (thin_log).
 const THIN_AFTER := 3600
 const THIN_EVERY := 300

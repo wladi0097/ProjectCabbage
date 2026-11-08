@@ -49,7 +49,7 @@ const CARDS := [
 	# once stamped; their small upgrades are projector nodes. Stamping catch_combo also starts rotten
 	# units and drops the free waste bin (GameEvents "rotten_units", entities/rotten_bin/).
 	{id = "catch_combo", price = 15, currency = "findings", title = "INTERCEPTION INCENTIVE SCHEME",
-		needs = ["projector"], body = "Initiative is rewarded.\nGrab a unit in mid-air (a catch): every sale pays +10%, up to +50% after 5 catches. 4 s without a catch and the bonus drains away."},
+		needs = ["projector"], body = "Initiative is rewarded.\nGrab a unit in mid-air (a catch): every sale pays +10%, up to +50% after 5 catches. A unit you let land ends the bonus."},
 	# Research units (Cabbage.research, worlds/components/cabbage_feeder.gd) and the hands that lob
 	# them into the bay (entities/associate/, save.research_hands).
 	{id = "research_cabbage", price = 20, currency = "findings", title = "REQUISITION RESEARCH UNITS",
@@ -96,7 +96,35 @@ const CARDS := [
 	# Stage 2 (GameEvents "supply_warning"): only dealt once that event has started (`event`), into a
 	# free tray slot. entities/farm_tv/ shows the remote and the TV, entities/farm_screen/ the farm.
 	{id = "family_farm", price = 2500, title = "ACQUIRE THE FAMILY FARM", event = "supply_warning",
-		body = "Your uncle is selling. Family rates apply.\nA TV and remote arrive: click the remote to look at the farm. Click a square to plant a seed; after 30 s click it again to harvest 3 units into your stock. 10 seeds come with it, more in its seed shop. The wholesalers will not take this well: once their prices spike, for 5 min crates cost more than they sell for, then ease back over 5 min."},
+		body = "Your uncle is selling. Family rates apply.\nA TV and a remote arrive. Click the remote to see the farm."},
+	# The farm's big steps. The terminal opens CH2 on the TV (entities/farm_tree/): the next card in
+	# the row once the farm is bought. ponytail: prices are placeholders, unpaced (tools/pace.py).
+	{id = "farm_terminal", price = 4000, title = "FARM ADMINISTRATION TERMINAL", needs = ["family_farm"],
+		body = "The farm is now managed remotely.\nChannel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with coins or Findings (¶)."},
+	# No effect here: entities/farm_screen/ draws its status row (FarmScreen.status_shown) once it is
+	# stamped. Dealt (timed) 30 farm seconds after the first harvest.
+	# ponytail: the price is a placeholder, unpaced (tools/pace.py).
+	{id = "farm_readout", price = 400, title = "FARM TELEMETRY PACKAGE", needs = ["family_farm"], after_harvest = 30.0,
+		body = "What is measured can be reported.\nA status line along the top of channel 1 (the fields): seeds, cabbages in stock against storage, and money, always in view."},
+	{id = "seasonal_workforce", price = 4000, title = "AUTHORISE A SEASONAL WORKFORCE", needs = ["farm_terminal"],
+		body = "Seasonal. Indefinitely.\nA farm hand walks onto the fields (channel 1) and plants empty squares with your seeds. More hands on channel 2."},
+	{id = "mechanisation", price = 9000, title = "MECHANISATION PROGRAMME", needs = ["farm_terminal"],
+		body = "The horse has been informed.\nA tractor drives onto the fields (channel 1) and harvests ripe squares. More tractors on channel 2."},
+	# The end of stage 2: no effect here, entities/chute_lever/ drops the lever onto the chute once it
+	# is stamped and worlds/components/cabbage_feeder.gd stops while it is pulled (save.chute_blocked).
+	# Price and needs are placeholders, not paced yet (tools/pace.py).
+	{id = "chute_control", price = 3000, title = "INSTALL A SUPPLY INTERRUPTION LEVER", needs = ["family_farm"],
+		body = "The street will adjust.\nA heavy lever on the back of the chute. Pull it down and a steel plate shuts the chute: no units come down, stock piles up. Pull it up to reopen."},
+	# Stage 2 mini cards (reports/mini_cabbages_2026-11-08.md). mini_thinning: entities/mini_drop/ sends one
+	# mini per farm harvest; micro_samples: QaBay.findings_for; mini_station: entities/growing_station/,
+	# its chance raised by the projector's growth chain. Prices: thinning $600 and micro ¶60 from the
+	# report's sim; the station's $1500 is a placeholder, not paced yet (tools/pace.py).
+	{id = "mini_thinning", price = 600, title = "FIELD THINNING PROGRAMME", needs = ["family_farm"],
+		body = "The field produces waste. Waste is a product.\nEvery harvest on the farm also sends one mini unit down the tube (at most 6 minis out at once)."},
+	{id = "micro_samples", price = 60, currency = "findings", title = "RESEARCH: MICRO-SAMPLE PROTOCOL", needs = ["tube_lever", "family_farm"],
+		body = "Research has established that a sample need not be large. Or whole.\nA mini sent to the research lab yields the Findings of two full units."},
+	{id = "mini_station", price = 1500, title = "INSTALL A UNIT GROWING STATION", needs = ["mini_thinning", "mini_tube"],
+		body = "Small units are a temporary condition.\nA growing chamber is bolted over the tube's intake. 1 mini in 20 comes out a full unit: no stock, sold at your full price, counted as sold."},
 ]
 const OFFERED := 3
 const Events := preload("res://globalScripts/game_events.gd")
@@ -136,6 +164,8 @@ const PAPER_NOTE := preload("res://ui/elements/paper_note.tscn")
 ## Then it lies this long on the pad before it goes on the spike.
 const SHOW_TIME := 0.45
 const SHOCK_CHECK := 0.5
+## Debug builds only: a double click within this many seconds of dropping a card stamps it free.
+const DEBUG_DOUBLE := 0.6
 
 ## The cards on offer, in slot order (the one on the press included).
 var _offered: Array[UpgradeCard] = []
@@ -158,6 +188,9 @@ static var _stacks := {}
 var _fading: Tween
 ## Seconds to the next check whether stage 2's warning or shock starts (Events.warning_due, shock_due).
 var _shock_in := 0.0
+## The card dropped last and when (Time ticks, s), for the debug double click.
+var _dropped: UpgradeCard
+var _dropped_at := -INF
 
 @onready var _tray: Node3D = $Tray
 @onready var _press: Node3D = $Press
@@ -233,20 +266,32 @@ func _process(delta: float) -> void:
 		_deal()
 
 
-## The next `count` cards in the queue that are not stamped yet and whose `needs` all are. A card
-## with an `event` also waits for that GameEvents event to start in `save` (never without a save),
-## and once it has, comes before the rest.
+## The next `count` cards in the queue that are not stamped yet and whose `needs` all are. A timed
+## card (an `event` or `after_harvest`) also waits until it is due in `save` (never without a save),
+## and once it is, comes before the rest.
 static func next_cards(stamped: PackedStringArray, count: int, save: SaveGame = null) -> Array[String]:
 	var out: Array[String] = []
 	for events_first: bool in [true, false]:
 		for card: Dictionary in CARDS:
-			if card.has("event") != events_first or out.size() >= count or stamped.has(card.id):
+			if timed(card) != events_first or out.size() >= count or stamped.has(card.id):
 				continue
 			var open: bool = card.get("needs", []).all(func(need: String) -> bool: return stamped.has(need)) \
-					and (not events_first or (save != null and Events.due(card.event, save)))
+					and (not events_first or (save != null and due(card, save)))
 			if open:
 				out.append(card.id)
 	return out
+
+
+## A card that waits for something in the save besides other cards: a GameEvents `event`, or
+## `after_harvest` farm seconds since the first harvest.
+static func timed(card: Dictionary) -> bool:
+	return card.has("event") or card.has("after_harvest")
+
+
+## Whether timed card `card` is due in `save`: its event has started, its farm time has passed.
+static func due(card: Dictionary, save: SaveGame) -> bool:
+	return (not card.has("event") or Events.due(card.event, save)) and (not card.has("after_harvest") \
+			or (save.farm_first_harvest >= 0.0 and save.farm_seconds - save.farm_first_harvest >= card.after_harvest))
 
 
 ## Stage 2's step `id` begins (GameEvents "supply_warning" or "supply_shock"), logged.
@@ -271,7 +316,7 @@ static func start_shock(save: SaveGame) -> void:
 	if save.stamped.has("auto_procurement"):  # Without the card there is no order to suspend: it starts on.
 		save.auto_buy = false
 	if save.stamped.has("family_farm"):
-		save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME
+		save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME
 
 
 ## Card `id`'s entry, with its demo price in the demo (Demo.CARD_PRICES).
@@ -289,7 +334,8 @@ static func card_data(id: String) -> Dictionary:
 ## Fixes up a save from an older build, once (save.migration): the hands count, the acceptance
 ## meter's later ×1.2 marketing, the retired bulk_procurement card (now the tree's pack_1, same +3
 ## pack), the projector's merged chains (Projector.migrate_merged), a chalked price above
-## today's cap, and a save past the supply shock from before its warning (warning filed unread).
+## today's cap, a save past the supply shock from before its warning (warning filed unread), and
+## GRACE PERIOD bought back when it lengthened the combo timer (now it halves a miss).
 static func migrate(save: SaveGame) -> void:
 	if save.hands == 0 and save.stamped.has("junior_associate"):
 		save.hands = 1  # A save from before hands were counted.
@@ -307,8 +353,24 @@ static func migrate(save: SaveGame) -> void:
 	elif save.migration < 3:
 		Projector.migrate_merged(save, Projector.MERGED_PACKS)  # The slimmed pack branch (MERGED covers it before 2).
 	Projector.migrate_mat(save)  # The mat allowance, once one repeatable node, now a chain.
+	if save.bin_coins == 0:  # The bin rebate, once a share of the price, now flat dollars per tier.
+		save.bin_coins = RottenBin.bin_coins_for(save.tree_bought)
+	Projector.migrate_storage(save)  # Container orders, from before storage had a cap.
+	if save.tree_bought.has("combo_window"):  # GRACE PERIOD, once a longer combo timer, now keeps half on a miss.
+		save.miss_keep = maxf(save.miss_keep, 0.5)
+	if save.migration < 4:
+		migrate_farm(save)
 	save.migration = SaveGame.MIGRATION
 	save.sale_price = mini(save.sale_price, PriceSlate.max_price(save.marketing))
+
+
+## An old save's one-off FARM HAND / TRACTOR (farm_bought "farm_hand", "tractor"; the ids stay there,
+## unread) are now desk cards: each is stamped, with its worker.
+static func migrate_farm(save: SaveGame) -> void:
+	for old: Array in [["farm_hand", "seasonal_workforce"], ["tractor", "mechanisation"]]:
+		if save.farm_bought.has(old[0]) and not save.stamped.has(old[1]):
+			save.stamped.append(old[1])
+			apply(old[1], save)
 
 
 ## The playtest log shows the acceptance meter's stamp raising marketing ×1.2 already (a save from
@@ -346,7 +408,11 @@ static func apply(id: String, save: SaveGame) -> void:
 			save.research_hands = maxi(save.research_hands, 1)
 		"family_farm":
 			if save.supply_shock:  # Bought before the shock, the squeeze waits for it (start_shock).
-				save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME
+				save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME
+		"seasonal_workforce":  # The first farm hand walks onto CH1.
+			save.farm_hands = maxi(save.farm_hands, 1)
+		"mechanisation":
+			save.farm_tractors = maxi(save.farm_tractors, 1)
 
 
 ## The handle's centre (press space) with the lever cranked `crank` of the way down.
@@ -512,6 +578,8 @@ func _deal(animate := true) -> void:
 
 
 func _on_dropped(card: UpgradeCard) -> void:
+	_dropped = card
+	_dropped_at = Time.get_ticks_msec() / 1000.0
 	var pad := _pad()
 	var near := Vector2(card.position.x - pad.x, card.position.z - pad.z).length() < PRESS_REACH
 	if near and _crank < CLEAR and _leaving == null:
@@ -579,6 +647,37 @@ func _bottom_out() -> void:
 	var squash := create_tween()
 	squash.tween_property($Press/Model, "scale", Vector3(1.04, 0.94, 1.04), 0.05)
 	squash.tween_property($Press/Model, "scale", Vector3.ONE, 0.25).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+
+
+## Debug builds only: double-clicking a card on offer stamps it for free (the first click drops it, so
+## the second lands while it flies back: any double click right after a drop counts).
+func _input(event: InputEvent) -> void:
+	var click := event as InputEventMouseButton
+	if click == null or not click.pressed or not click.double_click or _dropped not in _offered:
+		return
+	if debug_free(OS.is_debug_build(), Time.get_ticks_msec() / 1000.0 - _dropped_at):
+		_stamp_free(_dropped)
+
+
+## Whether a double click `since_drop` seconds after a card was dropped stamps it free (`debug` build only).
+static func debug_free(debug: bool, since_drop: float) -> bool:
+	return debug and since_drop <= DEBUG_DOUBLE
+
+
+func _stamp_free(card: UpgradeCard) -> void:
+	var save := SaveManager.save
+	save.stamped.append(card.id)
+	apply(card.id, save)
+	if _on_press == card:
+		_on_press = null
+	_offered.erase(card)
+	_dropped = null
+	card.stamp(false)
+	$Stamp.cue(card.position)
+	card.spike_to(_spike_spot(sheets_under(_spiked + 1)), randf_range(-0.5, 0.5)).finished.connect(_land.bind(card))
+	_count_spiked(card)
+	_deal()
+	print("debug: stamped %s free" % card.id)
 
 
 ## A thin pale ring of air pushed out flat from under the head, gone in a blink.

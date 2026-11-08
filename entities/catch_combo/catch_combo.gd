@@ -2,33 +2,24 @@ class_name CatchCombo
 extends Node3D
 ## The catch combo, there once the "catch_combo" card is stamped: every cabbage caught in mid-air
 ## off the chute (Cabbage calls `caught` on the "catch_combo" group) adds a step, and every sale
-## pays ×multiplier (the SaleWindow's "combo" boost) while it lasts. save.combo_window seconds
-## without a catch and it starts to decay, one step per DECAY_STEP seconds. `streak` counts the
-## catches in a row (uncapped) until the combo has decayed to nothing. A miss (a chute unit that
-## lands uncaught: Cabbage calls `missed`) ends both the streak and the multiplier at once: the
-## multiplier is the reward for the streak, so a broken streak can't keep paying. A miss doesn't count
-## while the player can't catch (missed_counts: away at the farm TV, a boss note up, the hand full). A
-## price refusal (the SaleWindow's `refused` to `hold`, `thrown_back` to `unhold`, wired in the world)
-## pauses the window while the refused unit is out (it blocks the chute), never longer than HOLD_LIMIT. Stencilled
-## on the chute bed (the node lies on it) in faded paint (never more than PAINT opaque), popping on
-## each catch and fading further as the window runs out.
+## pays ×multiplier (the SaleWindow's "combo" boost). There is no timer: the combo lasts until a
+## miss (a chute unit that lands uncaught: Cabbage calls `missed`), which ends the streak and keeps
+## only save.miss_keep of the steps (none until the GRACE PERIOD node). `streak` counts the catches
+## in a row since the last miss. A miss doesn't count while the player can't catch (missed_counts:
+## away at the farm TV, a boss note up, the hand full). Stencilled on the chute bed (the node lies
+## on it), drawn over the units and always shown once the card is stamped (×1.00 at no combo),
+## popping on each catch; the ×multiplier is its big line. Its size and paint live in the scene.
 
 const CARD := "catch_combo"
-const DECAY_STEP := 0.6
-const INK := Color(0.86, 0.84, 0.74)
 const POP := 1.15
-## Stencil paint: the label's opacity fresh after a catch, and how far it fades as the window runs out.
-const PAINT := 0.45
-const FADED := 0.2
-## Seconds a refusal pauses the window at most, so a refused unit never thrown back can't stall it.
-const HOLD_LIMIT := 4.0
+## Every COMBO_EVERY catches in a row the combo sting plays ($Combo), pitched up COMBO_PITCH per
+## milestone so far, up to COMBO_PITCH_MAX.
+const COMBO_EVERY := 5
+const COMBO_PITCH := 0.05
+const COMBO_PITCH_MAX := 1.3
 
 var steps := 0
 var streak := 0
-var _idle := 0.0
-## Refused units out of the window right now, and how long since the last refusal.
-var _holds := 0
-var _held_for := 0.0
 var _pop := 0.0
 
 @onready var _label: Label3D = $Label
@@ -37,28 +28,15 @@ var _pop := 0.0
 func _ready() -> void:
 	add_to_group(&"catch_combo")
 	_label.visible = false
+	_show(SaveManager.save)
 
 
 func _process(delta: float) -> void:
 	var save := SaveManager.save
-	if steps == 0:
-		return
-	if _holds > 0:
-		_held_for += delta
-		if _held_for > HOLD_LIMIT:
-			_holds = 0
-	else:
-		_idle += delta
-	var left := save.combo_window - _idle
-	if left < 0.0:
-		steps -= 1
-		_idle -= DECAY_STEP
-		$Tick.pitch_scale = 0.7
-		$Tick.cue($Tick.global_position, 0.5)
-		if steps == 0:
-			streak = 0
-	_pop = maxf(0.0, _pop - delta * 4.0)
-	_show(save)
+	_label.visible = save.stamped.has(CARD)
+	if _pop > 0.0:
+		_pop = maxf(0.0, _pop - delta * 4.0)
+		_show(save)
 
 
 ## A mid-air catch at `_at`.
@@ -69,39 +47,46 @@ func caught(_at: Vector3) -> void:
 	if multiplier(steps + 1, save.combo_step, save.combo_cap) > multiplier(steps, save.combo_step, save.combo_cap):
 		steps += 1
 	streak += 1
-	_idle = 0.0
 	_pop = 1.0
 	$Tick.pitch_scale = 1.0 + 0.06 * steps
 	$Tick.cue($Tick.global_position)
+	if milestone(streak):
+		$Combo.pitch_scale = sting_pitch(streak)
+		$Combo.play()
 	_show(save)
 
 
-## A chute unit landed uncaught: the streak and its multiplier are gone.
+## Whether a streak of `count` catches in a row earns the combo sting (5, 10, 15...).
+static func milestone(count: int) -> bool:
+	return count > 0 and count % COMBO_EVERY == 0
+
+
+## The sting's pitch at a streak of `count`: a little higher each milestone, up to COMBO_PITCH_MAX.
+static func sting_pitch(count: int) -> float:
+	@warning_ignore("integer_division")
+	return minf(1.0 + COMBO_PITCH * (count / COMBO_EVERY - 1), COMBO_PITCH_MAX)
+
+
+## A chute unit landed uncaught: the streak is gone, and the multiplier down to what miss_keep keeps.
 func missed() -> void:
-	if steps == 0 or not missed_counts(FarmTv.away, BossReport.up, Hand.held != null):
+	if (steps == 0 and streak == 0) or not missed_counts(FarmTv.away, BossReport.up, Hand.held != null):
 		return
-	steps = 0
+	var save := SaveManager.save
+	steps = kept_steps(steps, save.miss_keep)
 	streak = 0
-	_idle = 0.0
 	_pop = 0.0
-	_show(SaveManager.save)
+	_show(save)
+
+
+## The steps left after a miss at `count` steps, keeping `keep` (0..1) of them, rounded down.
+static func kept_steps(count: int, keep: float) -> int:
+	return floori(count * clampf(keep, 0.0, 1.0))
 
 
 ## Whether a unit landing uncaught breaks the streak: not while the camera is `at_tv`, a boss note
 ## is `note_up` or the hand is `holding` something (the player couldn't have caught it).
 static func missed_counts(at_tv: bool, note_up: bool, holding: bool) -> bool:
 	return not (at_tv or note_up or holding)
-
-
-## A price refusal: the window pauses while the refused unit is out.
-func hold() -> void:
-	_holds += 1
-	_held_for = 0.0
-
-
-## A refused unit thrown back in: the window runs again once none are out.
-func unhold() -> void:
-	_holds = maxi(_holds - 1, 0)
 
 
 ## The sale multiplier at `count` steps of `step` each, capped at `cap`.
@@ -117,11 +102,6 @@ func _show(save: SaveGame) -> void:
 			window.boosts["combo"] = factor
 		else:
 			window.boosts.erase("combo")
-	_label.visible = steps > 0
-	if steps == 0:
-		return
-	var capped := factor >= save.combo_cap
-	_label.text = tr("INTERCEPTS %d") % streak + "\n×%s%s" % [String.num(factor, 2), "  MAX" if capped else ""]
-	var fresh := clampf(1.0 - _idle / maxf(save.combo_window, 0.1), 0.0, 1.0)
-	_label.modulate = Color(INK, lerpf(FADED, PAINT, fresh))
+	var capped := steps > 0 and factor >= save.combo_cap
+	_label.text = "×%.2f%s\n" % [factor, "  MAX" if capped else ""] + tr("INTERCEPTS %d") % streak
 	_label.scale = Vector3.ONE * (1.0 + (POP - 1.0) * _pop)

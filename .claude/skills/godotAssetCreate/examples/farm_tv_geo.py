@@ -1,9 +1,9 @@
 # Farm TV: a 1970s office CRT standing on rubber feet on the desk's 45 degree corner step. Grey-sage enamel case, dark bakelite
-# bezel, a wide right-hand panel carrying the BACK button (a steel plate with a stencilled arrow
-# pointing right, towards the desk) and the red power lamp, chrome trim, rabbit ears, a tube hump.
+# bezel, a narrow right-hand panel carrying CH 1 / CH 2 keys, a chrome-bezelled power lamp and the BACK button
+# (all three keys pale plates in chrome rims, stencilled), chrome trim, rabbit ears, a tube hump.
 # Objects: FarmTv (case + stand, vertex-coloured paint/metal), Screen (a slightly bulged 4:3 glass
-# grid, UV 0-1 over the glass, own material for the ViewportTexture), Led (the power lamp) and
-# BackArrow (the stencilled arrow, own material so Godot lights it on hover).
+# grid, UV 0-1 over the glass, own material for the ViewportTexture), Led (the power lamp's lens),
+# BackArrow (the stencilled arrow) and Channel1/2 (the keys' pilot windows), own materials so Godot lights them.
 # Blender Z-up, front = -Y (Godot +Z). Origin: floor centre.
 ASSET = "farm_tv"
 S = 7                                     # dark stand steel
@@ -12,15 +12,20 @@ COLOURS[E] = (0.16, 0.18, 0.165)          # case: worn grey-sage enamel
 COLOURS[P] = (0.2, 0.215, 0.2)            # button plate: paler worn grey
 COLOURS[F] = (0.03, 0.032, 0.03)          # glass well
 COLOURS[K] = (0.055, 0.05, 0.045)         # bezel: dark worn bakelite, not black
-SX, SZ, GW, GH = -0.025, 0.33, 0.320625, 0.19  # screen centre and glass half size (1296:768, playtest: wider)
-B = 0.028                                  # bezel width (playtest 2026-11-07: thinner, the glass gets the focus)
-RIM = 0.03                                 # enamel left round the bezel
+SX, SZ, GW, GH = -0.025, 0.33, 0.374063, 0.19  # screen centre and glass half size (1512:768; 2026-11-08: ~84% of the case width)
+B = 0.022                                  # bezel width (playtests: thinner each time, the glass gets the focus)
+RIM = 0.02                                 # enamel left round the bezel
 PW = 0.025                                 # narrow right panel half width (playtest: halved again)
 PX = SX + GW + B + 0.008 + PW              # its centre x
 XL, XR = SX - GW - B - RIM, PX + PW + 0.022  # case left and right
-DEP, Z0, Z1 = 0.25, 0.045, SZ + GH + B + RIM   # case half depth, bottom (on taller feet), top
+DEP, Z0, Z1 = 0.25, 0.07, SZ + GH + B + RIM    # case half depth, bottom (on tall feet: less case below the glass), top
 FRONT = -DEP
-BZ, BHX, BHZ = SZ + 0.04, 0.019, 0.04     # back button centre z and half size: a tall narrow plate
+BZ, BHX, BHZ = 0.21, 0.019, 0.04         # back button centre z and half size: a tall narrow plate at the panel's foot
+                                          # (2026-11-08: the CH 1 / CH 2 keys, Godot meshes in farm_tv.tscn, take the top)
+BF = FRONT - 0.013                        # back button's front face
+CZ, CHZ = (0.47, 0.385), 0.035            # CH 1 / CH 2 keys at the panel's top: centres z and half height (half width BHX),
+                                          # built like BACK (2026-11-08: user, "look like the TO DESK button")
+LX, LZ, LR = PX, 0.3, 0.018               # power lamp between the keys and BACK: centre and bezel radius
 
 
 def prism(bm, pts, y0, y1, mat):
@@ -54,17 +59,17 @@ absorb(bm, bezel)
 part_box(bm, (SX - GW - 0.005, FRONT - 0.002, SZ - GH - 0.005), (SX + GW + 0.005, FRONT + 0.005, SZ + GH + 0.005), 0.0, F)
 # Chrome strip under the bezel, across the whole front.
 part_box(bm, (XL + 0.03, FRONT - 0.012, Z0 + 0.012), (XR - 0.03, FRONT + 0.005, Z0 + 0.035), 0.005, H)
-# Right panel: a dark inset; on it the BACK button (chrome rim, pale plate, corner rivets).
+# Right panel: a dark inset; on it the BACK button, a flat pale plate in a thin chrome rim, only
+# 5 mm proud of the panel (user 2026-11-08: the 2 cm plate with rivets was "way too 3d").
 part_box(bm, (PX - PW, FRONT - 0.008, Z0 + 0.07), (PX + PW, FRONT + 0.005, Z1 - 0.04), 0.012, K)
-part_box(bm, (PX - BHX - 0.005, FRONT - 0.018, BZ - BHZ - 0.005), (PX + BHX + 0.005, FRONT, BZ + BHZ + 0.005), 0.004, H)
-part_box(bm, (PX - BHX, FRONT - 0.03, BZ - BHZ), (PX + BHX, FRONT - 0.01, BZ + BHZ), 0.004, P)
-for rx in (-1, 1):
-    for rz in (-1, 1):
-        spin(bm, [(0, 0), (0.0035, 0), (0.003, 0.003), (0, 0.004)], H,
-             at(PX + rx * (BHX - 0.006), FRONT - 0.03, BZ + rz * (BHZ - 0.006)) @ Matrix.Rotation(math.radians(90), 4, "X"), 10)
-# LED bezel below the button (the lamp itself is the Led object).
-LX, LZ = PX, BZ - BHZ - 0.05
-spin(bm, [(0, 0), (0.016, 0), (0.016, 0.008), (0.0, 0.008)], H, at(LX, FRONT - 0.006, LZ) @ Matrix.Rotation(math.radians(90), 4, "X"), 16)
+for z, hz in [(BZ, BHZ)] + [(c, CHZ) for c in CZ]:   # BACK and the two CH keys: same plate, same rim
+    part_box(bm, (PX - BHX - 0.004, FRONT - 0.011, z - hz - 0.004), (PX + BHX + 0.004, FRONT - 0.006, z + hz + 0.004), 0.001, H)
+    part_box(bm, (PX - BHX, BF, z - hz), (PX + BHX, FRONT - 0.007, z + hz), 0.001, P)
+# Power lamp: a period panel indicator, a stepped chrome bezel (flange, knurl-ish collar, lip round
+# the lens) standing off the panel; the jewel lens itself is the Led object.
+UPX = at(LX, FRONT - 0.006, LZ) @ Matrix.Rotation(math.radians(90), 4, "X")
+spin(bm, [(0, 0), (LR, 0), (LR, 0.0025), (LR - 0.003, 0.0035), (LR - 0.004, 0.007), (0.0125, 0.008), (0.0115, 0.0065),
+          (0.0, 0.0065)], H, UPX, 20)
 # Rabbit ears: a bakelite dome on top, two splayed chrome rods with ball tips.
 AX = 0.0
 spin(bm, [(0, 0), (0.07, 0), (0.065, 0.03), (0.04, 0.05), (0.0, 0.055)], K, at(AX, 0.05, Z1 - 0.005), 24)
@@ -100,16 +105,27 @@ me.materials.append(emissive("farm_tv_screen", (0.25, 0.28, 0.27), 0.6, (0.05, 0
 scr = bpy.data.objects.new("Screen", me); bpy.context.scene.collection.objects.link(scr)
 print("SCREEN centre (godot)", (SX, SZ, -(FRONT - 0.006)), "half", (GW, GH))
 
-led = bmesh.new()
-spin(led, [(0, 0), (0.008, 0), (0.008, 0.006), (0.005, 0.01), (0, 0.011)], 0, at(LX, FRONT - 0.008, LZ) @ Matrix.Rotation(math.radians(90), 4, "X"), 12)
+led = bmesh.new()   # a faceted jewel dome (8 sides) sat in the bezel's lip
+spin(led, [(0, 0.005), (0.0118, 0.005), (0.0118, 0.009), (0.0095, 0.0122), (0.005, 0.0142), (0, 0.0147)], 0, UPX, 8)
 finish("Led", led, [emissive("farm_tv_led", (0.5, 0.05, 0.03), 0.5, (0.2, 0.03, 0.02))])
+print("POWER lamp centre (godot)", (LX, LZ, -(FRONT - 0.006)))
 
 arrow = bmesh.new()
-AF = FRONT - 0.03
+AF = BF
 AZ, K8 = BZ + 0.014, 0.8 * BHX / 0.105                 # arrow centre (above the TO DESK stencil) and scale
 prism(arrow, [(PX + K8 * x, AZ + K8 * z) for x, z in [(-0.07, -0.022), (0.005, -0.022), (0.005, -0.055), (0.075, 0),
-              (0.005, 0.055), (0.005, 0.022), (-0.07, 0.022)]], AF + 0.002, AF - 0.008, 0)
+              (0.005, 0.055), (0.005, 0.022), (-0.07, 0.022)]], AF + 0.001, AF - 0.001, 0)  # a flush stencil
 finish("BackArrow", arrow, [emissive("farm_tv_arrow", (0.6, 0.65, 0.62), 0.0, (0.55, 0.58, 0.55))])
-print("BACK button centre (godot)", (PX, BZ, -(FRONT - 0.03)), "half", (BHX, BHZ))
+print("BACK button centre (godot)", (PX, BZ, -BF), "half", (BHX, BHZ))
+# CH keys: the arrow's counterpart is a flush pilot window above the "CH n" stencil (Label3D), its own
+# object and material so Godot lights the channel showing and lifts it on hover.
+for n, cz in enumerate(CZ, 1):
+    win = bmesh.new()
+    wx, wz, r = 0.6 * BHX, 0.0045, 0.0045
+    pts = [(PX + sx * (wx - r) + r * math.cos(a), cz + 0.013 + r * math.sin(a))
+           for sx, a0 in [(1, -90), (-1, 90)] for a in [math.radians(a0 + k * 30) for k in range(7)]]
+    prism(win, pts, AF + 0.001, AF - 0.001, 0)
+    finish("Channel%d" % n, win, [emissive("farm_tv_key", (0.6, 0.65, 0.62), 0.0, (0.55, 0.58, 0.55))])
+    print("CH %d centre (godot)" % n, (PX, cz, -BF), "half", (BHX, CHZ))
 
 FRAME = ((0.9, -2.0, 1.25), (0.0, 0.0, 0.75), 40, 960, 1280)

@@ -10,8 +10,10 @@ const INK := Color(0.13, 0.15, 0.14)
 ## The countdown's colour in its last seconds.
 const URGENT := Color(0.55, 0.12, 0.1)
 const SIZE := Vector2(480, 150)
-## The bubble's centre as a fraction of the view's width (over the sale part of the window).
-const AT_X := 0.62
+## The bubble's centre as a fraction of the view's width (top right, over the empty corner by the
+## lamp), kept EDGE px clear of the right edge on a narrow view.
+const AT_X := 0.875
+const EDGE := 24.0
 const TOP := 26.0
 const POP_TIME := 0.25
 ## Drawn a little smaller than SIZE so it covers less of the sill.
@@ -35,12 +37,17 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+## The bubble's centre (px) on a view `width` px wide.
+static func centre_x(width: float) -> float:
+	return minf(width * AT_X, width - SIZE.x * SCALE / 2.0 - EDGE)
+
+
 func _draw() -> void:
 	if manager == null or manager.phase not in [Manager.Phase.QUOTA, Manager.Phase.VERDICT]:
 		return
 	var view := get_viewport_rect().size
 	var scale_by := lerpf(0.85, 1.0, ease(_pop, 0.4)) * SCALE
-	draw_set_transform(Vector2(view.x * AT_X, TOP), 0.0, Vector2.ONE * scale_by)
+	draw_set_transform(Vector2(centre_x(view.x), TOP), 0.0, Vector2.ONE * scale_by)
 	var box := Rect2(-SIZE.x / 2.0, 0.0, SIZE.x, SIZE.y)
 	var alpha := clampf(_pop * 2.0, 0.0, 1.0)
 	draw_rect(Rect2(box.position + Vector2(8, 8), box.size), Color(0, 0, 0, 0.35 * alpha))

@@ -27,6 +27,53 @@ border_width_top = 1
 border_width_bottom = 1
 border_color = Color(0.9, 0.89, 0.84, 0.7)
 
+[sub_resource type="StyleBoxFlat" id="TabOff"]
+content_margin_left = 28.0
+content_margin_top = 8.0
+content_margin_right = 28.0
+content_margin_bottom = 8.0
+bg_color = Color(0.17, 0.19, 0.18, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_color = Color(0.36, 0.42, 0.38, 1)
+
+[sub_resource type="StyleBoxFlat" id="TabHover"]
+content_margin_left = 28.0
+content_margin_top = 8.0
+content_margin_right = 28.0
+content_margin_bottom = 8.0
+bg_color = Color(0.26, 0.29, 0.27, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_color = Color(0.62, 0.68, 0.62, 1)
+
+[sub_resource type="StyleBoxFlat" id="TabOn"]
+content_margin_left = 28.0
+content_margin_top = 8.0
+content_margin_right = 28.0
+content_margin_bottom = 8.0
+bg_color = Color(0.72, 0.73, 0.69, 1)
+
+[sub_resource type="StyleBoxEmpty" id="TabFocus"]
+
+[sub_resource type="Theme" id="TabTheme"]
+Button/colors/font_color = Color(0.72, 0.73, 0.69, 1)
+Button/colors/font_hover_color = Color(0.9, 0.89, 0.84, 1)
+Button/colors/font_pressed_color = Color(0.13, 0.15, 0.14, 1)
+Button/colors/font_hover_pressed_color = Color(0.13, 0.15, 0.14, 1)
+Button/colors/font_focus_color = Color(0.72, 0.73, 0.69, 1)
+Button/font_sizes/font_size = 24
+Button/fonts/font = ExtResource("6_oswald")
+Button/styles/focus = SubResource("TabFocus")
+Button/styles/hover = SubResource("TabHover")
+Button/styles/hover_pressed = SubResource("TabOn")
+Button/styles/normal = SubResource("TabOff")
+Button/styles/pressed = SubResource("TabOn")
+
+[sub_resource type="ButtonGroup" id="TabGroup"]
+
 [sub_resource type="BoxShape3D" id="FolderShape"]
 size = Vector3(0.24, 0.05, 0.3)
 
@@ -93,13 +140,40 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.11, 0.12, 0.115, 1)
 
+[node name="Tabs" type="HBoxContainer" parent="Files/Shade"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -850.0
+offset_top = 132.0
+offset_right = 850.0
+offset_bottom = 176.0
+grow_horizontal = 2
+theme = SubResource("TabTheme")
+theme_override_constants/separation = 8
+
+[node name="Memos" type="Button" parent="Files/Shade/Tabs"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("TabGroup")
+text = "MEMOS"
+
+[node name="Boss" type="Button" parent="Files/Shade/Tabs"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("TabGroup")
+text = "BOSS NOTES"
+
 [node name="List" type="ScrollContainer" parent="Files/Shade"]
 anchors_preset = 13
 anchor_left = 0.5
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -850.0
-offset_top = 130.0
+offset_top = 190.0
 offset_right = 850.0
 offset_bottom = -40.0
 grow_horizontal = 2
@@ -109,7 +183,22 @@ theme = SubResource("ListTheme")
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 2
 
-[node name="Grid" type="GridContainer" parent="Files/Shade/List"]
+[node name="Column" type="VBoxContainer" parent="Files/Shade/List"]
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="Reports" type="GridContainer" parent="Files/Shade/List/Column"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 24
+columns = 2
+
+[node name="Grid" type="GridContainer" parent="Files/Shade/List/Column"]
 layout_mode = 2
 size_flags_horizontal = 0
 mouse_filter = 2

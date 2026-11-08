@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://assets/meshes/Table/table_tube.blend" id="5_mat"]
 [ext_resource type="Script" uid="uid://b8vly5jskxxs3" path="res://entities/components/interactable.gd" id="3_interactable"]
 [ext_resource type="Script" uid="uid://s7bovuudwem5" path="res://entities/components/sound_cue.gd" id="4_cue"]
+[ext_resource type="PackedScene" path="res://entities/growing_station/growing_station.tscn" id="6_station"]
 [ext_resource type="AudioStream" uid="uid://b0mb32fxtafxh" path="res://assets/audio/effects/tray_drop.wav" id="sfx_tray_drop"]
 [ext_resource type="AudioStream" uid="uid://bg7f15vdlfa0q" path="res://assets/audio/effects/press_lever_1.wav" id="sfx_press_lever_1"]
 [ext_resource type="AudioStream" uid="uid://c0h6xlxy48ea" path="res://assets/audio/effects/press_lever_2.wav" id="sfx_press_lever_2"]
@@ -53,6 +54,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 0.72, -0.64)
 light_color = Color(0.82, 0.9, 1, 1)
 light_energy = 0.5
 omni_range = 0.26
+
+[node name="GrowingStation" parent="Tube" instance=ExtResource("6_station")]
 
 [node name="Pedestal" type="StaticBody3D" parent="Tube"]
 

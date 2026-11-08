@@ -180,3 +180,20 @@ func test_esc_closes_the_open_files_before_the_pause_menu_can_take_it() -> void:
 	memo._input(esc)  # _input runs before any _unhandled_input, so the menu never sees this Esc.
 	assert_bool(memo._files.visible).is_false()
 	assert_bool(get_viewport().is_input_handled()).is_true()
+
+
+func test_the_files_show_the_signed_boss_reports_newest_first() -> void:
+	var save := SaveGame.new()
+	save.reports = PackedStringArray(["welcome", "retired_report", "mood_drift"])
+	assert_array(Memo.reports_order(save)).is_equal(["mood_drift", "welcome"])
+
+
+func test_the_files_open_on_the_memos_and_the_boss_notes_tab_shows_only_the_boss_notes() -> void:
+	var memo: CanvasLayer = auto_free(load("res://entities/milestone/milestone_memo.tscn").instantiate())
+	add_child(memo)
+	memo._open_files()
+	assert_bool(memo._grid.visible).is_true()
+	assert_bool(memo._reports.visible).is_false()
+	memo._boss_tab.button_pressed = true
+	assert_bool(memo._reports.visible).is_true()
+	assert_bool(memo._grid.visible).is_false()

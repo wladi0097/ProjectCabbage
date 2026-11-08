@@ -5,6 +5,12 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_grab_2.wav" id="3_harvest"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_1.wav" id="4_buy"]
 [ext_resource type="SystemFont" path="res://assets/fonts/terminal_font.tres" id="5_font"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_denied_1.wav" id="6_denied"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_grab_1.wav" id="7_grip"]
+[ext_resource type="Texture2D" path="res://assets/sprites/farm/pack_button_normal.svg" id="8_pack_normal"]
+[ext_resource type="Texture2D" path="res://assets/sprites/farm/pack_button_hover.svg" id="9_pack_hover"]
+[ext_resource type="Texture2D" path="res://assets/sprites/farm/pack_button_pressed.svg" id="10_pack_pressed"]
+[ext_resource type="Texture2D" path="res://assets/sprites/farm/seed_bag.svg" id="11_seed_bag"]
 
 [sub_resource type="StyleBoxFlat" id="Line"]
 content_margin_left = 8.0
@@ -30,29 +36,26 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.88, 0.94, 0.89, 1)
 
-[sub_resource type="StyleBoxFlat" id="RowLine"]
-content_margin_left = 8.0
+[sub_resource type="StyleBoxTexture" id="PackNormal"]
+content_margin_left = 12.0
 content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 32.0
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.34, 0.4, 0.37, 1)
+content_margin_right = 12.0
+content_margin_bottom = 16.0
+texture = ExtResource("8_pack_normal")
 
-[sub_resource type="StyleBoxFlat" id="RowLit"]
-content_margin_left = 8.0
+[sub_resource type="StyleBoxTexture" id="PackHover"]
+content_margin_left = 12.0
 content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 32.0
-bg_color = Color(0.88, 0.94, 0.89, 0.12)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.88, 0.94, 0.89, 1)
+content_margin_right = 12.0
+content_margin_bottom = 16.0
+texture = ExtResource("9_pack_hover")
+
+[sub_resource type="StyleBoxTexture" id="PackPressed"]
+content_margin_left = 12.0
+content_margin_top = 11.0
+content_margin_right = 12.0
+content_margin_bottom = 13.0
+texture = ExtResource("10_pack_pressed")
 
 [sub_resource type="Theme" id="Terminal"]
 default_font = ExtResource("5_font")
@@ -67,18 +70,27 @@ Button/styles/focus = SubResource("Line")
 Button/styles/hover = SubResource("Lit")
 Button/styles/normal = SubResource("Line")
 Button/styles/pressed = SubResource("Line")
-UpgradeButton/base_type = &"Button"
-UpgradeButton/styles/disabled = SubResource("RowLine")
-UpgradeButton/styles/focus = SubResource("RowLine")
-UpgradeButton/styles/hover = SubResource("RowLit")
-UpgradeButton/styles/normal = SubResource("RowLine")
-UpgradeButton/styles/pressed = SubResource("RowLine")
+SeedPack/base_type = &"Button"
+SeedPack/colors/font_color = Color(0.1, 0.11, 0.1, 1)
+SeedPack/colors/font_disabled_color = Color(0.1, 0.11, 0.1, 1)
+SeedPack/colors/font_focus_color = Color(0.1, 0.11, 0.1, 1)
+SeedPack/colors/font_hover_color = Color(0.1, 0.11, 0.1, 1)
+SeedPack/colors/font_pressed_color = Color(0.1, 0.11, 0.1, 1)
+SeedPack/colors/font_hover_pressed_color = Color(0.1, 0.11, 0.1, 1)
+SeedPack/constants/h_separation = 6
+SeedPack/styles/disabled = SubResource("PackNormal")
+SeedPack/styles/focus = SubResource("PackNormal")
+SeedPack/styles/hover = SubResource("PackHover")
+SeedPack/styles/hover_pressed = SubResource("PackPressed")
+SeedPack/styles/normal = SubResource("PackNormal")
+SeedPack/styles/pressed = SubResource("PackPressed")
 
 [node name="FarmScreen" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 1296.0
+offset_right = 1512.0
 offset_bottom = 768.0
+texture_filter = 1
 theme = SubResource("Terminal")
 script = ExtResource("1_script")
 
@@ -97,38 +109,86 @@ stream = ExtResource("4_buy")
 volume_db = -6.0
 bus = &"SFX"
 
-[node name="Scroll" type="ScrollContainer" parent="."]
-layout_mode = 0
-offset_left = 900.0
-offset_top = 252.0
-offset_right = 1260.0
-offset_bottom = 570.0
-horizontal_scroll_mode = 0
+[node name="Denied" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_denied")
+volume_db = -4.0
+bus = &"SFX"
 
-[node name="List" type="VBoxContainer" parent="Scroll"]
-custom_minimum_size = Vector2(346, 0)
-layout_mode = 2
+[node name="Grip" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("7_grip")
+volume_db = -12.0
+bus = &"SFX"
+
+[node name="Packs" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 1134.0
+offset_top = 638.0
+offset_right = 1476.0
+offset_bottom = 700.0
 theme_override_constants/separation = 8
 
-[node name="Shop" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_left = 900.0
-offset_top = 580.0
-offset_right = 1260.0
-offset_bottom = 700.0
-
-[node name="Title" type="Label" parent="Shop"]
+[node name="Seeds0" type="Button" parent="Packs"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.88, 0.94, 0.89, 1)
-theme_override_font_sizes/font_size = 22
-text = "SEED SHOP"
+theme_type_variation = &"SeedPack"
+mouse_default_cursor_shape = 2
+size_flags_horizontal = 3
 
-[node name="Seeds0" type="Button" parent="Shop"]
-layout_mode = 2
-alignment = 0
-autowrap_mode = 3
+[node name="Row" type="HBoxContainer" parent="Packs/Seeds0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -7.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
 
-[node name="Seeds1" type="Button" parent="Shop"]
+[node name="Bag" type="TextureRect" parent="Packs/Seeds0/Row"]
 layout_mode = 2
-alignment = 0
-autowrap_mode = 3
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("11_seed_bag")
+stretch_mode = 5
+
+[node name="Price" type="Label" parent="Packs/Seeds0/Row"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.1, 0.11, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "10×  $50"
+vertical_alignment = 1
+
+[node name="Seeds1" type="Button" parent="Packs"]
+layout_mode = 2
+theme_type_variation = &"SeedPack"
+mouse_default_cursor_shape = 2
+size_flags_horizontal = 3
+
+[node name="Row" type="HBoxContainer" parent="Packs/Seeds1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -7.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Bag" type="TextureRect" parent="Packs/Seeds1/Row"]
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("11_seed_bag")
+stretch_mode = 5
+
+[node name="Price" type="Label" parent="Packs/Seeds1/Row"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.1, 0.11, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "50×  $220"
+vertical_alignment = 1

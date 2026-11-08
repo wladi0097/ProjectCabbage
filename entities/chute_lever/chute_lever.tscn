@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/chute_lever/chute_lever.gd" id="1_lever"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Machines/chute_lever_frame.res" id="3_frame"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Machines/chute_lever_flap.res" id="5_flap"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Machines/chute_lever_arm.res" id="6_arm"]
+
+[sub_resource type="BoxShape3D" id="HandleHit"]
+size = Vector3(0.12, 0.34, 0.16)
+
+[node name="ChuteLever" type="Node3D"]
+script = ExtResource("1_lever")
+
+[node name="Frame" type="MeshInstance3D" parent="."]
+mesh = ExtResource("3_frame")
+
+[node name="Flap" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0)
+
+[node name="Plate" type="MeshInstance3D" parent="Flap"]
+mesh = ExtResource("5_flap")
+
+[node name="Arm" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0.34)
+
+[node name="Lever" type="MeshInstance3D" parent="Arm"]
+mesh = ExtResource("6_arm")
+
+[node name="Handle" type="StaticBody3D" parent="Arm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.222, 0.037)
+
+[node name="Shape" type="CollisionShape3D" parent="Arm/Handle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.082, 0.003)
+shape = SubResource("HandleHit")
+
+[node name="Interactable" type="Node" parent="Arm/Handle"]
+script = ExtResource("2_interactable")
+tooltip = "Supply interruption lever.
+Pull down to shut the chute, up to reopen it."
+grip_height = 0.03
+reach = true

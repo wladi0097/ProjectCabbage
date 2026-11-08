@@ -87,7 +87,7 @@ func test_dearer_stage_two_crates_push_the_senior_consultants_price_up() -> void
 func test_during_the_squeeze_the_senior_consultant_ignores_crate_prices_since_none_are_bought() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
-	save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.EASE_TIME
+	save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME
 
 	assert_int(Consultant.target_price(save, 2)).is_equal(3)
 
@@ -95,7 +95,7 @@ func test_during_the_squeeze_the_senior_consultant_ignores_crate_prices_since_no
 func test_once_the_squeeze_eases_the_senior_consultant_counts_crate_prices_again() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
-	save.squeeze_left = SupplyConsole.EASE_TIME - 1.0
+	save.squeeze_left = SupplyConsole.LULL_TIME - 1.0
 
 	assert_int(Consultant.target_price(save, 2)).is_greater(3)
 

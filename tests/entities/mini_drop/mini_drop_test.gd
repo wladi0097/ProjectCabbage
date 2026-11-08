@@ -110,3 +110,20 @@ func test_a_save_that_already_has_the_switch_lever_loads_with_the_lever_in_place
 	var drop: MiniDrop = auto_free(SCENE.instantiate())
 	add_child(drop)
 	assert_array(_lever_parts_shown(drop)).not_contains([false])
+
+
+func test_every_farm_harvest_sends_a_mini_down_the_tube_once_thinning_is_stamped() -> void:
+	assert_int(MiniDrop.thinned_after(0, 3, true)).is_equal(3)
+	assert_int(MiniDrop.thinned_after(2, 1, true)).is_equal(3)
+
+
+func test_farm_harvests_send_no_minis_without_the_thinning_card() -> void:
+	assert_int(MiniDrop.thinned_after(0, 3, false)).is_equal(0)
+
+
+func test_thinning_queues_at_most_max_minis_and_skips_the_rest() -> void:
+	assert_int(MiniDrop.thinned_after(4, 10, true)).is_equal(MiniDrop.MAX_MINIS)
+
+
+func test_a_harvest_count_that_goes_down_queues_nothing() -> void:
+	assert_int(MiniDrop.thinned_after(1, -5, true)).is_equal(1)

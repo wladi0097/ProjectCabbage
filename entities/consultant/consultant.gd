@@ -134,7 +134,7 @@ static func target_price(save: SaveGame, skill: int) -> int:
 		return near
 	# Stage 2 crates cost more (crate_floor); during the wholesalers' squeeze (before its ease) none are
 	# bought (the farm feeds the desk).
-	var least := 0.0 if save.squeeze_left > Console.EASE_TIME else Console.crate_floor(save)
+	var least := 0.0 if save.squeeze_left > Console.LULL_TIME else Console.crate_floor(save)
 	var cost := Console.pack_price(save.price_factor, save.pack_size, save.pack_discount, Console.UNIT_COST, least) / float(save.pack_size)
 	var best := Slate.MIN_PRICE
 	for price in range(Slate.MIN_PRICE, top + 1):

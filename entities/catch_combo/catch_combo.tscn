@@ -1,29 +1,46 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://h1fle8wtkkts"]
 
-[ext_resource type="Script" path="res://entities/catch_combo/catch_combo.gd" id="1_script"]
-[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="2_font"]
-[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_2.wav" id="4_tick"]
+[ext_resource type="Script" uid="uid://bpgfd372as2i2" path="res://entities/catch_combo/catch_combo.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="2_font"]
+[ext_resource type="Script" uid="uid://s7bovuudwem5" path="res://entities/components/sound_cue.gd" id="3_cue"]
+[ext_resource type="AudioStream" uid="uid://bbbo22sd4tyyy" path="res://assets/audio/effects/tally_tick_2.wav" id="4_tick"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/combo_sting_1.wav" id="5_sting1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/combo_sting_2.wav" id="6_sting2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/combo_sting_3.wav" id="7_sting3"]
 
-[node name="CatchCombo" type="Node3D"]
+[sub_resource type="AudioStreamRandomizer" id="StingTakes"]
+random_volume_offset_db = 1.0
+streams_count = 3
+stream_0/stream = ExtResource("5_sting1")
+stream_1/stream = ExtResource("6_sting2")
+stream_2/stream = ExtResource("7_sting3")
+
+[node name="CatchCombo" type="Node3D" unique_id=1913531843]
 script = ExtResource("1_script")
 
-[node name="Label" type="Label3D" parent="."]
+[node name="Label" type="Label3D" parent="." unique_id=520887764]
 visible = false
+text = "×1.00
+INTERCEPTS 0"
 pixel_size = 0.0012
 double_sided = false
-modulate = Color(0.86, 0.84, 0.74, 1)
+no_depth_test = true
+modulate = Color(0.85882354, 0.8392157, 0.7411765, 0.2901961)
 outline_modulate = Color(0.06, 0.07, 0.07, 0.85)
-text = "INTERCEPTS 1"
 font = ExtResource("2_font")
-font_size = 64
+font_size = 30
 outline_size = 0
 line_spacing = -8.0
 
-[node name="Tick" type="AudioStreamPlayer3D" parent="."]
+[node name="Tick" type="AudioStreamPlayer3D" parent="." unique_id=566957312]
 stream = ExtResource("4_tick")
 volume_db = 2.0
-bus = &"SFX"
 max_polyphony = 2
+bus = &"SFX"
 script = ExtResource("3_cue")
 min_interval = 0.05
+
+[node name="Combo" type="AudioStreamPlayer" parent="."]
+stream = SubResource("StingTakes")
+volume_db = -2.0
+bus = &"SFX"

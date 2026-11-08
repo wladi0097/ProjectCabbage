@@ -1,0 +1,82 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/sub/debug_starts.gd" id="1_script"]
+
+[node name="DebugStarts" type="Control" groups=["blocks_hand"]]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+auto_translate_mode = 2
+script = ExtResource("1_script")
+
+[node name="Scrim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.17, 0.19, 0.15, 0.72)
+
+[node name="Page" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card" type="PanelContainer" parent="Page"]
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+theme_type_variation = &"MenuCard"
+
+[node name="Nav" type="VBoxContainer" parent="Page/Card"]
+layout_mode = 2
+theme_type_variation = &"ListStack"
+
+[node name="Header" type="Label" parent="Page/Card/Nav"]
+layout_mode = 2
+theme_type_variation = &"FormLabel"
+text = "DEBUG: START FROM (overwrites your save)"
+
+[node name="HeaderRule" type="HSeparator" parent="Page/Card/Nav"]
+layout_mode = 2
+
+[node name="NewGame" type="Button" parent="Page/Card/Nav"]
+layout_mode = 2
+theme_type_variation = &"NavButton"
+text = "00  New game"
+
+[node name="List" type="VBoxContainer" parent="Page/Card/Nav"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FooterRule" type="HSeparator" parent="Page/Card/Nav"]
+layout_mode = 2
+
+[node name="SaveRow" type="HBoxContainer" parent="Page/Card/Nav"]
+layout_mode = 2
+
+[node name="Name" type="LineEdit" parent="Page/Card/Nav/SaveRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "e.g. 30_farm_ch2"
+
+[node name="SaveCurrent" type="Button" parent="Page/Card/Nav/SaveRow"]
+layout_mode = 2
+text = "Save current"
+
+[node name="Close" type="Button" parent="Page/Card/Nav"]
+layout_mode = 2
+theme_type_variation = &"NavButton"
+text = "Close (^)"
+
+[connection signal="pressed" from="Page/Card/Nav/NewGame" to="." method="_on_new_game_pressed"]
+[connection signal="pressed" from="Page/Card/Nav/SaveRow/SaveCurrent" to="." method="_on_save_current_pressed"]
+[connection signal="pressed" from="Page/Card/Nav/Close" to="." method="_on_close_pressed"]

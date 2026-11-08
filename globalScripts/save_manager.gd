@@ -106,6 +106,16 @@ func reset_save() -> void:
 	get_tree().reload_current_scene()
 
 
+## Swaps in `replacement` as the save (the debug start points, ui/sub/debug_starts), writes it over
+## the real save and reloads the world.
+func replace_save(replacement: SaveGame) -> void:
+	save = replacement
+	seconds_away = 0
+	_played_since_msec = Time.get_ticks_msec()
+	write_save()
+	get_tree().reload_current_scene()
+
+
 func _new_save() -> SaveGame:
 	var created := SaveGame.new()
 	created.version = get_current_version()

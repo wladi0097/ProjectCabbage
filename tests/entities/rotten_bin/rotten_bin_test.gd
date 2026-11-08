@@ -45,14 +45,25 @@ func test_a_unit_carried_at_the_top_height_is_not_in_the_bin_yet() -> void:
 	assert_bool(Bin.in_mouth(Vector3.ZERO, Vector3(0.0, Bin.TOP_Y + 0.001, 0.0), 0.2)).is_false()
 
 
-func test_a_rebate_is_a_rounded_share_of_the_chalked_price() -> void:
-	assert_int(Bin.rebate_for(0.5, 5)).is_equal(3)
-	assert_int(Bin.rebate_for(0.25, 6)).is_equal(2)
-	assert_int(Bin.rebate_for(2.0, 7)).is_equal(14)
-
-
 func test_binning_pays_no_rebate_until_one_is_bought() -> void:
-	assert_int(Bin.rebate_for(0.0, 4)).is_equal(0)
+	assert_int(Bin.bin_coins_for(PackedStringArray())).is_equal(0)
+	assert_int(SaveGame.new().bin_coins).is_equal(0)
+
+
+func test_an_old_save_with_rebate_tiers_bought_gets_their_flat_dollars() -> void:
+	var save := SaveGame.new()
+	save.tree_bought = PackedStringArray(["bin_mouth", "bin_rebate", "bin_rebate_2"])
+	UpgradeDesk.migrate(save)
+	assert_int(save.bin_coins).is_equal(3)
+
+
+func test_a_binned_rotten_unit_pops_its_rebate_out_as_coins_whatever_the_price() -> void:
+	var pile: CoinPile = auto_free(CoinPile.new())
+	pile.multimesh = MultiMesh.new()
+	add_child(pile)
+	pile.set_process(false)  # No camera here for the hand's sweep (Godot turns _process on at ready).
+	pile.pop_out(Vector3(0.9, 0.9, 1.0), Vector3(0.8, 0.76, 0.75), 5)
+	assert_int(pile.pending_value()).is_equal(5)
 
 
 func test_a_fresh_save_gets_no_rotten_units() -> void:

@@ -4,31 +4,42 @@ extends Node3D
 ## Clicked, the camera glides left to an old CRT standing at 45 degrees in the back-left corner of the
 ## L desk (table.blend's left arm, left of the desk view) and frames its glass; the set powers on. The glass shows `ScreenViewport`, a 2D
 ## SubViewport (`screen_scene`, or a NO SIGNAL placeholder), and mouse input over the glass is
-## passed into it. The BACK button on the set (right of the glass), Esc or a click elsewhere off
-## the glass pans back. The TV corner (`Corner`) is its own
+## passed into it. The BACK button on the set (right of the glass) or Esc pans back (a click
+## elsewhere off the glass does nothing). The TV corner (`Corner`) is its own
 ## node so the farm section can be built onto it later. Sits at the world origin; the remote, the set,
 ## its lamps and materials are laid out in farm_tv.tscn.
+## Channels: the CH 1 / CH 2 keys at the top of the right panel (built like BACK; Corner/Tv/Channel1, Channel2
+## are their pilot windows, lit for the channel showing) switch the glass
+## between `screen_scene` (the fields) and `tree_scene` (the farm tree, locked until its card) with
+## STATIC_TIME of static; the channel is kept in save.farm_channel.
 
 const CARD := "family_farm"
 ## The glass in the model: centre, normal +Z, half size (m), and the viewport it shows (px).
 const SCREEN_CENTRE := Vector3(-0.025, 0.33, 0.262)
-const SCREEN_HALF := Vector2(0.320625, 0.19)
-const SCREEN_PIXELS := Vector2(1296, 768)
+const SCREEN_HALF := Vector2(0.374063, 0.19)
+const SCREEN_PIXELS := Vector2(1512, 768)
 ## Barrel warp of the glass; the same as WARP in crt_screen.gdshader.
 const WARP := 0.06
-## The BACK button on the set's narrow right panel: front face centre and half size (m), as the
-## glass; the click target takes in its chrome rim.
-const BACK_CENTRE := Vector3(0.356625, 0.37, 0.282)
+## The BACK button at the foot of the set's narrow right panel (the CH 1 / CH 2 keys above it): front
+## face centre and half size (m), as the glass; the click target takes in its chrome rim.
+const BACK_CENTRE := Vector3(0.404063, 0.21, 0.263)
 const BACK_HALF := Vector2(0.024, 0.045)
-## The TV view: the glass fills this much of the desk camera's vertical field of view (degrees),
-## leaving some room around the set.
-const FILL := 0.66
+## The CH 1 / CH 2 keys at the top of the panel, as BACK (the model's CZ), rim included.
+const CHANNEL_CENTRES: Array[Vector3] = [Vector3(0.404063, 0.47, 0.263), Vector3(0.404063, 0.385, 0.263)]
+const CHANNEL_HALF := Vector2(0.023, 0.039)
+## The power lamp's glow at full power; dark (0) with the set off, i.e. while the camera is on the desk.
+const LAMP_GLOW := 1.1
+## The TV view: the set's case (CASE_HALF_W either side of the glass's centre + VIEW_SHIFT) fills
+## WIDTH_FILL of the view's width, unless the glass would then fill more than FILL of its height
+## (wide screens): the closer of the two never crops the set.
+const WIDTH_FILL := 0.9
+const FILL := 0.72
+const CASE_HALF_W := 0.446
 const DESK_FOV := 40.0
-## The TV view sits this far right of the glass (m): on the middle of the case, so the BACK
-## button is in view too.
-const VIEW_SHIFT := 0.025
-## ...and looks down at it this much (degrees), so the desk corner under the set shows.
-const VIEW_PITCH := 9.0
+## The TV view sits this far right of the glass (m): on the middle of the case, BACK button included.
+const VIEW_SHIFT := 0.03
+## ...and looks down at it this much (degrees): nearly from the front, the desk under the set showing.
+const VIEW_PITCH := 10.0
 const PAN_TIME := 1.05
 ## The set switches on this far into the pan and takes POWER_TIME to open up; off takes OFF_TIME.
 const POWER_AT := 0.45
@@ -37,23 +48,46 @@ const OFF_TIME := 0.25
 const HUM_DB := -10.0
 const DROP_HEIGHT := 1.6
 const DROP_TIME := 0.45
-## Hovered, the arrow stands this far proud of its plate (m).
-const ARROW_LIFT := 0.004
+## Hovered, the arrow (and a CH key's pilot window) stands this far proud of its plate (m).
+const ARROW_LIFT := 0.0015
+## Hovered, the remote lifts off the desk and tips its nose up at the set (m, rad, s), like the ledger.
+const REMOTE_LIFT := 0.03
+const REMOTE_TILT := 0.14
+const REMOTE_HOVER_TIME := 0.15
 const STATIC_SHADER := preload("res://assets/shaders/tv_static.gdshader")
+const STATIC_TIME := 0.12
+## A channel key's pilot window glow (a pale phosphor green, the keys' material): off, the channel
+## showing (times the set's power: dark with the set off), hovered.
+const BUTTON_GLOW: Array[float] = [0.0, 1.4, 4.5]
+## The OS cursor at the TV (the desk's 3D hand hides there): pixel glove images (tools/make_farm_sprites.py,
+## the screen's pixel style) for the pointer, the open
+## and the closed hand (FarmScreen.POINT / OPEN_HAND / GRAB), with their hotspots (px), game-wide.
+const CURSORS := {
+	Input.CURSOR_POINTING_HAND: [preload("res://assets/sprites/cursors/pointer.png"), Vector2(11, 1)],
+	Input.CURSOR_CAN_DROP: [preload("res://assets/sprites/cursors/hand_open.png"), Vector2(15, 15)],
+	Input.CURSOR_DRAG: [preload("res://assets/sprites/cursors/hand_grab.png"), Vector2(15, 17)],
+}
 
-## The camera is (on its way) at the TV: the projector's PULL tab hides meanwhile.
+## The camera is off the desk: on its way to the TV, there, or on its way back (away_at). The
+## projector's PULL tab hides meanwhile and only comes back once the camera is home.
 static var away := false
 
 @export var screen_scene: PackedScene
+@export var tree_scene: PackedScene
 
 var _lamp_energy: Array[float] = []
 var _back_hover := false
+## The channel button under the mouse (1, 2; 0 none), the channels' screens, seconds of static left.
+var _channel_hover := 0
+var _channels: Array[CanvasItem] = []
+var _static_left := 0.0
 ## 0 on the desk, 1 at the TV; the set's power 0..1.
 var _view := 0.0
 var _power := 0.0
 var _at_tv := false
 var _on_glass := false
 var _tween: Tween
+var _remote_tween: Tween
 var _camera: Camera3D
 var _desk_view: Transform3D
 
@@ -76,6 +110,9 @@ var _desk_view: Transform3D
 @onready var _cursor: Control = $Cursor
 ## The hint slip that follows the mouse over the BACK button.
 @onready var _hint: Label = $HintLayer/Hint
+## The burst of static over the glass on a channel switch, and the channel buttons.
+@onready var _static: CanvasItem = $ScreenViewport/Static
+@onready var _buttons: Array[MeshInstance3D] = [$Corner/Tv/Channel1, $Corner/Tv/Channel2]  # their pilot windows
 
 
 func _ready() -> void:
@@ -83,17 +120,28 @@ func _ready() -> void:
 	_desk_view = _camera.transform
 	for light in _lamps:
 		_lamp_energy.append(light.light_energy)
-	($Remote/Interactable as Interactable).grabbed.connect(_toggle)
+	var hit := $Remote/Interactable as Interactable
+	hit.grabbed.connect(_toggle)
+	hit.hovered.connect(_lift_remote.bind(1.0))
+	hit.unhovered.connect(_lift_remote.bind(0.0))
 	_glass.set_shader_parameter(&"screen_tex", _screen.get_texture())
 	_screen.world_2d = World2D.new()  # Its own canvas: the desk's 2D overlays must not show on the glass.
-	_screen.add_child(screen_scene.instantiate() if screen_scene != null else _placeholder())
+	for shape: Input.CursorShape in CURSORS:
+		Input.set_custom_mouse_cursor(CURSORS[shape][0], shape, CURSORS[shape][1])
+	for scene: PackedScene in [screen_scene, tree_scene]:
+		var channel: CanvasItem = scene.instantiate() if scene != null else _placeholder()
+		_screen.add_child(channel)
+		_channels.append(channel)
+	_show_channel()
 	var owned := bought(SaveManager.save)
 	_remote.visible = owned
 	_corner.visible = owned
 	_set_power(0.0)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_static_left = maxf(_static_left - delta, 0.0)
+	_static.visible = _static_left > 0.0
 	if not _remote.visible and bought(SaveManager.save):
 		_drop()
 	_cursor.visible = _view > 0.0
@@ -132,22 +180,125 @@ func _input(event: InputEvent) -> void:
 	var from := _camera.project_ray_origin(mouse.position)
 	var dir := _camera.project_ray_normal(mouse.position)
 	_hover_back(on_glass(rect_uv(back_frame(), BACK_HALF, from, dir)))
+	_hover_channel(_channel_at(from, dir))
 	var uv := glass_uv(screen_frame(), from, dir)
 	var was_on := _on_glass
 	_on_glass = on_glass(uv)
 	if _on_glass:
+		if not was_on:  # Without it the screen only hears hover motion after a click.
+			_screen.notification(NOTIFICATION_VP_MOUSE_ENTER)
 		var inner := mouse.duplicate() as InputEventMouse
 		inner.position = screen_pixel(uv)
 		inner.global_position = inner.position
 		_screen.push_input(inner, true)
+		_set_cursor()
 		return
 	if was_on:
 		_screen.notification(NOTIFICATION_VP_MOUSE_EXIT)
+	_set_cursor()
 	var button := mouse as InputEventMouseButton
 	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
-		if _back_hover:
+		if _channel_hover > 0:
+			$Click.cue(channel_frame(_channel_hover).origin)
+			_switch(_channel_hover)
+			return
+		if leaves_tv(_back_hover):
 			$Click.cue(back_frame().origin)
-		_pan(false)
+			_pan(false)
+
+
+## Whether a click off the glass takes the camera back to the desk: only on BACK (a click that
+## misses the glass, e.g. while dragging a seed or a cabbage, must not leave).
+static func leaves_tv(on_back: bool) -> bool:
+	return on_back
+
+
+## The channel showing for `save`: 2 (the farm tree) or else 1 (the fields).
+static func shown_channel(save: SaveGame) -> int:
+	return 2 if save.farm_channel == 2 else 1
+
+
+## The power lamp's glow for the set's power `power` (0 off .. 1 on): dark when off, no blinking.
+static func lamp_glow(power: float) -> float:
+	return LAMP_GLOW * clampf(power, 0.0, 1.0)
+
+
+## The cursor at the TV: a pointer on BACK or a CH key (`on_key`), on the glass what the screen
+## asks for (`glass`: its hovered control's shape), the arrow elsewhere.
+static func tv_cursor(on_key: bool, on_glass_now: bool, glass: Input.CursorShape) -> Input.CursorShape:
+	if on_key:
+		return Input.CURSOR_POINTING_HAND
+	return glass if on_glass_now else Input.CURSOR_ARROW
+
+
+## Whether the camera is off the desk (`away`): at or bound for the TV, or still panning back (view > 0).
+static func away_at(at_tv: bool, view: float) -> bool:
+	return at_tv or view > 0.0
+
+
+## A CH key's pilot window glow for its state `glow` (0 off, 1 the channel showing, 2 hovered) on a set
+## at power `power`: the channel showing is lit only while the set is on.
+static func key_glow(glow: int, power: float) -> float:
+	return BUTTON_GLOW[glow] * (clampf(power, 0.0, 1.0) if glow == 1 else 1.0)
+
+
+## Channel `channel`'s (1, 2) key face in the world, as screen_frame.
+func channel_frame(channel: int) -> Transform3D:
+	return _corner.global_transform * Transform3D(Basis(), CHANNEL_CENTRES[channel - 1])
+
+
+## The channel key a ray hits (1, 2), or 0.
+func _channel_at(from: Vector3, dir: Vector3) -> int:
+	for i in CHANNEL_CENTRES.size():
+		if on_glass(rect_uv(channel_frame(i + 1), CHANNEL_HALF, from, dir)):
+			return i + 1
+	return 0
+
+
+## Switches the set to channel `channel` with a burst of static, kept in the save.
+func _switch(channel: int) -> void:
+	if channel == shown_channel(SaveManager.save):
+		return
+	SaveManager.save.farm_channel = channel
+	_static_left = STATIC_TIME
+	if _on_glass:
+		_on_glass = false
+		_screen.notification(NOTIFICATION_VP_MOUSE_EXIT)
+	_show_channel()
+
+
+## Shows the saved channel's screen and lights its button.
+func _show_channel() -> void:
+	var channel := shown_channel(SaveManager.save)
+	for i in _channels.size():
+		_channels[i].visible = i + 1 == channel
+	_light_buttons()
+
+
+func _hover_channel(channel: int) -> void:
+	if channel == _channel_hover:
+		return
+	_channel_hover = channel
+	_light_buttons()
+	_set_cursor()
+
+
+func _light_buttons() -> void:
+	var channel := shown_channel(SaveManager.save)
+	for i in _buttons.size():
+		var glow := 2 if _channel_hover == i + 1 else 1 if channel == i + 1 else 0
+		(_buttons[i].material_override as StandardMaterial3D).emission_energy_multiplier = key_glow(glow, _power)
+		_buttons[i].position.z = ARROW_LIFT if glow == 2 else 0.0
+
+
+## Sets the OS cursor (tv_cursor). Set straight on the display: the desk's default shape stays the arrow.
+func _set_cursor() -> void:
+	var hovered := _screen.gui_get_hovered_control() if _on_glass else null
+	var glass: int = Input.CURSOR_ARROW
+	if hovered != null:
+		glass = hovered.get_cursor_shape()
+	var shape := tv_cursor(_back_hover or _channel_hover > 0, _on_glass, glass as Input.CursorShape)
+	DisplayServer.cursor_set_shape(int(shape) as DisplayServer.CursorShape)
 
 
 ## The SubViewport shown on the glass; its content is `screen_scene` (or the placeholder).
@@ -180,10 +331,11 @@ static func bought(save: SaveGame) -> bool:
 	return save.stamped.has(CARD)
 
 
-## The camera on the glass (`screen`, as screen_frame) from VIEW_PITCH above, so it fills about
-## FILL of the view's height, shifted VIEW_SHIFT to the right.
-static func tv_view(screen: Transform3D) -> Transform3D:
-	var distance := SCREEN_HALF.y * 2.0 / FILL / (2.0 * tan(deg_to_rad(DESK_FOV) / 2.0))
+## The camera on the glass (`screen`, as screen_frame) from VIEW_PITCH above, shifted VIEW_SHIFT
+## to the right, as close as WIDTH_FILL and FILL allow on a view `aspect` (width / height) wide.
+static func tv_view(screen: Transform3D, aspect := 16.0 / 9.0) -> Transform3D:
+	var half_tan := tan(deg_to_rad(DESK_FOV) / 2.0)
+	var distance := maxf(CASE_HALF_W / WIDTH_FILL / (half_tan * aspect), SCREEN_HALF.y / FILL / half_tan)
 	var look := screen.basis * Basis(Vector3.RIGHT, -deg_to_rad(VIEW_PITCH))
 	return Transform3D(look, screen.origin + look.z * distance + screen.basis.x * VIEW_SHIFT)
 
@@ -227,7 +379,7 @@ func _menu_open() -> bool:
 
 func _pan(to_tv: bool) -> void:
 	_at_tv = to_tv
-	away = to_tv
+	away = away_at(to_tv, _view)
 	if _tween != null:
 		_tween.kill()
 	_tween = create_tween().set_parallel()
@@ -245,18 +397,32 @@ func _pan(to_tv: bool) -> void:
 		_screen.notification(NOTIFICATION_VP_MOUSE_EXIT)
 	if not to_tv:
 		_hover_back(false)
+		_hover_channel(0)
+		_set_cursor()
 
 
 func _set_view(t: float) -> void:
 	_view = t
-	_camera.transform = view_at(_desk_view, tv_view(screen_frame()), t)
+	away = away_at(_at_tv, t)
+	var view := get_viewport().get_visible_rect().size
+	_camera.transform = view_at(_desk_view, tv_view(screen_frame(), view.x / maxf(view.y, 1.0)), t)
 
 
 func _set_power(p: float) -> void:
 	_power = p
 	_glass.set_shader_parameter(&"power", p)
-	_led.emission_energy_multiplier = 0.2 + 2.0 * p
+	_led.emission_energy_multiplier = lamp_glow(p)
+	_light_buttons()
 	_glow.light_energy = 0.5 * p
+
+
+## Lifts the remote's model `k` (0 resting .. 1 hovered) off the desk, nose up.
+func _lift_remote(k: float) -> void:
+	if _remote_tween != null:
+		_remote_tween.kill()
+	_remote_tween = create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_remote_tween.tween_property(_model, "position:y", REMOTE_LIFT * k, REMOTE_HOVER_TIME)
+	_remote_tween.tween_property(_model, "rotation:x", -REMOTE_TILT * k, REMOTE_HOVER_TIME)
 
 
 func _toggle() -> void:
@@ -308,5 +474,4 @@ func _hover_back(on: bool) -> void:
 	_back_hover = on
 	_arrow.emission_energy_multiplier = 2.4 if on else 0.0
 	_arrow_mesh.position.z = ARROW_LIFT if on else 0.0
-	_led.emission_energy_multiplier = (0.2 + 2.0 * _power) * (1.8 if on else 1.0)
-	Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND if on else Input.CURSOR_ARROW)
+	_set_cursor()

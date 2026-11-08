@@ -32,7 +32,7 @@ const EVENTS := {
 	## The farm and the shock both in: crates cost more than they sell for for a while
 	## (SupplyConsole.SQUEEZE_TIME), from whichever came second.
 	supply_squeeze = {card = "family_farm", flag = "supply_shock", report = {re = "THE WHOLESALERS RETALIATE",
-		body = "Word of the farm got out. For 5 minutes crates cost more than a unit sells for, and the standing order will not buy them. Live off the farm: the remote on your desk switches to it. Prices ease back over the 5 minutes after that."}},
+		body = "Word of the farm got out. Crates now cost more than a unit sells for: 10 minutes at a time, with a 1 minute break in between. The standing order will not buy them meanwhile. Live off the farm: the remote on your desk switches to it."}},
 }
 ## Units sold after the warning until wholesale prices explode (tools/pace.py: about 4 min; the
 ## demo: Demo.SHOCK_AFTER).

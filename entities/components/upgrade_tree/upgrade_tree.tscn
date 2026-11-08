@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/components/upgrade_tree/upgrade_tree.gd" id="1_tree"]
+
+[node name="UpgradeTree" type="Control"]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_tree")
+
+[node name="Layer" type="Node2D" parent="."]
+
+[node name="Top" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2

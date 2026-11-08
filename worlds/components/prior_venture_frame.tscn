@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://worlds/components/prior_venture_frame.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Props/prior_venture_frame.blend" id="2_model"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="3_oswald"]
+
+[node name="PriorVentureFrame" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Plate" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2325, 0.0175)
+pixel_size = 0.0003
+modulate = Color(0.06, 0.05, 0.03, 1)
+text = "PRIOR VENTURE No. 1"
+font = ExtResource("3_oswald")
+font_size = 60
+outline_size = 0

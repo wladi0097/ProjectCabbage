@@ -1,6 +1,6 @@
 extends Node
 ## Test shortcuts, debug builds only: 1 sells 10 cabbages, 2 sells 100, instantly and whether or
-## not there are any. Each pays the chalked price straight onto the tally.
+## not there are any. Each pays the chalked price straight onto the tally, and as many findings (research).
 
 const SALES := {KEY_1: 10, KEY_2: 100}
 
@@ -18,4 +18,5 @@ func _unhandled_input(event: InputEvent) -> void:
 	var count: int = SALES[key.keycode]
 	save.sold += count
 	save.coins += count * save.sale_price
-	print("debug: sold %d, coins now %d" % [count, save.coins])
+	save.findings += count * save.sale_price
+	print("debug: sold %d, coins now %d, findings %d" % [count, save.coins, save.findings])

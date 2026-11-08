@@ -18,6 +18,11 @@ func test_a_test_run_never_writes_the_players_save() -> void:
 	assert_bool(SaveManagerScript.writes_allowed()).is_false()
 
 
+func test_saves_live_in_appdata_projectcabbage_not_under_godot() -> void:
+	assert_str(OS.get_user_data_dir().replace("\\", "/")) \
+			.is_equal(OS.get_data_dir().replace("\\", "/").path_join("ProjectCabbage"))
+
+
 func test_play_time_counts_whole_seconds_on_top_of_the_saved_time() -> void:
 	assert_int(SaveManagerScript.played_seconds(100, 5000, 5000)).is_equal(100)
 	assert_int(SaveManagerScript.played_seconds(100, 5000, 7999)).is_equal(102)

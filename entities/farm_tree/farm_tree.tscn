@@ -1,0 +1,117 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/farm_tree/farm_tree.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://entities/components/upgrade_tree/upgrade_tree.tscn" id="2_tree"]
+[ext_resource type="SystemFont" path="res://assets/fonts/terminal_font.tres" id="3_font"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_1.wav" id="4_buy"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_denied_1.wav" id="5_denied"]
+
+[node name="FarmTree" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1512.0
+offset_bottom = 768.0
+mouse_filter = 2
+script = ExtResource("1_script")
+approve_sound = ExtResource("4_buy")
+denied_sound = ExtResource("5_denied")
+
+[node name="Glass" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 1512.0
+offset_bottom = 768.0
+mouse_filter = 2
+color = Color(0.05, 0.07, 0.06, 1)
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 20.0
+offset_right = 900.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(0.88, 0.94, 0.89, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 32
+text = "FARM ADMINISTRATION - CH 2"
+
+[node name="Budget" type="Label" parent="."]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 20.0
+offset_right = 1476.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(0.88, 0.94, 0.89, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 2
+auto_translate_mode = 2
+
+[node name="Rule" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 66.0
+offset_right = 1476.0
+offset_bottom = 68.0
+mouse_filter = 2
+color = Color(0.34, 0.4, 0.37, 1)
+
+[node name="Tree" parent="." instance=ExtResource("2_tree")]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 80.0
+offset_right = 1476.0
+offset_bottom = 700.0
+font = ExtResource("3_font")
+ink = Color(0.88, 0.94, 0.89, 1)
+beam = Color(0.05, 0.07, 0.06, 1)
+ground = Color(0.05, 0.07, 0.06, 1)
+accent = Color(0.48, 0.75, 0.26, 1)
+refused = Color(1, 0.25, 0.2, 1)
+warn = Color(0.62, 0.1, 0.06, 1)
+glow = Color(0.88, 0.94, 0.89, 0.15)
+
+[node name="Footer" type="Label" parent="."]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 708.0
+offset_right = 900.0
+offset_bottom = 740.0
+theme_override_colors/font_color = Color(0.62, 0.68, 0.63, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 20
+text = "FORM FA-2   |   HOLD TO APPROVE"
+
+[node name="Locked" type="Control" parent="."]
+layout_mode = 0
+offset_top = 80.0
+offset_right = 1512.0
+offset_bottom = 768.0
+mouse_filter = 2
+
+[node name="Pending" type="Label" parent="Locked"]
+layout_mode = 0
+offset_top = 200.0
+offset_right = 1512.0
+offset_bottom = 280.0
+theme_override_colors/font_color = Color(0.88, 0.94, 0.89, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 56
+text = "CHANNEL 2 — SUBSCRIPTION PENDING"
+horizontal_alignment = 1
+
+[node name="Note" type="Label" parent="Locked"]
+layout_mode = 0
+offset_left = 156.0
+offset_top = 310.0
+offset_right = 1356.0
+offset_bottom = 420.0
+theme_override_colors/font_color = Color(0.62, 0.68, 0.63, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 26
+text = "Farm administration is reserved for approved desks.
+Requisition a terminal through the usual channels."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Sfx" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"

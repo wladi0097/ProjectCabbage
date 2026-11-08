@@ -13,8 +13,12 @@ extends Node3D
 ## collider): SALES / SPLIT / RESEARCH
 ## (save.tube_split 0 / 0.5 / 1). Minis routed to research travel under the desk and appear in the
 ## QA bay's mouth as if thrown in, or are thrown back onto the mat if it is full (QaBay.file_direct); SPLIT alternates, counted like SaleWindow._owed. The lever is dragged
-## left/right, or clicked to step to the next position. Built in world space: the node stays at the
-## world origin.
+## left/right, or clicked to step to the next position. FIELD THINNING PROGRAMME (mini_thinning): every
+## farm harvest (save.farm_harvests going up) also sends one mini, queued THIN_GAP apart; at most
+## MAX_MINIS wait in the queue (harvests past that are skipped) and the queue waits while MAX_MINIS
+## minis are out. The growing station (mini_station, entities/growing_station/) sits on the intake:
+## out of sight in the tube, a mini passing it may grow into a full-size unit (GrowingStation.grows).
+## Built in world space: the node stays at the world origin.
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
 const Feeder := preload("res://worlds/components/cabbage_feeder.gd")
@@ -62,6 +66,8 @@ const CLICK := 0.08
 const SLOTS := ["SALES", "SPLIT", "RESEARCH"]
 const LABEL_LIT := Color(0.86, 0.85, 0.8, 0.95)
 const LABEL_DIM := Color(0.5, 0.52, 0.5, 0.6)
+## Seconds between two thinning minis (a tractor's sweep harvests several at once).
+const THIN_GAP := 0.35
 
 ## The world's plain desk and mat (table.blend's Table and cabbage_mat), hidden while the tube
 ## variant is shown.
@@ -76,6 +82,10 @@ var _held_from := 0.0
 var _dragging := false
 var _snapping: Tween
 var _labels: Array[Label3D] = []
+## Farm harvests already answered with a thinning mini, the minis still queued, seconds to the next.
+var _harvests_seen := 0
+var _thinned := 0
+var _thin_wait := 0.0
 
 @onready var _tube: Node3D = $Tube
 @onready var _lever: Node3D = $Tube/Model/Lever
@@ -83,11 +93,13 @@ var _labels: Array[Label3D] = []
 @onready var _lever_rest := _lever.basis
 @onready var _handle: StaticBody3D = $Tube/Handle
 @onready var _tube_rest := _tube.position
+@onready var _station: GrowingStation = $Tube/GrowingStation
 
 
 func _ready() -> void:
 	var save := SaveManager.save
 	_wait = Feeder.restock_wait(save.mini_every, randf())
+	_harvests_seen = save.farm_harvests
 	for i in SLOTS.size():
 		var label := Label3D.new()
 		label.text = SLOTS[i]
@@ -119,6 +131,7 @@ func _process(delta: float) -> void:
 	if _dragging:
 		_angle = move_toward(_angle, _angle_under_mouse(), LEVER_RATE * delta)
 		_pose_lever()
+	_thin(delta)
 	if not save.stamped.has("mini_cabbages"):
 		return
 	_wait -= delta
@@ -127,10 +140,35 @@ func _process(delta: float) -> void:
 	_wait = Feeder.restock_wait(save.mini_every, randf())
 	if minis_out(get_tree().get_nodes_in_group(&"cabbages")) >= MAX_MINIS:
 		return
+	_send_one()
+
+
+func _send_one() -> void:
 	if _tube.visible and _tube.position == _tube_rest:
 		_send_down_tube()
 	else:
 		_drop_on_mat()
+
+
+## FIELD THINNING PROGRAMME: new farm harvests queue minis, sent THIN_GAP apart while there is room.
+func _thin(delta: float) -> void:
+	var save := SaveManager.save
+	_thinned = thinned_after(_thinned, save.farm_harvests - _harvests_seen, save.stamped.has("mini_thinning"))
+	_harvests_seen = save.farm_harvests
+	_thin_wait -= delta
+	if _thinned <= 0 or _thin_wait > 0.0:
+		return
+	if minis_out(get_tree().get_nodes_in_group(&"cabbages")) >= MAX_MINIS:
+		return
+	_thinned -= 1
+	_thin_wait = THIN_GAP
+	_send_one()
+
+
+## The thinning queue after `harvests` new farm harvests on top of `queued` (`on`: the card is
+## stamped): one mini each, MAX_MINIS at most (the rest are skipped); nothing without the card.
+static func thinned_after(queued: int, harvests: int, on: bool) -> int:
+	return mini(queued + maxi(harvests, 0), MAX_MINIS) if on else 0
 
 
 ## Minis on the desk or on their way (not sold yet).
@@ -213,7 +251,10 @@ func _send_down_tube() -> void:
 	ride.tween_property(cabbage, "global_position:y", INTAKE_Y, INTO_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	ride.tween_callback(func() -> void:
 		cabbage.visible = false
-		$Whoosh.cue(INTAKE))
+		$Whoosh.cue(INTAKE)
+		if _station.visible and GrowingStation.grows(save, randf()):
+			cabbage.grow()
+			_station.pulse())
 	ride.tween_interval(UNDER / speed)
 	if research:
 		ride.tween_callback(lab.file_direct.bind(cabbage))

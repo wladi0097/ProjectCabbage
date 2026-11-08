@@ -49,6 +49,8 @@ const SLIP_EJECT_TIME := 0.45
 const SLIP_HALF := 0.008
 const SLIP_LAYER := 0.022
 const DESK_Y := 0.76
+## MICRO-SAMPLE PROTOCOL (desk card micro_samples): a mini is read as this many full units.
+const MICRO_SAMPLE := 2.0
 
 @export var window: SaleWindow
 @export var counter: Node3D
@@ -57,6 +59,8 @@ const DESK_Y := 0.76
 var _jobs: Array[float] = []
 ## Findings each unit on a bench will yield (findings_for), same order as _jobs.
 var _yields: Array[int] = []
+## Fractions of a Finding not yielded yet (minis are worth a share, tally).
+var _owed := 0.0
 ## Slips out of the bay and not filed yet (on their way out, on the desk or homing); value in meta.
 var _slips: Array[Node3D] = []
 var _progress := 0.0
@@ -154,24 +158,38 @@ func _admit(cabbage: Cabbage) -> void:
 	scan.tween_property(self, "_scan", 0.0, RETURN_TIME).set_trans(Tween.TRANS_SINE)
 
 
-## Findings one analysed unit yields: a research unit research_mult times findings_per_cabbage,
-## a mini mini_value of it (at least 1), any other findings_per_cabbage.
-static func findings_for(cabbage: Cabbage, save: SaveGame) -> int:
+## Findings one analysed unit is worth: a research unit research_mult times findings_per_cabbage,
+## a mini mini_value of it (MICRO-SAMPLE PROTOCOL, micro_samples: MICRO_SAMPLE times it), any other
+## findings_per_cabbage. A mini's share is exact, not rounded: _take tallies the fractions.
+static func findings_for(cabbage: Cabbage, save: SaveGame) -> float:
 	if cabbage.research:
-		return roundi(save.findings_per_cabbage * save.research_mult)
+		return roundf(save.findings_per_cabbage * save.research_mult)
 	if cabbage.mini:
-		return maxi(1, roundi(save.findings_per_cabbage * save.mini_value))
-	return save.findings_per_cabbage
+		var share := MICRO_SAMPLE if save.stamped.has("micro_samples") else save.mini_value
+		return save.findings_per_cabbage * share
+	return float(save.findings_per_cabbage)
 
 
-## A unit taken in: off the stock (minis are none), counted if research. Returns its Findings.
+## The whole Findings a unit worth `worth` yields with `owed` already on the tally, and the tally
+## after it: [whole, owed]. Like SaleWindow's owed coins, fractions carry over to the next unit.
+static func tally(owed: float, worth: float) -> Array:
+	var total := owed + worth
+	# The epsilon keeps 3 × 0.333.. from landing a hair under 1.
+	var whole := floori(total + 0.0001)
+	return [whole, maxf(total - whole, 0.0)]
+
+
+## A unit taken in: off the stock (minis and grown ones are none), counted if research. Returns its
+## whole Findings (a mini's fraction waits on _owed).
 func _take(cabbage: Cabbage) -> int:
 	var save := SaveManager.save
-	if not cabbage.mini:
+	if cabbage.is_stock():
 		save.stock -= 1
 	if cabbage.research:
 		save.research_units += 1
-	return findings_for(cabbage, save)
+	var counted := tally(_owed, findings_for(cabbage, save))
+	_owed = counted[1]
+	return counted[0]
 
 
 ## Delivered by the tube (hidden, frozen, out of the physics): it appears in the chamber's mouth and

@@ -8,7 +8,8 @@ extends CanvasLayer
 ## Memos already met when the scene loads (an old save meeting new memos) are filed without the paper.
 ## The FILES folder, a 3D manila folder lying in the desk's bottom-right corner (once a memo is
 ## filed), opens on hover a little and, clicked, shows every memo as a grid of paper cards on a dark
-## shade: the filed ones newest first, then the ones not yet filed, greyed.
+## shade: the filed ones newest first, then the ones not yet filed, greyed. Two tabs on top switch
+## between the memos and the boss's signed notes (newest first).
 ## An X in the top-right corner, a click outside the cards or Esc closes it.
 
 const FONT := preload("res://assets/fonts/Oswald.ttf")
@@ -113,6 +114,8 @@ const FLY_SCALE := 0.08
 const HOLD := 6.0
 ## One card in the FILES grid.
 const CARD := Vector2(540, 150)
+## One signed boss report in the FILES (its tab, two to a row): wide and tall, for its whole text in readable type.
+const REPORT_CARD := Vector2(822, 420)
 ## The FILES view's close button (px square), in its top-right corner.
 const CLOSE := 40.0
 ## The FILES folder on the desk: hover animation seconds, how far the cover opens (rad), the
@@ -152,7 +155,11 @@ var _glow: StandardMaterial3D
 @onready var _files: CanvasLayer = $Files
 @onready var _shade: Control = $Files/Shade
 @onready var _list: Control = $Files/Shade/List
-@onready var _grid: Control = $Files/Shade/List/Grid
+@onready var _column: Control = $Files/Shade/List/Column
+## The boss's signed reports, newest first, above the memos.
+@onready var _reports: Control = $Files/Shade/List/Column/Reports
+@onready var _grid: Control = $Files/Shade/List/Column/Grid
+@onready var _boss_tab: Button = $Files/Shade/Tabs/Boss
 
 
 func _ready() -> void:
@@ -174,6 +181,7 @@ func _ready() -> void:
 	_set_hover(0.0)
 	_shade.draw.connect(_draw_shade)
 	_shade.gui_input.connect(_on_shade_input)
+	_boss_tab.toggled.connect(_show_tab)
 	_files.visible = false
 	_file_due(false)
 	SteamAchievements.sync(SaveManager.save.milestones)
@@ -254,23 +262,36 @@ func _on_paper_input(event: InputEvent) -> void:
 ## The folder clicked: every memo as a card on the dark shade.
 func _open_files() -> void:
 	_glow_left = 0.0
-	for card in _grid.get_children():
+	for card in _grid.get_children() + _reports.get_children():
 		card.free()
+	for id in reports_order(SaveManager.save):
+		var card := Control.new()
+		card.custom_minimum_size = REPORT_CARD
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.draw.connect(_draw_report.bind(card, BossReport.report(id)))
+		_reports.add_child(card)
 	for m in files_order(SaveManager.save):
 		var card := Control.new()
 		card.custom_minimum_size = CARD
 		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		card.draw.connect(_draw_card.bind(card, m))
 		_grid.add_child(card)
+	_show_tab(_boss_tab.button_pressed)
+	_files.visible = true
+
+
+## Shows the boss notes (`boss`) or the memos, from the top.
+func _show_tab(boss: bool) -> void:
+	_reports.visible = boss
+	_grid.visible = not boss
 	_list.scroll_vertical = 0
 	_shade.queue_redraw()
-	_files.visible = true
 
 
 ## A click on the X or on the shade outside the cards closes the files (the shade keeps it from the desk).
 func _on_shade_input(event: InputEvent) -> void:
 	var at := _shade.get_global_mouse_position()
-	if _clicked(event) and (_close_rect().has_point(at) or not _list.get_global_rect().intersection(_grid.get_global_rect()).has_point(at)):
+	if _clicked(event) and (_close_rect().has_point(at) or not _list.get_global_rect().intersection(_column.get_global_rect()).has_point(at)):
 		_files.visible = false
 
 
@@ -321,6 +342,16 @@ static func files_order(save: SaveGame) -> Array[Dictionary]:
 	for m: Dictionary in MEMOS:
 		if not save.milestones.has(m.id):
 			out.append(m)
+	return out
+
+
+## The boss reports in the FILES: the signed ones, newest first (ids BossReport.report knows).
+static func reports_order(save: SaveGame) -> Array[String]:
+	var out: Array[String] = []
+	for i in range(save.reports.size() - 1, -1, -1):
+		var id := save.reports[i]
+		if id in ["welcome", "demo_end"] or BossReport.Events.EVENTS.has(id):
+			out.append(id)
 	return out
 
 
@@ -402,7 +433,8 @@ func _draw_shade() -> void:
 	var filed := MEMOS.filter(func(m: Dictionary) -> bool: return SaveManager.save.milestones.has(m.id)).size()
 	var w := _shade.size.x
 	_shade.draw_string(FONT, Vector2(0, 70), tr("PERSONNEL FILE  |  DESK 4"), HORIZONTAL_ALIGNMENT_CENTER, w, 40, PAPER)
-	_shade.draw_string(FONT, Vector2(0, 104), tr("%d / %d FILED") % [filed, MEMOS.size()], HORIZONTAL_ALIGNMENT_CENTER, w, 22, Color(PAPER, 0.7))
+	if not _boss_tab.button_pressed:
+		_shade.draw_string(FONT, Vector2(0, 104), tr("%d / %d FILED") % [filed, MEMOS.size()], HORIZONTAL_ALIGNMENT_CENTER, w, 22, Color(PAPER, 0.7))
 	# The close button: a dark stamped square with an X, as on the projector.
 	var close := _close_rect()
 	_shade.draw_rect(close, Color(INK, 0.9))
@@ -428,6 +460,17 @@ func _draw_card(card: Control, m: Dictionary) -> void:
 	card.draw_multiline_string(BODY_FONT, Vector2(x, 72), tr(m.how), HORIZONTAL_ALIGNMENT_LEFT, w, 17, 2, Color(ink, 0.85))
 	var foot: String = tr("Effective: ") + tr(m.bonus) if m.has("bonus") else (tr(m.note) if filed else "")
 	card.draw_multiline_string(FONT, Vector2(x, 122), foot, HORIZONTAL_ALIGNMENT_LEFT, w, 15, 2, Color(ink, 0.7))
+
+
+## A signed boss report `r` as a card in the FILES: its headline and its whole text.
+func _draw_report(card: Control, r: Dictionary) -> void:
+	card.draw_rect(Rect2(Vector2(6, 6), REPORT_CARD), Color(0, 0, 0, 0.4))
+	card.draw_rect(Rect2(Vector2.ZERO, REPORT_CARD), PAPER)
+	var w := REPORT_CARD.x - 36.0
+	card.draw_string(FONT, Vector2(18, 30), tr("MEMORANDUM"), HORIZONTAL_ALIGNMENT_LEFT, w, 16, Color(INK, 0.6))
+	card.draw_multiline_string(FONT, Vector2(18, 66), tr(r.re), HORIZONTAL_ALIGNMENT_LEFT, w, 30, 2, INK)
+	card.draw_line(Vector2(18, 108), Vector2(REPORT_CARD.x - 18, 108), Color(INK, 0.4), 1.5)
+	card.draw_multiline_string(BODY_FONT, Vector2(18, 144), tr(r.body), HORIZONTAL_ALIGNMENT_LEFT, w, 22, 9, INK)
 
 
 ## Simple glyphs on `item`, centred on `at`, about `s` from the centre to the edge. The cabbage

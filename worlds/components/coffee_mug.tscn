@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/meshes/Props/coffee_mug.blend" id="1_model"]
+[ext_resource type="Texture2D" path="res://assets/textures/coffee_rings/coffee_rings_albedo.png" id="2_rings"]
+
+[node name="CoffeeMug" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("1_model")]
+
+[node name="Rings" type="Decal" parent="."]
+transform = Transform3D(0.94, 0, 0.342, 0, 1, 0, -0.342, 0, 0.94, 0.11, 0, 0.05)
+size = Vector3(0.33, 0.04, 0.17)
+texture_albedo = ExtResource("2_rings")
+modulate = Color(1, 1, 1, 1)

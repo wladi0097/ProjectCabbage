@@ -36,23 +36,61 @@ func _slip(at: Vector3, value: int, resting := true) -> Node3D:
 
 func test_a_plain_unit_yields_the_findings_per_cabbage() -> void:
 	_save.findings_per_cabbage = 2
-	assert_int(QaBay.findings_for(_unit(), _save)).is_equal(2)
+	assert_float(QaBay.findings_for(_unit(), _save)).is_equal(2.0)
 
 
 func test_a_research_unit_yields_research_mult_times_the_findings() -> void:
 	_save.findings_per_cabbage = 2
 	_save.research_mult = 3.0
-	assert_int(QaBay.findings_for(_unit(false, true), _save)).is_equal(6)
+	assert_float(QaBay.findings_for(_unit(false, true), _save)).is_equal(6.0)
 
 
-func test_a_mini_yields_its_rounded_share_of_the_findings_but_never_nothing() -> void:
+func test_a_mini_is_worth_its_exact_share_of_the_findings() -> void:
 	_save.mini_value = 0.25
 	_save.findings_per_cabbage = 2
-	assert_int(QaBay.findings_for(_unit(true), _save)).is_equal(1)
-	_save.findings_per_cabbage = 10
-	assert_int(QaBay.findings_for(_unit(true), _save)).is_equal(3)
-	_save.findings_per_cabbage = 1
-	assert_int(QaBay.findings_for(_unit(true), _save)).is_equal(1)
+	assert_float(QaBay.findings_for(_unit(true), _save)).is_equal_approx(0.5, 0.0001)
+
+
+func test_minis_fractions_of_a_finding_add_up_on_the_bay_tally() -> void:
+	_save.mini_value = 0.25
+	_save.findings_per_cabbage = 2
+	var bay := _bay()
+	var total := 0
+	for i in 4:
+		total += bay._take(_unit(true))
+	assert_int(total).is_equal(2)
+
+
+func test_mini_value_upgrades_raise_a_research_minis_findings() -> void:
+	_save.findings_per_cabbage = 3
+	var findings_at := func(value: float) -> int:
+		_save.mini_value = value
+		var bay := _bay()
+		var total := 0
+		for i in 12:
+			total += bay._take(_unit(true))
+		return total
+	var base: int = findings_at.call(0.25)
+	var portion_review: int = findings_at.call(0.33)
+	var half_unit: int = findings_at.call(0.5)
+	assert_int(base).is_equal(9)
+	assert_int(portion_review).is_greater(base)
+	assert_int(half_unit).is_equal(18)
+
+
+func test_a_research_mini_yields_two_units_of_findings_with_the_micro_sample_protocol() -> void:
+	_save.findings_per_cabbage = 3
+	_save.mini_value = 0.25
+	_save.stamped.append("micro_samples")
+	assert_int(_bay()._take(_unit(true))).is_equal(6)
+
+
+func test_a_tally_yields_the_whole_findings_and_keeps_the_fraction() -> void:
+	var counted := QaBay.tally(0.5, 0.75)
+	assert_int(counted[0]).is_equal(1)
+	assert_float(counted[1]).is_equal_approx(0.25, 0.0001)
+	assert_int(QaBay.tally(0.0, 0.99)[0]).is_equal(0)
+	assert_int(QaBay.tally(0.0, 3.0 * (1.0 / 3.0))[0]).is_equal(1)
 
 
 func test_a_unit_taken_in_costs_one_stock_and_a_mini_costs_none() -> void:
@@ -191,3 +229,12 @@ func test_a_tube_mini_for_a_full_bay_is_thrown_back_onto_the_mat_like_a_refused_
 func test_the_flap_lies_flat_when_open_and_stands_up_when_shut() -> void:
 	assert_float(QaBay.flap_angle(0.0)).is_equal(0.0)
 	assert_float(QaBay.flap_angle(1.0)).is_equal_approx(-PI / 2.0, 0.0001)
+
+
+func test_a_grown_mini_taken_in_costs_no_stock_and_yields_a_full_units_findings() -> void:
+	_save.stock = 5
+	_save.findings_per_cabbage = 3
+	var unit := _unit()
+	unit.grown = true
+	assert_int(_bay()._take(unit)).is_equal(3)
+	assert_int(_save.stock).is_equal(5)

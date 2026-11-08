@@ -325,3 +325,30 @@ func test_a_hidden_unit_thrown_back_in_shows_as_it_is_thrown() -> void:
 	cabbage.throw_in(Vector3(0, 1, -1), Vector3(0, 1, 2), 0.2, 1.0)
 
 	assert_bool(cabbage.visible).is_true()
+
+
+func test_a_weightless_unit_closes_the_gap_to_the_hand_in_one_step_up_to_its_top_speed() -> void:
+	assert_vector(Cabbage.free_velocity(Vector3(0.1, 0, 0), 0.02)).is_equal_approx(Vector3(5, 0, 0), Vector3.ONE * 0.001)
+	assert_float(Cabbage.free_velocity(Vector3(10, 0, 0), 0.02).length()).is_equal_approx(Cabbage.FREE_SPEED, 0.001)
+
+
+func test_a_mid_air_catch_spins_the_cabbage_once_fast_then_settling() -> void:
+	assert_float(Cabbage.catch_spin_at(0.0)).is_equal(0.0)
+	assert_float(Cabbage.catch_spin_at(1.0)).is_equal_approx(TAU, 0.0001)
+	assert_float(Cabbage.catch_spin_at(0.25)).is_greater(TAU * 0.5)
+
+
+func test_a_grown_mini_is_full_size_again_but_still_no_stock() -> void:
+	var small := spawn(func(c: Cabbage) -> void: c.mini = true)
+	var mini_radius := radius_of(small)
+	small.grow()
+
+	assert_bool(small.mini).is_false()
+	assert_bool(small.is_stock()).is_false()
+	assert_float(radius_of(small)).is_equal_approx(mini_radius / CabbageScript.MINI_SCALE, 0.0001)
+	assert_float(small.mass / base_mass()).is_equal_approx(pow(radius_of(small) / base_radius(), 3.0), 0.0001)
+
+
+func test_only_a_plain_unit_comes_out_of_the_stock() -> void:
+	assert_bool(spawn().is_stock()).is_true()
+	assert_bool(spawn(func(c: Cabbage) -> void: c.mini = true).is_stock()).is_false()

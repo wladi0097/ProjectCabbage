@@ -14,6 +14,8 @@
 [ext_resource type="PackedScene" path="res://assets/meshes/Props/farm_tv.blend" id="5_tv"]
 [ext_resource type="Shader" path="res://assets/shaders/crt_screen.gdshader" id="6_crt"]
 [ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="7_font"]
+[ext_resource type="PackedScene" path="res://entities/farm_tree/farm_tree.tscn" id="8_tree"]
+[ext_resource type="Shader" path="res://assets/shaders/tv_static.gdshader" id="9_static"]
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_thud"]
 random_pitch = 1.03
@@ -36,16 +38,34 @@ render_priority = 0
 shader = ExtResource("6_crt")
 
 [sub_resource type="StandardMaterial3D" id="Led"]
-albedo_color = Color(0.21, 0.045, 0.03, 1)
+albedo_color = Color(0.12, 0.05, 0.045, 1)
+roughness = 0.22
 emission_enabled = true
-emission = Color(0.42, 0.09, 0.06, 1)
-emission_energy_multiplier = 0.2
+emission = Color(0.4, 0.16, 0.12, 1)
+emission_energy_multiplier = 0.0
 
 [sub_resource type="StandardMaterial3D" id="Arrow"]
 albedo_color = Color(0.14, 0.15, 0.14, 1)
 roughness = 0.7
 emission_enabled = true
 emission = Color(0.66, 0.74, 0.72, 1)
+emission_energy_multiplier = 0.0
+
+[sub_resource type="ShaderMaterial" id="StaticNoise"]
+shader = ExtResource("9_static")
+
+[sub_resource type="StandardMaterial3D" id="Channel1Key"]
+albedo_color = Color(0.14, 0.15, 0.14, 1)
+roughness = 0.7
+emission_enabled = true
+emission = Color(0.56, 0.82, 0.6, 1)
+emission_energy_multiplier = 0.0
+
+[sub_resource type="StandardMaterial3D" id="Channel2Key"]
+albedo_color = Color(0.14, 0.15, 0.14, 1)
+roughness = 0.7
+emission_enabled = true
+emission = Color(0.56, 0.82, 0.6, 1)
 emission_energy_multiplier = 0.0
 
 [sub_resource type="StyleBoxFlat" id="HintPaper"]
@@ -65,11 +85,20 @@ shadow_offset = Vector2(4, 4)
 [node name="FarmTv" type="Node3D"]
 script = ExtResource("1_tv")
 screen_scene = ExtResource("farm_screen_1")
+tree_scene = ExtResource("8_tree")
 
 [node name="ScreenViewport" type="SubViewport" parent="."]
 disable_3d = true
-size = Vector2i(1296, 768)
+size = Vector2i(1512, 768)
 render_target_update_mode = 0
+
+[node name="Static" type="ColorRect" parent="ScreenViewport"]
+visible = false
+z_index = 1
+material = SubResource("StaticNoise")
+offset_right = 1512.0
+offset_bottom = 768.0
+mouse_filter = 2
 
 [node name="Thud" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_thud")
@@ -100,7 +129,7 @@ stream = ExtResource("sfx_hum")
 bus = &"SFX"
 
 [node name="Remote" type="StaticBody3D" parent="."]
-transform = Transform3D(0.267499, 0, 0.963558, 0, 1, 0, -0.963558, 0, 0.267499, -1, 0.76, -0.18)
+transform = Transform3D(0.267499, 0, 0.963558, 0, 1, 0, -0.963558, 0, 0.267499, -1, 0.76, -0.055)
 collision_layer = 8
 collision_mask = 0
 
@@ -120,21 +149,21 @@ pressable = true
 grip_height = 0.04
 
 [node name="Corner" type="Node3D" parent="."]
-transform = Transform3D(0.7071068, 0, 0.7071068, 0, 1, 0, -0.7071068, 0, 0.7071068, -3.95, 0.75, -0.1)
+transform = Transform3D(0.7071068, 0, 0.7071068, 0, 1, 0, -0.7071068, 0, 0.7071068, -3.3, 0.75, 0.55)
 
 [node name="Tv" parent="Corner" instance=ExtResource("5_tv")]
 
 [node name="BackArrow" parent="Corner/Tv" index="0"]
 material_override = SubResource("Arrow")
 
-[node name="Led" parent="Corner/Tv" index="2"]
+[node name="Led" parent="Corner/Tv" index="4"]
 material_override = SubResource("Led")
 
-[node name="Screen" parent="Corner/Tv" index="3"]
+[node name="Screen" parent="Corner/Tv" index="5"]
 material_override = SubResource("Glass")
 
 [node name="Stencil" type="Label3D" parent="Corner/Tv"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.356625, 0.35, 0.284)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.404063, 0.19, 0.265)
 pixel_size = 0.00015
 modulate = Color(0.1, 0.11, 0.1, 1)
 text = "TO DESK"
@@ -145,10 +174,35 @@ line_spacing = -14.0
 autowrap_mode = 3
 width = 226.667
 
+[node name="Channel1" parent="Corner/Tv" index="1"]
+material_override = SubResource("Channel1Key")
+
+[node name="Channel2" parent="Corner/Tv" index="2"]
+material_override = SubResource("Channel2Key")
+
+[node name="Ch1Stencil" type="Label3D" parent="Corner/Tv"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.404063, 0.458, 0.265)
+pixel_size = 0.00015
+modulate = Color(0.1, 0.11, 0.1, 1)
+text = "CH 1"
+font = ExtResource("7_font")
+font_size = 64
+outline_size = 0
+
+[node name="Ch2Stencil" type="Label3D" parent="Corner/Tv"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.404063, 0.373, 0.265)
+pixel_size = 0.00015
+modulate = Color(0.1, 0.11, 0.1, 1)
+text = "CH 2"
+font = ExtResource("7_font")
+font_size = 64
+outline_size = 0
+
 [node name="Lamp" type="OmniLight3D" parent="Corner"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1.4, 1.2)
 light_color = Color(0.72, 0.8, 0.82, 1)
 light_energy = 2.6
+light_specular = 0.25
 omni_range = 3.0
 
 [node name="Fill" type="OmniLight3D" parent="Corner"]

@@ -6,11 +6,26 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/lamp_off.wav" id="4_off"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/tray_drop.wav" id="5_thud"]
 [ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="6_font"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="7_interactable"]
+
+[sub_resource type="BoxShape3D" id="LampShape"]
+size = Vector3(0.26, 0.34, 0.18)
 
 [node name="GoldenLamp" type="Node3D"]
 script = ExtResource("1_script")
 
 [node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Hit" type="StaticBody3D" parent="."]
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Hit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.067, 0.132, 0.023)
+shape = SubResource("LampShape")
+
+[node name="Interactable" type="Node" parent="Hit"]
+script = ExtResource("7_interactable")
 
 [node name="Glow" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.2, 0.04)

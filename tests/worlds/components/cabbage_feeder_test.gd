@@ -149,3 +149,30 @@ func test_a_unit_off_the_chute_is_catchable_in_mid_air() -> void:
 
 func test_a_research_unit_owed_by_a_purchase_lands_without_being_a_catch_or_a_miss() -> void:
 	assert_bool(_fling_one(false).in_flight).is_false()
+
+
+func test_a_blocked_chute_drops_no_units() -> void:
+	assert_bool(Feeder.should_dispense(0, 0, 1, 10, true)).is_false()
+
+
+func test_a_blocked_chute_rolls_nothing_while_stock_piles_up() -> void:
+	var save := SaveGame.new()
+	save.stock = 20
+	save.chute_blocked = true
+	SaveManager.save = save
+	var feeder: TestFeeder = auto_free(TestFeeder.new())
+	for i in 3:
+		feeder._physics_process(1.0)
+	assert_array(feeder.rolled).is_empty()
+
+
+func test_lifting_the_lever_lets_units_come_down_again() -> void:
+	var save := SaveGame.new()
+	save.stock = 20
+	save.chute_blocked = true
+	SaveManager.save = save
+	var feeder: TestFeeder = auto_free(TestFeeder.new())
+	feeder._physics_process(1.0)
+	save.chute_blocked = false
+	feeder._physics_process(1.0)
+	assert_array(feeder.rolled).has_size(1)

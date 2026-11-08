@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/no_more_sleep/no_more_sleep_logo.png" id="1_logo"]
+
+[resource]
+transparency = 2
+alpha_scissor_threshold = 0.5
+albedo_color = Color(0.8, 0.78, 0.72, 1)
+albedo_texture = ExtResource("1_logo")
+roughness = 0.5

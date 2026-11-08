@@ -121,7 +121,7 @@ static func summary_rows(save: SaveGame, seconds: int) -> Array:
 		["UNITS MOVED", str(save.sold)],
 		["UNITS INTERCEPTED MID-AIR", str(save.catches)],
 		["INTERCEPTION RATE", "%d%%" % roundi(100.0 * save.catches / maxi(save.sold, 1))],
-		["UNITS IN INVENTORY", str(save.stock)],
+		["UNITS IN INVENTORY", "%d / %d" % [save.stock, save.storage_cap]],
 		["COINS ON HAND", "$%d" % save.coins],
 		["FINDINGS FILED", "¶%d" % save.findings],
 		["PRICE PER UNIT", "$%d" % save.sale_price],

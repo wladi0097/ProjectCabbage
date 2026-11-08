@@ -41,7 +41,7 @@ func _run(manager: Manager, seconds: float) -> void:
 ## Stamps the card and waits until he is at the window asking for his quota.
 func _asking(manager: Manager) -> void:
 	SaveManager.save.stamped.append(Manager.CARD)
-	_run(manager, Manager.FIRST_VISIT + Manager.ARRIVE_TIME + 0.2)
+	_run(manager, Manager.CARD_VISIT + Manager.ARRIVE_TIME + 0.2)
 
 
 func _rising_samples(count: int) -> PackedInt32Array:
@@ -94,11 +94,11 @@ func test_the_manager_never_visits_before_his_card_is_stamped() -> void:
 	assert_int(manager.phase).is_equal(Manager.Phase.AWAY)
 
 
-func test_the_first_visit_comes_a_minute_after_the_card() -> void:
+func test_the_first_visit_comes_five_seconds_after_the_card() -> void:
 	var manager := _manager()
 	SaveManager.save.stamped.append(Manager.CARD)
 
-	_run(manager, Manager.FIRST_VISIT - 0.5)
+	_run(manager, Manager.CARD_VISIT - 0.5)
 	assert_int(manager.phase).is_equal(Manager.Phase.AWAY)
 
 	_run(manager, 1.0)
@@ -111,13 +111,12 @@ func test_a_late_stamp_asks_the_pace_since_the_stamp_not_before_it() -> void:
 		SaveManager.save.sold += 1
 		manager._process(1.0)
 	SaveManager.save.stamped.append(Manager.CARD)
-	for i in roundi(Manager.FIRST_VISIT / STEP):
-		if i % 50 == 0:
-			SaveManager.save.sold += 1
+	for i in roundi((Manager.CARD_VISIT + 0.2) / STEP):
 		manager._process(STEP)
 
+	# 300 units in the 300 s before the stamp would ask ~57; nothing sold since asks the least.
 	assert_int(manager.phase).is_not_equal(Manager.Phase.AWAY)
-	assert_int(manager.quota).is_between(11, 13)
+	assert_int(manager.quota).is_equal(Manager.MIN_QUOTA)
 
 
 func test_once_he_has_arrived_he_asks_his_quota_and_counts_down_the_time_given() -> void:
@@ -185,3 +184,8 @@ func test_after_the_verdict_he_leaves_and_returns_two_and_a_half_to_four_minutes
 
 	assert_int(manager.phase).is_equal(Manager.Phase.AWAY)
 	assert_float(manager._wait).is_between(Manager.VISIT_EVERY.x, Manager.VISIT_EVERY.y)
+
+
+func test_the_manager_comes_five_seconds_after_his_card_and_a_minute_after_a_load() -> void:
+	assert_float(Manager.first_wait(false)).is_equal(5.0)
+	assert_float(Manager.first_wait(true)).is_equal(60.0)
