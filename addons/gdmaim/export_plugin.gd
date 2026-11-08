@@ -71,6 +71,7 @@ func _export_begin(features : PackedStringArray, is_debug : bool, path : String,
 		return
 		
 	settings.initialize_settings(true)
+	settings.deserialize()  # Project Cabbage: re-read .gdmaim/export.cfg; the editor only read it at startup.
 	_enabled = !features.has("no_gdmaim") and settings.obfuscation_enabled # Discrepancy with the objective of this variable in the setting.
 	
 	_initialize_third_party()

@@ -45,6 +45,12 @@ func test_the_obfuscator_keeps_what_the_release_build_needs() -> void:
 	assert_int(config.get_value("post_process", "export_mode", 2)).is_equal(0)
 
 
+## Our patch in the addon: an editor started before a settings change must not export with the old ones.
+func test_every_export_rereads_the_obfuscator_settings() -> void:
+	var source := FileAccess.get_file_as_string("res://addons/gdmaim/export_plugin.gd")
+	assert_str(source).contains("settings.initialize_settings(true)\n\tsettings.deserialize()")
+
+
 func test_dictionary_keys_are_found_in_both_spellings_and_only_inside_braces() -> void:
 	var keys := dictionary_keys('var x = 1\nconst A := {id = "a", "body": "x = 2", n = {flag = true}}\n'
 			+ '# {commented = 1}\nfunc f(a, b = 2) -> void:\n\tpass\n')
