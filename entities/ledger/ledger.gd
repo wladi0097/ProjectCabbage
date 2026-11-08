@@ -236,7 +236,8 @@ func _gui_input(event: InputEvent) -> void:
 		mouse_default_cursor_shape = CURSOR_POINTING_HAND if _hover_side != 0 or _close_rect().has_point(at) else CURSOR_ARROW
 
 
-func _unhandled_input(event: InputEvent) -> void:
+## Esc closes it, in _input so it gets Esc before the in-game menu (later in the tree, unhandled) opens.
+func _input(event: InputEvent) -> void:
 	if _out > 0.0 and event.is_action_pressed("ui_cancel"):
 		_settle(false)
 		get_viewport().set_input_as_handled()

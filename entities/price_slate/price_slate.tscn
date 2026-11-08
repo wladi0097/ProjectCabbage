@@ -6,6 +6,7 @@
 [ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="4_font"]
 [ext_resource type="Script" uid="uid://s7bovuudwem5" path="res://entities/components/sound_cue.gd" id="5_cue"]
 [ext_resource type="PackedScene" uid="uid://c3wahtk4uq57x" path="res://assets/meshes/Machines/acceptance_gauge.blend" id="6_gauge"]
+[ext_resource type="PackedScene" path="res://entities/components/light_switch.tscn" id="7_switch"]
 [ext_resource type="AudioStream" uid="uid://dn2cg4mr1i7v4" path="res://assets/audio/effects/console_drop.wav" id="sfx_drop"]
 [ext_resource type="AudioStream" uid="uid://cnbxm6o6d2xbe" path="res://assets/audio/effects/chalk_tap_1.wav" id="sfx_tap_1"]
 [ext_resource type="AudioStream" uid="uid://dbrmsogdx2hsi" path="res://assets/audio/effects/chalk_tap_2.wav" id="sfx_tap_2"]
@@ -151,3 +152,8 @@ stream = SubResource("Rand_tap")
 bus = &"SFX"
 script = ExtResource("5_cue")
 min_interval = 0.05
+
+[node name="ConsultantSwitch" parent="." instance=ExtResource("7_switch")]
+transform = Transform3D(2.6, 0, 0, 0, 0, 2.6, 0, -2.6, 0, 0.36, 0.006, 0)
+visible = false
+tooltip = "Pricing consultant switch. Up: it keeps nudging your price toward where about 90% of units sell, or as far over that as you set it. Down: it stays away."

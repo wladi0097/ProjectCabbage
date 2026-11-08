@@ -53,36 +53,19 @@ var _font := screen_font()
 var _auto := 0.0
 var _hot := -1
 var _msg := "Click a square to plant a seed (1 seed). Ripe after 30 s: click it to harvest 3 cabbages."
-var _list := VBoxContainer.new()
 var _buttons := {}
-var _seed_buttons: Array[Button] = []
+## The upgrade rows (built from UPGRADES) and the seed packs (one button per SEED_PACKS entry).
+@onready var _list: VBoxContainer = $Scroll/List
+@onready var _seed_buttons: Array[Button] = [$Shop/Seeds0, $Shop/Seeds1]
 var _clock := 0.0
 
 
 func _ready() -> void:
-	size = SIZE
-	mouse_filter = MOUSE_FILTER_STOP
-	var scroll := ScrollContainer.new()
-	scroll.position = SIDE.position + Vector2(0, 172)
-	scroll.size = Vector2(SIDE.size.x, SIDE.size.y - 172 - 130)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(scroll)
-	_list.custom_minimum_size.x = SIDE.size.x - 14
-	_list.add_theme_constant_override("separation", 8)
-	scroll.add_child(_list)
 	_add_upgrade("plot")
 	for u: Dictionary in UPGRADES:
 		_add_upgrade(u.id)
-	var shop := VBoxContainer.new()
-	shop.position = SIDE.position + Vector2(0, SIDE.size.y - 120)
-	shop.size = Vector2(SIDE.size.x, 120)
-	add_child(shop)
-	shop.add_child(_label("SEED SHOP", 22, PHOSPHOR))
-	for i in SEED_PACKS.size():
-		var b := _button()
-		b.pressed.connect(_buy_seeds.bind(i))
-		shop.add_child(b)
-		_seed_buttons.append(b)
+	for i in _seed_buttons.size():
+		_seed_buttons[i].pressed.connect(_buy_seeds.bind(i))
 
 
 func _process(delta: float) -> void:
@@ -104,12 +87,9 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 
-## The screen's terminal font: a bold monospace.
+## The screen's terminal font: a bold monospace (the scene's theme uses it too).
 static func screen_font() -> SystemFont:
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Consolas", "Lucida Console", "Courier New", "monospace"])
-	font.font_weight = 600
-	return font
+	return preload("res://assets/fonts/terminal_font.tres")
 
 
 ## Fits save.farm_growth to the open squares (new ones empty) and hands out the uncle's seeds once.
@@ -307,12 +287,15 @@ func _title(id: String) -> String:
 
 
 func _add_upgrade(id: String) -> void:
-	var b := _button()
+	var b := Button.new()
+	b.theme_type_variation = &"UpgradeButton"  # Room for the price below the text.
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	b.custom_minimum_size = Vector2(SIDE.size.x - 14, 100)
 	b.pressed.connect(_buy.bind(id))
-	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
-		(b.get_theme_stylebox(state) as StyleBoxFlat).content_margin_bottom = 32  # Room for the price below the text.
-	var price := _label("", 21, PHOSPHOR)
+	var price := Label.new()
+	price.add_theme_font_size_override("font_size", 21)
+	price.add_theme_color_override("font_color", PHOSPHOR)
 	price.name = "Price"
 	price.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	price.grow_horizontal = Control.GROW_DIRECTION_BEGIN
@@ -403,34 +386,6 @@ func _draw_homestead(save: SaveGame, r: Rect2) -> void:
 		draw_rect(Rect2(x + 22, ground - 34, 14, 12), Color(0.36, 0.38, 0.35))
 		draw_circle(Vector2(x + 6, ground - 6), 9, Color(0.12, 0.13, 0.12))
 		draw_circle(Vector2(x + 32, ground - 4), 6, Color(0.12, 0.13, 0.12))
-
-
-func _label(text: String, size_px: int, color: Color) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.add_theme_font_override("font", _font)
-	l.add_theme_font_size_override("font_size", size_px)
-	l.add_theme_color_override("font_color", color)
-	return l
-
-
-func _button() -> Button:
-	var b := Button.new()
-	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	b.add_theme_font_override("font", _font)
-	b.add_theme_font_size_override("font_size", 19)
-	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
-		var box := StyleBoxFlat.new()
-		box.bg_color = Color(PHOSPHOR, 0.12) if state == "hover" else Color(0, 0, 0, 0)
-		box.border_color = PHOSPHOR if state == "hover" else LINE
-		box.set_border_width_all(2)
-		box.set_content_margin_all(8)
-		b.add_theme_stylebox_override(state, box)
-	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
-		b.add_theme_color_override(c, PHOSPHOR)
-	b.add_theme_color_override("font_disabled_color", DIM)
-	return b
 
 
 static func _thousands(n: int) -> String:

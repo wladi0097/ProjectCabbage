@@ -32,9 +32,10 @@ X0, X1, Z0, Z1 = -0.55, 1.95, 0.75, 1.90       # opening; Z0 = sill top = desk t
 SB = 0.53                                      # underside of the steel sill block, top of the wall below it
 WX, WB, WT_, Y0, Y1 = 3.6, 0.0, 2.6, 0.80, 1.05
 WXL = 8.0                                      # the wall runs further left: behind the farm TV on the desk's L wing
-# Side wall (playtest 2026-11-07): the farm TV's corner gets a room corner behind it. Inner face at Godot x -3.45
-# (just past the desk's L wing at -3.4), from the back wall to Godot z +2.0; off screen in the desk view.
-SWX, SWY = -3.45, -2.0
+# Side wall (playtest 2026-11-07, moved out 2026-11-08): the farm TV's corner gets a room corner behind it. Inner
+# face at Godot x -4.68 (8 cm past the L desk's left edge at -4.6), from the back wall to Godot z +3.3; off
+# screen in the desk view.
+SWX, SWY = -4.68, -3.3
 bm = bmesh.new()
 for lo, hi in [((-WXL, Y0, WB), (WX, Y1, SB)),          # below the sill
                ((-WXL, Y0, Z1), (WX, Y1, WT_)),         # above the window

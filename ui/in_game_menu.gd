@@ -3,6 +3,7 @@ extends Control
 @onready var quit_confirm: Control = %QuitConfirm
 @onready var page: Control = $Page
 @onready var settings_ui: Control = $SettingsUi
+@onready var credits_ui: Control = $CreditsUi
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -20,6 +21,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func close() -> void:
 	settings_ui.go_back()
+	credits_ui.go_back()
 	quit_confirm.hide()
 	hide()
 
@@ -37,6 +39,11 @@ func _on_continue_clicked() -> void:
 func _on_settings_clicked() -> void:
 	page.hide()
 	settings_ui.enable()
+
+
+func _on_credits_clicked() -> void:
+	page.hide()
+	credits_ui.enable()
 
 
 func _on_quit_confirmed() -> void:

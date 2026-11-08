@@ -1,27 +1,15 @@
 class_name FarmTv
 extends Node3D
 ## Stage 2's way to the farm: a TV remote drops onto the desk once card `family_farm` is stamped.
-## Clicked, the camera glides a little left to an old CRT on the desk's 45 degree corner step (the
-## L wing of table.blend, left of the desk view) and frames its glass; the set powers on. The glass shows `ScreenViewport`, a 2D
+## Clicked, the camera glides left to an old CRT standing at 45 degrees in the back-left corner of the
+## L desk (table.blend's left arm, left of the desk view) and frames its glass; the set powers on. The glass shows `ScreenViewport`, a 2D
 ## SubViewport (`screen_scene`, or a NO SIGNAL placeholder), and mouse input over the glass is
 ## passed into it. The BACK button on the set (right of the glass), Esc or a click elsewhere off
 ## the glass pans back. The TV corner (`Corner`) is its own
-## node so the farm section can be built onto it later. Sits at the world origin; all placements
-## are the consts below.
+## node so the farm section can be built onto it later. Sits at the world origin; the remote, the set,
+## its lamps and materials are laid out in farm_tv.tscn.
 
 const CARD := "family_farm"
-const TV_MODEL := preload("res://assets/meshes/Props/farm_tv.blend")
-const REMOTE_MODEL := preload("res://assets/meshes/Props/tv_remote.blend")
-const CRT_SHADER := preload("res://assets/shaders/crt_screen.gdshader")
-## On the desk's left, between the tally machine and the ledger: free wood, in view.
-const REMOTE_AT := Vector3(-1.0, 0.76, -0.18)
-const REMOTE_TURN := 1.3
-## Shown larger than life, like the tally machine, so it reads from the desk camera.
-const REMOTE_SCALE := 1.5
-## The TV on the desk's corner step: 0.37 m behind the middle of the step's diagonal edge (from
-## (-2.0, -0.1) to (-2.7, 0.6) in x, z), facing out of it at 45 degrees.
-const CORNER_AT := Vector3(-2.612, 0.75, -0.012)
-const CORNER_TURN := PI / 4.0
 ## The glass in the model: centre, normal +Z, half size (m), and the viewport it shows (px).
 const SCREEN_CENTRE := Vector3(-0.025, 0.33, 0.262)
 const SCREEN_HALF := Vector2(0.320625, 0.19)
@@ -49,15 +37,8 @@ const OFF_TIME := 0.25
 const HUM_DB := -10.0
 const DROP_HEIGHT := 1.6
 const DROP_TIME := 0.45
-const LED_ON := Color(0.42, 0.09, 0.06)
-## The BACK button's stencilled arrow: dim, and lit while hovered. The hint slip under the plate
-## is styled like the hand's tooltips.
-const ARROW := Color(0.14, 0.15, 0.14)  # Dark paint on the pale plate, like the stencil: reads as the button.
-const ARROW_LIT := Color(0.66, 0.74, 0.72)
 ## Hovered, the arrow stands this far proud of its plate (m).
 const ARROW_LIFT := 0.004
-const HINT_PAPER := Color(0.72, 0.73, 0.69)
-const HINT_INK := Color(0.13, 0.15, 0.14)
 const STATIC_SHADER := preload("res://assets/shaders/tv_static.gdshader")
 
 ## The camera is (on its way) at the TV: the projector's PULL tab hides meanwhile.
@@ -65,20 +46,7 @@ static var away := false
 
 @export var screen_scene: PackedScene
 
-var _remote := StaticBody3D.new()
-var _model := Node3D.new()
-var _corner := Node3D.new()
-var _glass: ShaderMaterial
-var _led: StandardMaterial3D
-var _glow := OmniLight3D.new()
-## The TV corner's own lamps: they fade in with the pan so the desk view's light stays as it was.
-var _lamps: Array[OmniLight3D] = []
 var _lamp_energy: Array[float] = []
-## Shown while the camera is off the desk: the hand hides and the OS cursor comes back.
-var _cursor := Control.new()
-var _arrow: StandardMaterial3D
-var _arrow_mesh: MeshInstance3D
-var _hint := Label.new()
 var _back_hover := false
 ## 0 on the desk, 1 at the TV; the set's power 0..1.
 var _view := 0.0
@@ -90,18 +58,33 @@ var _camera: Camera3D
 var _desk_view: Transform3D
 
 @onready var _screen: SubViewport = $ScreenViewport
+@onready var _remote: StaticBody3D = $Remote
+@onready var _model: Node3D = $Remote/Model
+## Where the remote lies: on the desk's left, between the tally machine and the ledger.
+@onready var _remote_rest := _remote.position
+## The TV corner, its own node so the farm section can be built onto it later.
+@onready var _corner: Node3D = $Corner
+@onready var _glass: ShaderMaterial = $Corner/Tv/Screen.material_override
+@onready var _led: StandardMaterial3D = $Corner/Tv/Led.material_override
+@onready var _arrow: StandardMaterial3D = $Corner/Tv/BackArrow.material_override
+@onready var _arrow_mesh: MeshInstance3D = $Corner/Tv/BackArrow
+## The screen's own glow, with the power.
+@onready var _glow: OmniLight3D = $Corner/Glow
+## The TV corner's own lamps: they fade in with the pan so the desk view's light stays as it was.
+@onready var _lamps: Array[OmniLight3D] = [$Corner/Lamp, $Corner/Fill, $Corner/Step, $Corner/Wash]
+## Shown while the camera is off the desk: the hand hides and the OS cursor comes back.
+@onready var _cursor: Control = $Cursor
+## The hint slip that follows the mouse over the BACK button.
+@onready var _hint: Label = $HintLayer/Hint
 
 
 func _ready() -> void:
 	_camera = get_viewport().get_camera_3d()
 	_desk_view = _camera.transform
-	_cursor.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_cursor.visible = false
-	_cursor.add_to_group(&"blocks_hand")
-	add_child(_cursor)
-	_build_remote()
-	_build_corner()
-	_build_back()
+	for light in _lamps:
+		_lamp_energy.append(light.light_energy)
+	($Remote/Interactable as Interactable).grabbed.connect(_toggle)
+	_glass.set_shader_parameter(&"screen_tex", _screen.get_texture())
 	_screen.world_2d = World2D.new()  # Its own canvas: the desk's 2D overlays must not show on the glass.
 	_screen.add_child(screen_scene.instantiate() if screen_scene != null else _placeholder())
 	var owned := bought(SaveManager.save)
@@ -284,110 +267,12 @@ func _toggle() -> void:
 func _drop() -> void:
 	_remote.visible = true
 	_corner.visible = true
-	_remote.position = REMOTE_AT + Vector3.UP * DROP_HEIGHT
+	_remote.position = _remote_rest + Vector3.UP * DROP_HEIGHT
 	var tween := create_tween()
-	tween.tween_property(_remote, "position", REMOTE_AT, DROP_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(_remote, "position", _remote_rest, DROP_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_callback(func() -> void: $Thud.cue(_remote.global_position))
 	tween.tween_property(_model, "scale", Vector3(1.06, 0.8, 1.06), 0.06)
 	tween.tween_property(_model, "scale", Vector3.ONE, 0.3).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-
-
-func _build_remote() -> void:
-	_remote.position = REMOTE_AT
-	_remote.rotation.y = REMOTE_TURN
-	add_child(_remote)
-	_remote.add_child(_model)
-	var remote := REMOTE_MODEL.instantiate() as Node3D
-	remote.scale = Vector3.ONE * REMOTE_SCALE
-	_model.add_child(remote)
-	_remote.collision_layer = Interactable.HOVER_LAYER  # Found by the hand's ray, collides with nothing.
-	_remote.collision_mask = 0
-	var shape := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(0.11, 0.07, 0.27) * REMOTE_SCALE
-	shape.shape = box
-	shape.position = Vector3(0, 0.025, 0)
-	_remote.add_child(shape)
-	var interactable := Interactable.new()
-	interactable.pressable = true
-	interactable.grip_height = 0.04
-	interactable.tooltip = "TV remote. Click: watch the farm feed on the set beside the desk. The arrow, Esc or a click beside the screen: back to the desk."
-	_remote.add_child(interactable)
-	interactable.grabbed.connect(_toggle)
-
-
-## The TV corner: the set on its stand, a dim cold lamp above, the screen's own glow.
-func _build_corner() -> void:
-	_corner.name = "Corner"
-	_corner.position = CORNER_AT
-	_corner.rotation.y = CORNER_TURN
-	add_child(_corner)
-	var model := TV_MODEL.instantiate()
-	_corner.add_child(model)
-	_glass = ShaderMaterial.new()
-	_glass.shader = CRT_SHADER
-	_glass.set_shader_parameter(&"screen_tex", _screen.get_texture())
-	(model.get_node("Screen") as MeshInstance3D).material_override = _glass
-	_led = StandardMaterial3D.new()
-	_led.albedo_color = LED_ON.darkened(0.5)
-	_led.emission_enabled = true
-	_led.emission = LED_ON
-	(model.get_node("Led") as MeshInstance3D).material_override = _led
-	_arrow = StandardMaterial3D.new()
-	_arrow.albedo_color = ARROW
-	_arrow.roughness = 0.7
-	_arrow.emission_enabled = true
-	_arrow.emission = ARROW_LIT
-	_arrow.emission_energy_multiplier = 0.0
-	_arrow_mesh = model.get_node("BackArrow")
-	_arrow_mesh.material_override = _arrow
-	var stencil := Label3D.new()  # "TO DESK" under the arrow, so it can't read as "next".
-	stencil.text = "TO DESK"
-	stencil.font = load("res://assets/fonts/Oswald.ttf")
-	stencil.font_size = 64
-	stencil.pixel_size = 0.00015
-	stencil.width = 2.0 * (BACK_HALF.x - 0.007) / stencil.pixel_size  # Wraps to fit the narrow plate ("ZUM TISCH").
-	stencil.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	stencil.line_spacing = -14.0
-	stencil.outline_size = 0
-	stencil.modulate = Color(0.1, 0.11, 0.1)  # Dark paint on the pale plate.
-	stencil.shaded = true
-	stencil.position = BACK_CENTRE + Vector3(0.0, -0.02, 0.002)
-	model.add_child(stencil)
-	var lamp := OmniLight3D.new()
-	lamp.light_color = Color(0.72, 0.8, 0.82)
-	lamp.light_energy = 2.6
-	lamp.omni_range = 3.0
-	lamp.position = Vector3(0.6, 1.4, 1.2)
-	_corner.add_child(lamp)
-	_lamps.append(lamp)
-	var fill := OmniLight3D.new()  # Cold bounce from the left, so the case keeps its sage.
-	fill.light_color = Color(0.6, 0.68, 0.7)
-	fill.light_energy = 0.8
-	fill.omni_range = 2.5
-	fill.position = Vector3(-1.2, 0.6, 1.0)
-	_corner.add_child(fill)
-	_lamps.append(fill)
-	var step := OmniLight3D.new()  # Low and in front: the corner step's wood and edge band catch it.
-	step.light_color = Color(0.62, 0.7, 0.72)
-	step.light_energy = 1.4
-	step.omni_range = 2.2
-	step.position = Vector3(0.9, 0.35, 0.9)
-	_corner.add_child(step)
-	_lamps.append(step)
-	var wash := OmniLight3D.new()  # Grazes the tile wall left of the set, so the view has no black hole.
-	wash.light_color = Color(0.6, 0.68, 0.7)
-	wash.light_energy = 1.5  # The side wall behind the set stays darker than the glass.
-	wash.omni_range = 2.2
-	wash.position = Vector3(-0.95, 0.9, 0.1)
-	_corner.add_child(wash)
-	_lamps.append(wash)
-	for light in _lamps:
-		_lamp_energy.append(light.light_energy)
-	_glow.light_color = Color(0.7, 0.76, 0.78)
-	_glow.omni_range = 1.2
-	_glow.position = SCREEN_CENTRE + Vector3(0, 0, 0.35)
-	_corner.add_child(_glow)
 
 
 ## NO SIGNAL static until the farm feed scene exists.
@@ -414,27 +299,6 @@ func _placeholder() -> Control:
 			var blink := create_tween().set_loops()
 			blink.tween_callback(func() -> void: label.visible = not label.visible).set_delay(0.7)
 	return root
-
-
-## The hint slip that follows the mouse over the BACK button.
-func _build_back() -> void:
-	var layer := CanvasLayer.new()
-	layer.layer = 15
-	add_child(layer)
-	var paper := StyleBoxFlat.new()
-	paper.bg_color = HINT_PAPER
-	paper.border_color = HINT_INK.lightened(0.3)
-	paper.set_border_width_all(1)
-	paper.set_content_margin_all(10)
-	paper.shadow_color = Color(0, 0, 0, 0.35)
-	paper.shadow_offset = Vector2(4, 4)
-	_hint.add_theme_stylebox_override(&"normal", paper)
-	_hint.add_theme_color_override(&"font_color", HINT_INK)
-	_hint.add_theme_font_size_override(&"font_size", 22)
-	_hint.text = "Back to the desk"
-	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hint.visible = false
-	layer.add_child(_hint)
 
 
 ## Lights the BACK arrow and turns the cursor into a pointing hand while the mouse is on it.

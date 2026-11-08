@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://ui/elements/confirm_panel.tscn" id="3_confirm"]
 [ext_resource type="PackedScene" path="res://ui/sub/settings_ui.tscn" id="4_settings"]
 [ext_resource type="PackedScene" path="res://ui/elements/version_label.tscn" id="5_version"]
+[ext_resource type="PackedScene" path="res://ui/sub/credits_ui.tscn" id="6_credits"]
 
 [node name="InGameMenu" type="Control" groups=["blocks_hand"]]
 visible = false
@@ -62,6 +63,12 @@ size_flags_horizontal = 4
 theme_type_variation = &"NavButton"
 text = "settings"
 
+[node name="Credits" parent="Page/Card/Nav" instance=ExtResource("2_button")]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"NavButton"
+text = "menu.credits"
+
 [node name="Quit" parent="Page/Card/Nav" instance=ExtResource("2_button")]
 layout_mode = 2
 size_flags_horizontal = 4
@@ -79,6 +86,10 @@ text = "menu.sessionNote"
 autowrap_mode = 3
 
 [node name="SettingsUi" parent="." instance=ExtResource("4_settings")]
+visible = false
+layout_mode = 1
+
+[node name="CreditsUi" parent="." instance=ExtResource("6_credits")]
 visible = false
 layout_mode = 1
 
@@ -105,5 +116,7 @@ confirm_text = "menu.quit"
 [connection signal="clicked" from="Page/Card/Nav/Settings" to="." method="_on_settings_clicked"]
 [connection signal="clicked" from="Page/Card/Nav/Quit" to="QuitConfirm" method="show"]
 [connection signal="exited" from="SettingsUi" to="Page" method="show"]
+[connection signal="clicked" from="Page/Card/Nav/Credits" to="." method="_on_credits_clicked"]
+[connection signal="exited" from="CreditsUi" to="Page" method="show"]
 [connection signal="cancelled" from="QuitConfirm/Panel" to="QuitConfirm" method="hide"]
 [connection signal="confirmed" from="QuitConfirm/Panel" to="." method="_on_quit_confirmed"]

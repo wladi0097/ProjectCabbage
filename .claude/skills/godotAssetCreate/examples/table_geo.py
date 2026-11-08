@@ -24,18 +24,20 @@ gap = 0.003
 joints = {}
 pieces = []
 EB = 0.014                                       # steel edge band width
-# L wing (2026-11-07, joined seamlessly 2026-11-07): left of X0 a 45 degree corner step (the farm TV
-# stands on it), then a short return toward the camera. One desk: the same boards, seams, backing and
-# steel band run on round the L. Blender plan (x, y); Godot z = -y.
-WX0, RX, RY0 = -3.4, -2.7, -1.6            # wing left edge, return right edge, return front edge
-DX, DY = X0, 0.1                           # the diagonal runs from (RX, -0.6) to (DX, DY), x = y - 2.1
-DIAG = DX - DY                             # x - y on the diagonal
-QY = X0 + EB - DIAG + EB * math.sqrt(2)  # y where the inset diagonal meets the main top's left band
+# L desk (2026-11-08): the main top carries on left to WX0 at full depth, and a second arm as wide as
+# the main top is deep (both ends the same size) runs from there along the left wall toward the
+# camera to AY0. A 45 degree chamfer joins the main top's front edge (at X0) to the arm's inner edge
+# (AX1). One desk: the same boards, seams, backing and steel band run round the L. The farm TV
+# stands in the back-left corner. Blender plan (x, y); Godot z = -y.
+WX0 = -4.6                                 # left edge of the L (Godot x)
+AX1 = WX0 + (Y1 - Y0)                      # the arm's inner edge: the arm is as wide as the main top is deep
+AY0 = -3.0                                 # the arm's front end (Godot z 3.0, past the desk view)
+CH = X0 - Y0                               # x - y on the chamfer, from (X0, Y0) to (AX1, Y0 - (X0 - AX1))
 y = Y0 + EB
 inner = (Y1 - EB) - y
 widths = [w * inner / sum(widths) for w in widths]
 for i, w in enumerate(widths):
-    xs = [(WX0 if y + gap / 2 >= QY else X0) + EB] + ([joints[i]] if i in joints else []) + [X1 - EB]
+    xs = [WX0 + EB] + ([joints[i]] if i in joints else []) + [X1 - EB]
     for a, b in zip(xs, xs[1:]):
         lo = (a + (gap / 2 if a > X0 + EB + 0.01 else 0), y + gap / 2, TOP - THICK)
         hi = (b - (gap / 2 if b < X1 - EB - 0.01 else 0), y + w - gap / 2, TOP)
@@ -43,7 +45,7 @@ for i, w in enumerate(widths):
         pieces.append((lo[0], hi[0], lo[1], hi[1]))
     y += w
 # Backing board so seams read dark, not floor.
-part_box(bm, (X0 + 0.03, Y0 + 0.03, TOP - THICK - 0.012), (X1 - 0.03, Y1 - 0.03, TOP - 0.03), 0.0, 0)
+part_box(bm, (WX0 + 0.03, Y0 + 0.03, TOP - THICK - 0.012), (X1 - 0.03, Y1 - 0.03, TOP - 0.03), 0.0, 0)
 
 # Steel edge band around the whole top: chunky, rounded, flush with the wood at TOP.
 band = [((X0, Y0), (X1, Y0 + EB)), ((WX0, Y1 - EB), (X1, Y1)), ((X1 - EB, Y0 + EB), (X1, Y1 - EB))]
@@ -63,12 +65,11 @@ for x in (X0 + 0.18, X1 - 0.18):
 part_box(bm, (X0 + 0.18, Y1 - 0.16, 0.25), (X1 - 0.18, Y1 - 0.14, under), 0.006, 1)
 part_box(bm, (X0 + 0.18, Y0 + 0.10, under - 0.11), (X1 - 0.18, Y0 + 0.13, under), 0.006, 0)  # front apron
 
-# L wing (2026-11-07): one desk with the main top. The boards above carry on to WX0 where the corner
-# step is full width; below that each board gets a wing piece cut by the diagonal, the same gaps,
-# bevel and grain offset as its main board. Backing and steel band run on round the L.
+# The L's arm (2026-11-08): four boards like the main top's, cut by the chamfer at their right end;
+# the same gaps, bevel and grain. Backing and steel band run on round the L.
 R2 = math.sqrt(2)
-YC = RX - EB - DIAG + EB * R2              # inset diagonal meets the return's right band
-JX = X0 + EB - gap / 2                     # wing pieces stop a hairline short of the main boards
+CHY = Y0 - (X0 - AX1)                      # where the chamfer meets the arm's inner edge
+YC = AX1 - EB - CH + EB * R2               # the inset chamfer meets the arm's inner band
 
 
 def plan_slab(bm, pts, z0, z1, bevel, mat):
@@ -87,42 +88,39 @@ def plan_slab(bm, pts, z0, z1, bevel, mat):
     merge(bm, part, I, mat)
 
 
-def wing_right(y):
-    """The wing boards' right end at plan y: the return's band, then the diagonal, then the main top."""
-    return RX - EB if y <= YC else min(JX, y + DIAG - EB * R2)
+def arm_right(y):
+    """The arm boards' right end at plan y: the inset chamfer, then the arm's inner band."""
+    return AX1 - EB if y <= YC else y + CH - EB * R2
 
 
-wing_of = []                               # each wing piece's main board (its grain offset)
 MAIN = len(pieces)
-wing_bands = [(k, lo, hi) for k, (a, b, lo, hi) in enumerate(pieces) if lo < QY]
-wing_bands.append((len(pieces), RY0 + EB, Y0 + EB - gap / 2))     # the return's front board, past the main top
-for k, lo, hi in wing_bands:
-    ys = [lo] + [b for b in (YC, JX - DIAG + EB * R2) if lo < b < hi] + [hi]
-    pts = [(WX0 + EB, lo)] + [(wing_right(y), y) for y in ys] + [(WX0 + EB, hi)]
+ARM = 4
+a_lo, a_w = AY0 + EB, (Y0 + EB - (AY0 + EB)) / ARM
+for k in range(ARM):
+    lo, hi = a_lo + k * a_w + gap / 2, a_lo + (k + 1) * a_w - gap / 2
+    ys = [lo] + ([YC] if lo < YC < hi else []) + [hi]
+    pts = [(WX0 + EB, lo)] + [(arm_right(y), y) for y in ys] + [(WX0 + EB, hi)]
     plan_slab(bm, pts, TOP - THICK, TOP, 0.003, 0)
-    wing_of.append(k)
     pieces.append((WX0 + EB, max(x for x, _ in pts), lo, hi))
-plan_slab(bm, [(X0 + 0.03, Y1 - 0.03), (WX0 + 0.03, Y1 - 0.03), (WX0 + 0.03, RY0 + 0.03), (RX - 0.03, RY0 + 0.03),
-               (RX - 0.03, RX - 0.03 - DIAG + 0.03 * R2), (X0 + 0.03, X0 + 0.03 - DIAG + 0.03 * R2)],
-          TOP - THICK - 0.012, TOP - 0.03, 0.0, 0)                 # backing board
-# Steel band: the wing's left side, the return's front and right side, the diagonal, the main top's
-# short left end. Same section and bevel as the main band.
+plan_slab(bm, [(WX0 + 0.03, Y0 + 0.03), (WX0 + 0.03, AY0 + 0.03), (AX1 - 0.03, AY0 + 0.03),
+               (AX1 - 0.03, AX1 - 0.03 - CH + 0.03 * R2), (Y0 + 0.03 + CH - 0.03 * R2, Y0 + 0.03)],
+          TOP - THICK - 0.012, TOP - 0.03, 0.0, 0)                 # backing board under the arm
+# Steel band: the L's left side, the arm's front end and inner side, the chamfer. Same section and
+# bevel as the main band.
 BZ = TOP - THICK - 0.006
-for lo, hi in (((WX0, RY0 + EB), (WX0 + EB, Y1 - EB)), ((WX0, RY0), (RX, RY0 + EB)),
-               ((RX - EB, RY0 + EB), (RX, RX - DIAG)), ((X0, Y0 + EB), (X0 + EB, DY))):
+for lo, hi in (((WX0, AY0 + EB), (WX0 + EB, Y1 - EB)), ((WX0, AY0), (AX1, AY0 + EB)), ((AX1 - EB, AY0 + EB), (AX1, CHY))):
     part_box(bm, (*lo, BZ), (*hi, TOP), 0.005, 1)
-plan_slab(bm, [(RX - EB, RX - DIAG), (RX, RX - DIAG), (DX, DY), (X0 + EB, DY), (X0 + EB, QY), (RX - EB, YC)],
+plan_slab(bm, [(X0, Y0), (AX1, CHY), (AX1 - EB, CHY), (AX1 - EB, YC), (Y0 + EB + CH - EB * R2, Y0 + EB), (X0, Y0 + EB)],
           BZ, TOP, 0.005, 1)
-for x, z in ((-3.3, -0.65), (-3.3, 1.5), (-2.8, 1.5), (-2.15, -0.25)):  # steel legs
+for x, z in ((WX0 + 0.1, -0.65), (WX0 + 0.1, -AY0 - 0.1), (AX1 - 0.1, -AY0 - 0.1), (AX1 - 0.1, -CHY + 0.1)):  # steel legs
     part_box(bm, (x - 0.035, -z - 0.035, 0.0), (x + 0.035, -z + 0.035, TOP - THICK), 0.01, 1)
-part_box(bm, (-3.3, 0.6, 0.25), (-2.0, 0.62, TOP - THICK), 0.006, 1)  # modesty panel along the back
+part_box(bm, (WX0 + 0.1, 0.6, 0.25), (X0, 0.62, TOP - THICK), 0.006, 1)  # modesty panel along the back
 
 ob = finish("Table", bm, [wood, steel], (0, CY, 0))
 
 # Offset each board's UVs so the grain never runs continuously across boards.
 me = ob.data; uv = me.uv_layers["UVMap"].data
-offs = [(random.uniform(0, 3), random.uniform(0, 3)) for _ in range(MAIN + 1)]   # + the return's front board
-offs = offs[:MAIN] + [offs[k] for k in wing_of]
+offs = [(random.uniform(0, 3), random.uniform(0, 3)) for _ in pieces]
 for p in me.polygons:
     if p.material_index:
         continue

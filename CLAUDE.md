@@ -29,6 +29,10 @@ Every agent follows this for art, sound, UI and writing:
 
 Before proposing any price, unlock threshold or upgrade, calculate how long an average player needs to reach it, and show the timeline. `tools/pace.py` simulates the early game (flick time, refusals, pack prices); extend it as systems arrive. Early on, something new should arrive every 30–90 s, gaps growing slowly and never more than about 2–3 minutes in the first 15 minutes. Each upgrade should be felt (aim for +25% or more on what it improves).
 
+## Scenes over code
+
+Anything that belongs to a scene lives in its `.tscn`, not in code: meshes, models, lights, labels, collision shapes, Interactables, materials, UI layout and styles (a Theme). Never build fixed nodes with `.new()` + `add_child` in `_ready`. Scripts pick nodes up with `@onready var x: Type = $Path` and only change what moves during play (energies, text, visibility). Something reused gets its own scene to instance (`entities/components/light_switch.tscn`). Code only builds what is truly dynamic: one node per data entry (upgrade rows, units bought), generated meshes.
+
 ## Tests
 
 gdUnit4 (`addons/gdUnit4`), run by `.\check.ps1` (warning check, then every suite; exit code is the only truth). One suite: `.\check.ps1 tests/entities/cabbage/cabbage_test.gd`. Compile + warnings only, no tests: `.\check.ps1 -WarningsOnly` (`--check-only -s` doesn't work here: it skips the autoloads, so game scripts fail to compile).

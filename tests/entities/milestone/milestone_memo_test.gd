@@ -168,3 +168,15 @@ func test_the_folder_glow_pulses_while_it_lasts_fades_in_its_last_second_and_is_
 	assert_float(Memo.glow_at(-1.0, 3.0)).is_equal(0.0)
 	assert_float(Memo.glow_at(Memo.GLOW_TIME, 3.0)).is_between(0.2, 1.0)
 	assert_float(Memo.glow_at(0.5, 0.0)).is_less(Memo.glow_at(5.0, 0.0))
+
+
+func test_esc_closes_the_open_files_before_the_pause_menu_can_take_it() -> void:
+	var memo: CanvasLayer = auto_free(load("res://entities/milestone/milestone_memo.tscn").instantiate())
+	add_child(memo)
+	memo._files.visible = true
+	var esc := InputEventAction.new()
+	esc.action = "ui_cancel"
+	esc.pressed = true
+	memo._input(esc)  # _input runs before any _unhandled_input, so the menu never sees this Esc.
+	assert_bool(memo._files.visible).is_false()
+	assert_bool(get_viewport().is_input_handled()).is_true()

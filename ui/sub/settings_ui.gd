@@ -71,7 +71,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if visible && event.is_action_pressed("ui_cancel"):
 		go_back()
-		accept_event()
+		get_viewport().set_input_as_handled()
 
 
 func enable() -> void:

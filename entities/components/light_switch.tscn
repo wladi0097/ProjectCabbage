@@ -1,0 +1,44 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/components/light_switch.gd" id="1_switch"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
+
+[sub_resource type="BoxMesh" id="PlateBox"]
+size = Vector3(0.036, 0.05, 0.006)
+
+[sub_resource type="StandardMaterial3D" id="PlateBakelite"]
+albedo_color = Color(0.58, 0.57, 0.5, 1)
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="BatBox"]
+size = Vector3(0.012, 0.02, 0.014)
+
+[sub_resource type="StandardMaterial3D" id="BatBakelite"]
+albedo_color = Color(0.16, 0.16, 0.15, 1)
+roughness = 0.45
+
+[sub_resource type="BoxShape3D" id="Hit"]
+size = Vector3(0.046, 0.06, 0.02)
+
+[node name="LightSwitch" type="StaticBody3D"]
+script = ExtResource("1_switch")
+
+[node name="Plate" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlateBox")
+material_override = SubResource("PlateBakelite")
+
+[node name="Pivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.003)
+
+[node name="Bat" type="MeshInstance3D" parent="Pivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.007)
+mesh = SubResource("BatBox")
+material_override = SubResource("BatBakelite")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("Hit")
+
+[node name="Interactable" type="Node" parent="."]
+script = ExtResource("2_interactable")
+pressable = true
+grip_height = 0.02

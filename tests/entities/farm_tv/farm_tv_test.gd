@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
 
 var desk := Transform3D(Basis(Vector3.RIGHT, deg_to_rad(-61.0)), Vector3(0.25, 3.2, 1.6))
-var screen := Transform3D(Basis(Vector3.UP, PI / 4.0), Vector3(-2.6, 1.08, 0.2))
+var screen := Transform3D(Basis(Vector3.UP, PI / 4.0), Vector3(-3.75, 1.08, 0.1))
 var tv := FarmTv.tv_view(screen)
 
 

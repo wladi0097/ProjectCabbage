@@ -62,10 +62,10 @@ var currency := "coins"
 var _held := false
 ## Held: where the pinch sits relative to the mouse (flat), fixed at the grab so neither jumps.
 var _grip := Vector3.ZERO
-var _look := Node3D.new()
-var _heading: Label3D
-var _price: Label3D
-var _interactable := Interactable.new()
+@onready var _look: Node3D = $Look
+@onready var _heading: Label3D = $Look/Heading
+@onready var _price: Label3D = $Look/Price
+@onready var _interactable: Interactable = $Interactable
 var _lifting: Tween
 var _flying: Tween
 var _blinking: Tween
@@ -73,30 +73,32 @@ var _blinking: Tween
 static var _priority_material: StandardMaterial3D
 
 
-func _init(card: Dictionary) -> void:
+## A card for `card` (an UpgradeDesk.CARDS entry), its print fitted to the paper.
+static func create(card: Dictionary) -> UpgradeCard:
+	var made := (load("res://entities/upgrade_desk/upgrade_card.tscn") as PackedScene).instantiate() as UpgradeCard
+	made._fill(card)
+	return made
+
+
+func _fill(card: Dictionary) -> void:
 	id = card.id
 	price = card.price
 	currency = card.get("currency", "coins")
-	collision_layer = LAYER
-	collision_mask = 0
-	var shape := CollisionShape3D.new()
-	shape.shape = BoxShape3D.new()
-	(shape.shape as BoxShape3D).size = Vector3(SIZE.x, 0.02, SIZE.y)
-	add_child(shape)
-	add_child(_look)
-	var paper := MeshInstance3D.new()
-	paper.mesh = PlaneMesh.new()
-	(paper.mesh as PlaneMesh).size = SIZE
-	paper.material_override = MATERIAL if paper_tint(card) == Color.WHITE else _priority()
-	_look.add_child(paper)
-	_text(form_of(card), Vector3(0, 0.002, -0.0825), fit_size(tr(form_of(card)), FORM_SIZE, FORM_BOX), TITLE_FONT)
+	if paper_tint(card) != Color.WHITE:
+		($Look/Paper as MeshInstance3D).material_override = _priority()
+	var form := $Look/Form as Label3D
+	form.text = form_of(card)
+	form.font_size = fit_size(tr(form.text), FORM_SIZE, FORM_BOX)
 	# Long titles (German ones above all) print smaller so they stay between the form line and the price box.
-	_heading = _text(card.title, Vector3(0, 0.002, -0.005), fit_size(tr(card.title), HEADING_SIZE, HEADING_BOX), TITLE_FONT, HEADING_BOX.x)
-	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var heading := $Look/Heading as Label3D
+	heading.text = card.title
+	heading.font_size = fit_size(tr(card.title), HEADING_SIZE, HEADING_BOX)
 	var shown := price_text(price, currency)
-	_price = _text(shown, PRICE_AT, price_size(shown), TITLE_FONT)
-	_interactable.carried = true
-	add_child(_interactable)
+	($Look/Price as Label3D).text = shown
+	($Look/Price as Label3D).font_size = price_size(shown)
+
+
+func _ready() -> void:
 	_interactable.hovered.connect(func() -> void: hover_changed.emit(self, true, false))
 	_interactable.unhovered.connect(func() -> void: hover_changed.emit(self, false, false))
 	_interactable.grabbed.connect(func() -> void:
@@ -213,26 +215,6 @@ func _cue(sound: StringName) -> void:
 	var cue := get_parent().get_node_or_null(NodePath(sound)) as SoundCue
 	if cue != null:
 		cue.cue(global_position)
-
-
-func _text(text: String, at: Vector3, size: int, font: Font, width := 0.0) -> Label3D:
-	var label := Label3D.new()
-	label.text = text
-	label.font = font
-	label.font_size = size
-	label.pixel_size = PIXEL
-	label.modulate = INK
-	label.outline_size = 0
-	label.shaded = true
-	# Shaded glyphs that cast shadows speckle themselves under the lamp.
-	label.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	label.rotation.x = -PI / 2
-	label.position = at
-	if width > 0.0:
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.width = width / PIXEL
-	_look.add_child(label)
-	return label
 
 
 ## "$130" or "¶10": the price with its currency's sign, as on the tally machine's plates.

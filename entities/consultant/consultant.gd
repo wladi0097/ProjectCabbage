@@ -30,9 +30,6 @@ const PLAYER_PAUSE := 15.0
 const THROTTLE := 1.6
 ## Skills 0 and 1 keep the street's acceptance as near this as whole-dollar prices allow.
 const TARGET_ACCEPTANCE := 0.9
-## The on/off switch, lying flat on the desk right of the slate (slate space; face up, its top
-## toward the window), bigger than the console's (the slate is drawn small).
-const SWITCH_AT := Transform3D(Basis(Vector3(2.6, 0, 0), Vector3(0, 0, -2.6), Vector3(0, 2.6, 0)), Vector3(0.36, 0.006, 0.0))
 ## Fingertip distances off an arrow along the slate face's normal (FACE): hovering, and pressed.
 ## From the front, so the finger is not hidden behind the tilted slate.
 const FACE := Vector3(0.0, 0.875, 0.485)
@@ -60,7 +57,8 @@ var _time := 0.0
 var _extra := 0
 
 @onready var _model: HandModel = $Hand
-@onready var _switch := LightSwitch.new()
+## The on/off switch lies on the desk right of the slate (price_slate.tscn).
+@onready var _switch: LightSwitch = slate.get_node(^"ConsultantSwitch")
 
 
 func _ready() -> void:
@@ -76,9 +74,6 @@ func _ready() -> void:
 	_model.pose = HandModel.Pose.POINT
 	_model.visible = false
 	slate.player_rewrote.connect(_back_off)
-	_switch.transform = SWITCH_AT
-	_switch.tooltip = "Pricing consultant switch. Up: it keeps nudging your price toward where about 90% of units sell, or as far over that as you set it. Down: it stays away."
-	slate.add_child(_switch)
 	_switch.flicked.connect(_flick)
 	_show_switch(false)
 

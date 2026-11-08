@@ -26,7 +26,7 @@ func test_a_disabled_switch_does_not_catch_the_hand() -> void:
 
 
 func _switch(text: String) -> LightSwitch:
-	var switch: LightSwitch = auto_free(LightSwitch.new())
+	var switch: LightSwitch = auto_free(load("res://entities/components/light_switch.tscn").instantiate())
 	switch.tooltip = text
 	add_child(switch)
 	return switch

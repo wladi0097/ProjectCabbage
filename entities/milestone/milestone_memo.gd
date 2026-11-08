@@ -231,7 +231,8 @@ func _file_due(with_paper: bool) -> void:
 		m = due(save)
 
 
-func _unhandled_input(event: InputEvent) -> void:
+## Esc closes it, in _input so it gets Esc before the in-game menu (later in the tree, unhandled) opens.
+func _input(event: InputEvent) -> void:
 	if _files.visible and event.is_action_pressed("ui_cancel"):
 		_files.visible = false
 		get_viewport().set_input_as_handled()

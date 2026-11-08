@@ -2,6 +2,7 @@
 .godot/
 .import/
 export.cfg
+!.gdmaim/export.cfg
 .mono/
 data_*/
 dist/

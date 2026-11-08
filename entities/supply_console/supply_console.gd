@@ -33,8 +33,6 @@ const BAILOUT_WAIT := 10.0
 const AMBER := Color(1, 0.62, 0.18, 1)
 const DENIED_RED := Color(1, 0.12, 0.08, 1)
 const BLINK_TIME := 0.12
-## Where the AUTO light switch sits, right of the lamp (lamp space).
-const SWITCH_AT := Vector3(0.088, 0.008, 0.0)
 ## Seconds between two automatic buys, and the AUTO lamp's colour when switched off.
 const AUTO_COOLDOWN := 1.0
 const AUTO_OFF := Color(0.3, 0.27, 0.22, 1)
@@ -62,7 +60,7 @@ var _shown_cost := -1
 @onready var _button: Interactable = $Button/Interactable
 @onready var _auto: Label3D = $Auto
 @onready var _auto_switch: Interactable = $AutoSwitch/Interactable
-@onready var _toggle := LightSwitch.new()
+@onready var _toggle: LightSwitch = $Auto/Toggle
 @onready var _price: Label3D = $Price
 @onready var _spark: MeshInstance3D = $Sparkline
 @onready var _skeleton: Skeleton3D = $Model/Armature/Skeleton3D
@@ -75,9 +73,6 @@ func _ready() -> void:
 	_button.grabbed.connect(_push.bind(true))
 	_button.released.connect(_push.bind(false))
 	_auto_switch.grabbed.connect(_toggle_auto)
-	_toggle.position = SWITCH_AT
-	_toggle.tooltip = "Auto-buy switch. Up: a pack is bought by itself whenever stock runs low (and you can pay). Down: you buy by hand."
-	_auto.add_child(_toggle)
 	_toggle.flicked.connect(_toggle_auto)
 	_show_auto(false)
 	var save := SaveManager.save

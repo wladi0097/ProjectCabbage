@@ -149,3 +149,17 @@ func test_personnel_lumps_associates_past_the_seventh_into_one_line() -> void:
 	assert_array(rows[0]).is_equal(["HEADCOUNT", "10"])
 	assert_array(rows).has_size(2 + 7 + 1 + 2)
 	assert_array(rows[9]).is_equal(["FURTHER ASSOCIATES", "2"])
+
+
+func test_esc_closes_the_open_ledger_before_the_pause_menu_can_take_it() -> void:
+	var layer: Node = auto_free(load("res://entities/ledger/ledger.tscn").instantiate())
+	add_child(layer)
+	var ledger: Ledger = layer.get_node("Book")
+	ledger._out = 1.0
+	var esc := InputEventAction.new()
+	esc.action = "ui_cancel"
+	esc.pressed = true
+	ledger._input(esc)  # _input runs before any _unhandled_input, so the menu never sees this Esc.
+	assert_bool(get_viewport().is_input_handled()).is_true()
+	await get_tree().create_timer(0.5).timeout
+	assert_float(ledger._out).is_equal(0.0)

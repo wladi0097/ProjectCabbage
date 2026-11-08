@@ -31,8 +31,8 @@ func test_research_directives_print_their_own_form_line() -> void:
 
 
 func test_a_card_is_paid_from_the_currency_it_names_or_coins_by_default() -> void:
-	var coins: UpgradeCard = auto_free(UpgradeCard.new(UpgradeDesk.card_data("projector")))
-	var findings: UpgradeCard = auto_free(UpgradeCard.new(UpgradeDesk.card_data("street_posters")))
+	var coins: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("projector")))
+	var findings: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("street_posters")))
 
 	assert_str(coins.currency).is_equal("coins")
 	assert_int(coins.price).is_equal(75)
@@ -41,7 +41,7 @@ func test_a_card_is_paid_from_the_currency_it_names_or_coins_by_default() -> voi
 
 
 func test_cabbages_pass_through_a_card_on_its_own_layer() -> void:
-	var card: UpgradeCard = auto_free(UpgradeCard.new(UpgradeDesk.card_data("radio")))
+	var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("radio")))
 
 	assert_int(card.collision_layer).is_equal(UpgradeCard.LAYER)
 	assert_int(card.collision_mask).is_equal(0)

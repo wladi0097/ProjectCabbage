@@ -152,7 +152,6 @@ var _springing: Tween
 var _spiked := 0
 ## The only real card on the spike: the last one approved, landed (the rest is _stack).
 var _top: UpgradeCard
-var _stack := MeshInstance3D.new()
 var _riffling: Tween
 ## The stack meshes by sheet count, built once.
 static var _stacks := {}
@@ -163,6 +162,8 @@ var _shock_in := 0.0
 @onready var _tray: Node3D = $Tray
 @onready var _press: Node3D = $Press
 @onready var _spike: Node3D = $Spike
+## The approved papers under _top, one merged mesh (stack_mesh).
+@onready var _stack: MeshInstance3D = $Spike/Stack
 @onready var _skeleton: Skeleton3D = $Press/Model/Armature/Skeleton3D
 @onready var _head := _skeleton.find_bone("Head")
 @onready var _lever := _skeleton.find_bone("Lever")
@@ -173,9 +174,6 @@ var _shock_in := 0.0
 
 func _ready() -> void:
 	var handle: Interactable = $Press/Handle/Interactable
-	# The fist closes round the red ball itself.
-	handle.grip_height = 0.03
-	handle.reach = true
 	handle.grabbed.connect(_grab_lever)
 	handle.released.connect(_let_go_lever)
 	$Spike/Hit/Interactable.grabbed.connect(_open_approved)
@@ -184,11 +182,9 @@ func _ready() -> void:
 	$Approved/Shade.gui_input.connect(_on_shade_input)
 	var save := SaveManager.save
 	migrate(save)
-	_stack.material_override = UpgradeCard.MATERIAL
-	_spike.add_child(_stack)
 	var approved := Array(save.stamped).filter(func(id: String) -> bool: return not card_data(id).is_empty())
 	if not approved.is_empty():
-		var card := UpgradeCard.new(card_data(approved[-1]))
+		var card := UpgradeCard.create(card_data(approved[-1]))
 		add_child(card)
 		card.stamp(false)
 		card.position = _spike_spot(sheets_under(approved.size()))
@@ -497,7 +493,7 @@ func _deal(animate := true) -> void:
 			break
 		if _offered.any(func(other: UpgradeCard) -> bool: return other.id == id):
 			continue
-		var card := UpgradeCard.new(card_data(id))
+		var card := UpgradeCard.create(card_data(id))
 		add_child(card)
 		card.dropped.connect(_on_dropped)
 		card.hover_changed.connect(_on_card_hover)

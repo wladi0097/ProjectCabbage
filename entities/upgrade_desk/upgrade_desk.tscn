@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://dmc0og2ryhoub" path="res://assets/meshes/Props/spike_file.blend" id="6_spike"]
 [ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="7_font"]
 [ext_resource type="PackedScene" path="res://ui/elements/paper_note.tscn" id="8_note"]
+[ext_resource type="Material" path="res://assets/materials/card_paper.tres" id="9_paper"]
 [ext_resource type="AudioStream" uid="uid://wbc8wcvrd8t7" path="res://assets/audio/effects/card_hover_1.wav" id="sfx_card_hover_1"]
 [ext_resource type="AudioStream" uid="uid://caca7dfoh7wp6" path="res://assets/audio/effects/card_hover_2.wav" id="sfx_card_hover_2"]
 [ext_resource type="AudioStream" uid="uid://btjnudu3qy3jm" path="res://assets/audio/effects/card_impale_1.wav" id="sfx_card_impale_1"]
@@ -265,11 +266,16 @@ shape = SubResource("HandleShape")
 [node name="Interactable" type="Node" parent="Press/Handle" unique_id=988583497]
 script = ExtResource("3_interactable")
 tooltip = "Approval press. Drag a card from the tray onto the pad, then pull this handle all the way down to pay for and approve it."
+grip_height = 0.03
+reach = true
 
 [node name="Spike" type="Node3D" parent="." unique_id=1042276350]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0442882, 0.75, -0.33673063)
 
 [node name="Model" parent="Spike" unique_id=380128181 instance=ExtResource("6_spike")]
+
+[node name="Stack" type="MeshInstance3D" parent="Spike"]
+material_override = ExtResource("9_paper")
 
 [node name="Hit" type="StaticBody3D" parent="Spike"]
 collision_layer = 8

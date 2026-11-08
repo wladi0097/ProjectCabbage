@@ -453,6 +453,8 @@ const PULL_WIDTH := 0.08
 @export var roll_up_sound: AudioStream
 @export var approve_sound: AudioStream
 @export var denied_sound: AudioStream
+## The projector's hot spot: a soft cold wash, fading out toward the screen's edges.
+@export var beam: GradientTexture2D
 
 ## How far the screen is unrolled, 0 (up) to 1 (down), and how far the projector lamp is on.
 var _drop := 0.0
@@ -473,9 +475,6 @@ var _close_hot := false
 var _arrive := 0.0
 ## The bottom bar's sideways lag behind the swinging pull while it rolls (px).
 var _sway := 0.0
-var _sfx := AudioStreamPlayer.new()
-var _beam := GradientTexture2D.new()
-var _overlay := ColorRect.new()
 ## The tree's pan (px) and zoom; a press on the slide pans once it moves past CLICK_PX.
 var _pan := Vector2.ZERO
 var _zoom := 1.0
@@ -488,9 +487,12 @@ var _pan_start := Vector2.ZERO
 ## Hover, hold and the popup go on _top, redrawn each frame (a few calls), and the lamp's pulse dims
 ## _layer only. _layer is a Node2D, not a Control: a Control is culled by its own (here empty) rect,
 ## so the whole tree vanished once the hub was panned out of the slide.
-var _tree := Control.new()
-var _layer := Node2D.new()
-var _top := Control.new()
+## The dimming behind the open sheet, and the player for its sounds.
+@onready var _overlay: ColorRect = $Overlay
+@onready var _sfx: AudioStreamPlayer = $Sfx
+@onready var _tree: Control = $Tree
+@onready var _layer: Node2D = $Tree/Layer
+@onready var _top: Control = $Tree/Top
 var _layer_key := []
 ## Nodes showing for the first time since the screen came down (marked NEW until it rolls up).
 var _fresh: Array[String] = []
@@ -503,12 +505,15 @@ var _sheet_drawn := true
 ## Node prices sorted, to count the affordable ones cheaply (they change the drawing).
 static var _prices := PackedInt32Array()
 static var _plate_style: StyleBoxFlat
-## The pull in the 3D world: its body, the tipping tab, the cord, its handle and material.
-var _grip: StaticBody3D
-var _tab := Node3D.new()
-var _cord := MeshInstance3D.new()
-var _handle: Interactable
-var _enamel := StandardMaterial3D.new()
+## The pull in the 3D world: its body, the tipping tab, the cord, its handle and material. A grey
+## enamel pennant, a downward-pointing triangle stamped PULL, hanging by its top edge from a steel
+## eyelet on a dark cord. Its face is tipped back toward the camera so the word reads from above.
+## Hovered it glows faintly and lifts; the hand pinches its tip (Interactable reach + carried).
+@onready var _grip: StaticBody3D = $Grip
+@onready var _tab: Node3D = $Grip/Tab
+@onready var _cord: MeshInstance3D = $Cord
+@onready var _handle: Interactable = $Grip/Handle
+@onready var _enamel: StandardMaterial3D = ($Grip/Tab/Pennant.mesh as PrimitiveMesh).material
 var _tab_hot := false
 var _tilt := TAB_TILT
 ## Where the cord is tied (under the bar) and the tab's Verlet point, now and one STEP ago.
@@ -525,9 +530,9 @@ var _offer_in := 0.0
 var _announced: Variant = null
 ## Seconds of the pennant's flash left, and the count of buyable upgrades stamped at its tip.
 var _flash := 0.0
-var _count := Label3D.new()
+@onready var _count: Label3D = $Grip/Tab/Badge/Count
 ## The dark plate riveted under the tip that carries the count; hidden while nothing is buyable.
-var _badge := Node3D.new()
+@onready var _badge: Node3D = $Grip/Tab/Badge
 var _step_left := 0.0
 ## While dragged, the tab keeps this offset from the mouse's point under it (no lag, no jump).
 var _grab_offset := Vector3.ZERO
@@ -539,29 +544,12 @@ var _grip_r := 40.0
 func _ready() -> void:
 	# Before the Hand autoload, so the hand sits on where the tab is this frame, not the last.
 	process_priority = -1
-	set_anchors_preset(PRESET_FULL_RECT)
-	_overlay.set_anchors_preset(PRESET_FULL_RECT)
-	_overlay.show_behind_parent = true
-	_overlay.mouse_filter = MOUSE_FILTER_IGNORE
-	_overlay.color = Color(SHADE, 0.0)
-	add_child(_overlay)
-	_tree.clip_contents = true
-	_tree.mouse_filter = MOUSE_FILTER_IGNORE
-	_top.mouse_filter = MOUSE_FILTER_IGNORE
-	_tree.add_child(_layer)
-	_tree.add_child(_top)
 	_layer.draw.connect(_draw_layer)
 	_top.draw.connect(_draw_top)
-	add_child(_tree)
-	_sfx.bus = &"SFX"
-	# The projector's hot spot: a soft cold wash, fading out toward the screen's edges.
-	_beam.fill = GradientTexture2D.FILL_RADIAL
-	_beam.fill_from = Vector2(0.5, 0.45)
-	_beam.fill_to = Vector2(1.05, 1.0)
-	_beam.gradient = Gradient.new()
-	_beam.gradient.set_color(0, Color(BEAM, 0.42))
-	_beam.gradient.set_color(1, Color(BEAM, 0.04))
-	add_child(_sfx)
+	_handle.hovered.connect(_touch_tab.bind(true))
+	_handle.unhovered.connect(_touch_tab.bind(false))
+	_handle.grabbed.connect(_grab)
+	_handle.released.connect(_let_go)
 	visible = false
 	if unlocked(SaveManager.save):
 		_show(false)
@@ -650,8 +638,6 @@ func _process(delta: float) -> void:
 ## Shown only while the screen is not fully down (open, the overlay, X and Esc close it), and not
 ## while the camera is at the farm TV.
 func _move_pull(delta: float) -> void:
-	if _grip == null:
-		return
 	var shown := (_drop < 1.0 or _dragging) and not FarmTv.away
 	_grip.visible = shown
 	_cord.visible = shown
@@ -1048,107 +1034,13 @@ func _notification(what: int) -> void:
 		_close_hot = false
 
 
-## Turns up: the pull (dropping in from above when `arrive`), built here.
+## Turns up: the pull (dropping in from above when `arrive`).
 func _show(arrive: bool) -> void:
 	visible = true
 	if arrive:
 		_arrive = -80.0
 		create_tween().tween_property(self, "_arrive", 0.0, 0.5).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-	_build_pull()
-
-
-## The pull: a grey enamel pennant, a downward-pointing triangle stamped PULL, hanging by its top edge
-## from a steel eyelet on a dark cord. Its face is tipped back toward the camera so the word reads from
-## above. Hovered it glows faintly and lifts; the hand pinches its tip (Interactable reach + carried).
-func _build_pull() -> void:
-	_grip = StaticBody3D.new()
-	_grip.collision_mask = 0
-	_enamel.albedo_color = Color(0.6, 0.63, 0.59)
-	_enamel.roughness = 0.45
-	_enamel.emission_enabled = true
-	_enamel.emission = BEAM
-	_enamel.emission_energy_multiplier = 0.0
-	var steel := StandardMaterial3D.new()
-	steel.albedo_color = Color(0.55, 0.58, 0.57)
-	steel.metallic = 0.8
-	steel.roughness = 0.3
-	# The tab hangs from the cord's end by its top edge, tipped back about that edge.
-	_tab.rotation.x = TAB_TILT
-	_grip.add_child(_tab)
-	var prism := PrismMesh.new()
-	prism.size = Vector3(TAB.x, TAB.y, 0.018)
-	prism.material = _enamel
-	var pennant := MeshInstance3D.new()
-	pennant.mesh = prism
-	pennant.rotation.z = PI  # Point down.
-	pennant.position.y = -TAB.y / 2.0
-	_tab.add_child(pennant)
-	var word := Label3D.new()
-	word.text = "PULL"
-	word.font = FONT
-	word.font_size = pull_size(TranslationServer.translate("PULL"))
-	word.pixel_size = PULL_PIXEL
-	word.outline_size = 0
-	word.modulate = INK
-	word.position = Vector3(0.0, -TAB.y * 0.3, 0.0095)
-	_tab.add_child(word)
-	# The buyable count on its own dark plate hung just under the tip, apart from the word.
-	var rim := BoxMesh.new()
-	rim.size = Vector3(0.046, 0.032, 0.005)
-	rim.material = steel
-	var plate_box := BoxMesh.new()
-	plate_box.size = Vector3(0.04, 0.026, 0.006)
-	var plate_mat := StandardMaterial3D.new()
-	plate_mat.albedo_color = STEEL
-	plate_mat.roughness = 0.6
-	plate_box.material = plate_mat
-	for mesh: BoxMesh in [rim, plate_box]:
-		var slab := MeshInstance3D.new()
-		slab.mesh = mesh
-		_badge.add_child(slab)
-	_count.font = FONT
-	_count.font_size = 44
-	_count.pixel_size = 0.0006
-	_count.outline_size = 0
-	_count.modulate = BEAM
-	_count.position.z = 0.0035
-	_badge.add_child(_count)
-	_badge.position = Vector3(0.0, -TAB.y - 0.01, 0.0)
-	_badge.visible = false
-	_tab.add_child(_badge)
-	var eye := CylinderMesh.new()
-	eye.top_radius = 0.008
-	eye.bottom_radius = 0.012
-	eye.height = 0.025
-	eye.material = steel
-	var eyelet := MeshInstance3D.new()
-	eyelet.mesh = eye
-	_grip.add_child(eyelet)
-	var shape := CollisionShape3D.new()
-	shape.shape = SphereShape3D.new()
-	(shape.shape as SphereShape3D).radius = TAB.x * 0.6
-	shape.position.y = -TAB.y / 2.0
-	_grip.add_child(shape)
-	_handle = Interactable.new()
-	_handle.reach = true
-	_handle.carried = true
-	_handle.tooltip = "Pull down to open the projector: the upgrade tree. Hold an upgrade there to buy it with coins."
-	_handle.hovered.connect(_touch_tab.bind(true))
-	_handle.unhovered.connect(_touch_tab.bind(false))
-	_handle.grabbed.connect(_grab)
-	_handle.released.connect(_let_go)
-	_grip.add_child(_handle)
-	var cord := CylinderMesh.new()
-	cord.top_radius = 0.005
-	cord.bottom_radius = 0.005
-	cord.height = 1.0
-	cord.radial_segments = 6
-	var dark := StandardMaterial3D.new()
-	dark.albedo_color = INK
-	cord.material = dark
-	_cord.mesh = cord
-	add_child(_grip)
-	add_child(_cord)
+	($Grip/Tab/Word as Label3D).font_size = pull_size(TranslationServer.translate("PULL"))
 
 
 func _touch_tab(hot: bool) -> void:
@@ -1384,7 +1276,7 @@ func _draw_content(save: SaveGame, fabric: Rect2) -> void:
 		return
 	var light := _lamp * pulse(Time.get_ticks_msec() / 1000.0)
 	# The beam: a cold, uneven wash brightest in the middle.
-	draw_texture_rect(_beam, fabric, false, Color(1, 1, 1, light))
+	draw_texture_rect(beam, fabric, false, Color(1, 1, 1, light))
 	var ink := Color(INK, _lamp)
 	var top := fabric.position.y + fabric.size.y * 0.04
 	var head := clampf(fabric.size.x * 0.035, 22.0, 44.0)

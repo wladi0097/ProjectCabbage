@@ -5,6 +5,64 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/projector_roll_up.wav" id="3_roll_up"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/projector_approve.wav" id="4_approve"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/projector_denied.wav" id="5_denied"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="6_interactable"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="7_font"]
+
+[sub_resource type="Gradient" id="BeamFade"]
+colors = PackedColorArray(0.78, 0.84, 0.84, 0.42, 0.78, 0.84, 0.84, 0.04)
+
+[sub_resource type="GradientTexture2D" id="Beam"]
+gradient = SubResource("BeamFade")
+fill = 1
+fill_from = Vector2(0.5, 0.45)
+fill_to = Vector2(1.05, 1)
+
+[sub_resource type="StandardMaterial3D" id="Enamel"]
+albedo_color = Color(0.6, 0.63, 0.59, 1)
+roughness = 0.45
+emission_enabled = true
+emission = Color(0.78, 0.84, 0.84, 1)
+emission_energy_multiplier = 0.0
+
+[sub_resource type="StandardMaterial3D" id="Steel"]
+albedo_color = Color(0.55, 0.58, 0.57, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="StandardMaterial3D" id="PlateDark"]
+albedo_color = Color(0.16, 0.17, 0.17, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="CordInk"]
+albedo_color = Color(0.13, 0.15, 0.14, 1)
+
+[sub_resource type="PrismMesh" id="PennantPrism"]
+material = SubResource("Enamel")
+size = Vector3(0.13, 0.11, 0.018)
+
+[sub_resource type="BoxMesh" id="RimBox"]
+material = SubResource("Steel")
+size = Vector3(0.046, 0.032, 0.005)
+
+[sub_resource type="BoxMesh" id="PlateBox"]
+material = SubResource("PlateDark")
+size = Vector3(0.04, 0.026, 0.006)
+
+[sub_resource type="CylinderMesh" id="EyeletCone"]
+material = SubResource("Steel")
+top_radius = 0.008
+bottom_radius = 0.012
+height = 0.025
+
+[sub_resource type="SphereShape3D" id="TabReach"]
+radius = 0.078
+
+[sub_resource type="CylinderMesh" id="CordTube"]
+material = SubResource("CordInk")
+top_radius = 0.005
+bottom_radius = 0.005
+height = 1.0
+radial_segments = 6
 
 [node name="Projector" type="CanvasLayer"]
 
@@ -20,3 +78,86 @@ roll_down_sound = ExtResource("2_roll_down")
 roll_up_sound = ExtResource("3_roll_up")
 approve_sound = ExtResource("4_approve")
 denied_sound = ExtResource("5_denied")
+beam = SubResource("Beam")
+
+[node name="Overlay" type="ColorRect" parent="Screen"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.07, 0.08, 0.08, 0)
+
+[node name="Tree" type="Control" parent="Screen"]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Layer" type="Node2D" parent="Screen/Tree"]
+
+[node name="Top" type="Control" parent="Screen/Tree"]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Sfx" type="AudioStreamPlayer" parent="Screen"]
+bus = &"SFX"
+
+[node name="Grip" type="StaticBody3D" parent="Screen"]
+visible = false
+collision_layer = 0
+collision_mask = 0
+
+[node name="Tab" type="Node3D" parent="Screen/Grip"]
+transform = Transform3D(1, 0, 0, 0, 0.764842, 0.644218, 0, -0.644218, 0.764842, 0, 0, 0)
+
+[node name="Pennant" type="MeshInstance3D" parent="Screen/Grip/Tab"]
+transform = Transform3D(-1, 0, 0, 0, -1, 0, 0, 0, 1, 0, -0.055, 0)
+mesh = SubResource("PennantPrism")
+
+[node name="Word" type="Label3D" parent="Screen/Grip/Tab"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.033, 0.0095)
+pixel_size = 0.0006
+modulate = Color(0.13, 0.15, 0.14, 1)
+text = "PULL"
+font = ExtResource("7_font")
+outline_size = 0
+
+[node name="Badge" type="Node3D" parent="Screen/Grip/Tab"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.12, 0)
+visible = false
+
+[node name="Rim" type="MeshInstance3D" parent="Screen/Grip/Tab/Badge"]
+mesh = SubResource("RimBox")
+
+[node name="Plate" type="MeshInstance3D" parent="Screen/Grip/Tab/Badge"]
+mesh = SubResource("PlateBox")
+
+[node name="Count" type="Label3D" parent="Screen/Grip/Tab/Badge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0035)
+pixel_size = 0.0006
+modulate = Color(0.78, 0.84, 0.84, 1)
+font = ExtResource("7_font")
+font_size = 44
+outline_size = 0
+
+[node name="Eyelet" type="MeshInstance3D" parent="Screen/Grip"]
+mesh = SubResource("EyeletCone")
+
+[node name="Shape" type="CollisionShape3D" parent="Screen/Grip"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.055, 0)
+shape = SubResource("TabReach")
+
+[node name="Handle" type="Node" parent="Screen/Grip"]
+script = ExtResource("6_interactable")
+tooltip = "Pull down to open the projector: the upgrade tree. Hold an upgrade there to buy it with coins."
+reach = true
+carried = true
+
+[node name="Cord" type="MeshInstance3D" parent="Screen"]
+visible = false
+mesh = SubResource("CordTube")

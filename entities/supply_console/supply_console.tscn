@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://entities/supply_console/supply_console.gd" id="1_console"]
 [ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
+[ext_resource type="PackedScene" path="res://entities/components/light_switch.tscn" id="6_switch"]
 [ext_resource type="Texture2D" path="res://assets/sprites/icons/pack_buy.svg" id="4_icon"]
 [ext_resource type="PackedScene" path="res://assets/meshes/Machines/supply_console.blend" id="5_model"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_console_drop"]
@@ -115,6 +116,10 @@ shaded = false
 text = "● AUTO"
 font_size = 32
 outline_size = 0
+
+[node name="Toggle" parent="Auto" instance=ExtResource("6_switch")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.088, 0.008, 0)
+tooltip = "Auto-buy switch. Up: a pack is bought by itself whenever stock runs low (and you can pay). Down: you buy by hand."
 
 [node name="AutoSwitch" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, 0.065, 0.08, 0.085)

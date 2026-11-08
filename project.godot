@@ -15,11 +15,14 @@ config/version="0.1.0"
 run/main_scene="res://worlds/MainStoryWorld.tscn"
 config/auto_accept_quit=false
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
+boot_splash/bg_color=Color(0.07450981, 0.07450981, 0.07450981, 1)
+boot_splash/image="res://assets/sprites/ui/splash_screen.png"
+config/icon="res://icon.png"
+boot_splash/minimum_display_time=2000
 
 [audio]
 
-buses/default_bus_layout="res://ressources/default_bus_layout.tres"
+buses/default_bus_layout="uid://lnkxrysmtwnw"
 
 [autoload]
 
@@ -33,6 +36,14 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[editor]
+
+export/convert_text_resources_to_binary=false
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg", "res://addons/gdmaim/plugin.cfg", "res://addons/safe_resource_loader/plugin.cfg")
 
 [game]
 
@@ -61,7 +72,3 @@ locale/translations=PackedStringArray("res://ressources/translations/translation
 [rendering]
 
 rendering_device/driver.windows="d3d12"
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")

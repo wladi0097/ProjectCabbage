@@ -1,0 +1,97 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/sub/credits_ui.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://ui/elements/button_with_sound.tscn" id="2_button"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/dotted_rule.svg" id="3_dotted"]
+
+[node name="CreditsUi" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Page" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 240.0
+offset_top = 90.0
+offset_right = -240.0
+offset_bottom = -90.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ContentPage"
+
+[node name="Layout" type="VBoxContainer" parent="Page"]
+layout_mode = 2
+theme_type_variation = &"GroupStack"
+
+[node name="Header" type="HBoxContainer" parent="Page/Layout"]
+layout_mode = 2
+
+[node name="BackButton" parent="Page/Layout/Header" instance=ExtResource("2_button")]
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 1
+theme_type_variation = &"PrimaryButton"
+text = "menu.back"
+
+[node name="FormHeader" type="Label" parent="Page/Layout/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"FormLabel"
+text = "credits.formHeader"
+horizontal_alignment = 2
+
+[node name="Titles" type="VBoxContainer" parent="Page/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Title" type="Label" parent="Page/Layout/Titles"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "menu.credits"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="GameTitle" type="Label" parent="Page/Layout/Titles"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+uppercase = true
+
+[node name="Rule" type="TextureRect" parent="Page/Layout"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+texture = ExtResource("3_dotted")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Sections" type="VFlowContainer" parent="Page/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 48
+theme_override_constants/v_separation = 26
+
+[node name="FooterRule" type="TextureRect" parent="Page/Layout"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+texture = ExtResource("3_dotted")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Note" type="Label" parent="Page/Layout"]
+layout_mode = 2
+theme_type_variation = &"NoteLabel"
+text = "credits.note"
+horizontal_alignment = 1
+
+[connection signal="clicked" from="Page/Layout/Header/BackButton" to="." method="go_back"]

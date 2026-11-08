@@ -483,10 +483,8 @@ func test_the_lamp_pulse_stays_gentle() -> void:
 
 
 func test_the_tree_layer_is_a_node2d_so_it_is_not_culled_by_an_empty_rect() -> void:
-	var screen: Projector = auto_free(Projector.new())
-	for child: Node in [screen._layer, screen._top, screen._tree, screen._overlay, screen._sfx, screen._cord, screen._tab, screen._count, screen._badge]:
-		auto_free(child)
-	assert_object(screen._layer).is_instanceof(Node2D)
+	var projector: Node = auto_free(load("res://entities/projector/projector.tscn").instantiate())
+	assert_object(projector.get_node("Screen/Tree/Layer")).is_instanceof(Node2D)
 
 
 func test_the_pull_tugs_once_per_upgrade_not_each_time_the_coins_climb_back_over_its_price() -> void:

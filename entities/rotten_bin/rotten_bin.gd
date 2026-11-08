@@ -50,18 +50,6 @@ func _ready() -> void:
 	_rest = position
 	visible = SaveManager.save.rotten_unlocked
 	_size(Vector3.ONE * MODEL_SCALE * SaveManager.save.bin_mouth)
-	var pit := MeshInstance3D.new()
-	var disc := CylinderMesh.new()
-	disc.top_radius = MOUTH / MODEL_SCALE * 0.97
-	disc.bottom_radius = disc.top_radius
-	disc.height = 0.002
-	var black := StandardMaterial3D.new()
-	black.albedo_color = Color.BLACK
-	black.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	disc.material = black
-	pit.mesh = disc
-	pit.position.y = RIM * SINK + 0.002
-	$Model.add_child(pit)
 	_connect_window.call_deferred()
 
 

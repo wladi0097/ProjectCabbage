@@ -24,8 +24,13 @@
 [ext_resource type="PackedScene" path="res://entities/projector/projector.tscn" id="33_projector"]
 [ext_resource type="PackedScene" path="res://entities/ledger/ledger.tscn" id="34_ledger"]
 [ext_resource type="PackedScene" path="res://entities/milestone/milestone_memo.tscn" id="34_milestone"]
+[ext_resource type="Script" uid="uid://h1pywcv2io3m" path="res://worlds/components/ambience.gd" id="ambience_1"]
+[ext_resource type="PackedScene" path="res://entities/boss_report/boss_report.tscn" id="boss_report_1"]
+[ext_resource type="PackedScene" path="res://entities/farm_tv/farm_tv.tscn" id="farm_tv_1"]
 [ext_resource type="PackedScene" path="res://entities/consultant/consultant.tscn" id="mgr_consultant"]
 [ext_resource type="PackedScene" path="res://entities/manager/manager.tscn" id="mgr_manager"]
+[ext_resource type="PackedScene" path="res://entities/mini_drop/mini_drop.tscn" id="mini_drop_1"]
+[ext_resource type="PackedScene" path="res://entities/radio/radio.tscn" id="radio_1"]
 [ext_resource type="PackedScene" path="res://entities/rotten_bin/rotten_bin.tscn" id="sales_bin"]
 [ext_resource type="PackedScene" path="res://entities/catch_combo/catch_combo.tscn" id="sales_combo"]
 [ext_resource type="PackedScene" path="res://entities/golden_lamp/golden_lamp.tscn" id="sales_lamp"]
@@ -54,11 +59,6 @@
 [ext_resource type="AudioStream" uid="uid://bbbo22sd4tyyy" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tally_tick_2"]
 [ext_resource type="AudioStream" uid="uid://bgi2p7dr0c3b" path="res://assets/audio/effects/tally_tick_3.wav" id="sfx_tally_tick_3"]
 [ext_resource type="PackedScene" path="res://entities/vacuum/vacuum.tscn" id="supply_vacuums"]
-[ext_resource type="PackedScene" path="res://entities/mini_drop/mini_drop.tscn" id="mini_drop_1"]
-[ext_resource type="PackedScene" path="res://entities/radio/radio.tscn" id="radio_1"]
-[ext_resource type="PackedScene" path="res://entities/boss_report/boss_report.tscn" id="boss_report_1"]
-[ext_resource type="PackedScene" path="res://entities/farm_tv/farm_tv.tscn" id="farm_tv_1"]
-[ext_resource type="Script" path="res://worlds/components/ambience.gd" id="ambience_1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.45, 0.58, 0.75, 1)
@@ -411,20 +411,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.76, 1.04)
 
 [node name="WindowTargets" parent="." unique_id=660965086 instance=ExtResource("sales_targets")]
 
-[node name="MiniDrop" parent="." node_paths=PackedStringArray("desk", "mat") instance=ExtResource("mini_drop_1")]
+[node name="MiniDrop" parent="." unique_id=1063800817 node_paths=PackedStringArray("desk", "mat") instance=ExtResource("mini_drop_1")]
 desk = NodePath("../Table/Table")
 mat = NodePath("../Table/cabbage_mat")
 
-[node name="Radio" parent="." instance=ExtResource("radio_1")]
+[node name="Radio" parent="." unique_id=599296128 instance=ExtResource("radio_1")]
 transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, -1.162, 0.75, 0.8)
 
-[node name="Ambience" type="AudioStreamPlayer" parent="."]
+[node name="Ambience" type="AudioStreamPlayer" parent="." unique_id=1389740117]
 bus = &"SFX"
 script = ExtResource("ambience_1")
 
-[node name="FarmTv" parent="." instance=ExtResource("farm_tv_1")]
+[node name="FarmTv" parent="." unique_id=2045536916 instance=ExtResource("farm_tv_1")]
 
-[node name="BossReport" parent="." node_paths=PackedStringArray("memo") instance=ExtResource("boss_report_1")]
+[node name="BossReport" parent="." unique_id=1550714243 node_paths=PackedStringArray("memo") instance=ExtResource("boss_report_1")]
 memo = NodePath("../MilestoneMemo")
 
 [node name="Overlay" type="CanvasLayer" parent="." unique_id=1259288364]
@@ -448,8 +448,8 @@ layer = 10
 [node name="DebugKeys" type="Node" parent="." unique_id=1045444223]
 script = ExtResource("18_debug")
 
-[connection signal="thrown_back" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]
 [connection signal="refused" from="SaleWindow" to="CatchCombo" method="hold" unbinds=1]
+[connection signal="thrown_back" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]
 [connection signal="thrown_back" from="SaleWindow" to="CatchCombo" method="unhold" unbinds=1]
 [connection signal="bounced" from="Coins" to="Coins/Bounce" method="cue"]
 [connection signal="collected" from="Coins" to="Coins/Collect" method="cue"]
