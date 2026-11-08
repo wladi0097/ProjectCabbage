@@ -31,10 +31,18 @@ func test_every_name_the_game_reads_as_a_string_is_kept_by_the_obfuscator() -> v
 			"Add these to %s (one per line):\n%s" % [IGNORE_LIST, "\n".join(missing)]).is_empty()
 
 
-func test_the_obfuscator_reads_the_ignore_list() -> void:
+## Each of these broke the release build once, while the editor and every test still worked.
+func test_the_obfuscator_keeps_what_the_release_build_needs() -> void:
 	var config := ConfigFile.new()
 	assert_int(config.load(GDMAIM_CONFIG)).is_equal(OK)
+	# Reads the ignore list above.
 	assert_bool(config.get_value("exclude_files_category", "custom_tokens_enabled", false)).is_true()
+	# Keeps @export: only exported fields are written, so without it the save file comes out empty.
+	assert_bool(config.get_value("post_process", "strip_editor_annotations", true)).is_false()
+	# Keeps static typing: stripping it writes code that no longer parses.
+	assert_bool(config.get_value("post_process", "strip_static_typing", true)).is_false()
+	# Text, not binary: binary scenes lose material overrides on nodes inside instanced models.
+	assert_int(config.get_value("post_process", "export_mode", 2)).is_equal(0)
 
 
 func test_dictionary_keys_are_found_in_both_spellings_and_only_inside_braces() -> void:
