@@ -84,7 +84,7 @@ static func next_wait(every: float, roll: float) -> float:
 
 ## The hover text: what it does, with today's (upgraded) numbers from `save`.
 static func hint(save: SaveGame) -> String:
-	return TranslationServer.translate("Desk lamp. About every %d s it glows gold for %d s: while it does, every sale pays %s×.") % [roundi(save.lamp_every), roundi(save.lamp_time), String.num(save.lamp_mult, 1)]
+	return TranslationServer.translate("Golden Age lamp. About every %d s a Golden Age dawns for %d s: while it lasts, every sale pays %s×.") % [roundi(save.lamp_every), roundi(save.lamp_time), String.num(save.lamp_mult, 1)]
 
 
 ## How bright the lamp is with `left` seconds of glow to go at clock `time`: full, then through the

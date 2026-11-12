@@ -170,10 +170,20 @@ func _judge(cabbage: Cabbage) -> void:
 		save.sold += 1
 		save.golden_sold += int(cabbage.golden)
 		paid = payout(price * golden_factor(cabbage.golden, save), boosts)
+		save.grown_sold += int(cabbage.grown)
 		if cabbage.golden:
 			cabbage.ring_golden_sale()
+	count_seller(save, cabbage.lobbed)
 	sold.emit(cabbage, paid)
 	coins.throw_in_after(THROW_DELAY, Vector3(x, throw_from.y, throw_from.z), paid)
+
+
+## A sale goes to whoever threw it last: a hired hand (`lobbed`) or the player.
+static func count_seller(save: SaveGame, lobbed: bool) -> void:
+	if lobbed:
+		save.hand_sold += 1
+	else:
+		save.player_sold += 1
 
 
 ## After `wait` seconds the street throws `cabbage` back in through the window (`refused`: emits thrown_back).

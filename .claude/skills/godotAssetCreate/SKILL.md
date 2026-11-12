@@ -156,6 +156,26 @@ starting values; tighten them when a profile says so.
 - Particles: one-shot `CPUParticles3D` or `GPUParticles3D`, ~24 quads, only
   while emitting.
 - Measure with `Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME` in a probe.
+- **Baked light (measured 2026-11-12).** `MainStoryWorld`'s LightmapGI bakes
+  bounced light and ambient occlusion into the room and the desk only. Every
+  other asset stays out of the bake, because it moves, is skinned, is spawned
+  or appears later in the game (a baked prop leaves its shadow on the desk
+  before it is unlocked). So by default:
+  - **Anything else than room or desk:** `import_script/path="res://assets/meshes/unbaked_import.gd"`
+    in the `.blend.import` (sets `gi_mode` Disabled on every mesh), keep
+    `meshes/light_baking=1`. A `MeshInstance3D` / `MultiMeshInstance3D`
+    written in a `.tscn` (a `.res` mesh, a BoxMesh) gets `gi_mode = 0`.
+  - **Part of the room or desk that never moves and is there from the first
+    second:** no import script, `meshes/light_baking=2` and
+    `meshes/lightmap_texel_size=0.02` (Godot unwraps UV2 on import; a
+    primitive mesh needs `add_uv2 = true`), `gi_mode` Static (the default),
+    then re-bake: select `LightmapGI` in `MainStoryWorld` → Bake Lightmaps.
+  - **A light on an asset** gets `light_bake_mode = 0` (Disabled) so its
+    bake-time energy is never frozen into the desk. Only the three room
+    lights feed the bake (Dynamic: direct light and shadows stay real-time).
+  - `gi_mode` Dynamic (probe-lit) is not used: with ~200 moving meshes it
+    doubled the render CPU time (0.78 → 1.56 ms).
+  `tests/worlds/main_story_world_test.gd` holds these rules.
 
 ## 6. Build in Blender (headless)
 

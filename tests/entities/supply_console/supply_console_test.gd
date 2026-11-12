@@ -157,3 +157,18 @@ func test_the_auto_lamp_and_switch_follow_the_standing_order_when_the_shock_swit
 func test_from_130_units_in_stock_a_pack_costs_five_times_as_much_at_once() -> void:
 	assert_int(Console.overstock_price(20, 129)).is_equal(20)
 	assert_int(Console.overstock_price(20, 130)).is_equal(100)
+
+
+func test_packs_bought_by_the_button_and_by_the_standing_order_are_counted_apart() -> void:
+	var save := SaveGame.new()
+	save.coins = 1000
+	save.stock = 0
+	save.storage_cap = 100
+	SaveManager.save = save
+	var console: SupplyConsole = auto_free(load("res://entities/supply_console/supply_console.tscn").instantiate())
+	add_child(console)
+	console._press()
+	console._press(true)
+	console._press(true)
+	assert_int(save.packs_manual).is_equal(1)
+	assert_int(save.packs_auto).is_equal(2)

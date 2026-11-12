@@ -65,10 +65,10 @@ func _draw_paper() -> void:
 	_paper.draw_string(FONT, Vector2(24, 44), tr("NOTICE OF PENALTY"), HORIZONTAL_ALIGNMENT_LEFT, -1, 30, INK)
 	_paper.draw_string(FONT, Vector2(24, 44), "FORM 11-R", HORIZONTAL_ALIGNMENT_RIGHT, w - 48, 13, Color(INK, 0.6))
 	_paper.draw_line(Vector2(24, 56), Vector2(w - 24, 56), INK, 2.0)
-	_paper.draw_string(FONT, Vector2(24, 80), tr("RE: UNIT UNFIT FOR SALE"), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 15, Color(INK, 0.8))
-	_paper.draw_string(FONT, Vector2(24, 112), tr("A rotten unit was offered to the public."), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
+	_paper.draw_string(FONT, Vector2(24, 80), tr("RE: CABBAGE UNFIT FOR SALE"), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 15, Color(INK, 0.8))
+	_paper.draw_string(FONT, Vector2(24, 112), tr("A rotten cabbage was offered to the public."), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
 	_paper.draw_string(FONT, Vector2(24, 142), tr("Penalty: %d × $%d = $%d") % [SaleWindow.FINE, _price, _owed],
 			HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
 	var line := tr("Tally insufficient. Balance set to zero.") if _short else tr("Deducted from your tally.")
 	_paper.draw_string(FONT, Vector2(24, 170), line, HORIZONTAL_ALIGNMENT_LEFT, w - 48, 17, Color(INK, 0.85))
-	_paper.draw_string(FONT, Vector2(24, 202), tr("Rotten units are to be disposed of, not sold."), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 13, Color(INK, 0.55))
+	_paper.draw_string(FONT, Vector2(24, 202), tr("Rotten cabbages are to be disposed of, not sold."), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 13, Color(INK, 0.55))

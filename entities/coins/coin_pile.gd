@@ -95,7 +95,7 @@ func _ready() -> void:
 	multimesh.visible_instance_count = 0
 	custom_aabb = AABB(Vector3(-4, -1, -4), Vector3(8, 4, 8))
 	# Coins still flying or lying on the mat are banked when the game quits, not lost.
-	SaveManager.closing.connect(func() -> void: SaveManager.save.coins += pending_value())
+	SaveManager.closing.connect(func() -> void: bank(SaveManager.save, pending_value()))
 	# The autosave writes them in as well (only into the file, the live coins stay as they are).
 	SaveManager.pending_coins = pending_value
 
@@ -189,7 +189,7 @@ func _process(delta: float) -> void:
 			State.HOMING:
 				if _home(coin, delta):
 					_coins.remove_at(i)
-					SaveManager.save.coins += coin.value
+					bank(SaveManager.save, coin.value)
 					deposited.emit(coin.xf.origin)
 			State.RESTING:
 				continue
@@ -360,8 +360,14 @@ static func ballistic(from: Vector3, to: Vector3, time: float) -> Vector3:
 	return (to - from) / time + 0.5 * Vector3.UP * GRAVITY * time
 
 
+## `value` coins reach the save: held, and counted in save.coins_earned.
+static func bank(save: SaveGame, value: int) -> void:
+	save.coins += value
+	save.coins_earned += value
+
+
 func _deposit_now(value: int) -> void:
-	SaveManager.save.coins += value
+	bank(SaveManager.save, value)
 	deposited.emit(deposit.global_position if deposit != null else global_position)
 
 

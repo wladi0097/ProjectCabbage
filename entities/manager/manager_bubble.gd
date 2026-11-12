@@ -56,7 +56,7 @@ func _draw() -> void:
 	var ink := Color(INK, alpha)
 	var x := box.position.x + 22.0
 	var w := SIZE.x - 44.0
-	draw_string(FONT, Vector2(x, 30), tr("MANAGEMENT  |  UNIT QUOTA"), HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color(ink, alpha * 0.6))
+	draw_string(FONT, Vector2(x, 30), tr("MANAGEMENT  |  CABBAGE QUOTA"), HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color(ink, alpha * 0.6))
 	var secs := ceili(manager.left)
 	var urgent := manager.phase == Manager.Phase.QUOTA and secs <= Manager.TICK_FROM
 	draw_string(FONT, Vector2(x, 38), "0:%02d" % secs, HORIZONTAL_ALIGNMENT_RIGHT, w, 34, Color(URGENT, alpha) if urgent else ink)

@@ -188,8 +188,10 @@ func _take(cabbage: Cabbage) -> int:
 	cabbage.leave_stock(save)
 	if cabbage.research:
 		save.research_units += 1
+	save.golden_analysed += int(cabbage.golden)
 	var counted := tally(_owed, findings_for(cabbage, save))
 	_owed = counted[1]
+	save.findings_earned += counted[0]
 	return counted[0]
 
 

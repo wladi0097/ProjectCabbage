@@ -93,6 +93,7 @@ outline_size = 0
 horizontal_alignment = 0
 
 [node name="Sparkline" type="MeshInstance3D" parent="."]
+gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, -0.002, 0.0887, 0.0473)
 material_override = SubResource("Amber")
 
@@ -104,7 +105,7 @@ shape = SubResource("ButtonShape")
 
 [node name="Interactable" type="Node" parent="Button"]
 script = ExtResource("2_interactable")
-tooltip = "Buy a pack of units (cabbages) for the price on the ticker, paid from your coins. They roll down the chute."
+tooltip = "Buy a pack of cabbages at the ticker price, paid from your coins. They roll down the chute. From 130 cabbages in stock, a pack costs 5× as much."
 pressable = true
 
 [node name="Auto" type="Label3D" parent="."]

@@ -34,6 +34,7 @@ var _tween: Tween
 @onready var _shape: CollisionShape3D = $Arm/Handle/Shape
 @onready var _shut_sound: AudioStreamPlayer3D = $Flap/Shut
 @onready var _lift_sound: AudioStreamPlayer3D = $Flap/Lift
+@onready var _land_sound: AudioStreamPlayer3D = $Land
 
 
 func _ready() -> void:
@@ -92,7 +93,8 @@ func pull() -> void:
 func _arrive() -> void:
 	_show(true)
 	position = _rest + Vector3.UP * ARRIVE_HEIGHT
-	# A thud goes here when it lands on the chute.
+	# The file's thunk sits at ARRIVE_TIME, where the fall ends on the chute.
+	_land_sound.play()
 	create_tween().tween_property(self, "position", _rest, ARRIVE_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 

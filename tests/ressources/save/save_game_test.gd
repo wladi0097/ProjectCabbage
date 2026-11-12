@@ -1,11 +1,13 @@
 extends GdUnitTestSuite
 
 const ROUND_TRIP_PATH := "user://save_game_test_round_trip.tres"
+const LOG_PATH := "user://save_game_test_log.csv"
 
 
 func after_test() -> void:
-	if FileAccess.file_exists(ROUND_TRIP_PATH):
-		DirAccess.remove_absolute(ROUND_TRIP_PATH)
+	for path in [ROUND_TRIP_PATH, LOG_PATH]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(path)
 
 
 func test_a_new_game_starts_with_ten_units_to_sell_two_dollars_chalked_and_nothing_unlocked() -> void:
@@ -65,50 +67,73 @@ func test_a_log_line_records_what_happened_and_the_state_right_after_it() -> voi
 	assert_float(entry.marketing).is_equal_approx(1.235, 0.00001)
 
 
-func test_the_playtest_csv_has_a_header_and_one_row_per_log_line() -> void:
+func test_every_log_column_is_in_every_log_entry() -> void:
+	var entry := SaveGame.new().log_entry(95, "minute")
+	for column: String in SaveGame.LOG_COLUMNS:
+		assert_bool(entry.has(column)).override_failure_message(column).is_true()
+
+
+func test_a_log_entry_snapshots_the_playtest_counters_with_clock_seconds_rounded() -> void:
+	var save := SaveGame.new()
+	save.hand_sold = 3
+	save.tv_seconds = 12.6
+	save.coins_earned = 400
+	var entry := save.log_entry(95, "minute")
+	assert_int(entry.hand_sold).is_equal(3)
+	assert_int(entry.tv_seconds).is_equal(13)
+	assert_int(entry.coins_earned).is_equal(400)
+
+
+func test_a_log_line_has_one_cell_per_column_and_blanks_for_what_an_entry_lacks() -> void:
 	var save := SaveGame.new()
 	save.coins = 42
-	save.playtest_log.append(save.log_entry(95, "card", "price_slate", 12, "coins"))
-	save.playtest_log.append({t = 100, kind = "session"})
-	var csv := save.playtest_csv()
-	var lines := csv.split("\n")
-
-	assert_str(lines[0]).is_equal(",".join(SaveGame.LOG_COLUMNS))
-	assert_str(lines[1]).starts_with("95,card,price_slate,12,coins,42,")
-	assert_str(lines[2]).is_equal("100,session" + ",".repeat(SaveGame.LOG_COLUMNS.size() - 2))
-	assert_str(csv).ends_with("\n")
+	assert_str(SaveGame.log_line(save.log_entry(95, "card", "price_slate", 12, "coins"))).starts_with("95,card,price_slate,12,coins,42,")
+	assert_str(SaveGame.log_line({t = 100, kind = "session"})).is_equal("100,session" + ",".repeat(SaveGame.LOG_COLUMNS.size() - 2))
 
 
-func test_snapshots_older_than_an_hour_thin_to_one_per_five_minutes_and_every_purchase_stays() -> void:
+func test_the_log_file_is_appended_under_one_header_and_reads_back_as_numbers() -> void:
 	var save := SaveGame.new()
-	var entries: Array[Dictionary] = []
-	for t in range(0, 7200, 30):
-		entries.append(save.log_entry(t, "snapshot"))
-		if t % 60 == 0:
-			entries.append(save.log_entry(t, "node", "pack_1"))
-	var thin := SaveGame.thin_log(entries, 7200)
-	var snapshots := thin.filter(func(e: Dictionary) -> bool: return e.kind == "snapshot").size()
+	save.coins = 42
+	save.marketing = 1.23456
+	SaveGame.append_log(LOG_PATH, save.log_entry(95, "card", "price_slate", 12, "coins"))
+	SaveGame.append_log(LOG_PATH, save.log_entry(100, "session", "0"))
+	var text := FileAccess.get_file_as_string(LOG_PATH)
+	assert_int(text.split("
+", false).size()).is_equal(3)
+	assert_str(text).starts_with(SaveGame.log_header() + "
+")
+	var entries := SaveGame.parse_log(text)
+	assert_int(entries.size()).is_equal(2)
+	assert_int(entries[0].t).is_equal(95)
+	assert_int(entries[0].coins).is_equal(42)
+	assert_float(entries[0].marketing).is_equal_approx(1.235, 0.00001)
+	assert_str(entries[0].id).is_equal("price_slate")
+	assert_str(entries[1].id).is_equal("0")
 
-	# 12 five-minute snapshots from the first hour, all 120 of the last hour, all 120 purchases.
-	assert_int(snapshots).is_equal(12 + 120)
-	assert_int(thin.size() - snapshots).is_equal(120)
+
+func test_a_log_from_a_build_with_other_columns_gets_a_new_header_and_both_parts_read() -> void:
+	var old := "t,kind,id,price,currency,coins
+95,card,radio,6,coins,30
+"
+	assert_bool(SaveGame.needs_header(old)).is_true()
+	assert_bool(SaveGame.needs_header("")).is_false()
+	var both := old + SaveGame.log_header() + "
+" + SaveGame.log_line(SaveGame.new().log_entry(120, "minute")) + "
+"
+	assert_bool(SaveGame.needs_header(both)).is_false()
+	var entries := SaveGame.parse_log(both)
+	assert_int(entries.size()).is_equal(2)
+	assert_int(entries[0].coins).is_equal(30)
+	assert_bool(entries[0].has("hand_sold")).is_false()
+	assert_str(entries[1].kind).is_equal("minute")
 
 
-func test_thinning_keeps_the_first_snapshot_of_each_five_minutes() -> void:
+func test_the_save_file_never_holds_the_playtest_log() -> void:
 	var save := SaveGame.new()
-	var entries: Array[Dictionary] = [save.log_entry(0, "snapshot"), save.log_entry(30, "snapshot"),
-			save.log_entry(300, "snapshot"), save.log_entry(330, "snapshot")]
-	var kept := SaveGame.thin_log(entries, 10000).map(func(e: Dictionary) -> int: return e.t)
-	assert_array(kept).is_equal([0, 300])
-
-
-func test_thinning_again_at_the_next_autosave_drops_nothing_more() -> void:
-	var save := SaveGame.new()
-	var entries: Array[Dictionary] = []
-	for t in range(0, 7200, 30):
-		entries.append(save.log_entry(t, "snapshot"))
-	var once := SaveGame.thin_log(entries, 7200)
-	assert_int(SaveGame.thin_log(once, 7200).size()).is_equal(once.size())
+	for t in 600:
+		save.playtest_log.append(save.log_entry(t * 60, "minute"))
+	assert_int(ResourceSaver.save(save, ROUND_TRIP_PATH)).is_equal(OK)
+	assert_str(FileAccess.get_file_as_string(ROUND_TRIP_PATH)).not_contains("playtest_log")
 
 
 func _another_value(save: SaveGame, field: String) -> Variant:

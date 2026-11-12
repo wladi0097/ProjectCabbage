@@ -247,3 +247,17 @@ func test_a_golden_unit_yields_golden_lab_times_the_findings() -> void:
 	assert_float(QaBay.findings_for(gold, _save)).is_equal(20.0)
 	_save.golden_lab = 25.0
 	assert_float(QaBay.findings_for(gold, _save)).is_equal(50.0)
+
+
+func test_the_findings_a_unit_yields_count_towards_the_findings_ever_earned() -> void:
+	_bay()._take(_unit())
+	_bay()._take(_unit(false, true))
+	assert_int(_save.findings_earned).is_equal(1 + roundi(_save.research_mult))
+
+
+func test_a_golden_unit_taken_in_is_counted_as_analysed() -> void:
+	var gold := _unit()
+	gold.golden = true
+	_bay()._take(gold)
+	_bay()._take(_unit())
+	assert_int(_save.golden_analysed).is_equal(1)

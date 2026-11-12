@@ -12,7 +12,7 @@ Every agent follows this for art, sound, UI and writing:
 - **The fresh green cabbage is the only saturated thing on screen.** One exception: research units glow a cold, clinical cyan (lab-grade, never cute).
 - **One fixed scene:** a camera looking down at an angle onto a big desk that runs off the screen edges, as in `research/camera-reference.webp`. A window to the street (no customers) along the top, above the cabbage mat on the right, with its sill flush with the desk so cabbages go straight out. It stands a little open, showing a glimpse of the street with crates where sold cabbages "land" (visual only). Interactables on the left, a desk mat on the right where the cabbages are handled. No side walls.
 - **Shapes like the reference:** chunky, stylized and readable from above, with lots of physical objects, coins and particles flying.
-- **Humour:** deadpan corporate satire, played straight (invoices, "units", tickers, consultants).
+- **Humour:** deadpan corporate satire, played straight (invoices, quotas, tickers, consultants). Player-facing text always calls the product "cabbage(s)" in every language, never "units".
 - Details: the style section of `.claude/skills/godotAssetCreate/SKILL.md` and "Screen layout" in `research/gameplan.md`.
 
 ## Todo

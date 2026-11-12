@@ -11,6 +11,8 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/farm/pack_button_hover.svg" id="9_pack_hover"]
 [ext_resource type="Texture2D" path="res://assets/sprites/farm/pack_button_pressed.svg" id="10_pack_pressed"]
 [ext_resource type="Texture2D" path="res://assets/sprites/farm/seed_bag.svg" id="11_seed_bag"]
+[ext_resource type="Texture2D" uid="uid://dmjdn1v5x7pqc" path="res://assets/sprites/farm/switch_on.svg" id="12_switch_on"]
+[ext_resource type="Texture2D" uid="uid://csdrc3gct1to7" path="res://assets/sprites/farm/switch_off.svg" id="13_switch_off"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/farm_golden_harvest_1.wav" id="gh1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/farm_golden_harvest_2.wav" id="gh2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/farm_rot_1.wav" id="rt1"]
@@ -80,6 +82,38 @@ content_margin_top = 11.0
 content_margin_right = 12.0
 content_margin_bottom = 13.0
 texture = ExtResource("10_pack_pressed")
+
+[sub_resource type="StyleBoxTexture" id="SwitchOff"]
+content_margin_left = 68.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+texture = ExtResource("13_switch_off")
+
+[sub_resource type="StyleBoxTexture" id="SwitchOffHover"]
+content_margin_left = 68.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+texture = ExtResource("13_switch_off")
+modulate_color = Color(1.18, 1.18, 1.15, 1)
+
+[sub_resource type="StyleBoxTexture" id="SwitchOn"]
+content_margin_left = 68.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+texture = ExtResource("12_switch_on")
+
+[sub_resource type="StyleBoxTexture" id="SwitchOnHover"]
+content_margin_left = 68.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+texture = ExtResource("12_switch_on")
+modulate_color = Color(1.18, 1.18, 1.15, 1)
+
+[sub_resource type="StyleBoxEmpty" id="NoFocus"]
 
 [sub_resource type="Theme" id="Terminal"]
 default_font = ExtResource("5_font")
@@ -161,16 +195,21 @@ bus = &"SFX"
 [node name="AutoSeed" type="Button" parent="."]
 visible = false
 layout_mode = 0
-offset_left = 1270.0
-offset_top = 414.0
-offset_right = 1466.0
+offset_left = 1264.0
+offset_top = 384.0
+offset_right = 1464.0
 offset_bottom = 464.0
 mouse_default_cursor_shape = 2
-theme_override_styles/pressed = SubResource("Lit")
-theme_override_styles/hover_pressed = SubResource("Lit")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("SwitchOff")
+theme_override_styles/hover = SubResource("SwitchOffHover")
+theme_override_styles/pressed = SubResource("SwitchOn")
+theme_override_styles/hover_pressed = SubResource("SwitchOnHover")
+theme_override_styles/focus = SubResource("NoFocus")
 auto_translate_mode = 2
 toggle_mode = true
 text = "AUTO SEED: ON"
+autowrap_mode = 2
 
 [node name="Packs" type="HBoxContainer" parent="."]
 layout_mode = 0

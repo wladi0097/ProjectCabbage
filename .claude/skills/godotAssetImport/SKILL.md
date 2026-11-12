@@ -237,6 +237,13 @@ reference file exists in this project, write the `[remap]` header plus
   for compact pieces or 0 (decomposition) for long ones. Trimesh (2) only
   where something rolls along the surface.
 
+- Baked light: an outside prop stays out of the LightmapGI bake like every
+  other prop. Set `import_script/path="res://assets/meshes/unbaked_import.gd"`
+  (gi_mode Disabled on every mesh) and leave `meshes/light_baking=1`. Only a
+  piece of the room or desk that never moves gets `meshes/light_baking=2`,
+  `meshes/lightmap_texel_size=0.02`, no import script, and a re-bake
+  (/godotAssetCreate §5, "Baked light").
+
 Then run, **with the editor closed** (it imports on focus, and concurrent
 imports corrupt `uid_cache.bin`):
 

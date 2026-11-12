@@ -32,7 +32,7 @@ Farm hands carry one more seed per trip and plant one more square before returni
 	{id = "tractor_2", parent = "", at = Vector2(0.6, -0.42), icon = "tractor", price = 1000, currency = "findings",
 		needs = ["mechanisation"], add = {farm_tractors = 1}, title = "SECOND TRACTOR",
 		body = "Leased. Never owned.\nOne more tractor harvests ripe squares: 1 to 2 tractors."},
-	{id = "tractor_speed", parent = "tractor_2", at = Vector2(1.05, -0.72), icon = "clock", price = 1500, currency = "findings",
+	{id = "tractor_speed", parent = "tractor_2", at = Vector2(1.05, -0.72), icon = "clock", price = 1200, currency = "findings",
 		mul = {farm_tractor_speed = 1.5}, title = "GOVERNOR REMOVED",
 		body = "The speed governor is now optional.\nTractors drive 50% faster."},
 	{id = "tractor_3", parent = "tractor_speed", at = Vector2(1.5, -1.02), icon = "tractor", price = 2500, currency = "findings",
@@ -59,11 +59,13 @@ Tractors harvest one more ripe square before returning to the yard."},
 		title = "SEED CONTRACT",
 		body = "A supplier has been found. Do not ask which.\nSeed packs cost half."},
 	# STANDING SEED ORDER (desk card standing_seed_order, FarmScreen.auto_seed): when it reorders and what.
-	{id = "seed_reserve", parent = "seed_contract", at = Vector2(1.1, 0.3), icon = "clock", price = 300, currency = "findings",
+	# Comfort, no gain (the order buys at once anyway, the 50 pack saves 12% on seeds): priced as pocket
+	# change, right after the card (tools/pace.py: under 20 s and ~3 min after it).
+	{id = "seed_reserve", parent = "seed_contract", at = Vector2(1.1, 0.3), icon = "clock", price = 200, currency = "findings",
 		needs = ["standing_seed_order"], add = {farm_seed_reserve = 15}, title = "SAFETY SEED STOCK",
 		body = "Running out is a planning failure. Planning has been increased.
 The standing seed order buys when the crate is down to 20 seeds, not 5."},
-	{id = "seed_bulk", parent = "seed_reserve", at = Vector2(1.05, 0.82), icon = "crate", price = 600, currency = "findings",
+	{id = "seed_bulk", parent = "seed_reserve", at = Vector2(1.05, 0.82), icon = "crate", price = 500, currency = "findings",
 		add = {farm_seed_pack = 1}, title = "BULK SEED CONTRACT",
 		body = "The supplier prefers fewer, larger invoices.
 The standing seed order buys the 50-seed pack instead of the 10."},

@@ -1,0 +1,79 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/sub/alpha_end.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://d25xio4rl6oik" path="res://ui/elements/button_with_sound.tscn" id="2_button"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_1.wav" id="3_land"]
+
+[node name="AlphaEnd" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.09, 0.09, 0.78)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Memo" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(1000, 0)
+layout_mode = 2
+theme_type_variation = &"DialogPanel"
+
+[node name="Stack" type="VBoxContainer" parent="Center/Memo"]
+layout_mode = 2
+theme_type_variation = &"GroupStack"
+
+[node name="Form" type="Label" parent="Center/Memo/Stack"]
+layout_mode = 2
+theme_type_variation = &"FormLabel"
+text = "MEMORANDUM · ALPHA BUILD"
+
+[node name="Rule" type="HSeparator" parent="Center/Memo/Stack"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Center/Memo/Stack"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 64
+text = "THANKS FOR PLAYING THE ALPHA"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Body" type="Label" parent="Center/Memo/Stack"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Chapter 3 is still under review. You will be notified in writing."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Memo/Stack"]
+layout_mode = 2
+alignment = 1
+
+[node name="Close" parent="Center/Memo/Stack/Buttons" instance=ExtResource("2_button")]
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "BACK TO WORK"
+
+[node name="Land" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_land")
+bus = &"SFX"
+
+[connection signal="clicked" from="Center/Memo/Stack/Buttons/Close" to="." method="close"]

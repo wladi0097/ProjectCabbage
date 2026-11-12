@@ -26,8 +26,8 @@ nodes/use_node_type_suffixes=true
 meshes/ensure_tangents=true
 meshes/generate_lods=true
 meshes/create_shadow_meshes=true
-meshes/light_baking=1
-meshes/lightmap_texel_size=0.2
+meshes/light_baking=2
+meshes/lightmap_texel_size=0.02
 meshes/force_disable_compression=false
 skins/use_named_skins=true
 animation/import=false
@@ -59,7 +59,7 @@ _subresources={
 "room_wall": {
 "use_external/enabled": true,
 "use_external/fallback_path": "res://assets/materials/room_wall.tres",
-"use_external/path": "res://assets/materials/room_wall.tres"
+"use_external/path": "uid://bdpdfljw35ms4"
 },
 "room_window": {
 "use_external/enabled": true,

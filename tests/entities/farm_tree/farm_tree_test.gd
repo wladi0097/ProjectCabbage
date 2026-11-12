@@ -204,6 +204,9 @@ func test_the_seed_order_nodes_wait_for_its_card_then_reorder_at_twenty_and_buy_
 	assert_bool(FarmTree.is_shown("seed_reserve", save)).is_false()
 	save.stamped.append(FarmScreen.AUTO_CARD)
 	assert_bool(FarmTree.can_buy("seed_bulk", save)).is_false()  # Its parent first.
+	assert_int(FarmTree.price_of("seed_bulk", save)).is_greater(FarmTree.price_of("seed_reserve", save) * 2)  # A step up.
+	# Comfort, not growth: both together cost less than the second tractor.
+	assert_int(FarmTree.price_of("seed_reserve", save) + FarmTree.price_of("seed_bulk", save)).is_less(FarmTree.price_of("tractor_2", save))
 	assert_bool(FarmTree.buy("seed_reserve", save)).is_true()
 	assert_int(save.farm_seed_reserve).is_equal(20)
 	assert_bool(FarmTree.buy("seed_bulk", save)).is_true()

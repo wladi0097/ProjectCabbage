@@ -134,13 +134,14 @@ const TRACTOR_SPRITES: Array[Texture2D] = [preload("res://assets/sprites/farm/tr
 const WORKER_PIXEL := 3.0
 const TRACTOR_PIXEL := 5.0
 const WALK_STEP := 16.0
-## Worker slots of each kind (hands and tractors, up to 3 each): a hut per hand along the yard's top
-## right (HUT_SPRITE, HUT_LIT while its hand is in, at HUT_PIXEL), a parking bay (BAY px, open to the
-## field) per tractor stacked down its left side.
+## Worker slots of each kind (hands and tractors, up to 3 each): a hut per hand in the yard's top
+## right, two in a row and the third under them (HUT_SPRITE, HUT_LIT while its hand is in, at
+## HUT_PIXEL: 80 px, a tractor's size), a parking bay (BAY px, open to the field) per tractor stacked
+## down its left side. The AUTO SEED switch (the scene's AutoSeed, a lever sprite per state) sits under the huts.
 const SLOTS := 3
 const HUT_SPRITE: Texture2D = preload("res://assets/sprites/farm/hut.svg")
 const HUT_LIT: Texture2D = preload("res://assets/sprites/farm/hut_lit.svg")
-const HUT_PIXEL := 4.0
+const HUT_PIXEL := 5.0
 const BAY := Vector2(116, 108)
 ## Unbought huts and bays: drawn at this alpha.
 const FAINT := 0.2
@@ -424,10 +425,14 @@ static func harvest(save: SaveGame, i: int, by_hand := false) -> int:
 		save.golden_stock += units
 		_ungild(save, i)
 	save.farm_harvests += 1
+	if by_hand:
+		save.hand_harvested += units
+	else:
+		save.tractor_harvested += units
 	if save.farm_first_harvest < 0.0:
 		save.farm_first_harvest = save.farm_seconds
-	if by_hand and save.hand_replant > 0:
-		plant(save, i)
+	if by_hand and save.hand_replant > 0 and plant(save, i):
+		save.hand_planted += 1
 	return units
 
 
@@ -472,9 +477,10 @@ static func bay_rect(n: int) -> Rect2:
 	return Rect2(YARD.position + Vector2(10, 34 + n * (BAY.y + 8)), BAY)
 
 
-## Farm hand `n`'s hut, in a row along the yard's top right.
+## Farm hand `n`'s hut in the yard's top right: huts 0 and 1 side by side, hut 2 centred under them.
 static func hut_rect(n: int) -> Rect2:
-	return Rect2(YARD.position + Vector2(130 + n * 70, 30), HUT_SPRITE.get_size() * HUT_PIXEL)
+	var at := Vector2(190, 114) if n == 2 else Vector2(140 + n * 100, 30)
+	return Rect2(YARD.position + at, HUT_SPRITE.get_size() * HUT_PIXEL)
 
 
 ## Worker `w` is a farm hand back inside its hut (not drawn; its window is lit).
@@ -569,6 +575,8 @@ static func work(workers: Array[Worker], save: SaveGame, delta: float) -> void:
 ## Worker `w`'s job on its square is done: plant or harvest it, then on to the next or home.
 static func _finish(w: Worker, save: SaveGame) -> void:
 	var done := harvest(save, w.target) > 0 if w.tractor else sow(save, w.target)
+	if done and not w.tractor:
+		save.farm_hand_planted += 1
 	if done:
 		w.jobs += 1
 		if not w.tractor:
@@ -766,7 +774,7 @@ func _drag(point: Vector2) -> void:
 	_pull = -1
 	if not storage_room(save, true):
 		$Denied.play()
-		_warn(tr("Storage full (%d units). Sell some first.") % save.storage_cap)
+		_warn(tr("Storage full (%d cabbages). Sell some first.") % save.storage_cap)
 		_spring_back(i)
 		return
 	var gold := is_golden(save, i)
@@ -779,7 +787,7 @@ func _drag(point: Vector2) -> void:
 	_pop_left = POP_TIME
 	_pop_gold = gold
 	if gold:
-		_say(tr("Golden harvest: +%d golden units to stock.") % units)
+		_say(tr("Golden harvest: +%d golden cabbages to stock.") % units)
 	elif save.stamped.has(THUMB_CARD):
 		_say(tr("Harvested by hand: +%d cabbages (GREEN THUMB ×%d).") % [units, roundi(save.hand_yield)])
 	else:
@@ -806,6 +814,7 @@ func _release(point: Vector2) -> void:
 	var save := SaveManager.save
 	var i := square_at(point)
 	if i >= 0 and i < save.farm_plots and save.farm_growth[i] == EMPTY and plant(save, i):
+		save.hand_planted += 1
 		$Plant.play()
 		_say(tr("Planted. Ripe in %d s.") % grow_time(save))
 		return

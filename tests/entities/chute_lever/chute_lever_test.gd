@@ -88,3 +88,14 @@ func test_pulling_down_plays_the_slam_and_pulling_up_cuts_it_for_the_ratchet() -
 	lever.pull()
 	assert_bool(shut.playing).is_false()
 	assert_bool(lift.playing).is_true()
+
+
+func test_the_lever_thuds_onto_the_chute_when_its_card_is_stamped() -> void:
+	var save := SaveGame.new()
+	var lever := _lever(save)
+	var land := lever.get_node("Land") as AudioStreamPlayer3D
+	assert_object(land.stream).is_not_null()
+	assert_bool(land.playing).is_false()
+	save.stamped.append("chute_control")
+	lever._process(0.0)
+	assert_bool(land.playing).is_true()

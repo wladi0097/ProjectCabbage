@@ -138,12 +138,26 @@ func test_cards_are_paid_in_coins_unless_marked_findings() -> void:
 
 
 func test_stage_two_cards_are_paid_in_findings_the_farm_in_coins_and_the_farms_big_steps_in_units() -> void:
-	for id: String in ["farm_terminal", "farm_readout", "seasonal_workforce", "mini_thinning",
-			"micro_samples", "mini_station"]:
+	for id: String in ["farm_terminal", "farm_readout", "mini_thinning", "micro_samples", "mini_station"]:
 		assert_str(UpgradeDesk.card_data(id).get("currency", "coins")).override_failure_message(id).is_equal("findings")
 	assert_str(UpgradeDesk.card_data("family_farm").get("currency", "coins")).is_equal("coins")
-	for id: String in ["chute_control", "green_thumb", "golden_cabbage", "mechanisation"]:
+	for id: String in ["chute_control", "green_thumb", "seasonal_workforce", "golden_cabbage", "mechanisation"]:
 		assert_str(UpgradeDesk.card_data(id).get("currency", "coins")).override_failure_message(id).is_equal("stock")
+
+
+func test_the_farm_terminal_is_the_cheapest_findings_card_of_stage_two_so_it_comes_first() -> void:
+	var terminal: int = UpgradeDesk.card_data("farm_terminal").price
+	for card: Dictionary in UpgradeDesk.CARDS:
+		if card.get("currency") == "findings" and card.get("needs", []).has("family_farm"):
+			assert_int(card.price).override_failure_message(card.id).is_greater_equal(terminal)
+
+
+func test_the_first_farm_hand_costs_more_cabbages_than_the_off_site_locker_holds_and_fits_the_corridor_overflow() -> void:
+	var price: int = UpgradeDesk.card_data("seasonal_workforce").price
+	assert_int(price).is_greater(UpgradeDesk.card_data("green_thumb").price)  # After GREEN THUMB, which the stock room pays.
+	assert_int(price).is_greater(Projector.cap_at("stock_100"))
+	assert_int(price).is_less_equal(Projector.cap_at("stock_125") - 12)  # A full mat's units on top can't pay.
+	assert_int(price).is_less(UpgradeDesk.card_data("golden_cabbage").price)  # Before the basement annex's cards.
 
 
 func test_research_directives_are_paid_in_findings_and_titled_research() -> void:
@@ -706,10 +720,10 @@ func test_chapter_twos_last_card_is_dealt_only_once_every_other_chapter_two_card
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size())).contains(["consolidation"])
 
 
-func test_chapter_twos_last_card_costs_more_units_than_a_bonded_warehouse_holds_and_fits_a_decommissioned_school() -> void:
+func test_chapter_twos_last_card_costs_more_units_than_the_step_before_the_school_holds_and_fits_the_school() -> void:
 	var card := UpgradeDesk.card_data("consolidation")
 	assert_str(card.currency).is_equal("stock")
-	assert_int(card.price).is_greater(Projector.cap_at("stock_750"))
+	assert_int(card.price).is_greater(Projector.cap_at(Projector.node_data("stock_1000").parent))
 	# A harvest only goes in whole: a school one hand harvest short of full still pays it.
 	var save := SaveGame.new()
 	save.stamped = PackedStringArray(["green_thumb"])

@@ -149,6 +149,18 @@ func _on_reset_confirmed() -> void:
 	SaveManager.reset_save()
 
 
+func _on_file_report_clicked() -> void:
+	var zip := SaveManager.file_report()
+	%ReportFiled.visible = true
+	if zip.is_empty():
+		%ReportFiled.text = tr("The report could not be filed. Please try again.")
+		return
+	var on_desktop := zip.get_base_dir() != OS.get_user_data_dir()
+	%ReportFiled.text = tr("Report filed on your desktop. Send it to the developer.") if on_desktop \
+			else tr("Report filed in the game's save folder. Send it to the developer.")
+	OS.shell_show_in_file_manager(zip)
+
+
 func _on_language_item_selected(index: int) -> void:
 	settings.language = LANGUAGES.keys()[index]
 

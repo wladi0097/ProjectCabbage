@@ -4,6 +4,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_1.wav" id="2_land"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/press_stamp_1.wav" id="3_stamp"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_1.wav" id="4_rustle"]
+[ext_resource type="PackedScene" path="res://ui/sub/alpha_end.tscn" id="5_alpha"]
 
 [node name="BossReport" type="CanvasLayer"]
 layer = 8
@@ -24,6 +25,8 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 330.0
+
+[node name="AlphaEnd" parent="." instance=ExtResource("5_alpha")]
 
 [node name="Land" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_land")

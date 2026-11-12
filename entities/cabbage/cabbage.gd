@@ -62,6 +62,8 @@ var research := false
 ## A golden unit from a golden farm square: stock (save.golden_stock), sold for save.golden_sale times
 ## the price or analysed for save.golden_lab times the Findings. Never rotten, mini or research.
 var golden := false
+## Last thrown by a hired hand (Associate._throw), not the player: SaleWindow counts its sale as the hand's.
+var lobbed := false
 ## Out of the window or on its way back after a refusal: the SaleWindow leaves it alone.
 var away := false
 ## Seconds the SaleWindow has seen it off the mat in a row.
@@ -292,6 +294,7 @@ func _on_grabbed() -> void:
 		_squishing.kill()
 	_squishing = create_tween()
 	_squishing.tween_method(func(time: float) -> void: _squish = squish_at(time), 0.0, SQUISH_TIME, SQUISH_TIME)
+	lobbed = false
 	if in_flight:
 		in_flight = false
 		SaveManager.save.catches += 1

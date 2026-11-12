@@ -17,6 +17,8 @@ extends Node3D
 ## takes a unit (never a rotten one; minis are fine, they yield little) and tosses it into the bay's
 ## mouth. Hand 0 staffs both kinds. After the desk card lab_priority research hands go for research
 ## units first and money hands leave them alone.
+## Golden units are the player's: no hand touches one until the projector node for its kind is bought
+## (GOLD_SALE for money hands, GOLD_LAB for research hands; takes_golden).
 
 enum Phase { IDLE, REACH, TAKE, CARRY, FOLLOW, FLINCH, WITHDRAW }
 
@@ -55,6 +57,10 @@ const BAY_LOB := 0.15
 const PREFER := 100.0
 ## No hand parks within BIN_CLEAR of the waste bin (x 0.95).
 const BIN_CLEAR := 0.3
+## The projector nodes that let money hands sell, and research hands analyse, golden units (no number:
+## tree_bought, like CoinVacuums.STABILISER).
+const GOLD_SALE := "gold_hands"
+const GOLD_LAB := "gold_lab_hands"
 const MAX_VISIBLE := 10
 ## Half the player's hand.
 const SIZE := 0.5
@@ -216,14 +222,15 @@ static func add_hand(save: SaveGame) -> void:
 ## claimed by another hand, not sold, out of the window or frozen (rolling down the ramp, carried),
 ## not flying, not stray; and not rotten while `skip_rotten` (the spoilage memo, before hands bin).
 ## A `for_research` hand never takes a rotten one. Under `lab` (desk card lab_priority) money hands never
-## take research units and research hands take them first.
+## take research units and research hands take them first. A golden one only while `golden` (takes_golden).
 static func pick_target(cabbages: Array, from: Vector3, held: Interactable, claimed: Array = [], skip_rotten := false,
-		for_research := false, lab := false) -> Cabbage:
+		for_research := false, lab := false, golden := false) -> Cabbage:
 	var best: Cabbage = null
 	var best_score := INF
 	for cabbage: Cabbage in cabbages:
 		var interactable := cabbage.get_node("Interactable") as Interactable
 		if claimed.has(cabbage) or ((skip_rotten or for_research) and cabbage.rotten) or (lab and not for_research and cabbage.research) \
+				or (cabbage.golden and not golden) \
 				or cabbage.sold or cabbage.away or cabbage.freeze or cabbage.in_flight or not interactable.enabled \
 				or held == interactable or cabbage.linear_velocity.length() > REST_SPEED \
 				or SaleWindow.is_stray(cabbage.global_position):
@@ -255,6 +262,11 @@ static func bin_for(target: Cabbage, hands_bin: int, bin: RottenBin) -> RottenBi
 ## Hands leave rotten units alone: the spoilage memo is stamped and they don't bin them yet.
 static func skips_rotten(save: SaveGame) -> bool:
 	return save.stamped.has("spoilage_memo") and save.hands_bin == 0
+
+
+## Hands of this kind may take golden units: their projector node (GOLD_SALE / GOLD_LAB) is bought.
+static func takes_golden(save: SaveGame, for_research: bool) -> bool:
+	return save.tree_bought.has(GOLD_LAB if for_research else GOLD_SALE)
 
 
 ## Where the lob is aimed for a `roll` (0..1 across AIM_X) and clumsiness `jitter` (each -1..1).
@@ -324,7 +336,7 @@ func _set_off() -> void:
 		_wait = RETRY
 		return
 	_target = pick_target(get_tree().get_nodes_in_group(&"cabbages"), _entry, Hand.held, claimed, skips_rotten(save),
-			research, save.stamped.has("lab_priority"))
+			research, save.stamped.has("lab_priority"), takes_golden(save, research))
 	if _target == null:
 		_wait = RETRY
 		return
@@ -362,6 +374,7 @@ func _take() -> void:
 func _throw() -> void:
 	var from := _target.global_position
 	_let_go()
+	_target.lobbed = true
 	_target.linear_velocity = Feeder.ballistic_velocity(from, _aim, _lob)
 	if _binning:
 		_target.aim_for_bin(_lob + 0.5)

@@ -29,10 +29,11 @@ func after_test() -> void:
 	SaveManager.save = _real_save
 
 
-func _cabbage(at: Vector3, rotten := false, research := false) -> Cabbage:
+func _cabbage(at: Vector3, rotten := false, research := false, golden := false) -> Cabbage:
 	var cabbage := CABBAGE.instantiate() as Cabbage
 	cabbage.rotten = rotten
 	cabbage.research = research
+	cabbage.golden = golden
 	add_child(auto_free(cabbage))
 	cabbage.global_position = at
 	return cabbage
@@ -152,6 +153,57 @@ func test_under_lab_priority_research_hands_take_research_units_before_nearer_pl
 
 	assert_object(Associate.pick_target([plain, unit], lab_entry, null, [], false, true, true)).is_same(unit)
 	assert_object(Associate.pick_target([plain, unit], lab_entry, null, [unit], false, true, true)).is_same(plain)
+
+
+func test_no_hand_takes_a_golden_cabbage_until_its_projector_node_is_bought() -> void:
+	var gold := _cabbage(Vector3(1.2, 0.87, 0.9), false, false, true)
+	var plain := _cabbage(Vector3(0.6, 0.87, 0.3))
+	var lab_entry := Associate.park_spot(0, true)
+
+	assert_object(Associate.pick_target([gold, plain], ENTRY, null)).is_same(plain)
+	assert_object(Associate.pick_target([gold], ENTRY, null)).is_null()
+	assert_object(Associate.pick_target([gold], lab_entry, null, [], false, true)).is_null()
+	assert_object(Associate.pick_target([gold], lab_entry, null, [], false, true, true)).is_null()
+
+
+func test_with_its_node_a_hand_takes_a_golden_cabbage_like_any_other() -> void:
+	var gold := _cabbage(Vector3(1.2, 0.87, 0.9), false, false, true)
+	_cabbage(Vector3(0.6, 0.87, 0.3))
+
+	assert_object(Associate.pick_target(get_tree().get_nodes_in_group(&"cabbages"), ENTRY, null, [], false, false, false, true)).is_same(gold)
+	assert_object(Associate.pick_target([gold], Associate.park_spot(0, true), null, [], false, true, false, true)).is_same(gold)
+
+
+func test_bullion_clearance_frees_golden_cabbages_for_hired_hands_and_the_sample_protocol_for_lab_hands_only() -> void:
+	var save := SaveGame.new()
+	assert_bool(Associate.takes_golden(save, false)).is_false()
+	assert_bool(Associate.takes_golden(save, true)).is_false()
+
+	save.tree_bought.append(Associate.GOLD_SALE)
+	assert_bool(Associate.takes_golden(save, false)).is_true()
+	assert_bool(Associate.takes_golden(save, true)).is_false()
+
+	save.tree_bought = PackedStringArray([Associate.GOLD_LAB])
+	assert_bool(Associate.takes_golden(save, false)).is_false()
+	assert_bool(Associate.takes_golden(save, true)).is_true()
+
+
+func test_the_golden_hand_nodes_hang_under_the_golden_branch_and_cost_coins() -> void:
+	assert_that(Projector.node_data(Associate.GOLD_SALE).get("parent")).is_equal("gold_sale_1")
+	assert_that(Projector.node_data(Associate.GOLD_LAB).get("parent")).is_equal("gold_lab_1")
+	for id: String in [Associate.GOLD_SALE, Associate.GOLD_LAB]:
+		assert_int(int(Projector.node_data(id).price)).is_between(5000, 20000)
+
+
+func test_a_hired_hand_without_the_clearance_leaves_a_golden_cabbage_and_looks_again() -> void:
+	SaveManager.save.hands = 1
+	_cabbage(Vector3(0.6, 0.87, 0.3), false, false, true)
+	var hand := _hand()
+
+	hand._set_off()
+
+	assert_object(hand._target).is_null()
+	assert_float(hand._wait).is_equal(Associate.RETRY)
 
 
 func test_a_hand_is_snatched_from_only_when_the_player_holds_its_own_cabbage() -> void:

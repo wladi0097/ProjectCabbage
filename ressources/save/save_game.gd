@@ -153,9 +153,11 @@ extends Resource
 @export var radio_silent := 0.0
 ## Stage 2 (globalScripts/game_events.gd): the boss's warning has come (the farm card is dealt) and
 ## the units sold by then; wholesale prices have exploded (SupplyConsole.crate_share); seconds left
-## of the wholesalers' squeeze once both the shock and the family farm are in.
+## of the wholesalers' squeeze once both the shock and the family farm are in. farm_sold: the units
+## sold when the family farm card was stamped (-1: not yet), the shock's other clock (Events.shock_due).
 @export var supply_warning := false
 @export var warning_sold := 0
+@export var farm_sold := -1
 @export var supply_shock := false
 @export var squeeze_left := 0.0
 ## The family farm on the TV (entities/farm_screen/): seeds, open squares (0: not set up yet), each
@@ -217,44 +219,150 @@ extends Resource
 @export var chute_blocked := false
 ## Big events whose boss report has been shown or filed (entities/boss_report/), GameEvents ids.
 @export var reports := PackedStringArray()
-## For playtests: every purchase, session start and a snapshot every SaveManager.LOG_EVERY seconds,
-## each with the play time and the state after it (log_entry). Also written as playtest_log.csv.
-@export var playtest_log: Array[Dictionary] = []
+## The alpha's end popup (ui/sub/alpha_end/, chapter 3 unlocked) has been closed: it never comes again.
+@export var alpha_end := false
+# Playtest counters: running totals for tools/pace.py's calibration (research/numbers.md). Each is
+# counted where its event already happens; the *_seconds ones add up frame time.
+## Seconds with the camera at (or panning to) the farm TV (FarmTv._process).
+@export var tv_seconds := 0.0
+## Units harvested off the farm: pulled by the player's hand, and by tractors (FarmScreen.harvest).
+@export var hand_harvested := 0
+@export var tractor_harvested := 0
+## Squares planted: by the player (clicks, GREEN THUMB replants) and by farm hands (FarmScreen).
+@export var hand_planted := 0
+@export var farm_hand_planted := 0
+## Sales (full, grown and mini units) whose last throw was the player's, and a hired hand's lob
+## (SaleWindow._judge, Cabbage.lobbed). Grown minis sold (the growing station's full-size ones).
+@export var player_sold := 0
+@export var hand_sold := 0
+@export var grown_sold := 0
+## Supply packs bought: the console button pressed by the player, and by the standing order.
+@export var packs_manual := 0
+@export var packs_auto := 0
+## Coins banked in total (CoinPile, whatever paid them) and Findings yielded in total (QaBay._take).
+@export var coins_earned := 0
+@export var findings_earned := 0
+## Golden units analysed in the QA bay (golden_sold counts the sold ones).
+@export var golden_analysed := 0
+## Seconds with no stock at all, with the mat full of fresh units (the chute waiting), and with the
+## chute shut by its lever (CabbageFeeder.clock).
+@export var empty_seconds := 0.0
+@export var mat_full_seconds := 0.0
+@export var chute_shut_seconds := 0.0
+## The playtest log in memory (not saved: it lives in SaveManager.LOG_PATH, appended line by line).
+## Saves from before that kept it here; loading one fills this, and SaveManager moves it to the file.
+var playtest_log: Array[Dictionary] = []
 
 const MIGRATION := 4
-## Snapshots older than THIN_AFTER play seconds are kept one per THIN_EVERY seconds (thin_log).
-const THIN_AFTER := 3600
-const THIN_EVERY := 300
+## The playtest log (SaveManager.LOG_PATH, a CSV appended one line per entry; tools/pace.py reads it).
+## A line starting "t,kind," is a header: a build with other columns appends a new one, and every
+## line after it follows that header. Rows: "session" (id = seconds away), "minute" (every
+## SaveManager.LOG_MINUTE s of play), "card"/"node"/"farm" (a purchase: id, price, currency),
+## "milestone", "event", "quota_met"/"quota_missed", and "snapshot" (old builds, every 30 s).
+## Every row carries the state right after it. Columns:
+##   t: play seconds. kind, id, price, currency: what happened (above).
+##   coins, findings, stock: held now. sold: full units sold. hands: hired hands. sale_price: $ chalked.
+##   marketing: demand multiplier. catches: units caught mid-air. refusals: sales the street refused.
+##   minis_sold, grown_sold: tube units sold (minis, and minis grown full-size).
+##   player_sold, hand_sold: sales by the player's throws vs hired hands' lobs (minis included).
+##   packs_manual, packs_auto: supply packs bought by button vs standing order.
+##   coins_earned, findings_earned: totals ever earned (not held). research_units: research units analysed.
+##   golden_sold, golden_analysed: golden units sold vs sent to the lab. binned, fines: rotten units binned vs fined.
+##   farm_harvests: harvests. hand_harvested, tractor_harvested: units harvested by hand vs tractors.
+##   hand_planted, farm_hand_planted: squares planted by the player vs farm hands. farm_rotted: squares rotted.
+##   farm_hands, farm_tractors: farm workers. desk_capacity, storage_cap: mat room and stock cap.
+##   tv_seconds, empty_seconds, mat_full_seconds, chute_shut_seconds: play seconds at the TV, with
+##   no stock, with the mat full, with the chute shut (whole seconds).
 const LOG_COLUMNS := ["t", "kind", "id", "price", "currency", "coins", "findings", "sold", "stock",
-		"hands", "sale_price", "marketing", "catches"]
+		"hands", "sale_price", "marketing", "catches", "refusals", "minis_sold", "grown_sold",
+		"player_sold", "hand_sold", "packs_manual", "packs_auto", "coins_earned", "findings_earned",
+		"research_units", "golden_sold", "golden_analysed", "binned", "fines", "farm_harvests",
+		"hand_harvested", "tractor_harvested", "hand_planted", "farm_hand_planted", "farm_rotted",
+		"farm_hands", "farm_tractors", "desk_capacity", "storage_cap", "tv_seconds", "empty_seconds",
+		"mat_full_seconds", "chute_shut_seconds"]
+## The first LOG_EVENT columns describe the event; the rest are save fields, read by name.
+const LOG_EVENT := 5
+const LOG_TEXT := ["kind", "id", "currency"]
 
 
 ## One playtest log line: what happened at play second `t`, and the state right after it.
 func log_entry(t: int, kind: String, id := "", price := 0, currency := "") -> Dictionary:
-	return {t = t, kind = kind, id = id, price = price, currency = currency, coins = coins,
-			findings = findings, sold = sold, stock = stock, hands = hands, sale_price = sale_price,
-			marketing = snappedf(marketing, 0.001), catches = catches}
+	var entry := {t = t, kind = kind, id = id, price = price, currency = currency}
+	for i in range(LOG_EVENT, LOG_COLUMNS.size()):
+		var value: Variant = get(LOG_COLUMNS[i])
+		if value is float and LOG_COLUMNS[i] == "marketing":
+			value = snappedf(value, 0.001)
+		elif value is float:
+			value = roundi(value)  # The *_seconds clocks: whole seconds.
+		entry[LOG_COLUMNS[i]] = value
+	return entry
 
 
-## `entries` with the snapshots from before play second `now` - THIN_AFTER kept only one per THIN_EVERY
-## seconds; every other entry (purchases, milestones, sessions...) stays.
-static func thin_log(entries: Array[Dictionary], now: int) -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	var bucket := -1
+static func log_header() -> String:
+	return ",".join(LOG_COLUMNS)
+
+
+static func log_line(entry: Dictionary) -> String:
+	return ",".join(LOG_COLUMNS.map(func(column: String) -> String: return str(entry.get(column, ""))))
+
+
+## The log file at `path` open at its end for appending, a header written first if it is new (null if
+## it can't be opened).
+static func open_log(path: String) -> FileAccess:
+	var fresh := not FileAccess.file_exists(path)
+	var file := FileAccess.open(path, FileAccess.WRITE if fresh else FileAccess.READ_WRITE)
+	if file == null:
+		return null
+	file.seek_end()
+	if fresh:
+		file.store_line(log_header())
+	return file
+
+
+## Appends `entry` to the log file at `path` (open_log).
+static func append_log(path: String, entry: Dictionary) -> void:
+	var file := open_log(path)
+	if file != null:
+		file.store_line(log_line(entry))
+
+
+## Writes the whole log file at `path` anew from `entries` (an old save's in-save log).
+static func write_log(path: String, entries: Array[Dictionary]) -> void:
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return
+	file.store_line(log_header())
 	for entry in entries:
-		var t: int = entry.t
-		if entry.kind == "snapshot" and t < now - THIN_AFTER:
-			@warning_ignore("integer_division")
-			if t / THIN_EVERY == bucket:
+		file.store_line(log_line(entry))
+
+
+## The entries of a log file's text, each line read by the header above it; numbers come back as
+## numbers, empty cells are left out.
+static func parse_log(text: String) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var columns := PackedStringArray()
+	for line in text.split("\n", false):
+		var cells := line.strip_edges().split(",")
+		if line.begins_with("t,kind,"):
+			columns = cells
+			continue
+		var entry := {}
+		for i in mini(cells.size(), columns.size()):
+			var cell := cells[i]
+			if cell.is_empty():
 				continue
-			@warning_ignore("integer_division")
-			bucket = t / THIN_EVERY
-		out.append(entry)
+			var value: Variant = cell
+			if columns[i] not in LOG_TEXT and cell.is_valid_int():
+				value = cell.to_int()
+			elif columns[i] not in LOG_TEXT and cell.is_valid_float():
+				value = cell.to_float()
+			entry[columns[i]] = value
+		if entry.has("t") and entry.has("kind"):
+			out.append(entry)
 	return out
 
 
-func playtest_csv() -> String:
-	var lines := PackedStringArray([",".join(LOG_COLUMNS)])
-	for entry in playtest_log:
-		lines.append(",".join(LOG_COLUMNS.map(func(column: String) -> String: return str(entry.get(column, "")))))
-	return "\n".join(lines) + "\n"
+## Whether a log file's text needs a new header line before this build's rows: its last header differs.
+static func needs_header(text: String) -> bool:
+	var at := text.rfind("t,kind,")
+	return not text.is_empty() and (at < 0 or text.substr(at).get_slice("\n", 0).strip_edges() != log_header())

@@ -188,3 +188,15 @@ func test_golden_units_come_down_at_their_share_of_the_stock_left_off_the_mat() 
 func test_golden_units_already_on_the_mat_are_not_sent_again() -> void:
 	assert_bool(Feeder.is_golden(1, 1, 10, 1, 0.0)).is_false()
 	assert_bool(Feeder.is_golden(3, 0, 3, 3, 0.0)).is_false()
+
+
+func test_the_playtest_clocks_count_time_with_no_stock_a_full_mat_and_a_shut_chute() -> void:
+	var save := SaveGame.new()
+	save.stock = 0
+	Feeder.clock(save, 2.0, false)
+	save.stock = 5
+	save.chute_blocked = true
+	Feeder.clock(save, 3.0, true)
+	assert_float(save.empty_seconds).is_equal_approx(2.0, 0.0001)
+	assert_float(save.mat_full_seconds).is_equal_approx(3.0, 0.0001)
+	assert_float(save.chute_shut_seconds).is_equal_approx(3.0, 0.0001)

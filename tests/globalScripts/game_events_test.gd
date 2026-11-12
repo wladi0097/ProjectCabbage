@@ -103,6 +103,39 @@ func test_no_shock_without_the_warning_however_many_units_are_sold() -> void:
 	assert_bool(Events.shock_due(save)).is_false()
 
 
+func test_prices_explode_forty_units_after_the_family_farm_is_stamped_if_that_comes_first() -> void:
+	var save := SaveGame.new()
+	save.sold = 500
+	UpgradeDesk.start_warning(save)
+	save.sold = 520
+	UpgradeDesk.apply("family_farm", save)
+	save.stamped.append("family_farm")
+	save.sold = 520 + Events.SHOCK_AFTER_FARM - 1
+	assert_bool(Events.shock_due(save)).is_false()
+	save.sold = 520 + Events.SHOCK_AFTER_FARM
+	assert_bool(Events.shock_due(save)).is_true()
+
+
+func test_a_farm_bought_late_never_holds_back_the_shock_the_warning_already_counts_down() -> void:
+	var save := SaveGame.new()
+	UpgradeDesk.start_warning(save)
+	save.sold = Events.shock_after() - 10
+	UpgradeDesk.apply("family_farm", save)
+	save.sold = Events.shock_after()
+	assert_bool(Events.shock_due(save)).is_true()
+
+
+func test_an_old_save_with_the_farm_and_no_shock_yet_counts_the_farm_clock_from_its_load() -> void:
+	var save := SaveGame.new()
+	UpgradeDesk.start_warning(save)
+	save.stamped.append("family_farm")
+	save.sold = 100
+	UpgradeDesk.migrate(save)
+	assert_int(save.farm_sold).is_equal(100)
+	save.sold = 100 + Events.SHOCK_AFTER_FARM
+	assert_bool(Events.shock_due(save)).is_true()
+
+
 func test_a_full_tray_holds_the_warning_back_and_the_farm_card_comes_first_after_a_stamp() -> void:
 	var save := _all_stamped_but(["family_farm", "golden_lamp", "mat_allowance", "stats_ledger"])
 	save.tray_unlocked = true
@@ -276,7 +309,7 @@ func test_the_full_game_has_its_own_stage_two_and_no_demo_end_or_lock() -> void:
 	farm.sold = Events.Demo.WARNING_SOLD
 	assert_bool(Events.warning_ready(farm)).is_false()
 	assert_int(Events.shock_after()).is_equal(Events.SHOCK_AFTER)
-	assert_int(UpgradeDesk.card_data("family_farm").price).is_equal(2500)
+	assert_int(UpgradeDesk.card_data("family_farm").price).is_equal(1600)
 	assert_array(Report.due(farm)).not_contains("demo_end")
 	assert_str(Projector.locked_by(_dear_node(), farm)).is_not_equal("demo")
 
@@ -296,11 +329,11 @@ func _dear_node() -> String:
 	return ""
 
 
-func test_the_boss_asks_to_invest_in_growth_only_once_chapter_twos_last_card_is_stamped() -> void:
+func test_the_invest_in_growth_event_starts_only_once_chapter_twos_last_card_is_stamped() -> void:
 	var save := SaveGame.new()
-	save.reports = PackedStringArray(["welcome"])
 	save.stamped = PackedStringArray(["family_farm", "standing_seed_order"])
-	assert_array(Report.due(save)).not_contains(["invest_in_growth"])
+	assert_bool(Events.due("invest_in_growth", save)).is_false()
 	save.stamped.append("consolidation")
-	assert_array(Report.due(save)).contains(["invest_in_growth"])
+	assert_bool(Events.due("invest_in_growth", save)).is_true()
+	# Its paper is held back for the alpha (BossReport.HELD, ui/sub/alpha_end) but kept for chapter 3.
 	assert_str(Report.report("invest_in_growth").re).is_equal("WE SHOULD INVEST IN GROWTH")

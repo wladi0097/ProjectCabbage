@@ -92,6 +92,24 @@ func test_during_the_squeeze_the_senior_consultant_ignores_crate_prices_since_no
 	assert_int(Consultant.target_price(save, 2)).is_equal(3)
 
 
+func test_in_a_dear_squeeze_phase_the_consultant_never_aims_above_the_crate_unit_cost() -> void:
+	var save := SaveGame.new()
+	save.supply_shock = true
+	save.marketing = 10
+	save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME
+	var cost := SupplyConsole.crate_floor(save)
+	var open_price := Consultant.target_price(SaveGame.new(), 2)
+	save.consultant_markup = 0.5
+	for skill in 3:
+		assert_int(Consultant.target_price(save, skill)).is_less_equal(floori(cost))
+		assert_int(Consultant.aim(save, skill)).is_less_equal(floori(cost))
+	assert_int(Consultant.squeeze_cap(save)).is_equal(floori(cost))
+	# Outside the squeeze nothing is capped.
+	save.squeeze_left = 0.0
+	assert_int(Consultant.squeeze_cap(save)).is_equal(Slate.max_price(save.marketing))
+	assert_int(Consultant.target_price(SaveGame.new(), 2)).is_equal(open_price)
+
+
 func test_once_the_squeeze_eases_the_senior_consultant_counts_crate_prices_again() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
@@ -294,3 +312,14 @@ func test_the_switch_is_on_the_slate_only_once_the_card_is_stamped() -> void:
 	SaveManager.save.stamped.append(Consultant.CARD)
 	consultant._process(STEP)
 	assert_bool(consultant._switch.visible).is_true()
+
+
+func test_once_hired_hands_are_cleared_for_gold_a_mat_of_golden_cabbages_counts_as_waiting() -> void:
+	var gold := preload("res://entities/cabbage/cabbage.tscn").instantiate() as Cabbage
+	gold.golden = true
+	add_child(auto_free(gold))
+	gold.global_position = Vector3(1.2, 0.87, 0.9)
+	var save := SaveGame.new()
+	assert_bool(Consultant.waits(save, [gold], null)).is_false()
+	save.tree_bought.append(Associate.GOLD_SALE)
+	assert_bool(Consultant.waits(save, [gold], null)).is_true()

@@ -93,10 +93,21 @@ func _physics_process(delta: float) -> void:
 	_research_share = share
 	# A research unit owed comes down even onto a full mat (one over desk_capacity).
 	var capacity := save.desk_capacity + (1 if _research_due else 0)
+	clock(save, delta, _on_desk.size() - _rotten_on_desk >= save.desk_capacity)
 	if _cooldown > 0.0 or not should_dispense(_on_desk.size() - _rotten_on_desk, _on_desk.size(), capacity, save.stock, save.chute_blocked):
 		return
 	_cooldown = save.dispense_interval
 	_roll()
+
+
+## The playtest clocks, `delta` seconds on: no stock at all, the mat `full` of fresh units, the chute shut.
+static func clock(save: SaveGame, delta: float, full: bool) -> void:
+	if save.stock <= 0:
+		save.empty_seconds += delta
+	if full:
+		save.mat_full_seconds += delta
+	if save.chute_blocked:
+		save.chute_shut_seconds += delta
 
 
 ## The wait after a sale: `roll` (0..1) spreads it over 0.5..1.5 of the save's mean `delay`.

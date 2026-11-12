@@ -35,8 +35,8 @@ const SHADOW_ALPHA := 0.95
 ## Where the bonus coins come up from, hidden below the sill outside (the sale window's throw_from).
 const COINS_FROM := Vector3(1.05, 0.42, -1.12)
 
-const ASKS := ["I'll need %d units in the next %d seconds.", "Head office wants %d units. You have %d seconds.",
-		"%d units. %d seconds. I'll wait.", "Let's see %d units before %d seconds are up."]
+const ASKS := ["I'll need %d cabbages in the next %d seconds.", "Head office wants %d cabbages. You have %d seconds.",
+		"%d cabbages. %d seconds. I'll wait.", "Let's see %d cabbages before %d seconds are up."]
 const PRAISE := ["Acceptable.", "That will do.", "Noted. Carry on."]
 const SCORN := ["I see.", "Disappointing.", "We'll talk."]
 
@@ -163,7 +163,7 @@ func _verdict(save: SaveGame, success: bool) -> void:
 		line = tr(SCORN.pick_random())
 		save.quotas_missed += 1
 		SaveManager.log_event("quota_missed", "", quota)
-		memo.post({re = "PERFORMANCE CONCERN", note = tr("A quota of %d units was set. %d were moved.") % [quota, moved],
+		memo.post({re = "PERFORMANCE CONCERN", note = tr("A quota of %d cabbages was set. %d were moved.") % [quota, moved],
 				bonus = "Nothing. This memo is the consequence."})
 	_bubble.pop()
 

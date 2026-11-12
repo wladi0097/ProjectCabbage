@@ -416,7 +416,7 @@ func test_each_storage_step_states_its_new_room_and_the_old() -> void:
 	for id: String in _storage_chain():
 		var node := Projector.node_data(id)
 		var old_cap := Projector.cap_at(node.parent)
-		var line := "Storage holds %s units instead of %s." % [_grouped(Projector.cap_at(id)), _grouped(old_cap)]
+		var line := "Storage holds %s cabbages instead of %s." % [_grouped(Projector.cap_at(id)), _grouped(old_cap)]
 		assert_str(node.body).override_failure_message(id).ends_with(line)
 		assert_str(node.body.get_slice("\n", 0)).override_failure_message(id).is_not_equal(line)  # A flavour line first.
 
@@ -495,6 +495,33 @@ func test_an_old_save_holding_a_storage_step_counts_every_earlier_step_bought_an
 	var next: String = chain[chain.find("storage_3") + 1]
 	assert_bool(Projector.buy(next, save)).is_true()
 	assert_int(save.storage_cap).is_equal(Projector.cap_at(next))
+
+
+func test_an_old_save_holding_a_dropped_storage_step_gets_the_next_kept_step_and_never_less_room() -> void:
+	for dropped: String in Projector.DROPPED_STORAGE:
+		var save := _save(["projector", "offsite_storage"])
+		save.tree_bought = PackedStringArray(["storage_1", "storage_2", dropped])
+		save.storage_cap = {stock_250 = 250, stock_320 = 320, stock_400 = 400, stock_750 = 750}[dropped]
+		var had := save.storage_cap
+		Projector.migrate_storage(save)
+		Projector.migrate_storage(save)
+		var kept: String = Projector.DROPPED_STORAGE[dropped]
+		assert_array(save.tree_bought).override_failure_message(dropped).not_contains([dropped])
+		assert_int(save.tree_bought.count(kept)).override_failure_message(dropped).is_equal(1)
+		assert_int(save.storage_cap).override_failure_message(dropped).is_equal(Projector.cap_at(kept))
+		assert_int(save.storage_cap).override_failure_message(dropped).is_greater_equal(had)
+
+
+func test_storage_goes_from_200_to_1000_in_two_big_steps() -> void:
+	var chain := _storage_chain()
+	var annex := chain.find("storage_2")
+	assert_array(chain.slice(annex, annex + 3)).is_equal(["storage_2", "storage_3", "stock_1000"])
+	assert_int(Projector.cap_at("stock_1000")).is_equal(1000)
+	# Chapter 2's two steps: together they cost less than half the first step past them (chapter 3's).
+	var past: String = chain[annex + 3]
+	assert_int((Projector.node_data("storage_3").price + Projector.node_data("stock_1000").price) * 2).is_less(Projector.node_data(past).price)
+	for id: String in Projector.DROPPED_STORAGE:
+		assert_dict(Projector.node_data(id)).override_failure_message(id).is_empty()
 
 
 func test_a_save_without_storage_keeps_its_twenty() -> void:

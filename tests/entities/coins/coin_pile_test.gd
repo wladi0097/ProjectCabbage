@@ -203,3 +203,12 @@ func test_the_coin_buffer_grows_in_chunks_and_rewrites_a_resting_coin_that_chang
 	var o := CoinPile.FLOATS
 	assert_vector(Vector3(pile._buffer[o + 3], pile._buffer[o + 7], pile._buffer[o + 11])) \
 			.is_equal_approx(moved.xf.origin, Vector3.ONE * 0.0001)
+
+
+func test_banked_coins_count_towards_the_coins_ever_earned_and_spending_never_lowers_it() -> void:
+	var save := SaveGame.new()
+	CoinPile.bank(save, 12)
+	save.coins -= 10
+	CoinPile.bank(save, 5)
+	assert_int(save.coins).is_equal(7)
+	assert_int(save.coins_earned).is_equal(17)

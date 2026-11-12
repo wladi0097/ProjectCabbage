@@ -198,8 +198,8 @@ func test_every_hint_line_fits_the_screen_in_german_and_a_short_one_keeps_the_fu
 			tr_.call("Planted. Ripe in %d s.") % 30, tr_.call("Square cleared."), tr_.call("Seed back in the box."),
 			tr_.call("Seed in hand. Let go over an empty square to plant it."), tr_.call("Drag a seed from the box onto an empty square."),
 			tr_.call("Grab the cabbage and yank it off its square."),
-			tr_.call("Storage full (%d units). Sell some first.") % 99999, tr_.call("Rotten square cleared."),
-			tr_.call("Golden harvest: +%d golden units to stock.") % 99,
+			tr_.call("Storage full (%d cabbages). Sell some first.") % 99999, tr_.call("Rotten square cleared."),
+			tr_.call("Golden harvest: +%d golden cabbages to stock.") % 99,
 			tr_.call("Harvested by hand: +%d cabbages (GREEN THUMB ×%d).") % [99, 3]]
 	for hint in hints:
 		var size := FarmScreen.msg_size(font, hint, width)
@@ -700,15 +700,31 @@ func test_each_tractor_waits_in_its_own_parking_bay_stacked_down_the_yards_left_
 			assert_float(bay.position.y).is_greater_equal(FarmScreen.bay_rect(n - 1).end.y)
 
 
-func test_each_farm_hand_lives_in_its_own_hut_in_the_yards_top_right() -> void:
+func test_each_farm_hand_lives_in_its_own_tractor_sized_hut_in_the_yards_top_right() -> void:
 	for n in FarmScreen.SLOTS:
 		var hut := FarmScreen.hut_rect(n)
 		assert_bool(FarmScreen.YARD.encloses(hut)).is_true()
 		assert_bool(hut.has_point(FarmScreen.home(false, n))).is_true()
+		assert_float(hut.size.x).is_equal(FarmScreen.PIXEL * FarmScreen.TRACTOR_PIXEL)
 		assert_float(hut.position.x).is_greater_equal(FarmScreen.bay_rect(0).end.x)
-		assert_float(hut.end.y).is_less(FarmScreen.bay_rect(1).position.y)
-		if n > 0:
-			assert_float(hut.position.x).is_greater_equal(FarmScreen.hut_rect(n - 1).end.x)
+		assert_float(hut.end.y).is_less(FarmScreen.SEED_BOX.position.y)
+		for other in n:
+			assert_bool(hut.intersects(FarmScreen.hut_rect(other))).is_false()
+
+
+func test_the_auto_seed_switch_sits_in_the_yard_under_the_huts_clear_of_the_bays_and_seed_box() -> void:
+	var switch: Button = _screen(_farm()).get_node("AutoSeed")
+	var r := switch.get_rect()
+	assert_bool(FarmScreen.YARD.encloses(r)).is_true()
+	assert_float(r.position.x).is_greater_equal(FarmScreen.bay_rect(0).end.x)
+	assert_float(r.end.y).is_less(FarmScreen.SEED_BOX.position.y - 12)  # Inside the yard's frame.
+	for n in FarmScreen.SLOTS:
+		assert_bool(r.intersects(FarmScreen.hut_rect(n))).is_false()
+	# Its lever sprite is drawn at whole pixels: the button is exactly its face's size.
+	var on := switch.get_theme_stylebox("pressed") as StyleBoxTexture
+	var off := switch.get_theme_stylebox("normal") as StyleBoxTexture
+	assert_vector(r.size).is_equal(on.texture.get_size())
+	assert_object(on.texture).is_not_equal(off.texture)
 
 
 func test_a_farm_hand_is_indoors_only_while_it_waits_in_its_hut() -> void:
@@ -983,3 +999,40 @@ func test_a_hand_harvest_shows_its_units_and_green_thumbs_multiplier_over_the_sq
 	assert_int(ripe.stock).is_equal(6)
 	assert_str(screen._pop).is_equal("+6  ×2")
 	assert_float(screen._pop_left).is_greater(0.0)
+
+
+func test_units_harvested_by_hand_and_by_tractor_are_counted_apart() -> void:
+	var save := _ripe_squares(3)
+	var by_hand := FarmScreen.harvest(save, 0, true)
+	var by_tractor := FarmScreen.harvest(save, 1) + FarmScreen.harvest(save, 2)
+	assert_int(save.hand_harvested).is_equal(by_hand)
+	assert_int(save.tractor_harvested).is_equal(by_tractor)
+	assert_int(save.farm_harvests).is_equal(3)
+
+
+func test_a_hand_pulled_square_replanted_at_once_counts_as_planted_by_hand() -> void:
+	var save := _ripe_squares(1)
+	save.hand_replant = 1
+	FarmScreen.harvest(save, 0, true)
+	assert_int(save.hand_planted).is_equal(1)
+	assert_int(save.farm_hand_planted).is_equal(0)
+
+
+func test_a_seed_the_player_plants_counts_as_planted_by_hand() -> void:
+	var save := _farm()
+	var screen := _screen(save)
+	screen._press(BOX.get_center())
+	screen._release(_at(0))
+	assert_int(save.hand_planted).is_equal(1)
+
+
+func test_squares_a_farm_hand_plants_count_as_the_farm_hands() -> void:
+	var save := _farm()
+	save.farm_hands = 1
+	save.farm_hand_route = 1
+	var workers: Array[FarmScreen.Worker] = []
+	FarmScreen.sync_workers(workers, save)
+	for k in 200:
+		FarmScreen.work(workers, save, 0.1)
+	assert_int(save.farm_hand_planted).is_equal(_planted(save))
+	assert_int(save.hand_planted).is_equal(0)

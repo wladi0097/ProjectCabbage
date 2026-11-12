@@ -23,6 +23,7 @@ shape = SubResource("CardBox")
 [node name="Look" type="Node3D" parent="."]
 
 [node name="Paper" type="MeshInstance3D" parent="Look"]
+gi_mode = 0
 mesh = SubResource("Sheet")
 material_override = ExtResource("3_paper")
 

@@ -40,8 +40,8 @@ const NEEDLE_STOPS := Vector2(-0.02, 1.02)
 const NEEDLE_REST := 0.001
 const GAUGE_DROP := 0.6
 ## What hovering the slate and the gauge explains; the gauge's dial (its own space) is hoverable.
-const BOARD_TIP := "Your price per unit (cabbage). Click < or > to change it by $1. Higher earns more per sale, but the street refuses more units."
-const GAUGE_TIP := "Acceptance meter: the chance the street buys a unit at your price right now. Left is never, right is always."
+const BOARD_TIP := "Your price per cabbage. Click \"<\" or \">\" to change it by $1. Higher pays more per sale, but the street refuses more cabbages."
+const GAUGE_TIP := "Acceptance meter: how likely the street buys a cabbage at your price right now. Left is never, right is always."
 const GAUGE_BOX := AABB(Vector3(-0.068, -0.08, -0.056), Vector3(0.136, 0.148, 0.092))
 ## The pricing consultant's tap lights its arrow this long.
 const NUDGE_LIGHT := 0.15

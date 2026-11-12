@@ -89,3 +89,12 @@ func test_a_golden_unit_sells_for_golden_sale_times_the_price() -> void:
 	assert_float(SaleWindow.golden_factor(true, save)).is_equal(10.0)
 	assert_float(SaleWindow.golden_factor(false, save)).is_equal(1.0)
 	assert_int(SaleWindow.payout(4 * SaleWindow.golden_factor(true, save), {})).is_equal(40)
+
+
+func test_a_sale_counts_as_the_hands_when_a_hired_hand_lobbed_it_last_else_as_the_players() -> void:
+	var save := SaveGame.new()
+	SaleWindow.count_seller(save, true)
+	SaleWindow.count_seller(save, false)
+	SaleWindow.count_seller(save, false)
+	assert_int(save.hand_sold).is_equal(1)
+	assert_int(save.player_sold).is_equal(2)

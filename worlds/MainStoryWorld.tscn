@@ -204,6 +204,14 @@ shader_parameter/outer = 0.95
 
 [node name="MainStoryWorld" type="Node3D" unique_id=2116223719]
 
+[node name="LightmapGI" type="LightmapGI" parent="." unique_id=1962234381]
+quality = 2
+bounces = 3
+environment_mode = 3
+environment_custom_color = Color(0.45, 0.5, 0.52, 1)
+environment_custom_energy = 0.18
+max_texture_size = 2048
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1627211471]
 environment = SubResource("Env")
 
@@ -346,6 +354,7 @@ script = ExtResource("13_cue")
 min_interval = 0.1
 
 [node name="Coins" type="MultiMeshInstance3D" parent="." unique_id=1083958965 node_paths=PackedStringArray("deposit")]
+gi_mode = 0
 multimesh = SubResource("CoinMulti")
 script = ExtResource("10_coins")
 deposit = NodePath("../TallyMachine/Intake")

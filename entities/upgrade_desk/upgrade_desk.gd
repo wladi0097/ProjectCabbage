@@ -17,24 +17,24 @@ const CARDS := [
 	# The queue (pacing in tools/pace.py, graph in reports/economy_rework_2026-10-31.md). Cards wait on
 	# each other (`needs`), kept loose enough that the tray usually holds two or three.
 	{id = "price_slate", price = 12, title = "PRICE SLATE",
-		body = "Pricing is your responsibility.\nA slate sets your price per unit (cabbage): click < or > for $1 less or more. Up to ~$3 every unit sells; above that, more are refused."},
+		body = "Pricing is your responsibility.\nThe slate shows your price per cabbage. Click \"<\" or \">\" to change it by $1. Up to ~$3, every cabbage sells. Above that, more get refused."},
 	# No effect here: entities/radio/ drops the radio onto the desk once it is stamped.
 	{id = "radio", price = 6, title = "REQUISITION A DESK RADIO", needs = ["price_slate"],
 		body = "Morale is a deliverable.\nA radio on the desk. Top key: play or stop. Bottom key: next song. No other effect."},
 	{id = "desk_space", price = 20, title = "DESK SPACE REALLOCATION", needs = ["radio"],
-		body = "The mat has been re-zoned.\nThe chute (the ramp at bottom right) keeps 2 units waiting on the mat instead of 1."},
+		body = "The mat has been re-zoned.\nThe chute (ramp, bottom right) keeps 2 cabbages ready on the mat, not 1."},
 	{id = "junior_associate", price = 35, title = "HIRE A JUNIOR ASSOCIATE", needs = ["radio"],
-		body = "Unpaid. Grateful.\nA hired hand rests at the bottom of the desk. Every 8 s it takes a unit off the mat and throws it out of the window to sell at your price."},
+		body = "Unpaid. Grateful.\nA hired hand waits at the bottom of the desk. Every 8 s it throws a cabbage from the mat out of the window. It sells at your price."},
 	{id = "acceptance_meter", price = 40, title = "ACCEPTANCE METER", needs = ["radio"],
-		body = "Measured. Managed.\nA gauge on the slate shows the chance a unit sells at your price. Also, every unit now sells even at a 20% higher price."},
+		body = "Measured. Managed.\nA gauge on the slate shows how likely a cabbage sells at your price. Also, the street now pays 20% more without refusing."},
 	{id = "quality_assurance", price = 55, title = "ESTABLISH A RESEARCH LAB", needs = ["junior_associate"],
-		body = "Every unit is a lesson.\nA research lab fills the window's left third. Flick a unit in (it is used up): 5 s later a 1 Finding (¶) token pops out. Sweep your hand over it."},
+		body = "Every cabbage is a lesson.\nA research lab fills the left third of the window. Flick a cabbage in (it is used up). 5 s later a Finding (¶) token pops out. Move your hand over it to collect it."},
 	# Minis (entities/mini_drop/): free units, no stock, sold at mini_value of the chalked price; the
 	# tube sells them by itself, its lever sends a share (save.tube_split) to the lab instead.
-	{id = "mini_cabbages", price = 45, title = "PILOT SCHEME: MINI UNITS", needs = ["junior_associate"],
-		body = "Smaller units. Same paperwork.\nAbout every 20 s a free mini unit falls onto the mat (6 at most). It uses no stock and sells for 1/4 of your price."},
+	{id = "mini_cabbages", price = 45, title = "PILOT SCHEME: MINI CABBAGES", needs = ["junior_associate"],
+		body = "Smaller cabbages. Same paperwork.\nAbout every 20 s a free mini cabbage drops onto the mat (6 at most). It uses no stock and sells for 1/4 of your price."},
 	{id = "street_posters", price = 10, currency = "findings", title = "STREET POSTER CAMPAIGN",
-		needs = ["quality_assurance"], body = "Findings show the street wants cabbage.\nEvery unit now sells even at a 50% higher price: raise yours on the slate to cash in."},
+		needs = ["quality_assurance"], body = "Findings show the street wants cabbage.\nThe street now pays 50% more without refusing. Raise your price on the slate to cash in."},
 	{id = "projector", price = 75, title = "REQUISITION A PROJECTOR", needs = ["quality_assurance"],
 		body = "Attendance is mandatory.\nA PULL tab hangs from the top of the screen: drag it down to open the upgrade tree. Hold the mouse on an upgrade to buy it with coins."},
 	# Research directives (`research`): a projector node naming one in its own `research` is shown
@@ -44,40 +44,40 @@ const CARDS := [
 	# Manager + pricing consultant: no effect here, entities/manager/ and entities/consultant/ start
 	# once stamped; their small upgrades are projector nodes.
 	{id = "pricing_consultant", price = 15, currency = "findings", title = "RETAIN A PRICING CONSULTANT",
-		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s its hand moves your slate $1 toward the price ~90% of units sell at. Use the arrows yourself and it leaves for 15 s. Its on/off switch is by the slate."},
+		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s it moves your price $1 toward the price at which ~90% of cabbages sell. Use the arrows yourself and it leaves for 15 s. Its on/off switch is by the slate."},
 	# Sales events: no effect here, entities/golden_lamp/, catch_combo/ and window_targets/ start
 	# once stamped; their small upgrades are projector nodes. Stamping catch_combo also starts rotten
 	# units and drops the free waste bin (GameEvents "rotten_units", entities/rotten_bin/).
 	{id = "catch_combo", price = 15, currency = "findings", title = "INTERCEPTION INCENTIVE SCHEME",
-		needs = ["projector"], body = "Initiative is rewarded.\nGrab a unit in mid-air (a catch): every sale pays +10%, up to +50% after 5 catches. A unit you let land ends the bonus."},
+		needs = ["projector"], body = "Initiative is rewarded.\nCatch a cabbage in mid-air: every sale pays +10%, up to +50% after 5 catches. A cabbage you let land ends the bonus."},
 	# Research units (Cabbage.research, worlds/components/cabbage_feeder.gd) and the hands that lob
 	# them into the bay (entities/associate/, save.research_hands).
-	{id = "research_cabbage", price = 20, currency = "findings", title = "REQUISITION RESEARCH UNITS",
-		needs = ["quality_assurance", "projector"], body = "Some units are set aside for study.\n1 in 10 units off the chute is blue. Flicked into the research lab it gives 3× the Findings. Sold, it pays like any unit."},
+	{id = "research_cabbage", price = 20, currency = "findings", title = "REQUISITION RESEARCH CABBAGES",
+		needs = ["quality_assurance", "projector"], body = "Some cabbages are set aside for study.\n1 in 10 cabbages from the chute is blue. In the research lab it gives 3× the Findings. Sold, it pays like any cabbage."},
 	{id = "mini_tube", price = 160, title = "PNEUMATIC DELIVERY TUBE", needs = ["mini_cabbages"],
 		body = "Minis no longer touch the desk.\nMinis fall into a tube instead and roll out of the window by themselves. Refused ones still land on the mat."},
 	{id = "performance_review", price = 25, currency = "findings", research = true, title = "RESEARCH: TIME-AND-MOTION STUDY",
 		needs = ["research_inspection", "pricing_consultant"], body = "Every motion is timed.\nHired hands and lab hands set off every 4 s instead of 8 s. Unlocks Hire Associate V and Brisk Walk II on the projector."},
 	# Hired hands sell rotten units (fined) until this memo, then leave them on the mat until
 	# WASTE HANDLING PROTOCOL (projector) has them bin them: entities/associate/ (pick_target).
-	{id = "spoilage_memo", price = 40, title = "MEMO: DO NOT HANDLE SPOILED UNITS",
-		needs = ["catch_combo"], body = "Spoilage is not your concern.\nHired hands stop throwing rotten (grey) units out of the window, where each is fined 10× your price, and leave them on the mat."},
+	{id = "spoilage_memo", price = 40, title = "MEMO: DO NOT HANDLE SPOILED CABBAGES",
+		needs = ["catch_combo"], body = "Spoilage is not your concern.\nHired hands leave rotten (grey) cabbages on the mat. Thrown out of the window, each one costs a fine of 10× your price."},
 	{id = "research_assistant", price = 250, title = "HIRE A LAB ASSISTANT", needs = ["research_cabbage"],
-		body = "The lab coat is deducted from pay.\nA lab hand (blue cuff) joins at the bottom left. Each time the hired hands set off (every 8 s at first), it throws a unit from the mat into the research lab, if the lab has room."},
+		body = "The lab coat is deducted from pay.\nA lab hand (blue cuff) joins at the bottom left. Each time the hired hands throw (every 8 s at first), it throws a cabbage from the mat into the research lab, if there is room."},
 	{id = "tube_lever", price = 350, title = "TUBE DIVERSION LEVER", needs = ["mini_tube"],
-		body = "Some units are worth more as data.\nA lever by the bin: SALES / SPLIT / RESEARCH (drag or click). RESEARCH drops tube minis into the research lab like a thrown unit (back onto the mat if the lab is full); SPLIT, every other one."},
+		body = "Some cabbages are worth more as data.\nA lever by the bin: SALES / SPLIT / RESEARCH (drag or click). RESEARCH sends tube minis into the research lab (onto the mat if it is full). SPLIT sends every second one."},
 	{id = "lab_priority", price = 40, currency = "findings", title = "MEMO: LAB PRIORITY", needs = ["research_assistant"],
-		body = "Research units are not for sale.\nLab hands take blue research units first. Other hired hands stop selling them."},
+		body = "Research cabbages are not for sale.\nLab hands take blue research cabbages first. Other hired hands stop selling them."},
 	{id = "managerial_oversight", price = 30, currency = "findings", title = "REQUEST MANAGERIAL OVERSIGHT",
-		needs = ["performance_review"], body = "Someone will be checking.\nEvery 2.5-4 min a manager raps on the window and sets a quota: sell that many units in 45 s (your pace over the last 5 min, plus 25%). Met: quota × your price in coins. Missed: just a memo."},
+		needs = ["performance_review"], body = "Someone will be checking.\nEvery 2.5-4 min a manager knocks on the window with a quota: sell that many cabbages in 45 s (your pace of the last 5 min, plus 25%). Met: you get quota × your price in coins. Missed: only a memo."},
 	{id = "window_targets", price = 40, currency = "findings", title = "STREET TARGET PRACTICE",
-		needs = ["catch_combo"], body = "The street is given a target.\nAbout every 60 s a lamp lights a crate in the street for 15 s. A unit sold out of the window in line with it pays 10× its coins on top."},
+		needs = ["catch_combo"], body = "The street is given a target.\nAbout every 60 s a lamp lights a crate in the street for 15 s. Throw a cabbage out of the window in line with it: that sale pays 10× its coins on top."},
 	{id = "research_materials", price = 50, currency = "findings", research = true, title = "RESEARCH: MATERIALS HANDLING",
-		needs = ["managerial_oversight"], body = "Units are found to be heavy.\nUnlocks the Conveyor Retrofit on the projector (a unit down the chute every 0.5 s)."},
+		needs = ["managerial_oversight"], body = "Cabbages are found to be heavy.\nUnlocks Conveyor Retrofit on the projector (a cabbage down the chute every 0.5 s)."},
 	# Supply + automation: the console reorders packs on its own (entities/supply_console/), a coin
 	# vacuum docks on the mat (entities/vacuum/); their small upgrades are projector nodes.
 	{id = "auto_procurement", price = 80, currency = "findings", title = "STANDING PURCHASE ORDER",
-		needs = ["research_materials"], body = "Nobody signs anything.\nAt 3 units of stock or fewer, a pack is bought by itself if you can pay. The switch beside the AUTO lamp on the supply console turns it off or on."},
+		needs = ["research_materials"], body = "Nobody signs anything.\nWhen stock drops to 3 cabbages or fewer, a pack is bought automatically if you can pay. The switch next to the AUTO lamp on the supply console turns this on or off."},
 	{id = "coin_collector", price = 100, currency = "findings", title = "AUTOMATED COIN RECOVERY UNIT",
 		needs = ["research_materials"], body = "It does not ask why.\nA robot docks at the mat's left edge. It gathers up to 8 coins per trip off the mat and banks them, so you don't have to sweep."},
 	# No effect here: entities/vacuum/ takes the research lab's slips once it is stamped.
@@ -87,50 +87,54 @@ const CARDS := [
 	{id = "stats_ledger", price = 120, currency = "findings", title = "REQUISITION A LEDGER",
 		needs = ["managerial_oversight"], body = "Someone may read it.\nA binder on the left of the desk: click it to read your sales, coins over time, staff and approvals. No other effect."},
 	{id = "research_sentiment", price = 400, currency = "findings", research = true, title = "RESEARCH: CONSUMER SENTIMENT",
-		needs = ["research_materials"], body = "The street is asked how it feels.\nUnlocks Slogan IV and Brassica for the Masses on the projector (each: every unit sells even at a 25% higher price)."},
-	{id = "golden_lamp", price = 3000, currency = "findings", title = "REQUISITION A DESK LAMP",
-		needs = ["coin_collector"], body = "Nobody knows why.\nA lamp at the back right. About every 150 s it glows gold for 20 s: meanwhile every sale pays 5×."},
+		needs = ["research_materials"], body = "The street is asked how it feels.\nUnlocks Slogan IV and Brassica for the Masses on the projector (each: the street pays 25% more without refusing)."},
+	{id = "golden_lamp", price = 3000, currency = "findings", title = "DECLARE A GOLDEN AGE",
+		needs = ["coin_collector"], body = "Nobody knows why.\nAbout every 150 s a Golden Age dawns for 20 s and the lamp at the back right glows gold. While it lasts, every sale pays 5×."},
 	# One more unit on the mat now (apply), and the projector's mat chain (Projector.MAT_FIRST..MAT_MAX) for the rest.
 	{id = "mat_allowance", price = 3000, title = "APPLY FOR AN EXTENDED MAT ALLOWANCE",
-		needs = ["coin_collector", "desk_space"], body = "Floor space is a privilege, not a right.\nOne more unit fits on the mat now (2 to 3). Then the projector offers one more unit at a time, up to 20, each dearer than the last."},
+		needs = ["coin_collector", "desk_space"], body = "Floor space is a privilege, not a right.\nOne more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells one more space at a time, up to 20, each dearer than the last."},
 	# Stage 2 (GameEvents "supply_warning"): only dealt once that event has started (`event`), into a
 	# free tray slot. entities/farm_tv/ shows the remote and the TV, entities/farm_screen/ the farm.
-	{id = "family_farm", price = 2500, title = "ACQUIRE THE FAMILY FARM", event = "supply_warning", priority = true,
+	{id = "family_farm", price = 1600, title = "ACQUIRE THE FAMILY FARM", event = "supply_warning", priority = true,
 		body = "Your uncle is selling. Family rates apply.\nA TV and a remote arrive. Click the remote to see the farm."},
 	# Paid in units from stock (currency "stock"): 60 only fit once STOCK ROOM (projector storage_1,
 	# `tree`) holds 75, so it is dealt once that node is bought, and only after the family farm (stage
 	# 2's cards cost units). Unlocks the storage chain past it (Projector stock_100's `lock`).
 	{id = "offsite_storage", price = 60, currency = "stock", tree = "storage_1", needs = ["family_farm"], title = "REQUISITION OFF-SITE STORAGE",
-		body = "Space is allocated to those who can prove they need it.\nPaid in units from your stock, not coins: fill the stock room first. Unlocks the storage past the stock room on the projector."},
+		body = "Space is allocated to those who can prove they need it.\nPaid in cabbages from your stock, not coins: fill the stock room first. Unlocks the storage past the stock room on the projector."},
 	# Dealt once off-site storage is in: blocking the chute piles stock up, which pays the cards priced
 	# in units (golden_cabbage, mechanisation). No effect here: entities/chute_lever/ drops the lever onto
 	# the chute once it is stamped and worlds/components/cabbage_feeder.gd stops while it is pulled
 	# (save.chute_blocked). Paced in tools/pace.py.
 	{id = "chute_control", price = 30, currency = "stock", title = "INSTALL A SUPPLY INTERRUPTION LEVER", needs = ["offsite_storage"],
-		body = "The street will adjust.\nA heavy lever on the back of the chute. Pull it down and a steel plate shuts the chute: no units come down, stock piles up. Pull it up to reopen."},
+		body = "The street will adjust.\nA heavy lever on the back of the chute. Pull it down and a steel plate shuts the chute: no cabbages come down, stock piles up. Pull it up to reopen."},
 	# The farm's big steps. The terminal opens CH2 on the TV (entities/farm_tree/): the next card in
-	# the row once the farm is bought. Stage 2's cards are paid in Findings (¶), the farm and the chute
-	# lever aside: coins stay for the projector. ponytail: prices are placeholders, unpaced (tools/pace.py).
-	{id = "farm_terminal", price = 500, currency = "findings", title = "FARM ADMINISTRATION TERMINAL", needs = ["family_farm"],
+	# the row once the farm is bought, and the cheapest Findings card of stage 2, so it comes within a
+	# minute or two of the farm (tools/pace.py: 59 min, the farm 58). Stage 2's cards are paid in Findings
+	# (¶) or cabbages, the farm aside: coins stay for the projector.
+	{id = "farm_terminal", price = 150, currency = "findings", title = "FARM ADMINISTRATION TERMINAL", needs = ["family_farm"],
 		body = "The farm is now managed remotely.\nChannel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with Findings (¶)."},
 	# No effect here: entities/farm_screen/ draws its status row (FarmScreen.status_shown) once it is
 	# stamped. Dealt once the farm is bought (no card waits on a timer).
 	# ponytail: the price is a placeholder, unpaced (tools/pace.py).
 	{id = "farm_readout", price = 150, currency = "findings", title = "FARM TELEMETRY PACKAGE", needs = ["family_farm"],
 		body = "What is measured can be reported.\nA status line along the top of channel 1 (the fields): seeds, cabbages in stock against storage, and money, always in view."},
-	# From stage 2 on the next desk cards are paid in cabbages (units from stock). GREEN THUMB rewards
-	# the hand farming before the tractors take over: FarmScreen.harvest(by_hand).
-	{id = "green_thumb", price = 40, currency = "stock", title = "GREEN THUMB COMMENDATION", needs = ["farm_terminal"],
+	# From stage 2 on the next desk cards are paid in cabbages (units from stock), dearer step by storage
+	# step: GREEN THUMB (70) still from the STOCK ROOM (75), the first farm hand (110) from CORRIDOR
+	# OVERFLOW (Projector stock_125, 125; more than the OFF-SITE LOCKER's 100). Paced in tools/pace.py:
+	# ~62 and ~70 min, the farm 58. GREEN THUMB rewards the hand farming before the tractors take over:
+	# FarmScreen.harvest(by_hand).
+	{id = "green_thumb", price = 70, currency = "stock", title = "GREEN THUMB COMMENDATION", needs = ["farm_terminal"],
 		body = "Manual labour is recognised. Briefly.\nA square you harvest by hand on channel 1 (pull the cabbage out) yields double. Tractors are not commended. More on channel 2."},
-	{id = "seasonal_workforce", price = 800, currency = "findings", title = "AUTHORISE A SEASONAL WORKFORCE", needs = ["farm_terminal"],
+	{id = "seasonal_workforce", price = 110, currency = "stock", title = "AUTHORISE A SEASONAL WORKFORCE", needs = ["farm_terminal"],
 		body = "Seasonal. Indefinitely.\nA farm hand walks onto the fields (channel 1) and plants empty squares with your seeds. More hands on channel 2."},
 	# Golden units: FarmScreen.sow rolls save.golden_chance, the chute sends save.golden_stock down as
 	# gold units (Cabbage.golden), SaleWindow / QaBay pay golden_sale / golden_lab times. Needs the
 	# 200-unit Basement Annex (`tree`). Stamped, it also starts the clock on GameEvents "overripe" and
 	# deals mechanisation.
 	{id = "golden_cabbage", price = 120, currency = "stock", tree = "storage_2", needs = ["family_farm"],
-		title = "PILOT SCHEME: PREMIUM UNITS",
-		body = "Some units are better than others. Officially.\nAbout 1 square in 40 planted on the farm grows golden. Its cabbages come down the chute gold: sold, each pays 10× your price; flicked into the research lab, 10× the Findings."},
+		title = "PILOT SCHEME: PREMIUM CABBAGES",
+		body = "Some cabbages are better than others. Officially.\nAbout 1 square in 40 planted on the farm grows golden. Its cabbages come down the chute gold: sold, each pays 10× your price; flicked into the research lab, 10× the Findings."},
 	# Dealt right after the golden card (no card waits on a timer), ahead of GameEvents "overripe"
 	# (rot) a minute later: tractors harvest before squares rot.
 	{id = "mechanisation", price = 180, currency = "stock", title = "MECHANISATION PROGRAMME", needs = ["golden_cabbage"],
@@ -145,21 +149,21 @@ An AUTO SEED switch in the yard on channel 1. On, a 10-seed pack is bought by it
 	# its chance raised by the projector's growth chain. Prices are placeholders, not paced yet
 	# (tools/pace.py); micro samples is dear (¶1000) because a tube on RESEARCH floods the lab with minis.
 	{id = "mini_thinning", price = 200, currency = "findings", title = "FIELD THINNING PROGRAMME", needs = ["family_farm"],
-		body = "The field produces waste. Waste is a product.\nEvery harvest on the farm also sends one mini unit down the tube (at most 6 minis out at once)."},
+		body = "The field produces waste. Waste is a product.\nEvery harvest on the farm also sends one mini cabbage down the tube (at most 6 minis out at once)."},
 	{id = "micro_samples", price = 1000, currency = "findings", title = "RESEARCH: MICRO-SAMPLE PROTOCOL", needs = ["tube_lever", "family_farm"],
-		body = "Research has established that a sample need not be large. Or whole.\nA mini sent to the research lab yields the Findings of two full units."},
-	{id = "mini_station", price = 500, currency = "findings", title = "INSTALL A UNIT GROWING STATION", needs = ["mini_thinning", "mini_tube"],
-		body = "Small units are a temporary condition.\nA growing chamber is bolted over the tube's intake. 1 mini in 20 comes out a full unit: no stock, sold at your full price, counted as sold."},
+		body = "Research has established that a sample need not be large. Or whole.\nA mini sent to the research lab yields the Findings of two full cabbages."},
+	{id = "mini_station", price = 500, currency = "findings", title = "INSTALL A CABBAGE GROWING STATION", needs = ["mini_thinning", "mini_tube"],
+		body = "Small cabbages are a temporary condition.\nA growing chamber is bolted over the tube's intake. 1 mini in 20 comes out a full cabbage: no stock, sold at your full price, counted as sold."},
 	# Stage 2's end (`priority`: the oxblood form, like the farm card). Dealt once every other stage-2
 	# card is stamped (these `needs` reach all of them, the mini cards aside; golden_cabbage named too, as
 	# an old save's mechanisation came from migrate_farm without it). Paid in more units than
-	# BONDED WAREHOUSE (Projector stock_750) holds, so it waits on DECOMMISSIONED SCHOOL (stock_1000, 1,000)
+	# COLD STORE (Projector storage_3, 500) holds, so it waits on DECOMMISSIONED SCHOOL (stock_1000, 1,000)
 	# and a nearly full store: below that cap by more than a harvest, as a harvest only goes in whole
 	# (FarmScreen.storage_room). Stamped, GameEvents "invest_in_growth" starts (chapter 3). Paced in
-	# tools/pace.py storage: dealt ~62 min, stamped ~90 min.
+	# tools/pace.py storage: dealt ~91 min, COLD STORE ~101, the school ~124, stamped ~125 min.
 	{id = "consolidation", price = 900, currency = "stock", priority = true, title = "CONSOLIDATED GROWTH REQUISITION",
 		needs = ["chute_control", "farm_readout", "green_thumb", "seasonal_workforce", "standing_seed_order", "golden_cabbage"],
-		body = "The desk has outgrown the desk.\nPaid in units from stock, more than a bonded warehouse holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future."},
+		body = "The desk has outgrown the desk.\nPaid in cabbages from stock, more than a cold store holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future."},
 ]
 const OFFERED := 3
 const Events := preload("res://globalScripts/game_events.gd")
@@ -408,6 +412,8 @@ static func migrate(save: SaveGame) -> void:
 		save.stamped.append("offsite_storage")  # Bought past the stock room before the card gated it.
 	save.stock = clamp_stock(save.stock, save.storage_cap)
 	save.golden_stock = clamp_stock(save.golden_stock, save.stock)
+	if save.stamped.has("family_farm") and save.farm_sold < 0:
+		save.farm_sold = save.sold  # Bought before the farm clocked the shock: it counts from today.
 	if save.stamped.has("golden_cabbage") and save.golden_at < 0.0:
 		save.golden_at = save.farm_seconds  # Stamped without a clock: the overripe event comes a minute from now.
 	if save.tree_bought.has("combo_window"):  # GRACE PERIOD, once a longer combo timer, now keeps half on a miss.
@@ -467,6 +473,7 @@ static func apply(id: String, save: SaveGame) -> void:
 		"research_assistant":
 			save.research_hands = maxi(save.research_hands, 1)
 		"family_farm":
+			save.farm_sold = save.sold  # The shock comes Events.SHOCK_AFTER_FARM units from now at the latest.
 			if save.supply_shock:  # Bought before the shock, the squeeze waits for it (start_shock).
 				save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME
 		"seasonal_workforce":  # The first farm hand walks onto CH1.

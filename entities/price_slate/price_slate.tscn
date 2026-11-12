@@ -67,7 +67,7 @@ shape = SubResource("ArrowShape")
 
 [node name="Interactable" type="Node" parent="Down" unique_id=295971598]
 script = ExtResource("2_interactable")
-tooltip = "Lower your price by $1. A lower price means fewer units are refused, but each one earns less."
+tooltip = "Lower your price by $1. Fewer cabbages get refused, but each one earns less."
 pressable = true
 
 [node name="Label" type="Label3D" parent="Down" unique_id=2050193159]
@@ -86,7 +86,7 @@ shape = SubResource("ArrowShape")
 
 [node name="Interactable" type="Node" parent="Up" unique_id=939184124]
 script = ExtResource("2_interactable")
-tooltip = "Raise your price by $1. Each unit earns more, but past what the street accepts, more are refused."
+tooltip = "Raise your price by $1. Each cabbage earns more, but above what the street accepts, more get refused."
 pressable = true
 
 [node name="Label" type="Label3D" parent="Up" unique_id=1472678271]
@@ -101,7 +101,7 @@ outline_size = 0
 transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, 0, 0.1445, -0.0738)
 pixel_size = 0.001
 modulate = Color(0.86, 0.85, 0.8, 0.55)
-text = "PRICE PER UNIT"
+text = "PRICE PER CABBAGE"
 font = ExtResource("4_font")
 outline_size = 0
 
@@ -156,4 +156,4 @@ min_interval = 0.05
 [node name="ConsultantSwitch" parent="." instance=ExtResource("7_switch")]
 transform = Transform3D(2.6, 0, 0, 0, 0, 2.6, 0, -2.6, 0, 0.36, 0.006, 0)
 visible = false
-tooltip = "Pricing consultant switch. Up: it keeps nudging your price toward where about 90% of units sell, or as far over that as you set it. Down: it stays away."
+tooltip = "Pricing consultant switch. Up: it keeps moving your price to where about 90% of cabbages sell (or as far above that as you set it). Down: it stays away."

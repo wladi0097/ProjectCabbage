@@ -133,6 +133,26 @@ size_flags_horizontal = 3
 theme_type_variation = &"DangerButton"
 text = "settings.resetProgress.button"
 
+[node name="ReportRow" type="HBoxContainer" parent="Page/Layout/Pages/Gameplay/List"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Gameplay/List/ReportRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "PLAYTEST REPORT"
+
+[node name="FileReport" parent="Page/Layout/Pages/Gameplay/List/ReportRow" instance=ExtResource("3_back_button")]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "FILE A PLAYTEST REPORT"
+
+[node name="ReportFiled" type="Label" parent="Page/Layout/Pages/Gameplay/List"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+horizontal_alignment = 2
+autowrap_mode = 3
+
 [node name="Audio" type="ScrollContainer" parent="Page/Layout/Pages" unique_id=1668088200]
 visible = false
 layout_mode = 1
@@ -593,6 +613,7 @@ confirm_text = "settings.resetProgress.button"
 [connection signal="toggled" from="Page/Layout/Pages/Video/List/AllowCameraShakeRow/AllowCameraShake" to="." method="_on_allow_camera_shake_toggled"]
 [connection signal="value_changed" from="Page/Layout/Pages/Video/List/BrightnessRow/Brightness" to="." method="_on_brightness_value_changed"]
 [connection signal="clicked" from="Page/Layout/Pages/Gameplay/List/ResetRow/ResetProgress" to="ResetConfirm" method="show"]
+[connection signal="clicked" from="Page/Layout/Pages/Gameplay/List/ReportRow/FileReport" to="." method="_on_file_report_clicked"]
 [connection signal="cancelled" from="ResetConfirm/Panel" to="ResetConfirm" method="hide"]
 [connection signal="confirmed" from="ResetConfirm/Panel" to="." method="_on_reset_confirmed"]
 [connection signal="toggled" from="Page/Layout/Pages/Audio/List/RadioFilterRow/RadioFilter" to="." method="_on_radio_filter_toggled"]

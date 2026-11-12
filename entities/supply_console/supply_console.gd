@@ -116,7 +116,7 @@ func _process(delta: float) -> void:
 			and should_auto_buy(save.stock, save.auto_reserve, save.price_factor, save.auto_max_factor, save.coins, _cost()) \
 			and not (save.supply_shock and _cost() / float(save.pack_size) >= save.sale_price):
 		_auto_wait = AUTO_COOLDOWN
-		_press()
+		_press(true)
 		_push(true)
 		get_tree().create_timer(0.12).timeout.connect(_push.bind(false))
 	# Pack size and discount change between ticks; the ticker follows at once.
@@ -151,7 +151,8 @@ func _tick_price() -> void:
 	_show_price()
 
 
-func _press() -> void:
+## A pack bought, by the standing order when `auto` (counted in save.packs_auto, else packs_manual).
+func _press(auto := false) -> void:
 	var save := SaveManager.save
 	var cost := _cost()
 	if save.coins < cost or not fits(save.stock, save.pack_size, save.storage_cap):
@@ -163,6 +164,10 @@ func _press() -> void:
 		_bailout = -1
 		_show_price()
 	save.stock += save.pack_size
+	if auto:
+		save.packs_auto += 1
+	else:
+		save.packs_manual += 1
 	save.price_pressure += PRESSURE_PER_PACK
 	$Press.cue($Button.global_position)
 

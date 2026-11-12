@@ -12,7 +12,7 @@ const Events := preload("res://globalScripts/game_events.gd")
 const Memo := preload("res://entities/milestone/milestone_memo.gd")
 
 const WELCOME := {re = "WELCOME TO DESK 4",
-	body = "You have been assigned a desk, a window and a supply of cabbages (units). Throw units out of the window to sell them: the street pays in coins. Sweep the coins off the mat to bank them. Further instructions will follow in writing. Sign below to confirm you have understood."}
+	body = "You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Further instructions will follow in writing. Sign below to confirm you have understood."}
 ## The demo's last report, Demo.END_AFTER seconds of farming after the family farm (save.farm_seconds).
 ## No signature (`buttons`): WISHLIST opens the store page (STORE_URL), DONE files it.
 const DEMO_END := {re = "END OF THE TRIAL PERIOD", buttons = true,
@@ -47,6 +47,9 @@ const BODY_SIZE := 18
 const BODY_MIN := 13
 ## The grey veil behind an open report (its alpha at full; it fades in with the drop, out with the flight).
 const VEIL := 0.55
+## Event reports held back for the alpha: chapter 3's paper describes a chapter not built yet, so the
+## alpha's end popup (ui/sub/alpha_end, AlphaEnd) comes instead. Not filed: empty this to bring it back.
+const HELD := ["invest_in_growth"]
 
 ## The memo layer: its FILES folder is where filed reports fly.
 @export var memo: CanvasLayer
@@ -70,6 +73,7 @@ var _fit_key := ""
 @onready var _paper: Control = $Paper
 ## Behind the paper, over the whole screen: nothing in the game takes the mouse while a report is up.
 @onready var _backdrop: ColorRect = $Backdrop
+@onready var _alpha_end: AlphaEnd = $AlphaEnd
 
 
 func _ready() -> void:
@@ -96,7 +100,11 @@ func _process(delta: float) -> void:
 			if id != _id and not _queue.has(id):
 				_queue.append(id)
 	if _id.is_empty():
+		if _alpha_end.visible:
+			return
 		if _queue.is_empty():
+			if AlphaEnd.due(SaveManager.save):
+				_alpha_end.open()
 			return
 		_id = _queue.pop_front()
 		_t = 0.0
@@ -136,7 +144,7 @@ static func due(save: SaveGame) -> Array[String]:
 	if not save.reports.has("welcome"):
 		out.append("welcome")
 	for id: String in Events.EVENTS:
-		if not save.reports.has(id) and Events.due(id, save):
+		if not save.reports.has(id) and id not in HELD and Events.due(id, save):
 			out.append(id)
 	if Events.Demo.active() and save.farm_seconds >= Events.Demo.END_AFTER and not save.reports.has("demo_end"):
 		out.append("demo_end")

@@ -140,6 +140,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if _at_tv:
+		SaveManager.save.tv_seconds += delta
 	_static_left = maxf(_static_left - delta, 0.0)
 	_static.visible = _static_left > 0.0
 	if not _remote.visible and bought(SaveManager.save):

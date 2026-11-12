@@ -605,3 +605,23 @@ All four came out steady (no surge); grow_pulse shapes them with `afade=t=in:d=0
 | `rot_scrape_PsfZ.wav` | (above) | 0.48s | -3.6 dB (true -2.1) | 0.11s | farm_clear_1 |
 | `rot_scrape_iV4J.wav` | (above) | 0.48s | -13.7 dB (true -11.9) | 0.04s | — |
 | `rot_scrape_q4OR.wav` | (above) | 0.48s | -5.0 dB (true -1.3) | 0.02s | farm_clear_2 |
+
+### lever_thunk (2026-11-12)
+> A heavy cast-iron lever assembly dropped onto a sheet steel chute, one solid deep metallic thunk, cold industrial machinery, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `lever_thunk_KP9p.wav` | (above) | 0.80s | -6.9 dB (true -5.6) | 0.00s | chute_lever_land |
+| `lever_thunk_9Vrx.wav` | (above) | 0.80s | -8.6 dB (true -7.1) | 0.02s | — |
+| `lever_thunk_0fcE.wav` | (above) | 0.80s | -9.3 dB (true -8.8) | 0.01s | — |
+| `lever_thunk_WLJv.wav` | (above) | 0.80s | -12.7 dB (true -12.5) | 0.01s | — |
+
+### lever_rattle (2026-11-12)
+> Loose steel bolts and an iron bracket rattling briefly as a heavy machine part settles on a steel frame, short dry metallic rattle dying away, no impact, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `lever_rattle_uegB.wav` | (above) | 0.60s | -5.2 dB (true -0.5) | 0.03s | chute_lever_land |
+| `lever_rattle_cIpP.wav` | (above) | 0.60s | -6.8 dB (true -1.9) | 0.02s | — |
+| `lever_rattle_uIaH.wav` | (above) | 0.60s | -6.5 dB (true -1.5) | 0.09s | — |
+| `lever_rattle_Cgf4.wav` | (above) | 0.60s | -11.0 dB (true -3.3) | 0.00s | — |

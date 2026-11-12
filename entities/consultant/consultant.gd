@@ -124,6 +124,19 @@ func _process(delta: float) -> void:
 
 ## The price the consultant steers toward, for `skill` (see the class notes).
 static func target_price(save: SaveGame, skill: int) -> int:
+	return mini(_wanted_price(save, skill), squeeze_cap(save))
+
+
+## The dearest price the consultant ever sets: while the wholesalers' squeeze is dear, the crate's unit
+## cost (so crates never turn profitable and the standing order keeps out of the squeeze); else the slate's top.
+static func squeeze_cap(save: SaveGame) -> int:
+	var top := Slate.max_price(save.marketing)
+	if save.squeeze_left <= Console.LULL_TIME:
+		return top
+	return clampi(floori(Console.crate_floor(save)), Slate.MIN_PRICE, top)
+
+
+static func _wanted_price(save: SaveGame, skill: int) -> int:
 	var ref := Slate.ref_price(save.marketing, save.demand_mood if skill >= 1 else 1.0)
 	var top := Slate.max_price(save.marketing)
 	if skill < 2:
@@ -145,7 +158,7 @@ static func target_price(save: SaveGame, skill: int) -> int:
 
 ## Where the consultant actually steers: its target_price, save.consultant_markup over it, on the slate.
 static func aim(save: SaveGame, skill: int) -> int:
-	return clampi(roundi(target_price(save, skill) * (1.0 + save.consultant_markup)), Slate.MIN_PRICE, Slate.max_price(save.marketing))
+	return clampi(roundi(target_price(save, skill) * (1.0 + save.consultant_markup)), Slate.MIN_PRICE, squeeze_cap(save))
 
 
 ## The markup the player set: how far `price` lies over the consultant's `target` (0.2 is 20% over).
@@ -167,6 +180,12 @@ static func throttles(save: SaveGame) -> bool:
 	return save.consultant_skill >= 2 and save.hands > 0 and is_zero_approx(save.consultant_markup)
 
 
+## Whether a unit on the mat waits for the hired hands (throttle): one they may take, golden ones
+## too once they are cleared for them (Associate.takes_golden).
+static func waits(save: SaveGame, cabbages: Array, held: Interactable) -> bool:
+	return Associate.pick_target(cabbages, Vector3.ZERO, held, [], false, false, false, Associate.takes_golden(save, false)) != null
+
+
 ## Coins per unit offered at `price` (sold with the street's chance) after the unit's `cost`.
 static func income(price: int, ref: float, cost: float) -> float:
 	return Slate.demand(price, ref) * (price - cost)
@@ -175,9 +194,9 @@ static func income(price: int, ref: float, cost: float) -> float:
 func _decide(save: SaveGame) -> void:
 	var target := aim(save, save.consultant_skill)
 	if throttles(save):
-		var waiting := Associate.pick_target(get_tree().get_nodes_in_group(&"cabbages"), Vector3.ZERO, Hand.held) != null
+		var waiting := waits(save, get_tree().get_nodes_in_group(&"cabbages"), Hand.held)
 		_extra = throttle(_extra, waiting, target, Slate.ref_price(save.marketing, save.demand_mood))
-		target = mini(target + _extra, Slate.max_price(save.marketing))
+		target = mini(target + _extra, squeeze_cap(save))
 	if target == save.sale_price:
 		_wait = save.consultant_interval
 		if _phase == Phase.HOVER:

@@ -28,6 +28,7 @@ shape = SubResource("LampShape")
 script = ExtResource("7_interactable")
 
 [node name="Glow" type="OmniLight3D" parent="."]
+light_bake_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.2, 0.04)
 visible = false
 light_color = Color(1, 0.74, 0.3, 1)

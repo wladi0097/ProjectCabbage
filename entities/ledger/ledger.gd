@@ -118,13 +118,13 @@ static func money(amount: int, currency: String) -> String:
 ## The performance summary: [label, value] rows.
 static func summary_rows(save: SaveGame, seconds: int) -> Array:
 	return [
-		["UNITS MOVED", str(save.sold)],
-		["UNITS INTERCEPTED MID-AIR", str(save.catches)],
+		["CABBAGES MOVED", str(save.sold)],
+		["CABBAGES INTERCEPTED MID-AIR", str(save.catches)],
 		["INTERCEPTION RATE", "%d%%" % roundi(100.0 * save.catches / maxi(save.sold, 1))],
-		["UNITS IN INVENTORY", "%d / %d" % [save.stock, save.storage_cap]],
+		["CABBAGES IN INVENTORY", "%d / %d" % [save.stock, save.storage_cap]],
 		["COINS ON HAND", "$%d" % save.coins],
 		["FINDINGS FILED", "¶%d" % save.findings],
-		["PRICE PER UNIT", "$%d" % save.sale_price],
+		["PRICE PER CABBAGE", "$%d" % save.sale_price],
 		["MARKETING MULTIPLIER", "x%.2f" % save.marketing],
 		["HANDS EMPLOYED", str(save.hands)],
 		["TIME ON SHIFT", clock(seconds)],
@@ -188,7 +188,7 @@ func _now() -> int:
 	return SaveManager.played_now()
 
 
-## Rescans the playtest log only when it changed (thin_log can shorten it, so any size change).
+## Rescans the playtest log only when it changed (a new game empties it, so any size change).
 func _refresh_log(save: SaveGame) -> void:
 	if save.playtest_log.size() == _log_size and save == _log_save:
 		return

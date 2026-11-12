@@ -36,9 +36,11 @@ script = ExtResource("1_script")
 [node name="Model" type="Node3D" parent="."]
 
 [node name="Collar" type="MeshInstance3D" parent="Model"]
+gi_mode = 0
 mesh = ExtResource("2_collar")
 
 [node name="Glow" type="MeshInstance3D" parent="Model"]
+gi_mode = 0
 mesh = ExtResource("3_glow")
 material_override = SubResource("Glow")
 

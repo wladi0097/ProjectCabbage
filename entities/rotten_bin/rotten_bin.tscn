@@ -39,6 +39,7 @@ script = ExtResource("1_script")
 [node name="Model" parent="." instance=ExtResource("2_model")]
 
 [node name="Pit" type="MeshInstance3D" parent="Model"]
+gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.133, 0)
 mesh = SubResource("PitDisc")
 
