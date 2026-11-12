@@ -53,6 +53,26 @@ func test_every_saved_field_survives_a_write_and_a_read_back() -> void:
 			assert_that(loaded.get(field)).override_failure_message(field).is_equal(changed[field])
 
 
+func test_a_save_from_the_old_squeeze_cycle_still_loads_and_its_squeeze_is_on_for_good() -> void:
+	var text := '[gd_resource type="Resource" script_class="SaveGame" format=3]
+
+' 			+ '[ext_resource type="Script" path="res://ressources/save/save_game.gd" id="1"]
+
+' 			+ '[resource]
+script = ExtResource("1")
+coins = 30
+supply_shock = true
+squeeze_left = 20.0
+' 			+ 'stamped = PackedStringArray("family_farm")
+'
+	FileAccess.open(ROUND_TRIP_PATH, FileAccess.WRITE).store_string(text)
+	var loaded := SafeResourceLoader.load(ROUND_TRIP_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as SaveGame
+	assert_object(loaded).is_not_null()
+	assert_int(loaded.coins).is_equal(30)
+	# It was in the old 1 min lull; now there is none.
+	assert_float(SupplyConsole.crate_share(loaded.supply_shock, SupplyConsole.squeezing(loaded))).is_equal(SupplyConsole.SQUEEZE_SHARE)
+
+
 func test_a_log_line_records_what_happened_and_the_state_right_after_it() -> void:
 	var save := SaveGame.new()
 	save.coins = 42

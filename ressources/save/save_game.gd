@@ -11,7 +11,7 @@ extends Resource
 ## Unsold cabbages, the ones on the mat included. The game starts with 10 to sell.
 @export var stock := 10
 ## The most units the stock may hold: no pack is bought and no farm square harvested past it.
-## 20 at the start; the projector's storage chain (storage_1..6) raises it up to 9999.
+## 20 at the start; the projector's storage chain (storage_1..6, then stock_15000) raises it up to 15000.
 @export var storage_cap := 20
 @export var sold := 0
 ## Cabbages grabbed in mid-air as they fly off the chute.
@@ -117,11 +117,12 @@ extends Resource
 @export var auto_reserve := 3
 @export var auto_max_factor := 1.5
 ## Coin vacuums on the mat (desk card coin_collector gives the first): count, speed (× base),
-## coins carried before docking, suction radius (m).
+## coins carried before docking, suction radius (m), seconds recharging on the dock after emptying.
 @export var vacuums := 0
 @export var vacuum_speed := 1.0
 @export var vacuum_capacity := 8
 @export var vacuum_reach := 0.07
+@export var vacuum_rest := 4.0
 ## Cabbages the QA bay analyses at once.
 @export var qa_slots := 1
 # Mini units, the tube and its lever (entities/mini_drop/): they start once the desk card
@@ -152,14 +153,13 @@ extends Resource
 @export var songs_skipped := 0
 @export var radio_silent := 0.0
 ## Stage 2 (globalScripts/game_events.gd): the boss's warning has come (the farm card is dealt) and
-## the units sold by then; wholesale prices have exploded (SupplyConsole.crate_share); seconds left
-## of the wholesalers' squeeze once both the shock and the family farm are in. farm_sold: the units
+## the units sold by then; wholesale prices have exploded (SupplyConsole.crate_share; with the family
+## farm in too, the squeeze for good, SupplyConsole.squeezing). farm_sold: the units
 ## sold when the family farm card was stamped (-1: not yet), the shock's other clock (Events.shock_due).
 @export var supply_warning := false
 @export var warning_sold := 0
 @export var farm_sold := -1
 @export var supply_shock := false
-@export var squeeze_left := 0.0
 ## The family farm on the TV (entities/farm_screen/): seeds, open squares (0: not set up yet), each
 ## open square's seconds grown (-1 empty), the farm upgrades bought, and harvests so far.
 @export var farm_seeds := 0
@@ -198,14 +198,21 @@ extends Resource
 @export var golden_lab := 10.0
 @export var golden_sold := 0
 @export var golden_at := -1.0
-## The overripe event has started (GameEvents "overripe"): ripe squares left FarmScreen.ROT_AFTER
-## seconds rot. Squares rotted so far.
+## The overripe event has started (GameEvents "overripe"): ripe squares left rot_after seconds rot
+## (FarmScreen.ROT_AFTER to start, CH2's SPOILAGE nodes raise it). Squares rotted so far.
 @export var overripe := false
+@export var rot_after := 180.0
 @export var farm_rotted := 0
 ## GREEN THUMB (desk card green_thumb): a square harvested by hand yields hand_yield times; with
 ## hand_replant (farm tree, 0/1) the pulled square is replanted at once from the crate.
 @export var hand_yield := 2.0
 @export var hand_replant := 0
+## Managerial work (desk cards own_sales, own_research, dealt by GameEvents "promotion"): a unit the
+## player flicks out of the window themself pays own_sale times (× the price), one they flick into
+## the research lab yields own_lab times the Findings. Hired hands, lab hands and the tube get 1×.
+## 1.0 until the card (1.2); its projector chain raises it to 1.6.
+@export var own_sale := 1.0
+@export var own_lab := 1.0
 ## STANDING SEED ORDER (desk card standing_seed_order): its AUTO SEED switch on CH1 (on from the
 ## stamp), the crate's seed count at or under which it buys a pack (farm tree SAFETY SEED STOCK
 ## raises it), and the pack it buys (FarmScreen.SEED_PACKS: 0 the 10, 1 the 50; farm tree).

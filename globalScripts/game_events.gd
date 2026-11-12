@@ -30,15 +30,20 @@ const EVENTS := {
 	## (SupplyConsole.crate_share).
 	supply_shock = {flag = "supply_shock", report = {re = "WHOLESALE PRICES EXPLODE",
 		body = "As foreseen, the wholesalers have raised their prices. A cabbage from a crate now costs 60% of what the street pays for it. Margins are thin. Your standing order is paused; switch it back on at the supply console if you must. If you have not bought my uncle's farm yet, the offer is still in your tray. We grow our own."}},
-	## The farm and the shock both in: crates cost more than they sell for for a while
-	## (SupplyConsole.SQUEEZE_TIME), from whichever came second.
+	## The farm and the shock both in: crates cost more than they sell for, for good
+	## (SupplyConsole.squeezing), from whichever came second.
 	supply_squeeze = {card = "family_farm", flag = "supply_shock", report = {re = "THE WHOLESALERS RETALIATE",
-		body = "Word of the farm got out. Crates now cost more than a cabbage sells for: 10 minutes at a time, with a 1 minute break in between. The standing order will not buy them meanwhile. Live off the farm: the remote on your desk switches to it."}},
+		body = "Word of the farm got out. Crates now cost more than a cabbage sells for. This is not a phase. The standing order will not buy at a loss, and neither should you. Live off the farm: the remote on your desk switches to it."}},
 	## Stage 2, after the golden units: OVERRIPE_AFTER farm seconds after the golden_cabbage card,
-	## ripe squares left FarmScreen.ROT_AFTER s rot. The mechanisation card, the cure, is dealt
+	## ripe squares left save.rot_after s rot. The mechanisation card, the cure, is dealt
 	## right after the golden card, not by this event (no card waits on a timer).
 	overripe = {flag = "overripe", report = {re = "SPOILAGE ON THE FARM",
-		body = "Premium cabbages have raised expectations. The farm no longer meets them. From today a ripe square left unharvested for 10 minutes rots: it yields nothing and blocks the square until you clear it. Farm hands will not touch it. The mechanisation programme is the remedy. Compost is not a product category."}},
+		body = "Premium cabbages have raised expectations. The farm no longer meets them. From today a ripe square left unharvested for 3 minutes rots: it yields nothing and blocks the square until you clear it. Farm hands will not touch it. The mechanisation programme is the remedy; cold storage may be requisitioned on channel 2. Compost is not a product category."}},
+	## Stage 2, the first tractor (mechanisation card stamped): the player is a manager now. Deals the
+	## two managerial-work cards (UpgradeDesk own_sales, own_research: `event = "promotion"`), which
+	## reward selling and researching yourself over leaving it all to the helpers.
+	promotion = {card = "mechanisation", report = {re = "YOU ARE NOW A MANAGER",
+		body = "With a tractor on the farm, you now supervise machinery. Your title is changed to Manager, Desk 4. Your salary is not. From today every cabbage you sell or research with your own hands counts as managerial work and will be accounted for as such. The forms are in your tray."}},
 	## The end of stage 2 (chapter 2): the CONSOLIDATED GROWTH REQUISITION card is stamped. Chapter 3
 	## (buying other companies, the stock market) starts from here: chapter_3(save).
 	invest_in_growth = {card = "consolidation", report = {re = "WE SHOULD INVEST IN GROWTH",

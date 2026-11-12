@@ -98,3 +98,18 @@ func test_a_sale_counts_as_the_hands_when_a_hired_hand_lobbed_it_last_else_as_th
 	SaleWindow.count_seller(save, false)
 	assert_int(save.hand_sold).is_equal(1)
 	assert_int(save.player_sold).is_equal(2)
+
+
+func test_managerial_work_pays_only_on_cabbages_the_player_sold_themself() -> void:
+	var save := SaveGame.new()
+	assert_float(SaleWindow.own_factor(true, save)).is_equal(1.0)  # Before the card: no bonus.
+	UpgradeDesk.apply("own_sales", save)
+	assert_float(SaleWindow.own_factor(true, save)).is_equal_approx(1.2, 0.0001)
+	assert_float(SaleWindow.own_factor(false, save)).is_equal(1.0)
+
+
+func test_managerial_work_multiplies_with_gold_and_every_boost() -> void:
+	var save := SaveGame.new()
+	save.own_sale = 1.5
+	var price := 4 * SaleWindow.golden_factor(true, save) * SaleWindow.own_factor(true, save)
+	assert_int(SaleWindow.payout(price, {combo = 2.0, lamp = 5.0})).is_equal(600)  # 4 × 10 × 1.5 × 2 × 5

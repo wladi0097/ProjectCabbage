@@ -34,9 +34,10 @@ const NEW_PULSE := 1.4
 ## A node's popup: its width, the body's font size and line step (px), and the room for a line.
 const POPUP_WIDTH := 430.0
 const POPUP_BODY := 21
-## The popup body's alpha (of the lamp): the flavour line at full beam, the description dimmer.
-const FLAVOUR_ALPHA := 1.0
-const BODY_ALPHA := 0.75
+## The popup body's alpha (of the lamp): the description (the rules) at full beam, the flavour
+## line dimmer, an aside (like PaperNote.FLAVOUR_INK on the desk cards).
+const FLAVOUR_ALPHA := 0.6
+const BODY_ALPHA := 1.0
 const POPUP_STEP := 27.0
 const POPUP_TEXT := POPUP_WIDTH - 32.0
 
@@ -609,8 +610,8 @@ func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, lit: f
 	_top.draw_rect(box, Color(ink, lit * 0.92))
 	var text := Color(beam, lit)
 	_top.draw_string(font, pos + Vector2(16, 38), tr(node.title), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 30, text)
-	# The flavour line (the body's first, PaperNote.flavour_split) in italics and full beam, the
-	# description upright and a little dimmer, so the two read apart.
+	# The flavour line (the body's first, PaperNote.flavour_split) in italics and dimmer, the
+	# description upright at full beam, so the rules read first.
 	var flavour := flavour_lines(tr(node.body), font)
 	for i in lines.size():
 		_top.draw_string(PaperNote.italic(font) if i < flavour else font, pos + Vector2(16, 70 + i * POPUP_STEP), lines[i], HORIZONTAL_ALIGNMENT_LEFT, POPUP_TEXT, POPUP_BODY, Color(text, lit * (FLAVOUR_ALPHA if i < flavour else BODY_ALPHA)))

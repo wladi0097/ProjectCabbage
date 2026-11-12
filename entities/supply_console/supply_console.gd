@@ -14,6 +14,7 @@ extends Node3D
 ## Stage 2 (GameEvents "supply_shock"): a pack unit costs at least crate_share of the street's
 ## full-sale price (crate_floor), whatever the ticker or the pack discount. The standing order then skips packs that would sell at a loss, and
 ## while the family farm has seeds or crops the bailout is off (the farm on the TV feeds the desk).
+## Once the farm is in too, the squeeze: crates cost more than a sale brings, for good, and no bailout.
 
 const Slate := preload("res://entities/price_slate/price_slate.gd")
 
@@ -37,13 +38,11 @@ const BLINK_TIME := 0.12
 ## Seconds between two automatic buys, and the AUTO lamp's colour when switched off.
 const AUTO_COOLDOWN := 1.0
 const AUTO_OFF := Color(0.3, 0.27, 0.22, 1)
-## Stage 2 crate prices as a share of the full-sale price (crate_share): after the shock; during the
-## squeeze once both the shock and the farm are in: SQUEEZE_TIME s dear, then a LULL_TIME s lull at
-## the shock price, then dear again, round and round (next_squeeze).
+## Stage 2 crate prices as a share of the full-sale price (crate_share): after the shock; and for
+## good once the wholesalers' squeeze is on (squeezing: the shock and the farm both in), so crates
+## never pay again and the farm is the supply.
 const SHOCK_SHARE := 0.6
 const SQUEEZE_SHARE := 1.25
-const SQUEEZE_TIME := 600.0
-const LULL_TIME := 60.0
 ## Overstock: from OVERSTOCK units in stock on, a pack costs OVERSTOCK_MUL times as much, at once
 ## (the ticker jumps), so hoarding packs never pays. The farm's harvests are not charged.
 const OVERSTOCK := 130
@@ -101,9 +100,8 @@ func _process(delta: float) -> void:
 	if _clock >= PRICE_PERIOD:
 		_clock -= PRICE_PERIOD
 		_tick_price()
-	save.squeeze_left = next_squeeze(save.squeeze_left - delta, save.supply_shock and save.stamped.has("family_farm"))
-	# Only out of stock is the mat's coin pile worth counting; a farm with seeds or crops feeds the desk.
-	_broke_for = _broke_for + delta if save.buy_unlocked and _bailout < 0 and save.stock <= 0 and not FarmScreen.feeds(save) and is_broke(save.stock, save.coins + (coins.pending_value() if coins != null else 0), _cost()) else 0.0
+	# Only out of stock is the mat's coin pile worth counting.
+	_broke_for = _broke_for + delta if save.buy_unlocked and _bailout < 0 and save.stock <= 0 and bails_out(save) and is_broke(save.stock, save.coins + (coins.pending_value() if coins != null else 0), _cost()) else 0.0
 	if _broke_for >= BAILOUT_WAIT:
 		_bailout = save.coins
 		_show_price()
@@ -267,23 +265,26 @@ static func pack_price(factor: float, size: int, discount := 1.0, unit := UNIT_C
 
 ## Stage 2's least a crate unit costs: crate_share of the full-sale price (normal mood); 0 before the shock.
 static func crate_floor(save: SaveGame) -> float:
-	return crate_share(save.supply_shock, save.squeeze_left) * Slate.ref_price(save.marketing, 1.0)
+	return crate_share(save.supply_shock, squeezing(save)) * Slate.ref_price(save.marketing, 1.0)
 
 
-## Stage 2's crate price as a share of the full-sale price: 0 before the shock, SHOCK_SHARE after;
-## SQUEEZE_SHARE while more than the lull (LULL_TIME) of the farm's squeeze (`squeeze_left`) is left.
-static func crate_share(shock: bool, squeeze_left: float) -> float:
+## Stage 2's crate price as a share of the full-sale price: 0 before the shock, SHOCK_SHARE after,
+## SQUEEZE_SHARE (dearer than the street pays) for good once `squeeze` is on.
+static func crate_share(shock: bool, squeeze: bool) -> float:
 	if not shock:
 		return 0.0
-	return SQUEEZE_SHARE if squeeze_left > LULL_TIME else SHOCK_SHARE
+	return SQUEEZE_SHARE if squeeze else SHOCK_SHARE
 
 
-## The squeeze's seconds left (`left`, already counted down): once it runs out while it is `on` (the
-## shock and the farm both in) the next round starts, SQUEEZE_TIME dear then LULL_TIME lull.
-static func next_squeeze(left: float, on: bool) -> float:
-	if left > 0.0:
-		return left
-	return left + SQUEEZE_TIME + LULL_TIME if on else 0.0
+## The wholesalers' squeeze: on for good once both the shock and the family farm are in.
+static func squeezing(save: SaveGame) -> bool:
+	return save.supply_shock and save.stamped.has("family_farm")
+
+
+## Whether a broke desk may get a bailout pack: not while the farm feeds it (seeds or crops), and
+## never in the squeeze (the wholesalers hand out no cheap crates; the farm is the supply).
+static func bails_out(save: SaveGame) -> bool:
+	return not FarmScreen.feeds(save) and not squeezing(save)
 
 
 ## Automatic buying: stock is down to the reserve and the tally can pay; while stock is left it

@@ -91,7 +91,7 @@ cabbages: 13 instead of 10."},
 Every pack holds 40 more cabbages: 53 instead of 13."},
 	# Storage (its own branch, STORAGE): the most units the stock holds (save.storage_cap, 20 at the
 	# start), a long chain of steps, each the child of the last and at least 25% more room, up
-	# to 9,999 (200 to 1,000 in two big ones). The kept ids storage_1..6 hold 75, 200, 500, 1,500, 4,000 and 9,999 as they did
+	# to 15,000 (200 to 1,000 in two big ones). The kept ids storage_1..6 hold 75, 200, 500, 1,500, 4,000 and 9,999 as they did
 	# (migrate_storage); the steps between are stock_<cap>. Past the stock room the chain is shown
 	# but locked (`lock`) until the desk card REQUISITION OFF-SITE STORAGE is stamped.
 	{id = "stock_25", parent = "dept_manual", at = Vector2(2.20, -0.70), icon = "crate", price = 50,
@@ -163,8 +163,10 @@ too. Until now they were left for you."},
 		body = "Lab coats are issued tongs, and a form for the tongs.
 Lab hands toss golden cabbages into the research
 lab too. Until now they were left for you."},
-	# The two big steps to chapter 2's last card (UpgradeDesk consolidation, 900 units): priced to come
-	# about 10 and 30 min after it is dealt (tools/pace.py storage), not with chapter 3's steps past them.
+	# The steps to chapter 2's last card (UpgradeDesk consolidation, 3,800 units): it needs STRATEGIC
+	# RESERVE (4,000), so the chain from the annex to it is chapter 2's, spaced to fill the wait
+	# between the other cards and the stamp (tools/pace.py storage); FORMER MINISTRY to ANNEXED
+	# PROVINCE are growth past the stamp.
 	{id = "storage_3", parent = "storage_2", at = Vector2(4.63, -1.56), icon = "crate", price = 4000,
 		add = {storage_cap = 300}, title = "COLD STORE",
 		body = "Kept at four degrees. So is the staff room.
@@ -173,30 +175,34 @@ Storage holds 500 cabbages instead of 200."},
 		add = {storage_cap = 500}, title = "DECOMMISSIONED SCHOOL",
 		body = "Education has been rationalised.
 Storage holds 1,000 cabbages instead of 500."},
-	{id = "storage_4", parent = "stock_1000", at = Vector2(4.63, -3.71), icon = "crate", price = 26000,
+	{id = "storage_4", parent = "stock_1000", at = Vector2(4.63, -3.71), icon = "crate", price = 8500,
 		add = {storage_cap = 500}, title = "REGIONAL DEPOT",
 		body = "A warehouse on the ring road. Nobody visits.
 Storage holds 1,500 cabbages instead of 1,000."},
-	{id = "stock_2000", parent = "storage_4", at = Vector2(4.13, -3.71), icon = "crate", price = 40000,
+	{id = "stock_2000", parent = "storage_4", at = Vector2(4.13, -3.71), icon = "crate", price = 10000,
 		add = {storage_cap = 500}, title = "AIRCRAFT HANGAR",
 		body = "The aircraft were surplus to requirements.
 Storage holds 2,000 cabbages instead of 1,500."},
-	{id = "stock_3000", parent = "stock_2000", at = Vector2(4.13, -3.28), icon = "crate", price = 62000,
+	{id = "stock_3000", parent = "stock_2000", at = Vector2(4.13, -3.28), icon = "crate", price = 12500,
 		add = {storage_cap = 1000}, title = "SALT MINE",
 		body = "Underground, stable, and nobody asks.
 Storage holds 3,000 cabbages instead of 2,000."},
-	{id = "storage_5", parent = "stock_3000", at = Vector2(4.13, -2.85), icon = "crate", price = 95000,
+	{id = "storage_5", parent = "stock_3000", at = Vector2(4.13, -2.85), icon = "crate", price = 15500,
 		add = {storage_cap = 1000}, title = "STRATEGIC RESERVE",
 		body = "Classified as critical infrastructure.
 Storage holds 4,000 cabbages instead of 3,000."},
-	{id = "stock_6000", parent = "storage_5", at = Vector2(4.13, -2.42), icon = "crate", price = 150000,
+	{id = "stock_6000", parent = "storage_5", at = Vector2(4.13, -2.42), icon = "crate", price = 19500,
 		add = {storage_cap = 2000}, title = "FORMER MINISTRY",
 		body = "The ministry has been consolidated into a memo.
 Storage holds 6,000 cabbages instead of 4,000."},
-	{id = "storage_6", parent = "stock_6000", at = Vector2(4.13, -1.99), icon = "crate", price = 240000,
+	{id = "storage_6", parent = "stock_6000", at = Vector2(4.13, -1.99), icon = "crate", price = 24500,
 		add = {storage_cap = 3999}, title = "NATIONAL CABBAGE RESERVE",
 		body = "The nation's cabbages are now your problem.
 Storage holds 9,999 cabbages instead of 6,000."},
+	{id = "stock_15000", parent = "storage_6", at = Vector2(4.13, -1.56), icon = "crate", price = 31000,
+		add = {storage_cap = 5001}, title = "ANNEXED PROVINCE",
+		body = "A province is reclassified as a warehouse. Residents were informed by leaflet.
+Storage holds 15,000 cabbages instead of 9,999."},
 	{id = "conveyor_1", parent = "dept_automation", at = Vector2(-0.99, -0.87), icon = "belt", price = 775,
 		research = "research_materials", mul = {dispense_interval = 0.5}, title = "CONVEYOR RETROFIT",
 		body = "The ramp is motorised.\nThe chute rolls out a cabbage every 0.5 s, not every 1 s."},
@@ -339,22 +345,63 @@ Storage holds 9,999 cabbages instead of 6,000."},
 	{id = "campaign_6", parent = "campaign_5", at = Vector2(0.00, -3.18), icon = "megaphone", price = 67500,
 		mul = {marketing = 1.25}, title = "THE ONLY VEGETABLE",
 		body = "Other vegetables are under review.\nThe street now pays 25% more without refusing.\nRaise your price on the slate to cash in."},
-	{id = "vacuum_speed_1", parent = "dept_automation", at = Vector2(-1.50, 0.05), icon = "puck", price = 900,
+	# Coin units (entities/vacuum/): many small steps (drive, bag, dock, nozzle) between the big ones,
+	# the second and third robot. A spine to the left with the docks above and the rest below; the bag
+	# steps sit on the spine before each robot, so every "instead of" holds whatever order is bought.
+	# Old saves get the bag steps now on their path (migrate_vacuums). Paced in tools/pace.py.
+	{id = "vacuum_speed_1", parent = "dept_automation", at = Vector2(-1.50, 0.05), icon = "puck", price = 150,
 		needs = ["coin_collector"], mul = {vacuum_speed = 1.5}, title = "FIRMWARE UPDATE",
-		body = "The unit is told to hurry.\nCoin robots drive 50% faster."},
-	{id = "vacuum_2", parent = "vacuum_speed_1", at = Vector2(-2.05, 0.10), icon = "puck", price = 5500,
+		body = "The unit is told to hurry.
+Coin robots drive 50% faster."},
+	{id = "vacuum_hopper_1", parent = "vacuum_speed_1", at = Vector2(-2.05, 0.10), icon = "puck", price = 250,
+		add = {vacuum_capacity = 4}, title = "LARGER BAG",
+		body = "The bag is replaced with a slightly larger bag.
+Each coin robot carries 12 coins per trip
+before it drives home, not 8."},
+	{id = "vacuum_dock_1", parent = "vacuum_hopper_1", at = Vector2(-2.61, -0.30), icon = "clock", price = 450,
+		mul = {vacuum_rest = 0.5}, title = "QUICK DISCHARGE",
+		body = "The charging contacts are now polished weekly.
+Coin robots recharge on their docks for 2 s
+after emptying, not 4 s."},
+	{id = "vacuum_dock_2", parent = "vacuum_dock_1", at = Vector2(-3.17, -0.26), icon = "clock", price = 1000,
+		mul = {vacuum_rest = 0.5}, title = "RAPID DISCHARGE",
+		body = "The safety interval was reviewed and found safe enough.
+Coin robots recharge on their docks for 1 s
+after emptying, not 2 s."},
+	{id = "vacuum_2", parent = "vacuum_hopper_1", at = Vector2(-2.61, 0.14), icon = "puck", price = 800,
 		add = {vacuums = 1, vacuum_capacity = 12}, title = "SECOND UNIT",
-		body = "A second unit is unboxed, with a bigger bag.\nA second coin robot docks on the mat.\nEach robot carries 20 coins per trip, not 8."},
-	{id = "vacuum_speed_2", parent = "vacuum_2", at = Vector2(-2.61, 0.14), icon = "puck", price = 20000,
+		body = "A second unit is unboxed, with a bigger bag.
+A second coin robot docks on the mat.
+Each robot carries 24 coins per trip, not 12."},
+	{id = "vacuum_nozzle_1", parent = "vacuum_2", at = Vector2(-2.61, 0.58), icon = "puck", price = 600,
+		mul = {vacuum_reach = 1.5}, title = "WIDER NOZZLE",
+		body = "The nozzle is widened by facilities request.
+Coin robots suck up coins from 50% further away."},
+	{id = "vacuum_hopper_2", parent = "vacuum_2", at = Vector2(-3.17, 0.19), icon = "puck", price = 1500,
+		add = {vacuum_capacity = 12}, title = "BAG EXTENSION",
+		body = "A second bag is taped to the first.
+Each coin robot carries 36 coins per trip
+before it drives home, not 24."},
+	{id = "vacuum_speed_2", parent = "vacuum_hopper_2", at = Vector2(-3.17, 0.62), icon = "puck", price = 2000,
 		mul = {vacuum_speed = 1.5, vacuum_reach = 1.5}, title = "FIRMWARE UPDATE II",
-		body = "Obstacle detection is disabled. The unit is louder.\nCoin robots drive 50% faster again and suck up\ncoins from 50% further away."},
-	{id = "vacuum_3", parent = "vacuum_speed_2", at = Vector2(-3.17, 0.19), icon = "puck", price = 87500,
+		body = "Obstacle detection is disabled. The unit is louder.
+Coin robots drive 50% faster again and suck up
+coins from 50% further away."},
+	{id = "vacuum_3", parent = "vacuum_hopper_2", at = Vector2(-3.73, 0.23), icon = "puck", price = 6000,
 		add = {vacuums = 1, vacuum_capacity = 30}, title = "THIRD UNIT",
-		body = "The units have formed a department.\nA third coin robot docks on the mat.\nEach robot carries 50 coins per trip, not 20."},
+		body = "The units have formed a department.
+A third coin robot docks on the mat.
+Each robot carries 66 coins per trip, not 36."},
+	{id = "vacuum_speed_3", parent = "vacuum_3", at = Vector2(-3.73, 0.66), icon = "puck", price = 12000,
+		mul = {vacuum_speed = 1.4}, title = "FIRMWARE UPDATE III",
+		body = "The speed limiter is reclassified as a suggestion.
+Coin robots drive 40% faster."},
 	# No number: entities/vacuum/ reads tree_bought (CoinVacuums.STABILISER).
-	{id = "vacuum_gyro", parent = "vacuum_speed_1", at = Vector2(-2.08, -0.33), icon = "puck", price = 1000,
+	{id = "vacuum_gyro", parent = "vacuum_speed_1", at = Vector2(-2.08, -0.33), icon = "puck", price = 400,
 		title = "GYROSCOPIC STABILISER",
-		body = "A lead plate is bolted underneath. Falling over\nis now a disciplinary matter.\nCoin robots no longer tip onto their backs."},
+		body = "A lead plate is bolted underneath. Falling over
+is now a disciplinary matter.
+Coin robots no longer tip onto their backs."},
 	{id = "qa_slot_2", parent = "qa_time", at = Vector2(-0.15, 1.89), icon = "lens", price = 700,
 		add = {qa_slots = 1}, title = "SECOND BENCH",
 		body = "A second bench in the lab.\nThe research lab analyses 2 cabbages at once, not 1."},
@@ -386,17 +433,10 @@ Storage holds 9,999 cabbages instead of 6,000."},
 	{id = "consultant_speed_2", parent = "consultant_smart", at = Vector2(-1.11, -2.95), icon = "clock", price = 18000,
 		mul = {consultant_interval = 0.5}, title = "RETAINER",
 		body = "The consultant no longer leaves.\nIt taps the slate every 1 s instead of 2 s."},
-	# Sales events (golden lamp up-left, catch combo far up-left, waste bin down, window targets far
-	# right): entities/golden_lamp/, catch_combo/, rotten_bin/, window_targets/.
-	{id = "lamp_mult", parent = "dept_manual", at = Vector2(1.90, 0.38), icon = "crate", price = 32500,
-		needs = ["golden_lamp"], add = {lamp_mult = 3.0}, title = "GOLD STANDARD",
-		body = "The Golden Age is revalued upwards.\nDuring a Golden Age, sales pay 8× instead of 5×."},
-	{id = "lamp_time", parent = "lamp_mult", at = Vector2(2.37, 0.90), icon = "clock", price = 42500,
-		mul = {lamp_time = 1.5}, title = "PROLONGED PROSPERITY",
-		body = "The Golden Age is extended by memo.\nIt lasts 30 s instead of 20 s."},
-	{id = "lamp_every", parent = "lamp_time", at = Vector2(2.83, 1.42), icon = "clock", price = 67500,
-		mul = {lamp_every = 0.6}, title = "BOOM CYCLE",
-		body = "History is told to repeat itself.\nA Golden Age dawns about every 90 s instead of 150 s."},
+	# Sales events (catch combo far up-left, waste bin down, window targets far right):
+	# entities/catch_combo/, rotten_bin/, window_targets/. The golden lamp's card (entities/golden_lamp/)
+	# is the last of its kind: nothing waits on it. Its old nodes (lamp_mult, lamp_time, lamp_every) are
+	# gone; an old save keeps their ids in tree_bought, read by nothing, and their numbers.
 	{id = "combo_window", parent = "dept_manual", at = Vector2(1.74, 0.74), icon = "clock", price = 150,
 		needs = ["catch_combo"], add = {miss_keep = 0.5}, title = "GRACE PERIOD",
 		body = "Interceptions are counted generously.\nA missed catch halves the combo instead of ending it."},
@@ -501,6 +541,28 @@ Storage holds 9,999 cabbages instead of 6,000."},
 	{id = "lab_hand_3", parent = "lab_hand_2", at = Vector2(0.72, 2.41), icon = "hand", price = 9000,
 		add = {research_hands = 1}, title = "THIRD LAB ASSISTANT",
 		body = "The lab has a waiting list now.\nOne more lab hand throws cabbages into the\nresearch lab: 3 instead of 2."},
+	# Managerial work (desk cards own_sales, own_research): the player's own sales (save.own_sale) and
+	# own flicks into the lab (own_lab), 1.2 from the card to 1.6. By hand, clear of every node and
+	# edge: the sales under the manager's first node (down past the bin rebates' left), the lab under
+	# MORE FINDINGS (down between the QA column and the lab hands).
+	{id = "own_sale_1", parent = "manager_time", at = Vector2(1.62, 2.30), icon = "hand", price = 3000,
+		needs = ["own_sales"], add = {own_sale = 0.1}, title = "COUNTERSIGNED SALES",
+		body = "Every sale you make is now countersigned. By you.\nCabbages you sell yourself pay 30% more, not 20%."},
+	{id = "own_sale_2", parent = "own_sale_1", at = Vector2(1.72, 2.85), icon = "hand", price = 14000,
+		add = {own_sale = 0.15}, title = "AIR OF AUTHORITY",
+		body = "The street can tell a manager threw it.\nCabbages you sell yourself pay 45% more, not 30%."},
+	{id = "own_sale_3", parent = "own_sale_2", at = Vector2(1.82, 3.40), icon = "hand", price = 32000,
+		add = {own_sale = 0.15}, title = "EXECUTIVE HANDLING",
+		body = "Each cabbage is now released, not thrown.\nCabbages you sell yourself pay 60% more, not 45%."},
+	{id = "own_lab_1", parent = "qa_findings", at = Vector2(0.50, 2.95), icon = "pilcrow", price = 2500,
+		needs = ["own_research"], add = {own_lab = 0.1}, title = "MANAGERIAL SIGN-OFF",
+		body = "A manager has looked at it. That is the finding.\nCabbages you flick into the research lab yourself\ngive 30% more Findings, not 20%."},
+	{id = "own_lab_2", parent = "own_lab_1", at = Vector2(0.60, 3.45), icon = "pilcrow", price = 12000,
+		add = {own_lab = 0.15}, title = "HANDS-ON LEADERSHIP",
+		body = "The lab coat is worn over the suit.\nCabbages you flick into the research lab yourself\ngive 45% more Findings, not 30%."},
+	{id = "own_lab_3", parent = "own_lab_2", at = Vector2(0.70, 3.95), icon = "pilcrow", price = 28000,
+		add = {own_lab = 0.15}, title = "PRINCIPAL INVESTIGATOR",
+		body = "Your name goes first on every paper. Then nobody's.\nCabbages you flick into the research lab yourself\ngive 60% more Findings, not 45%."},
 ]
 ## Each theme's heading on the slide, part of its branch: the edges from its first nodes' (the roots,
 ## the last entry) parent run through it to them (UpgradeTree), so it names the branch as it opens
@@ -510,7 +572,7 @@ const THEMES := [
 	["PROCUREMENT", Vector2(1.34, -0.07), ["pack_1"]],
 	["STORAGE", Vector2(1.44, -0.31), ["stock_25"]],
 	["DESK SPACE", Vector2(1.55, -0.79), ["mat_4"]],
-	["SALES EVENTS", Vector2(1.25, 0.46), ["lamp_mult", "combo_window", "target_size", "bin_mouth"]],
+	["SALES EVENTS", Vector2(1.25, 0.46), ["combo_window", "target_size", "bin_mouth"]],
 	["MANAGEMENT", Vector2(0.90, 0.46), ["manager_time"]],
 	["CONSULTANCY", Vector2(-0.69, -0.68), ["consultant_speed_1"]],
 	["SUPPLY CHAIN", Vector2(-0.86, -0.33), ["auto_reserve_1", "conveyor_1"]],
@@ -892,6 +954,20 @@ static func migrate_storage(save: SaveGame) -> void:
 		if not save.tree_bought.has(step):
 			save.tree_bought.append(step)
 		step = node_data(step).parent
+
+
+## An old save's coin units: the bag steps now on the path to its bought robot nodes (the second
+## unit once hung straight off the firmware update) count as bought, with their coins per trip, so
+## the branch reads as bought from the root. Never takes anything away; safe to rerun.
+static func migrate_vacuums(save: SaveGame) -> void:
+	for id: String in save.tree_bought.duplicate():
+		if not id.begins_with("vacuum_") or node_data(id).is_empty():
+			continue
+		var step: String = node_data(id).parent
+		while step.begins_with("vacuum_") and not save.tree_bought.has(step):
+			save.tree_bought.append(step)
+			apply(step, save)
+			step = node_data(step).parent
 
 
 ## An old save's mat: with the allowance card stamped it holds at least 3 (the card's free unit), and

@@ -261,3 +261,55 @@ func test_a_golden_unit_taken_in_is_counted_as_analysed() -> void:
 	_bay()._take(gold)
 	_bay()._take(_unit())
 	assert_int(_save.golden_analysed).is_equal(1)
+
+
+func test_managerial_research_gives_more_findings_only_for_cabbages_the_player_flicked_in() -> void:
+	_save.findings_per_cabbage = 10
+	_save.own_lab = 1.2
+	assert_float(QaBay.findings_for(_unit(), _save)).is_equal_approx(12.0, 0.0001)
+	var lobbed := _unit()
+	lobbed.lobbed = true  # A lab hand's delivery.
+	assert_float(QaBay.findings_for(lobbed, _save)).is_equal(10.0)
+	var tubed := _unit(true)
+	tubed.tubed = true  # A tube mini.
+	assert_float(QaBay.findings_for(tubed, _save)).is_equal_approx(10.0 * _save.mini_value, 0.0001)
+	var research := _unit(false, true)
+	assert_float(QaBay.findings_for(research, _save)).is_equal_approx(10.0 * _save.research_mult * 1.2, 0.0001)
+
+
+func test_the_load_gauge_reads_cabbages_on_the_benches_out_of_benches() -> void:
+	assert_str(QaBay.load_text(1, 3)).is_equal("1/3")
+
+
+func test_the_load_gauge_shows_a_cell_per_bench_and_lights_one_per_cabbage_in_the_lab() -> void:
+	_save.qa_slots = 2
+	var bay := _bay_in_tree()
+	var cells: MeshInstance3D = bay.get_node("Gauge/Cells")
+	var count: Label3D = bay.get_node("Gauge/Count")
+	assert_str(count.text).is_equal("0/2")
+	bay._admit(_tube_mini())
+	bay._show_load()
+	assert_str(count.text).is_equal("1/2")
+	assert_float(cells.get_instance_shader_parameter(&"filled")).is_equal(1.0)
+	assert_float(cells.get_instance_shader_parameter(&"cells")).is_equal(2.0)
+
+
+func test_the_load_gauge_grows_a_cell_when_a_bench_is_added() -> void:
+	var bay := _bay_in_tree()
+	assert_str(bay.get_node("Gauge/Count").text).is_equal("0/1")
+	_save.qa_slots += 1
+	bay._show_load()
+	assert_str(bay.get_node("Gauge/Count").text).is_equal("0/2")
+	assert_float(bay.get_node("Gauge/Cells").get_instance_shader_parameter(&"cells")).is_equal(2.0)
+
+
+func test_the_load_gauge_count_turns_bright_only_when_every_bench_is_busy() -> void:
+	_save.qa_slots = 2
+	var bay := _bay_in_tree()
+	var count: Label3D = bay.get_node("Gauge/Count")
+	bay._admit(_tube_mini())
+	bay._show_load()
+	assert_that(count.modulate).is_equal(QaBay.GAUGE_FREE)
+	bay._admit(_tube_mini())
+	bay._show_load()
+	assert_that(count.modulate).is_equal(QaBay.GAUGE_FULL)

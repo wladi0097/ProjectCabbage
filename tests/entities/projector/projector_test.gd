@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 
-const SALES_NODES: Array[String] = ["lamp_mult", "lamp_time", "lamp_every", "combo_window", "combo_cap",
+const SALES_NODES: Array[String] = ["combo_window", "combo_cap",
 		"combo_step", "bin_mouth", "bin_rebate", "bin_rebate_2", "bin_rebate_3", "bin_rebate_4", "bin_rebate_5",
 		"hands_bin", "target_size", "target_every", "target_shower"]
 
@@ -390,7 +390,7 @@ func test_storage_is_its_own_branch_off_manual_handling_with_its_own_heading_not
 	assert_str(Projector.THEMES[heading][0]).is_equal("STORAGE")
 
 
-func test_storage_grows_from_20_to_9999_in_many_small_steps_each_at_least_a_quarter_more_room() -> void:
+func test_storage_grows_from_20_to_15000_in_many_small_steps_each_at_least_a_quarter_more_room() -> void:
 	var save := _save(["projector", "offsite_storage"], 1000000000)
 	var caps := [save.storage_cap]
 	var prices := [0]
@@ -400,7 +400,7 @@ func test_storage_grows_from_20_to_9999_in_many_small_steps_each_at_least_a_quar
 		prices.append(Projector.price_of(id, save))
 	assert_int(caps.size()).is_greater_equal(16)
 	assert_int(caps[1]).is_equal(25)
-	assert_int(caps[-1]).is_equal(9999)
+	assert_int(caps[-1]).is_equal(15000)
 	for i in range(1, caps.size()):
 		assert_float(float(caps[i]) / caps[i - 1]).override_failure_message("%d to %d" % [caps[i - 1], caps[i]]).is_greater_equal(1.25)
 		assert_int(prices[i]).is_greater(prices[i - 1])
@@ -517,9 +517,6 @@ func test_storage_goes_from_200_to_1000_in_two_big_steps() -> void:
 	var annex := chain.find("storage_2")
 	assert_array(chain.slice(annex, annex + 3)).is_equal(["storage_2", "storage_3", "stock_1000"])
 	assert_int(Projector.cap_at("stock_1000")).is_equal(1000)
-	# Chapter 2's two steps: together they cost less than half the first step past them (chapter 3's).
-	var past: String = chain[annex + 3]
-	assert_int((Projector.node_data("storage_3").price + Projector.node_data("stock_1000").price) * 2).is_less(Projector.node_data(past).price)
 	for id: String in Projector.DROPPED_STORAGE:
 		assert_dict(Projector.node_data(id)).override_failure_message(id).is_empty()
 
@@ -974,3 +971,109 @@ func test_the_golden_value_nodes_wait_for_the_golden_card_and_raise_sale_and_lab
 		lab.append(save.golden_lab)
 	assert_array(sale).is_equal([10.0, 15.0, 20.0])
 	assert_array(lab).is_equal([10.0, 15.0, 25.0])
+
+
+func test_the_managerial_chains_wait_for_their_cards_and_raise_own_work_from_a_fifth_to_sixty_percent() -> void:
+	for chain: Array in [["own_sales", "own_sale", ["own_sale_1", "own_sale_2", "own_sale_3"]],
+			["own_research", "own_lab", ["own_lab_1", "own_lab_2", "own_lab_3"]]]:
+		var ids: Array = chain[2]
+		assert_bool(Projector.is_shown(ids[0], _save(["projector", "managerial_oversight", "quality_assurance"]))).is_false()
+		var save := SaveGame.new()
+		UpgradeDesk.apply(chain[0], save)
+		var was: float = save.get(chain[1])
+		for id: String in ids:
+			Projector.apply(id, save)
+			assert_float(save.get(chain[1])).override_failure_message(id).is_greater(was)
+			was = save.get(chain[1])
+		assert_float(was).is_equal_approx(1.6, 0.0001)
+
+
+## The coin units branch (entities/vacuum/), cheapest first.
+func _coin_units() -> Array:
+	var out := Projector.NODES.filter(func(node: Dictionary) -> bool: return node.id.begins_with("vacuum_"))
+	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.price < b.price)
+	return out
+
+
+## Every node above `id` on its branch, up to the department.
+func _ancestors(id: String) -> Array:
+	var out := []
+	var step: String = Projector.node_data(id).parent
+	while not Projector.node_data(step).get("dept", false):
+		out.append(step)
+		step = Projector.node_data(step).parent
+	return out
+
+
+func test_the_coin_units_come_in_many_small_steps_the_first_four_a_few_hundred_coins_each() -> void:
+	var units := _coin_units()
+	assert_int(units.size()).is_greater_equal(10)
+	for node: Dictionary in units.slice(0, 4):
+		assert_int(node.price).override_failure_message(node.id).is_less_equal(500)
+
+
+func test_each_robot_is_dearer_than_every_step_before_it_and_far_under_its_old_price() -> void:
+	for robot: Array in [["vacuum_2", 5500], ["vacuum_3", 87500]]:
+		var price: int = Projector.node_data(robot[0]).price
+		assert_int(price).is_less_equal(robot[1] / 5)
+		for id: String in _ancestors(robot[0]):
+			assert_int(price).override_failure_message(id).is_greater(Projector.node_data(id).price)
+
+
+func test_every_coin_unit_step_improves_what_it_names_by_at_least_a_quarter() -> void:
+	for node: Dictionary in _coin_units():
+		var save := SaveGame.new()
+		UpgradeDesk.apply("coin_collector", save)
+		for id: String in _ancestors(node.id):
+			Projector.apply(id, save)
+		for stat: String in node.get("mul", {}):
+			var gain: float = node.mul[stat]
+			assert_float(maxf(gain, 1.0 / gain)).override_failure_message("%s %s" % [node.id, stat]).is_greater_equal(1.25)
+		for stat: String in node.get("add", {}):
+			var was: float = save.get(stat)
+			assert_float((was + node.add[stat]) / was).override_failure_message("%s %s" % [node.id, stat]).is_greater_equal(1.25)
+
+
+func test_each_bag_step_states_the_coins_per_trip_it_gives_and_had_whatever_else_was_bought() -> void:
+	for node: Dictionary in _coin_units():
+		if not node.get("add", {}).has("vacuum_capacity"):
+			continue
+		var save := SaveGame.new()
+		for id: String in _ancestors(node.id):
+			Projector.apply(id, save)
+		var was := save.vacuum_capacity
+		Projector.apply(node.id, save)
+		assert_str(node.body).override_failure_message(node.id).contains("carries %d coins per trip" % save.vacuum_capacity)
+		assert_str(node.body).override_failure_message(node.id).contains("not %d." % was)
+
+
+func test_the_dock_steps_halve_the_four_second_recharge_twice() -> void:
+	var save := SaveGame.new()
+	assert_float(save.vacuum_rest).is_equal_approx(4.0, 0.0001)
+	Projector.apply("vacuum_dock_1", save)
+	assert_float(save.vacuum_rest).is_equal_approx(2.0, 0.0001)
+	Projector.apply("vacuum_dock_2", save)
+	assert_float(save.vacuum_rest).is_equal_approx(1.0, 0.0001)
+
+
+func test_an_old_save_with_the_second_robot_gets_the_larger_bag_on_its_path_once() -> void:
+	var save := SaveGame.new()
+	save.tree_bought = PackedStringArray(["vacuum_speed_1", "vacuum_2"])
+	save.vacuums = 2
+	save.vacuum_capacity = 20
+	Projector.migrate_vacuums(save)
+	Projector.migrate_vacuums(save)
+	assert_bool(save.tree_bought.has("vacuum_hopper_1")).is_true()
+	assert_int(save.vacuum_capacity).is_equal(24)
+	assert_int(save.vacuums).is_equal(2)
+
+
+func test_an_old_save_with_the_third_robot_gets_both_bag_steps_and_never_less_than_it_had() -> void:
+	var save := SaveGame.new()
+	save.tree_bought = PackedStringArray(["vacuum_speed_1", "vacuum_2", "vacuum_speed_2", "vacuum_3"])
+	save.vacuums = 3
+	save.vacuum_capacity = 50
+	Projector.migrate_vacuums(save)
+	assert_bool(save.tree_bought.has("vacuum_hopper_1") and save.tree_bought.has("vacuum_hopper_2")).is_true()
+	assert_int(save.vacuum_capacity).is_equal(66)
+	assert_int(save.vacuums).is_equal(3)

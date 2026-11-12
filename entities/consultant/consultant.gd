@@ -127,11 +127,11 @@ static func target_price(save: SaveGame, skill: int) -> int:
 	return mini(_wanted_price(save, skill), squeeze_cap(save))
 
 
-## The dearest price the consultant ever sets: while the wholesalers' squeeze is dear, the crate's unit
+## The dearest price the consultant ever sets: once the wholesalers' squeeze is on, the crate's unit
 ## cost (so crates never turn profitable and the standing order keeps out of the squeeze); else the slate's top.
 static func squeeze_cap(save: SaveGame) -> int:
 	var top := Slate.max_price(save.marketing)
-	if save.squeeze_left <= Console.LULL_TIME:
+	if not Console.squeezing(save):
 		return top
 	return clampi(floori(Console.crate_floor(save)), Slate.MIN_PRICE, top)
 
@@ -145,9 +145,9 @@ static func _wanted_price(save: SaveGame, skill: int) -> int:
 			if absf(Slate.demand(price, ref) - TARGET_ACCEPTANCE) < absf(Slate.demand(near, ref) - TARGET_ACCEPTANCE) - 0.0001:
 				near = price
 		return near
-	# Stage 2 crates cost more (crate_floor); during the wholesalers' squeeze (before its ease) none are
-	# bought (the farm feeds the desk).
-	var least := 0.0 if save.squeeze_left > Console.LULL_TIME else Console.crate_floor(save)
+	# Stage 2 crates cost more (crate_floor); in the wholesalers' squeeze none are bought (the farm
+	# feeds the desk).
+	var least := 0.0 if Console.squeezing(save) else Console.crate_floor(save)
 	var cost := Console.pack_price(save.price_factor, save.pack_size, save.pack_discount, Console.UNIT_COST, least) / float(save.pack_size)
 	var best := Slate.MIN_PRICE
 	for price in range(Slate.MIN_PRICE, top + 1):

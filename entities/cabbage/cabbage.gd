@@ -64,6 +64,8 @@ var research := false
 var golden := false
 ## Last thrown by a hired hand (Associate._throw), not the player: SaleWindow counts its sale as the hand's.
 var lobbed := false
+## Sent by the mini tube (MiniDrop), into the window gap or the research lab, not thrown by the player.
+var tubed := false
 ## Out of the window or on its way back after a refusal: the SaleWindow leaves it alone.
 var away := false
 ## Seconds the SaleWindow has seen it off the mat in a row.
@@ -284,6 +286,12 @@ func _pose() -> void:
 	$Mesh.basis = turn.inverse() * Basis(Vector3.UP, _spin) * Basis.from_scale(squish_scale(_squish)) * turn * _look
 
 
+## Last thrown by the player: no hired hand lobbed it and the tube did not send it (managerial work,
+## save.own_sale and own_lab).
+func by_player() -> bool:
+	return not lobbed and not tubed
+
+
 ## The catch spin's turn (rad) `t` (0..1) of the way through: one full turn, fast first, settling.
 static func catch_spin_at(t: float) -> float:
 	return TAU * (1.0 - pow(1.0 - clampf(t, 0.0, 1.0), 3.0))
@@ -295,6 +303,7 @@ func _on_grabbed() -> void:
 	_squishing = create_tween()
 	_squishing.tween_method(func(time: float) -> void: _squish = squish_at(time), 0.0, SQUISH_TIME, SQUISH_TIME)
 	lobbed = false
+	tubed = false
 	if in_flight:
 		in_flight = false
 		SaveManager.save.catches += 1

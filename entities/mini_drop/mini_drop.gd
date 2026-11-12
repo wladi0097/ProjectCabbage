@@ -236,6 +236,7 @@ func _send_down_tube() -> void:
 	var research := goes_to_research(_owed, split)
 	_owed = owed_after(_owed, split, research)
 	var cabbage := _spawn()
+	cabbage.tubed = true
 	cabbage.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
 	cabbage.freeze = true
 	var layer := cabbage.collision_layer

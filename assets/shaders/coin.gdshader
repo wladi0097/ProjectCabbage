@@ -1,5 +1,5 @@
-// The loose coins (CoinPile's MultiMesh): the coin texture is an atlas of three faces ($1, $5,
-// $10); INSTANCE_CUSTOM.x picks the column, the instance colour tints the metal.
+// The loose coins (CoinPile's MultiMesh): the coin texture is an atlas of five faces ($1, $5,
+// $10, $50, $100); INSTANCE_CUSTOM.x picks the column, the instance colour tints the metal.
 shader_type spatial;
 
 uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, repeat_disable;
@@ -13,7 +13,7 @@ void vertex() {
 }
 
 void fragment() {
-	vec2 uv = vec2((clamp(UV.x, 0.01, 0.99) + face) / 3.0, UV.y);
+	vec2 uv = vec2((clamp(UV.x, 0.01, 0.99) + face) / 5.0, UV.y);
 	ALBEDO = texture(albedo_tex, uv).rgb * COLOR.rgb;
 	vec3 orm = texture(orm_tex, uv).rgb;
 	AO = orm.r;

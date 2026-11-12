@@ -6,7 +6,8 @@ extends Node3D
 ## is this node's, every further one a copy ROW_STEP along the mat edge). A unit drives (slowly:
 ## BASE_SPEED × save.vacuum_speed) to the nearest stack,
 ## takes up to save.vacuum_capacity coins within save.vacuum_reach as it goes, and when the bag is
-## full or the mat is clean drives home, beeps and empties: the coins fly from it to the tally.
+## full or the mat is clean drives home, beeps and empties: the coins fly from it to the tally. It
+## then recharges on its dock for save.vacuum_rest seconds before it goes out again.
 ## Its lamp glows while out and blinks when full. The bodies are kinematic, so they nudge cabbages
 ## aside. All the money logic is in CoinPile (vacuum_at, bank_from); coins in a bag still count in
 ## pending_value. Once TOKEN_CARD is stamped they also take the QA bay's resting report slips (one
@@ -26,8 +27,8 @@ const TURN_SPEED := 2.2
 const FACING := 0.7
 ## Close enough to a goal (m).
 const ARRIVE := 0.02
-## Seconds parked after emptying before it goes out again, and between goal re-picks while out.
-const REST := 1.5
+## Seconds between goal re-picks while out. Parked after emptying, a unit recharges on its dock for
+## save.vacuum_rest seconds (its dock lamp glows) before it goes out again; the dock nodes shorten it.
 const REPICK := 0.6
 ## Seconds between rescans of the mat for resting stacks.
 const RESCAN := 0.25
@@ -384,7 +385,7 @@ func _settle(unit: Unit) -> void:
 func _unload(unit: Unit) -> void:
 	unit.body.global_transform = global_transform * unit.home
 	unit.state = State.PARKED
-	unit.wait = REST
+	unit.wait = SaveManager.save.vacuum_rest
 	if not unit.slips.is_empty():
 		_bay(SaveManager.save).file_from(unit.slips, unit.body.global_position + Vector3.UP * HEIGHT)
 		unit.slips = []

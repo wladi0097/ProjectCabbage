@@ -19,7 +19,7 @@ extends Control
 ## save.farm_growth holds each open square's seconds grown (EMPTY: unplanted, ROTTEN: rotted).
 ## Golden squares (save.farm_golden, card golden_cabbage) are rolled at planting and harvest golden
 ## units. Once the overripe event is on (save.overripe) a ripe square keeps counting past ripe and
-## rots ROT_AFTER s later: it gives nothing and blocks the square until clicked clear; workers skip
+## rots save.rot_after s later (ROT_AFTER, CH2's SPOILAGE nodes raise it): it gives nothing and blocks the square until clicked clear; workers skip
 ## it. GREEN THUMB (card green_thumb): a square pulled by hand yields save.hand_yield times.
 ## The yard shows a hut per farm hand slot (a hand walks out of its own and back in, its window lit
 ## while it is inside) and a parking bay per tractor slot, the unbought ones faint (SLOTS of each).
@@ -35,8 +35,9 @@ const YIELD := 3
 const EMPTY := -1.0
 ## A rotted square: no crop, no planting until it is clicked clear (clear_rot).
 const ROTTEN := -2.0
-## Seconds a ripe square waits before it rots, once the overripe event is on.
-const ROT_AFTER := 600.0
+## Seconds a ripe square waits before it rots, once the overripe event is on, before CH2's SPOILAGE
+## nodes (save.rot_after starts here).
+const ROT_AFTER := 180.0
 ## The card that makes a hand harvest yield save.hand_yield times.
 const THUMB_CARD := "green_thumb"
 ## A hand harvest's readout: "+N" rising POP_RISE px over POP_TIME s from the square.
@@ -222,6 +223,7 @@ var _shake := 0.0
 
 func _ready() -> void:
 	return_carried(SaveManager.save)
+	restart_overdue(SaveManager.save)
 	for i in _seed_buttons.size():
 		_seed_buttons[i].pressed.connect(_buy_seeds.bind(i))
 	_auto.toggled.connect(_switch_auto_seed)
@@ -347,7 +349,7 @@ static func is_ripe(save: SaveGame, i: int) -> bool:
 
 
 ## Every planted square grows by `delta` seconds, up to ripe. Once the overripe event is on it keeps
-## counting past ripe, and ROT_AFTER s after ripe it rots (no longer golden). Returns how many rotted.
+## counting past ripe, and save.rot_after s after ripe it rots (no longer golden). Returns how many rotted.
 static func tick(save: SaveGame, delta: float) -> int:
 	var rotted := 0
 	var ripe := grow_time(save)
@@ -358,7 +360,7 @@ static func tick(save: SaveGame, delta: float) -> int:
 			save.farm_growth[i] = minf(save.farm_growth[i] + delta, ripe)
 			continue
 		save.farm_growth[i] += delta
-		if save.farm_growth[i] >= ripe + ROT_AFTER:
+		if save.farm_growth[i] >= ripe + save.rot_after:
 			save.farm_growth[i] = ROTTEN
 			save.farm_rotted += 1
 			rotted += 1
@@ -498,6 +500,15 @@ static func crate_spot() -> Vector2:
 static func return_carried(save: SaveGame) -> void:
 	save.farm_seeds += maxi(save.farm_seeds_carried, 0)
 	save.farm_seeds_carried = 0
+
+
+## A loaded square already past its rot time (a save from when ripe squares waited 10 min) starts its
+## wait again from now instead of rotting at once: called once as the screen comes up.
+static func restart_overdue(save: SaveGame) -> void:
+	var ripe := grow_time(save)
+	for i in save.farm_growth.size():
+		if save.farm_growth[i] >= ripe + save.rot_after:
+			save.farm_growth[i] = ripe
 
 
 ## Adds or removes workers until there are save.farm_hands farm hands and save.farm_tractors tractors

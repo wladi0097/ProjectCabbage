@@ -318,6 +318,11 @@ NATIONAL CABBAGE RESERVE,NATIONAL CABBAGE RESERVE,NATIONALE KOHLRESERVE
 Storage holds 9,999 cabbages instead of 6,000.","The nation's cabbages are now your problem.
 Storage holds 9,999 cabbages instead of 6,000.","Der Kohl der Nation ist jetzt Ihr Problem.
 Das Lager fasst 9.999 Kohlköpfe statt 6.000."
+ANNEXED PROVINCE,ANNEXED PROVINCE,ANNEKTIERTE PROVINZ
+"A province is reclassified as a warehouse. Residents were informed by leaflet.
+Storage holds 15,000 cabbages instead of 9,999.","A province is reclassified as a warehouse. Residents were informed by leaflet.
+Storage holds 15,000 cabbages instead of 9,999.","Eine Provinz wird als Lager eingestuft. Die Bewohner wurden per Flugblatt informiert.
+Das Lager fasst 15.000 Kohlköpfe statt 9.999."
 FULL,FULL,VOLL
 Storage full (%d cabbages). Sell some first.,Storage full (%d cabbages). Sell some first.,Lager voll (%d Kohlköpfe). Erst verkaufen.
 CONVEYOR RETROFIT,CONVEYOR RETROFIT,FÖRDERBAND-NACHRÜSTUNG
@@ -517,11 +522,11 @@ Münzroboter fahren 50% schneller."
 SECOND UNIT,SECOND UNIT,ZWEITES GERÄT
 "A second unit is unboxed, with a bigger bag.
 A second coin robot docks on the mat.
-Each robot carries 20 coins per trip, not 8.","A second unit is unboxed, with a bigger bag.
+Each robot carries 24 coins per trip, not 12.","A second unit is unboxed, with a bigger bag.
 A second coin robot docks on the mat.
-Each robot carries 20 coins per trip, not 8.","Ein zweites Gerät wird ausgepackt, mit größerem Beutel.
+Each robot carries 24 coins per trip, not 12.","Ein zweites Gerät wird ausgepackt, mit größerem Beutel.
 Ein zweiter Münzroboter dockt an der Matte an.
-Jeder Roboter trägt 20 Münzen pro Fahrt, nicht 8."
+Jeder Roboter trägt 24 Münzen pro Fahrt, nicht 12."
 FIRMWARE UPDATE II,FIRMWARE UPDATE II,FIRMWARE-UPDATE II
 "Obstacle detection is disabled. The unit is louder.
 Coin robots drive 50% faster again and suck up
@@ -533,11 +538,53 @@ saugen Münzen aus 50% größerer Entfernung an."
 THIRD UNIT,THIRD UNIT,DRITTES GERÄT
 "The units have formed a department.
 A third coin robot docks on the mat.
-Each robot carries 50 coins per trip, not 20.","The units have formed a department.
+Each robot carries 66 coins per trip, not 36.","The units have formed a department.
 A third coin robot docks on the mat.
-Each robot carries 50 coins per trip, not 20.","Die Geräte haben eine Abteilung gegründet.
+Each robot carries 66 coins per trip, not 36.","Die Geräte haben eine Abteilung gegründet.
 Ein dritter Münzroboter dockt an der Matte an.
-Jeder Roboter trägt 50 Münzen pro Fahrt, nicht 20."
+Jeder Roboter trägt 66 Münzen pro Fahrt, nicht 36."
+LARGER BAG,LARGER BAG,GRÖSSERER BEUTEL
+"The bag is replaced with a slightly larger bag.
+Each coin robot carries 12 coins per trip
+before it drives home, not 8.","The bag is replaced with a slightly larger bag.
+Each coin robot carries 12 coins per trip
+before it drives home, not 8.","Der Beutel wird durch einen etwas größeren ersetzt.
+Jeder Münzroboter trägt 12 Münzen pro Fahrt,
+bevor er heimfährt, nicht 8."
+QUICK DISCHARGE,QUICK DISCHARGE,SCHNELLENTLADUNG
+"The charging contacts are now polished weekly.
+Coin robots recharge on their docks for 2 s
+after emptying, not 4 s.","The charging contacts are now polished weekly.
+Coin robots recharge on their docks for 2 s
+after emptying, not 4 s.","Die Ladekontakte werden jetzt wöchentlich poliert.
+Münzroboter laden nach dem Leeren 2 s an
+ihrem Dock, nicht 4 s."
+RAPID DISCHARGE,RAPID DISCHARGE,EILENTLADUNG
+"The safety interval was reviewed and found safe enough.
+Coin robots recharge on their docks for 1 s
+after emptying, not 2 s.","The safety interval was reviewed and found safe enough.
+Coin robots recharge on their docks for 1 s
+after emptying, not 2 s.","Die Sicherheitspause wurde geprüft und für sicher genug befunden.
+Münzroboter laden nach dem Leeren 1 s an
+ihrem Dock, nicht 2 s."
+WIDER NOZZLE,WIDER NOZZLE,BREITERE DÜSE
+"The nozzle is widened by facilities request.
+Coin robots suck up coins from 50% further away.","The nozzle is widened by facilities request.
+Coin robots suck up coins from 50% further away.","Die Düse wird per Antrag an die Haustechnik verbreitert.
+Münzroboter saugen Münzen aus 50% größerer Entfernung an."
+BAG EXTENSION,BAG EXTENSION,BEUTELERWEITERUNG
+"A second bag is taped to the first.
+Each coin robot carries 36 coins per trip
+before it drives home, not 24.","A second bag is taped to the first.
+Each coin robot carries 36 coins per trip
+before it drives home, not 24.","Ein zweiter Beutel wird an den ersten geklebt.
+Jeder Münzroboter trägt 36 Münzen pro Fahrt,
+bevor er heimfährt, nicht 24."
+FIRMWARE UPDATE III,FIRMWARE UPDATE III,FIRMWARE-UPDATE III
+"The speed limiter is reclassified as a suggestion.
+Coin robots drive 40% faster.","The speed limiter is reclassified as a suggestion.
+Coin robots drive 40% faster.","Der Geschwindigkeitsbegrenzer gilt jetzt als Empfehlung.
+Münzroboter fahren 40% schneller."
 SECOND BENCH,SECOND BENCH,ZWEITER PRÜFTISCH
 "A second bench in the lab.
 The research lab analyses 2 cabbages at once, not 1.","A second bench in the lab.
@@ -936,7 +983,7 @@ YOU WILL BE MANAGED,YOU WILL BE MANAGED,SIE WERDEN GEFÜHRT
 "As requested, a manager will come to your window every few minutes with a quota: sell that many cabbages in 45 s. Meet it and you get paid. Miss it and it goes in your file.","As requested, a manager will come to your window every few minutes with a quota: sell that many cabbages in 45 s. Meet it and you get paid. Miss it and it goes in your file.","Wie beantragt, kommt alle paar Minuten ein Manager an Ihr Fenster und setzt eine Vorgabe: so viele Kohlköpfe in 45 s verkaufen. Erfüllen Sie sie, werden Sie bezahlt. Verfehlen Sie sie, kommt es in Ihre Akte."
 WHOLESALE PRICES EXPLODE,WHOLESALE PRICES EXPLODE,GROSSHANDELSPREISE EXPLODIEREN
 THE WHOLESALERS RETALIATE,THE WHOLESALERS RETALIATE,DER GROSSHANDEL SCHLÄGT ZURÜCK
-"Word of the farm got out. Crates now cost more than a cabbage sells for: 10 minutes at a time, with a 1 minute break in between. The standing order will not buy them meanwhile. Live off the farm: the remote on your desk switches to it.","Word of the farm got out. Crates now cost more than a cabbage sells for: 10 minutes at a time, with a 1 minute break in between. The standing order will not buy them meanwhile. Live off the farm: the remote on your desk switches to it.","Das mit dem Hof hat sich herumgesprochen. Ein Kohlkopf kostet im Einkauf jetzt mehr, als er im Verkauf bringt: jeweils 10 Minuten lang, mit 1 Minute Pause dazwischen. Die Dauerbestellung kauft so lange nichts. Leben Sie vom Hof: Die Fernbedienung auf Ihrem Tisch schaltet dorthin."
+"Word of the farm got out. Crates now cost more than a cabbage sells for. This is not a phase. The standing order will not buy at a loss, and neither should you. Live off the farm: the remote on your desk switches to it.","Word of the farm got out. Crates now cost more than a cabbage sells for. This is not a phase. The standing order will not buy at a loss, and neither should you. Live off the farm: the remote on your desk switches to it.","Das mit dem Hof hat sich herumgesprochen. Ein Kohlkopf aus der Kiste kostet jetzt mehr, als er im Verkauf bringt. Das bleibt so. Die Dauerbestellung kauft nicht mit Verlust, und Sie sollten es auch nicht. Leben Sie vom Hof: Die Fernbedienung auf Ihrem Tisch schaltet dorthin."
 WELCOME TO DESK 4,WELCOME TO DESK 4,WILLKOMMEN AN TISCH 4
 "You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Further instructions will follow in writing. Sign below to confirm you have understood.","You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Further instructions will follow in writing. Sign below to confirm you have understood.","Ihnen wurden ein Tisch, ein Fenster und ein Vorrat an Kohlköpfen zugewiesen. Werfen Sie Kohlköpfe aus dem Fenster, um sie zu verkaufen. Die Straße zahlt in Münzen. Fahren Sie mit der Hand über die Münzen auf der Matte, um sie einzusammeln. Weitere Anweisungen folgen schriftlich. Bestätigen Sie mit Ihrer Unterschrift, dass Sie verstanden haben."
 OFFICE OF THE DIRECTOR,OFFICE OF THE DIRECTOR,BÜRO DES DIREKTORS
@@ -1454,7 +1501,7 @@ About 1 square in 40 planted on the farm grows golden. Its cabbages come down th
 About 1 square in 40 planted on the farm grows golden. Its cabbages come down the chute gold: sold, each pays 10× your price; flicked into the research lab, 10× the Findings.","Manche Kohlköpfe sind besser als andere. Offiziell.
 Etwa 1 von 40 bepflanzten Feldern auf dem Hof wächst golden. Seine Kohlköpfe kommen golden die Rutsche herunter: verkauft bringt jeder das 10-Fache Ihres Preises, ins Forschungslabor geschnippt das 10-Fache an Befunden."
 SPOILAGE ON THE FARM,SPOILAGE ON THE FARM,VERDERB AUF DEM HOF
-Premium cabbages have raised expectations. The farm no longer meets them. From today a ripe square left unharvested for 10 minutes rots: it yields nothing and blocks the square until you clear it. Farm hands will not touch it. The mechanisation programme is the remedy. Compost is not a product category.,Premium cabbages have raised expectations. The farm no longer meets them. From today a ripe square left unharvested for 10 minutes rots: it yields nothing and blocks the square until you clear it. Farm hands will not touch it. The mechanisation programme is the remedy. Compost is not a product category.,"Premium-Kohlköpfe haben die Erwartungen gehoben. Der Hof erfüllt sie nicht mehr. Ab heute verrottet ein reifes Feld, das 10 Minuten nicht geerntet wird: Es bringt nichts und blockiert das Feld, bis Sie es räumen. Die Knechte fassen es nicht an. Das Mechanisierungsprogramm ist die Abhilfe. Kompost ist keine Produktkategorie."
+Premium cabbages have raised expectations. The farm no longer meets them. From today a ripe square left unharvested for 3 minutes rots: it yields nothing and blocks the square until you clear it. Farm hands will not touch it. The mechanisation programme is the remedy; cold storage may be requisitioned on channel 2. Compost is not a product category.,Premium cabbages have raised expectations. The farm no longer meets them. From today a ripe square left unharvested for 3 minutes rots: it yields nothing and blocks the square until you clear it. Farm hands will not touch it. The mechanisation programme is the remedy; cold storage may be requisitioned on channel 2. Compost is not a product category.,"Premium-Kohlköpfe haben die Erwartungen gehoben. Der Hof erfüllt sie nicht mehr. Ab heute verrottet ein reifes Feld, das 3 Minuten nicht geerntet wird: Es bringt nichts und blockiert das Feld, bis Sie es räumen. Die Knechte fassen es nicht an. Das Mechanisierungsprogramm ist die Abhilfe; Kühllager können auf Kanal 2 angefordert werden. Kompost ist keine Produktkategorie."
 Rotten square cleared.,Rotten square cleared.,Verrottetes Feld geräumt.
 Golden harvest: +%d golden cabbages to stock.,Golden harvest: +%d golden cabbages to stock.,Goldene Ernte: +%d goldene Kohlköpfe in den Bestand.
 Harvested by hand: +%d cabbages (GREEN THUMB ×%d).,Harvested by hand: +%d cabbages (GREEN THUMB ×%d).,Von Hand geerntet: +%d Kohlköpfe (GRÜNER DAUMEN ×%d).
@@ -1544,9 +1591,9 @@ AUTO SEED: OFF,AUTO SEED: OFF,AUTO-SAAT: AUS
 Standing order: %d seeds delivered.,Standing order: %d seeds delivered.,Dauerauftrag: %d Samen geliefert.
 CONSOLIDATED GROWTH REQUISITION,CONSOLIDATED GROWTH REQUISITION,ANFORDERUNG: KONSOLIDIERTES WACHSTUM
 "The desk has outgrown the desk.
-Paid in cabbages from stock, more than a cold store holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","The desk has outgrown the desk.
-Paid in cabbages from stock, more than a cold store holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","Der Schreibtisch ist dem Schreibtisch entwachsen.
-Bezahlt in Kohlköpfen aus dem Lager, mehr als ein Kühlhaus fasst: Lager ausbauen, Rutsche schließen, den Hof es füllen lassen. Abgestempelt prüft der Vorstand die Zukunft des Schreibtischs."
+Paid in cabbages from stock, more than the salt mine holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","The desk has outgrown the desk.
+Paid in cabbages from stock, more than the salt mine holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","Der Schreibtisch ist dem Schreibtisch entwachsen.
+Bezahlt in Kohlköpfen aus dem Lager, mehr als das Salzbergwerk fasst: Lager ausbauen, Rutsche schließen, den Hof es füllen lassen. Abgestempelt prüft der Vorstand die Zukunft des Schreibtischs."
 WE SHOULD INVEST IN GROWTH,WE SHOULD INVEST IN GROWTH,WIR SOLLTEN IN WACHSTUM INVESTIEREN
 "The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Cabbages remain cabbages. Some of them will now be shares.","The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Cabbages remain cabbages. Some of them will now be shares.","Der Vorstand hat Ihre Zahlen geprüft. Kohl wächst mit der Geschwindigkeit von Kohl, und so lange kann der Vorstand nicht warten. Ab heute wächst der Schreibtisch durch Übernahmen: Wir kaufen andere Firmen, und wir investieren am Aktienmarkt. Sie bekommen einen Ticker. Kohlköpfe bleiben Kohlköpfe. Einige davon sind ab jetzt Aktien."
 MEMORANDUM · ALPHA BUILD,MEMORANDUM · ALPHA BUILD,MEMORANDUM · ALPHA-VERSION
@@ -1558,3 +1605,70 @@ FILE A PLAYTEST REPORT,FILE A PLAYTEST REPORT,TESTBERICHT EINREICHEN
 Report filed on your desktop. Send it to the developer.,Report filed on your desktop. Send it to the developer.,Bericht auf Ihrem Desktop abgelegt. Senden Sie ihn an den Entwickler.
 Report filed in the game's save folder. Send it to the developer.,Report filed in the game's save folder. Send it to the developer.,Bericht im Speicherordner des Spiels abgelegt. Senden Sie ihn an den Entwickler.
 The report could not be filed. Please try again.,The report could not be filed. Please try again.,Der Bericht konnte nicht abgelegt werden. Bitte versuchen Sie es erneut.
+YOU ARE NOW A MANAGER,YOU ARE NOW A MANAGER,SIE SIND JETZT MANAGER
+"With a tractor on the farm, you now supervise machinery. Your title is changed to Manager, Desk 4. Your salary is not. From today every cabbage you sell or research with your own hands counts as managerial work and will be accounted for as such. The forms are in your tray.","With a tractor on the farm, you now supervise machinery. Your title is changed to Manager, Desk 4. Your salary is not. From today every cabbage you sell or research with your own hands counts as managerial work and will be accounted for as such. The forms are in your tray.","Mit einem Traktor auf dem Hof beaufsichtigen Sie nun Maschinen. Ihr Titel lautet ab sofort Manager, Schreibtisch 4. Ihr Gehalt bleibt, wie es ist. Ab heute gilt jeder Kohlkopf, den Sie mit eigenen Händen verkaufen oder erforschen, als Managementleistung und wird als solche verbucht. Die Formulare liegen in Ihrer Ablage."
+SOLD BY A MANAGER,SOLD BY A MANAGER,VON EINEM MANAGER VERKAUFT
+"A sale made by a manager is a managerial sale. It is billed accordingly.
+Every cabbage you flick out of the window yourself pays 20% more. Hired hands' sales are unchanged. More on the projector.","A sale made by a manager is a managerial sale. It is billed accordingly.
+Every cabbage you flick out of the window yourself pays 20% more. Hired hands' sales are unchanged. More on the projector.","Ein Verkauf durch einen Manager ist ein Managementverkauf. Er wird entsprechend abgerechnet.
+Jeder Kohlkopf, den Sie selbst aus dem Fenster schnippen, bringt 20% mehr. Die Verkäufe der Hilfskräfte bleiben unverändert. Mehr am Projektor."
+RESEARCHED BY A MANAGER,RESEARCHED BY A MANAGER,VON EINEM MANAGER ERFORSCHT
+"Findings signed by a manager are more significant. Statistically.
+Every cabbage you flick into the research lab yourself gives 20% more Findings. Lab hands and the tube are unchanged. More on the projector.","Findings signed by a manager are more significant. Statistically.
+Every cabbage you flick into the research lab yourself gives 20% more Findings. Lab hands and the tube are unchanged. More on the projector.","Von einem Manager unterzeichnete Befunde sind bedeutsamer. Statistisch.
+Jeder Kohlkopf, den Sie selbst ins Forschungslabor schnippen, bringt 20% mehr Befunde. Laborhilfen und das Rohr bleiben unverändert. Mehr am Projektor."
+COUNTERSIGNED SALES,COUNTERSIGNED SALES,GEGENGEZEICHNETE VERKÄUFE
+"Every sale you make is now countersigned. By you.
+Cabbages you sell yourself pay 30% more, not 20%.","Every sale you make is now countersigned. By you.
+Cabbages you sell yourself pay 30% more, not 20%.","Jeder Ihrer Verkäufe wird nun gegengezeichnet. Von Ihnen.
+Kohlköpfe, die Sie selbst verkaufen, bringen 30% mehr, nicht 20%."
+AIR OF AUTHORITY,AIR OF AUTHORITY,AURA DER AUTORITÄT
+"The street can tell a manager threw it.
+Cabbages you sell yourself pay 45% more, not 30%.","The street can tell a manager threw it.
+Cabbages you sell yourself pay 45% more, not 30%.","Die Straße merkt, dass ein Manager geworfen hat.
+Kohlköpfe, die Sie selbst verkaufen, bringen 45% mehr, nicht 30%."
+EXECUTIVE HANDLING,EXECUTIVE HANDLING,BEHANDLUNG DURCH DIE LEITUNG
+"Each cabbage is now released, not thrown.
+Cabbages you sell yourself pay 60% more, not 45%.","Each cabbage is now released, not thrown.
+Cabbages you sell yourself pay 60% more, not 45%.","Jeder Kohlkopf wird nun freigegeben, nicht geworfen.
+Kohlköpfe, die Sie selbst verkaufen, bringen 60% mehr, nicht 45%."
+MANAGERIAL SIGN-OFF,MANAGERIAL SIGN-OFF,FREIGABE DURCH DAS MANAGEMENT
+"A manager has looked at it. That is the finding.
+Cabbages you flick into the research lab yourself
+give 30% more Findings, not 20%.","A manager has looked at it. That is the finding.
+Cabbages you flick into the research lab yourself
+give 30% more Findings, not 20%.","Ein Manager hat es sich angesehen. Das ist der Befund.
+Kohlköpfe, die Sie selbst ins Forschungslabor schnippen,
+bringen 30% mehr Befunde, nicht 20%."
+HANDS-ON LEADERSHIP,HANDS-ON LEADERSHIP,FÜHRUNG ZUM ANFASSEN
+"The lab coat is worn over the suit.
+Cabbages you flick into the research lab yourself
+give 45% more Findings, not 30%.","The lab coat is worn over the suit.
+Cabbages you flick into the research lab yourself
+give 45% more Findings, not 30%.","Der Laborkittel wird über dem Anzug getragen.
+Kohlköpfe, die Sie selbst ins Forschungslabor schnippen,
+bringen 45% mehr Befunde, nicht 30%."
+PRINCIPAL INVESTIGATOR,PRINCIPAL INVESTIGATOR,STUDIENLEITUNG
+"Your name goes first on every paper. Then nobody's.
+Cabbages you flick into the research lab yourself
+give 60% more Findings, not 45%.","Your name goes first on every paper. Then nobody's.
+Cabbages you flick into the research lab yourself
+give 60% more Findings, not 45%.","Ihr Name steht auf jeder Arbeit zuerst. Danach keiner.
+Kohlköpfe, die Sie selbst ins Forschungslabor schnippen,
+bringen 60% mehr Befunde, nicht 45%."
+COLD CHAIN,COLD CHAIN,KÜHLKETTE
+COLD FRAMES,COLD FRAMES,FRÜHBEETKÄSTEN
+"The cabbages are kept cool. The staff are kept informed.
+A ripe square rots after 5 min instead of 3.","The cabbages are kept cool. The staff are kept informed.
+A ripe square rots after 5 min instead of 3.","Die Kohlköpfe werden kühl gehalten. Das Personal wird auf dem Laufenden gehalten.
+Ein reifes Feld verrottet nach 5 Min. statt nach 3."
+REFRIGERATED TARPAULIN,REFRIGERATED TARPAULIN,KÜHLPLANE
+"Patent pending. Electricity extra.
+A ripe square rots after 8 min instead of 5.","Patent pending. Electricity extra.
+A ripe square rots after 8 min instead of 5.","Patent angemeldet. Strom extra.
+Ein reifes Feld verrottet nach 8 Min. statt nach 5."
+SHELF-LIFE REVIEW,SHELF-LIFE REVIEW,HALTBARKEITSPRÜFUNG
+"Spoilage has been reclassified as maturing.
+A ripe square rots after 12 min instead of 8.","Spoilage has been reclassified as maturing.
+A ripe square rots after 12 min instead of 8.","Verderb wurde als Reifung neu eingestuft.
+Ein reifes Feld verrottet nach 12 Min. statt nach 8."

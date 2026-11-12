@@ -131,7 +131,8 @@ static func summary_rows(save: SaveGame, seconds: int) -> Array:
 	]
 
 
-## Every card and tree node bought, newest first: [play time, what, price, currency].
+## Every card and tree node bought, newest first: [play time, what, price, currency]. A card in
+## several currencies (UpgradeDesk.costs) logs a line per currency, so it fills a row each.
 static func requisitions(save: SaveGame) -> Array:
 	var rows := []
 	for entry: Dictionary in save.playtest_log:
@@ -141,6 +142,15 @@ static func requisitions(save: SaveGame) -> Array:
 			rows.push_front(["T+" + clock(entry.t), data.get("title", str(entry.id).to_upper()),
 					money(entry.price, entry.currency), entry.currency])
 	return rows
+
+
+## How many requisitions `rows` (requisitions) hold: one card's rows in several currencies (same
+## time, same title, next to each other) count once.
+static func approved_total(rows: Array) -> int:
+	var total := 0
+	for i in rows.size():
+		total += int(i == 0 or rows[i].slice(0, 2) != rows[i - 1].slice(0, 2))
+	return total
 
 
 ## Coins over play time from the log, plus now: (seconds, coins).
@@ -388,7 +398,7 @@ func _draw_page(rect: Rect2, index: int, side: int) -> void:
 				draw_string(_type, Vector2(x, row_y.call(i)), row[0], HORIZONTAL_ALIGNMENT_LEFT, w, int(text * 0.8), Color(INK, 0.75))
 				draw_string(_type, Vector2(x + w * 0.27, row_y.call(i)), tr(row[1]), HORIZONTAL_ALIGNMENT_LEFT, w * 0.58, int(text * 0.8), INK)
 				UpgradeCard.draw_price(self, _type, Vector2(x + w, row_y.call(i)), row[2], row[3], int(text * 0.8), INK)
-			draw_string(_type, Vector2(x, row_y.call(REQ_PER_PAGE) + line_h), tr("%d REQUISITIONS APPROVED IN TOTAL.") % _reqs.size(),
+			draw_string(_type, Vector2(x, row_y.call(REQ_PER_PAGE) + line_h), tr("%d REQUISITIONS APPROVED IN TOTAL.") % approved_total(_reqs),
 					HORIZONTAL_ALIGNMENT_LEFT, w, int(text * 0.8), Color(INK, 0.7))
 		"chart":
 			_draw_chart(Rect2(Vector2(x + 40.0, rect.position.y + line_h * 4.0), Vector2(w - 50.0, line_h * 11.0)),

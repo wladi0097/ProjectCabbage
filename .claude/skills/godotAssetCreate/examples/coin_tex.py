@@ -1,7 +1,8 @@
 # Generates the coin texture: <out>/coin_albedo|normal|orm.png   (python coin_tex.py <out dir>)
 # Top projection: the coin face fills the UV square (centre 0.5, radius 0.5). The stamp is a
-# heavy serif numeral (1, 5 or 10, one face each in a 3-wide atlas) inside a ring of 12 dots and a
-# raised rim. Worn brass: raised bits bright and smooth, recesses dark and rough.
+# heavy serif numeral (1, 5, 10, 50 or 100, one face each in a 5-wide atlas) inside a raised rim.
+# $1-$10: a ring of 12 dots. $50: a raised octagon instead. $100: a reeded rim, a double ring and a
+# dark inlaid centre disc (bimetal). Worn brass: raised bits bright and smooth, recesses dark and rough.
 import numpy as np, sys
 from PIL import Image, ImageDraw, ImageFilter
 
@@ -17,19 +18,29 @@ def height(num):
     R = S / 2
     circ(R * 0.99, fill=105)                      # field
     circ(R * 0.99, outline=255, width=int(R * 0.13))  # rim
-    for k in range(12):                            # dot ring
-        a = k * np.pi / 6
-        x, y = c + np.cos(a) * R * 0.71, c + np.sin(a) * R * 0.71
-        d.ellipse((x - R * 0.05, y - R * 0.05, x + R * 0.05, y + R * 0.05), fill=235)
+    if num == '50':                                # octagon border
+        pts = [(c + np.cos(a) * R * 0.78, c + np.sin(a) * R * 0.78) for a in np.arange(8) * np.pi / 4 + np.pi / 8]
+        d.polygon(pts, outline=240, width=int(R * 0.11))
+    elif num == '100':                             # reeded rim + inner ring
+        for k in range(48):
+            a = k * np.pi / 24
+            d.line((c + np.cos(a) * R * 0.88, c + np.sin(a) * R * 0.88, c + np.cos(a) * R * 0.99, c + np.sin(a) * R * 0.99), fill=150, width=int(R * 0.035))
+        circ(R * 0.72, outline=240, width=int(R * 0.06))
+    else:
+        for k in range(12):                        # dot ring
+            a = k * np.pi / 6
+            x, y = c + np.cos(a) * R * 0.71, c + np.sin(a) * R * 0.71
+            d.ellipse((x - R * 0.05, y - R * 0.05, x + R * 0.05, y + R * 0.05), fill=235)
     # Stamp: the heavy serif numeral, raised, centred in the dot ring.
     from PIL import ImageFont
-    font = ImageFont.truetype('C:/Windows/Fonts/georgiab.ttf', int(R * (1.35 if len(num) == 1 else 0.95)))
+    font = ImageFont.truetype('C:/Windows/Fonts/georgiab.ttf', int(R * {1: 1.35, 2: 0.95, 3: 0.68}[len(num)]))
     d.text((c, c + R * 0.05), num, font=font, fill=245, anchor='mm', stroke_width=int(R * 0.05), stroke_fill=20)
     return np.array(img.filter(ImageFilter.GaussianBlur(S / 300)).resize((N, N), Image.LANCZOS)) / 255.0
 
 
-# One coin face per denomination side by side ($1, $5, $10): the coin shader picks the column.
-h = np.hstack([height(num) for num in ('1', '5', '10')])
+NUMS = ('1', '5', '10', '50', '100')
+# One coin face per denomination side by side ($1 .. $100): the coin shader picks the column.
+h = np.hstack([height(num) for num in NUMS])
 gy, gx = np.gradient(h)
 k = 9.0
 n = np.dstack((-gx * k, gy * k, np.ones_like(h)))
@@ -42,9 +53,15 @@ wear = np.clip(h * 0.9 + grain * 0.1, 0, 1)
 brass_dark = np.array([0.24, 0.24, 0.24]); brass = np.array([0.7, 0.7, 0.7]); brass_hi = np.array([0.97, 0.97, 0.97])
 t = wear[..., None]
 alb = np.where(t < 0.5, brass_dark + (brass - brass_dark) * (t / 0.5), brass + (brass_hi - brass) * ((t - 0.5) / 0.5))
+# $100: the centre disc inside the inner ring is a darker inlay (a bimetal coin), soft-edged.
+yy, xx = np.mgrid[0:N, 0:N]
+inlay = np.clip((N * 0.35 - np.hypot(xx - N / 2 + 0.5, yy - N / 2 + 0.5)) / 2.0, 0, 1)
+field = np.clip((0.6 - h[:, 4 * N:5 * N]) / 0.2, 0, 1)  # the raised numeral stays bright
+alb[:, 4 * N:5 * N] *= (1 - 0.5 * inlay * field)[..., None]
 Image.fromarray((np.clip(alb, 0, 1) * 255).astype(np.uint8)).save(OUT + "/coin_albedo.png")
 ao = 0.55 + 0.45 * np.clip(h * 1.4, 0, 1)
 rough = 0.68 - 0.3 * wear
+rough[:, 3 * N:] += 0.18  # $50 / $100 satin, not chrome: the desk lamp blew them out
 orm = np.dstack((ao, rough, np.ones_like(h)))
 Image.fromarray((orm * 255).astype(np.uint8)).save(OUT + "/coin_orm.png")
 

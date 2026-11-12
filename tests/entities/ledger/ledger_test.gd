@@ -167,3 +167,13 @@ func test_esc_closes_the_open_ledger_before_the_pause_menu_can_take_it() -> void
 	assert_bool(get_viewport().is_input_handled()).is_true()
 	await get_tree().create_timer(0.5).timeout
 	assert_float(ledger._out).is_equal(0.0)
+
+
+func test_a_card_paid_in_several_currencies_fills_a_row_each_but_counts_as_one_requisition() -> void:
+	var save := SaveGame.new()
+	save.playtest_log.append(save.log_entry(65, "card", "price_slate", 12, "coins"))
+	for cost: Array in [[15000, "coins"], [2000, "findings"], [900, "stock"]]:
+		save.playtest_log.append(save.log_entry(7900, "card", "consolidation", cost[0], cost[1]))
+	var reqs := Ledger.requisitions(save)
+	assert_array(reqs.map(func(row: Array) -> String: return row[2])).is_equal(["900", "¶2000", "$15000", "$12"])
+	assert_int(Ledger.approved_total(reqs)).is_equal(2)

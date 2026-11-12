@@ -176,7 +176,6 @@ slate_unlocked
 sleeve
 sold
 songs_skipped
-squeeze_left
 stamped
 stat
 stock
@@ -276,3 +275,17 @@ golden_analysed
 empty_seconds
 mat_full_seconds
 chute_shut_seconds
+own_sale
+own_lab
+promotion
+rot_after
+vacuum_rest
+vacuum_speed_1
+vacuum_speed_3
+vacuum_hopper_1
+vacuum_hopper_2
+vacuum_dock_1
+vacuum_dock_2
+vacuum_nozzle_1
+vacuum_gyro
+also

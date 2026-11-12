@@ -69,7 +69,7 @@ func test_neither_the_pack_discount_nor_a_low_ticker_cheapens_a_stage_two_crate(
 	var street := Slate.ref_price(save.marketing, 1.0)
 	var shock := Console.pack_price(0.5, 10, 0.7, Console.UNIT_COST, Console.crate_floor(save)) / 10.0
 	assert_float(shock).is_equal_approx(Console.SHOCK_SHARE * street, 0.1)
-	save.squeeze_left = Console.SQUEEZE_TIME + Console.LULL_TIME
+	save.stamped.append("family_farm")
 	save.sale_price = roundi(street)
 	var squeeze := Console.pack_price(0.5, 10, 0.7, Console.UNIT_COST, Console.crate_floor(save)) / 10.0
 	assert_float(squeeze).is_greater(save.sale_price)
@@ -78,23 +78,42 @@ func test_neither_the_pack_discount_nor_a_low_ticker_cheapens_a_stage_two_crate(
 func test_during_the_squeeze_a_crate_unit_costs_more_than_the_street_pays_for_it() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
-	save.squeeze_left = Console.SQUEEZE_TIME + Console.LULL_TIME
+	save.stamped.append("family_farm")
+	assert_bool(Console.squeezing(save)).is_true()
 	assert_float(Console.crate_floor(save)).is_greater(Slate.ref_price(save.marketing, 1.0))
-	save.squeeze_left = Console.LULL_TIME + 1.0
-	assert_float(Console.crate_share(true, save.squeeze_left)).is_equal_approx(Console.SQUEEZE_SHARE, 0.0001)
 
 
-func test_the_squeeze_is_ten_minutes_dear_then_one_minute_at_the_shock_price() -> void:
-	assert_float(Console.SQUEEZE_TIME).is_equal(600.0)
-	assert_float(Console.LULL_TIME).is_equal(60.0)
-	assert_float(Console.crate_share(true, Console.LULL_TIME)).is_equal(Console.SHOCK_SHARE)
-	assert_float(Console.crate_share(true, 0.0)).is_equal(Console.SHOCK_SHARE)
+func test_the_squeeze_needs_both_the_shock_and_the_farm() -> void:
+	var save := SaveGame.new()
+	save.stamped.append("family_farm")
+	assert_bool(Console.squeezing(save)).is_false()
+	assert_float(Console.crate_share(false, false)).is_equal(0.0)
+	assert_float(Console.crate_share(true, false)).is_equal(Console.SHOCK_SHARE)
+	save.supply_shock = true
+	assert_bool(Console.squeezing(save)).is_true()
 
 
-func test_after_the_lull_the_squeeze_starts_again_while_the_farm_and_shock_are_in() -> void:
-	assert_float(Console.next_squeeze(-0.5, true)).is_equal_approx(Console.SQUEEZE_TIME + Console.LULL_TIME - 0.5, 0.0001)
-	assert_float(Console.next_squeeze(-0.5, false)).is_equal(0.0)
-	assert_float(Console.next_squeeze(30.0, true)).is_equal(30.0)
+func test_once_the_squeeze_starts_crates_stay_dearer_than_the_street_price_for_good() -> void:
+	var save := SaveGame.new()
+	save.supply_shock = true
+	save.stamped.append("family_farm")
+	# The price has no clock left to run out (no lull): the lowest ticker, the biggest discount, any
+	# marketing, still above the street.
+	for marketing in [1.0, 3.0, 10.0]:
+		save.marketing = marketing
+		save.sale_price = roundi(Slate.ref_price(marketing, 1.0))
+		var unit := Console.pack_price(0.5, 53, 0.5, Console.UNIT_COST, Console.crate_floor(save)) / 53.0
+		assert_float(unit).is_greater(Slate.ref_price(marketing, 1.0))
+		assert_float(unit).is_greater_equal(save.sale_price)
+
+
+func test_in_the_squeeze_a_broke_desk_gets_no_cheap_bailout_crate() -> void:
+	var save := SaveGame.new()
+	assert_bool(Console.bails_out(save)).is_true()
+	save.supply_shock = true
+	assert_bool(Console.bails_out(save)).is_true()
+	save.stamped.append("family_farm")  # A farm with no seeds or crops left: still no bailout.
+	assert_bool(Console.bails_out(save)).is_false()
 
 
 func test_with_no_stock_and_not_enough_coins_for_a_pack_the_desk_is_broke() -> void:

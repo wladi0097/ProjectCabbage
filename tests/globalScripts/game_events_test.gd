@@ -168,20 +168,21 @@ func test_no_card_another_card_needs_counts_as_optional_for_the_dry_tray() -> vo
 func test_a_farm_bought_before_the_shock_starts_the_squeeze_at_the_shock() -> void:
 	var save := SaveGame.new()
 	UpgradeDesk.start_warning(save)
-	UpgradeDesk.apply("family_farm", save)
 	save.stamped.append("family_farm")
-	assert_float(save.squeeze_left).is_equal(0.0)
+	UpgradeDesk.apply("family_farm", save)
+	assert_bool(SupplyConsole.squeezing(save)).is_false()
 	UpgradeDesk.start_shock(save)
-	assert_float(save.squeeze_left).is_equal(SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME)
+	assert_bool(SupplyConsole.squeezing(save)).is_true()
 
 
 func test_a_farm_bought_after_the_shock_starts_the_squeeze_at_once() -> void:
 	var save := SaveGame.new()
 	UpgradeDesk.start_warning(save)
 	UpgradeDesk.start_shock(save)
-	assert_float(save.squeeze_left).is_equal(0.0)
+	assert_bool(SupplyConsole.squeezing(save)).is_false()
+	save.stamped.append("family_farm")
 	UpgradeDesk.apply("family_farm", save)
-	assert_float(save.squeeze_left).is_equal(SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME)
+	assert_bool(SupplyConsole.squeezing(save)).is_true()
 
 
 func test_an_old_save_past_the_shock_files_the_warning_unread_and_keeps_its_farm_card() -> void:
@@ -206,15 +207,13 @@ func test_an_old_save_before_the_shock_gets_the_warning_once_its_tray_runs_dry()
 
 
 func test_crates_cost_nothing_extra_before_the_shock_and_the_shock_share_after() -> void:
-	assert_float(SupplyConsole.crate_share(false, 0.0)).is_equal(0.0)
-	assert_float(SupplyConsole.crate_share(true, 0.0)).is_equal(SupplyConsole.SHOCK_SHARE)
+	assert_float(SupplyConsole.crate_share(false, false)).is_equal(0.0)
+	assert_float(SupplyConsole.crate_share(true, false)).is_equal(SupplyConsole.SHOCK_SHARE)
 
 
-func test_the_farm_squeeze_holds_then_falls_to_the_shock_share_for_the_lull() -> void:
-	var squeeze := SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME
-	assert_float(SupplyConsole.crate_share(true, squeeze)).is_equal(SupplyConsole.SQUEEZE_SHARE)
-	assert_float(SupplyConsole.crate_share(true, SupplyConsole.LULL_TIME + 1.0)).is_equal(SupplyConsole.SQUEEZE_SHARE)
-	assert_float(SupplyConsole.crate_share(true, SupplyConsole.LULL_TIME * 0.5)).is_equal(SupplyConsole.SHOCK_SHARE)
+func test_the_farm_squeeze_never_falls_back_to_the_shock_share() -> void:
+	assert_float(SupplyConsole.crate_share(true, true)).is_equal(SupplyConsole.SQUEEZE_SHARE)
+	assert_float(SupplyConsole.SQUEEZE_SHARE).is_greater(1.0)
 
 
 func test_a_shocked_unit_still_sells_at_a_profit_until_the_farm_squeeze_makes_it_a_loss() -> void:
@@ -225,6 +224,7 @@ func test_a_shocked_unit_still_sells_at_a_profit_until_the_farm_squeeze_makes_it
 	# Full-sale price at marketing 5 is $15.
 	assert_float(SupplyConsole.crate_floor(save)).is_equal_approx(SupplyConsole.SHOCK_SHARE * 15.0, 0.0001)
 	assert_float(SupplyConsole.crate_floor(save)).is_less(15.0)
+	save.stamped.append("family_farm")
 	UpgradeDesk.apply("family_farm", save)
 	assert_float(SupplyConsole.crate_floor(save)).is_greater(15.0)
 
@@ -337,3 +337,20 @@ func test_the_invest_in_growth_event_starts_only_once_chapter_twos_last_card_is_
 	assert_bool(Events.due("invest_in_growth", save)).is_true()
 	# Its paper is held back for the alpha (BossReport.HELD, ui/sub/alpha_end) but kept for chapter 3.
 	assert_str(Report.report("invest_in_growth").re).is_equal("WE SHOULD INVEST IN GROWTH")
+
+
+func test_stamping_mechanisation_promotes_the_player_to_manager_and_not_before() -> void:
+	var save := _all_stamped_but(["mechanisation", "standing_seed_order", "own_sales", "own_research", "consolidation"])
+	assert_bool(Events.due("promotion", save)).is_false()
+	save.stamped.append("mechanisation")
+	assert_bool(Events.due("promotion", save)).is_true()
+	assert_str(Report.report("promotion").re).is_equal("YOU ARE NOW A MANAGER")
+
+
+func test_an_old_save_that_stamped_mechanisation_gets_the_promotion_paper_once() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["mechanisation"])
+	save.reports = PackedStringArray(["welcome"])
+	assert_array(Report.due(save)).contains(["promotion"])
+	save.reports.append("promotion")
+	assert_array(Report.due(save)).not_contains(["promotion"])

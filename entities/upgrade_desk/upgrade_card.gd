@@ -42,10 +42,17 @@ const PIXEL := 0.0003
 ## The corner the hand pinches, in the card's look space (near left, a little in from the edges).
 const PINCH_AT := Vector3(-0.165, 0.0, 0.085)
 ## The price sits in the ruled box at the bottom right (the texture's box: x 0.096-0.168, z 0.047-0.088),
-## in PRICE_SIZE print, smaller when it would not fit PRICE_WIDTH.
+## in PRICE_SIZE print, smaller when it would not fit PRICE_WIDTH. A card in several currencies
+## (UpgradeDesk.costs) prints the others left of the box on its line (Look/Also: "$15000 + ¶2000 +"),
+## ending ALSO_GAP before it, in ALSO_SIZE print or smaller to fit ALSO_WIDTH.
 const PRICE_AT := Vector3(0.1316, 0.002, 0.0672)
 const PRICE_WIDTH := 0.064
 const PRICE_SIZE := 110
+const ALSO_GAP := 0.006
+const ALSO_WIDTH := 0.22
+const ALSO_SIZE := 90
+## On paper a bill's prices stand in a row, this many font sizes apart.
+const BILL_GAP := 0.6
 ## A price paid in cabbages (currency "stock") has ICON before its number: ICON_EM of the font size
 ## high (about the digits' height), ICON_GAP of that from the digits.
 const ICON := preload("res://assets/sprites/icons/cabbage_icon.svg")
@@ -61,8 +68,10 @@ const MIN_SIZE := 40
 
 var id := ""
 var price := 0
-## The SaveGame field it is paid from: "coins" ($) or "findings" (¶).
+## The SaveGame field it is paid from: "coins" ($), "findings" (¶) or "stock" (units).
 var currency := "coins"
+## Everything it costs, {currency: amount} (UpgradeDesk.costs): price in currency, plus a card's `also`.
+var costs := {}
 
 var _held := false
 ## Held: where the pinch sits relative to the mouse (flat), fixed at the grab so neither jumps.
@@ -90,6 +99,7 @@ func _fill(card: Dictionary) -> void:
 	id = card.id
 	price = card.price
 	currency = card.get("currency", "coins")
+	costs = UpgradeDesk.costs(card)
 	if paper_tint(card) != Color.WHITE:
 		($Look/Paper as MeshInstance3D).material_override = _priority()
 	var form := $Look/Form as Label3D
@@ -112,6 +122,29 @@ func _fill(card: Dictionary) -> void:
 	label.position.x = left + price_width(shown, currency, label.font_size) - text * 0.5
 	icon.pixel_size = em * ICON_EM / ICON.get_height()
 	icon.position = Vector3(left + em * ICON_EM * 0.5, PRICE_AT.y, PRICE_AT.z)
+	var also := $Look/Also as Label3D
+	also.text = also_text(costs, currency)
+	also.visible = also.text != ""
+	also.font_size = also_size(also.text)
+	also.position.x = PRICE_AT.x - PRICE_WIDTH * 0.5 - ALSO_GAP
+
+
+## What a card costs besides `price` in `paid_in`, as printed left of its price box: "$15000 + ¶2000 +"
+## (`bill`: UpgradeDesk.costs; "" for a card in one currency). Never units: they are always the box's.
+static func also_text(bill: Dictionary, paid_in: String) -> String:
+	var parts := PackedStringArray()
+	for other: String in bill:
+		if other != paid_in:
+			parts.append(price_text(bill[other], other) + " +")
+	return " ".join(parts)
+
+
+## The font size that fits `shown` (also_text) into ALSO_WIDTH: ALSO_SIZE, or smaller.
+static func also_size(shown: String) -> int:
+	var size := ALSO_SIZE
+	while size > MIN_SIZE and TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * PIXEL > ALSO_WIDTH:
+		size -= 2
+	return size
 
 
 func _ready() -> void:
@@ -215,7 +248,7 @@ func blink() -> void:
 	if _blinking != null:
 		_blinking.kill()
 	_blinking = create_tween()
-	var labels: Array[Node3D] = [_heading, _price, _price_icon]
+	var labels: Array[Node3D] = [_heading, _price, _price_icon, $Look/Also]
 	for colour: Color in [DENIED_RED, INK, DENIED_RED, INK]:
 		_blinking.tween_callback(func() -> void:
 			for label in labels:
@@ -259,6 +292,24 @@ static func price_size(shown: String, paid_in := "coins") -> int:
 	while size > 40 and price_width(shown, paid_in, size) > PRICE_WIDTH:
 		size -= 2
 	return size
+
+
+## How wide `bill` prints in a row on paper (draw_bill) at font size `size` (px).
+static func bill_row_width(bill: Dictionary, size: int) -> float:
+	var width := size * BILL_GAP * (bill.size() - 1)
+	for paid_in: String in bill:
+		width += price_width(price_text(bill[paid_in], paid_in), paid_in, size, 1.0)
+	return width
+
+
+## Draws every price of `bill` in a row on `item`, the last ending at `right` (baseline), BILL_GAP apart.
+static func draw_bill(item: CanvasItem, font: Font, right: Vector2, bill: Dictionary, size: int, ink: Color) -> void:
+	var keys := bill.keys()
+	keys.reverse()
+	for paid_in: String in keys:
+		var shown := price_text(bill[paid_in], paid_in)
+		draw_price(item, font, right, shown, paid_in, size, ink)
+		right.x -= price_width(shown, paid_in, size, 1.0) + size * BILL_GAP
 
 
 ## Draws price text `shown` in `paid_in` on `item` in `font` at `size`, ending at `right` (its

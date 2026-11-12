@@ -96,3 +96,26 @@ func test_the_card_print_is_lit_by_the_lamp_like_the_paper_it_is_on() -> void:
 	var card := auto_free(preload("res://entities/upgrade_desk/upgrade_card.tscn").instantiate()) as Node
 	for path in ["Look/Form", "Look/Heading", "Look/Price"]:
 		assert_bool((card.get_node(path) as Label3D).shaded).override_failure_message(path).is_true()
+
+
+func test_a_card_in_several_currencies_prints_its_units_in_the_box_and_the_other_prices_left_of_it() -> void:
+	var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("consolidation")))
+	var price := card.get_node("Look/Price") as Label3D
+	var also := card.get_node("Look/Also") as Label3D
+
+	assert_str(price.text).is_equal("3800")
+	assert_bool((card.get_node("Look/PriceIcon") as Sprite3D).visible).is_true()
+	assert_bool(also.visible).is_true()
+	assert_str(also.text).is_equal("$25000 + ¶4000 +")
+	assert_float(also.position.x).is_less(UpgradeCard.PRICE_AT.x - UpgradeCard.PRICE_WIDTH * 0.5)
+	var width := UpgradeCard.TITLE_FONT.get_string_size(also.text, HORIZONTAL_ALIGNMENT_LEFT, -1, also.font_size).x * UpgradeCard.PIXEL
+	assert_float(width).is_less_equal(UpgradeCard.ALSO_WIDTH)
+	assert_float(also.position.x - width).override_failure_message("on the card").is_greater(-UpgradeCard.SIZE.x * 0.5)
+
+
+func test_a_card_in_one_currency_prints_nothing_beside_its_price_box() -> void:
+	for each: Dictionary in UpgradeDesk.CARDS:
+		if UpgradeDesk.costs(each).size() == 1:
+			assert_str(UpgradeCard.also_text(UpgradeDesk.costs(each), each.get("currency", "coins"))).override_failure_message(each.id).is_empty()
+	var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("projector")))
+	assert_bool((card.get_node("Look/Also") as Label3D).visible).is_false()

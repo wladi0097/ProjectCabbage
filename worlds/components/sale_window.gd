@@ -84,6 +84,12 @@ static func golden_factor(is_golden: bool, save: SaveGame) -> float:
 	return save.golden_sale if is_golden else 1.0
 
 
+## What a unit's price is multiplied by for managerial work: save.own_sale if the player threw it
+## themself (Cabbage.by_player), else 1. It multiplies with the golden factor and every boost.
+static func own_factor(by_player: bool, save: SaveGame) -> float:
+	return save.own_sale if by_player else 1.0
+
+
 ## The chance the street buys a unit when a full cabbage sells with `chance` (a mini: MINI_ACCEPTANCE more).
 static func acceptance_for(chance: float, is_mini: bool) -> float:
 	return minf(1.0, chance * MINI_ACCEPTANCE) if is_mini else chance
@@ -164,12 +170,12 @@ func _judge(cabbage: Cabbage) -> void:
 	if cabbage.mini:
 		# Free units: no stock, no units sold, a share of the price.
 		save.minis_sold += 1
-		paid = payout(price * save.mini_value, boosts)
+		paid = payout(price * save.mini_value * own_factor(cabbage.by_player(), save), boosts)
 	else:
 		cabbage.leave_stock(save)  # A grown mini (growing station) is a full unit but no stock.
 		save.sold += 1
 		save.golden_sold += int(cabbage.golden)
-		paid = payout(price * golden_factor(cabbage.golden, save), boosts)
+		paid = payout(price * golden_factor(cabbage.golden, save) * own_factor(cabbage.by_player(), save), boosts)
 		save.grown_sold += int(cabbage.grown)
 		if cabbage.golden:
 			cabbage.ring_golden_sale()

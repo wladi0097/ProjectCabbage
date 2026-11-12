@@ -87,6 +87,17 @@ The standing seed order buys the 50-seed pack instead of the 10."},
 	{id = "gold_chance_3", parent = "gold_chance_2", at = Vector2(0.0, 1.85), icon = "sprout", price = 9000, currency = "findings",
 		add = {golden_chance = 0.0333}, title = "GILDED STRAIN",
 		body = "It is no longer entirely a vegetable.\n1 square in 10 grows golden, not 1 in 15."},
+	# COLD CHAIN: how long a ripe square waits before it rots (save.rot_after, FarmScreen.tick), shown
+	# with the golden card, a minute before GameEvents "overripe" starts the rot.
+	{id = "cold_frames", parent = "", at = Vector2(1.55, 0.05), icon = "crate", price = 250, currency = "findings",
+		needs = ["golden_cabbage"], add = {rot_after = 120.0}, title = "COLD FRAMES",
+		body = "The cabbages are kept cool. The staff are kept informed.\nA ripe square rots after 5 min instead of 3."},
+	{id = "refrigerated_tarpaulin", parent = "cold_frames", at = Vector2(1.6, 0.55), icon = "crate", price = 500,
+		currency = "findings", add = {rot_after = 180.0}, title = "REFRIGERATED TARPAULIN",
+		body = "Patent pending. Electricity extra.\nA ripe square rots after 8 min instead of 5."},
+	{id = "shelf_life_review", parent = "refrigerated_tarpaulin", at = Vector2(1.6, 1.05), icon = "clock", price = 900,
+		currency = "findings", add = {rot_after = 240.0}, title = "SHELF-LIFE REVIEW",
+		body = "Spoilage has been reclassified as maturing.\nA ripe square rots after 12 min instead of 8."},
 ]
 ## Each theme's heading: [title, spot (as a node's `at`), its first nodes], part of its branch (the
 ## edges to its first nodes run through it; spots by tools/_theme_place.gd).
@@ -97,6 +108,7 @@ const THEMES := [
 	["SUPPLY", Vector2(0.30, 0.24), ["seed_contract"]],
 	["BY HAND", Vector2(0.0, -0.55), ["thumb_yield"]],
 	["GOLDEN", Vector2(0.0, 0.55), ["gold_chance_1"]],
+	["COLD CHAIN", Vector2(0.77, 0.00), ["cold_frames"]],
 ]
 
 @export var approve_sound: AudioStream

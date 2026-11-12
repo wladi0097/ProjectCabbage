@@ -14,7 +14,9 @@ extends Node3D
 ## being analysed and slips not filed yet are counted when the game quits. The coin vacuums leave
 ## slips alone. A research unit yields research_mult times the Findings, a mini unit a share
 ## (findings_for); minis are no stock. The tube's research minis appear in the mouth as if thrown in,
-## or are thrown back onto the mat when every bench is busy (file_direct).
+## or are thrown back onto the mat when every bench is busy (file_direct). The load gauge on the
+## console, left of the busy lamp, shows one cell per bench (lit while a cabbage is on it) and the
+## count beside it ("1/3").
 
 const FLAP_TIME := 0.18
 ## Where the cabbage is sucked to (bay space, behind the back wall) and how long that takes; the
@@ -51,6 +53,9 @@ const SLIP_LAYER := 0.022
 const DESK_Y := 0.76
 ## MICRO-SAMPLE PROTOCOL (desk card micro_samples): a mini is read as this many full units.
 const MICRO_SAMPLE := 2.0
+## The load gauge's count: a dim grey-cyan while a bench is free, bright once every bench is busy.
+const GAUGE_FREE := Color(0.45, 0.68, 0.74)
+const GAUGE_FULL := Color(0.8, 1.0, 1.0)
 
 @export var window: SaleWindow
 @export var counter: Node3D
@@ -63,6 +68,8 @@ var _yields: Array[int] = []
 var _owed := 0.0
 ## Slips out of the bay and not filed yet (on their way out, on the desk or homing); value in meta.
 var _slips: Array[Node3D] = []
+## What the load gauge shows: (cabbages on the benches, benches).
+var _shown := Vector2i(-1, -1)
 var _progress := 0.0
 var _flap := 0.0
 var _flapping: Tween
@@ -78,6 +85,8 @@ var _scan := 0.0:
 @onready var _needle_bone := _skeleton.find_bone("Needle")
 @onready var _head_bone := _skeleton.find_bone("ScanHead")
 @onready var _lamp: StandardMaterial3D = $BusyLamp.mesh.material
+@onready var _gauge_cells: MeshInstance3D = $Gauge/Cells
+@onready var _gauge_count: Label3D = $Gauge/Count
 @onready var _rest := position
 @onready var _counter_rest := counter.position
 
@@ -90,6 +99,7 @@ func _ready() -> void:
 	_scan = 0.0
 	_lamp.emission_energy_multiplier = 0.0
 	_pose()
+	_show_load()
 	if SaveManager.save.stamped.has("quality_assurance"):
 		window.split()
 	else:
@@ -99,6 +109,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_show_load()
 	if not visible:
 		if SaveManager.save.stamped.has("quality_assurance"):
 			_deliver()
@@ -114,6 +125,24 @@ func _process(delta: float) -> void:
 	_pose()
 	if _progress >= 1.0:
 		_finish()
+
+
+## The load gauge follows the benches: every bench a cell, the busy ones lit, the count beside them.
+## Only redrawn when a cabbage comes or goes or a bench is added.
+func _show_load() -> void:
+	var now := Vector2i(_jobs.size(), SaveManager.save.qa_slots)
+	if now == _shown:
+		return
+	_shown = now
+	_gauge_cells.set_instance_shader_parameter(&"filled", float(now.x))
+	_gauge_cells.set_instance_shader_parameter(&"cells", float(now.y))
+	_gauge_count.text = load_text(now.x, now.y)
+	_gauge_count.modulate = GAUGE_FULL if now.x >= now.y else GAUGE_FREE
+
+
+## The gauge's count: cabbages on the benches / benches.
+static func load_text(busy: int, benches: int) -> String:
+	return "%d/%d" % [busy, benches]
 
 
 ## A bench is free (and the bay is in): a unit flicked or lobbed in now is taken.
@@ -160,16 +189,19 @@ func _admit(cabbage: Cabbage) -> void:
 
 ## Findings one analysed unit is worth: a golden unit golden_lab times findings_per_cabbage, a research unit research_mult times findings_per_cabbage,
 ## a mini mini_value of it (MICRO-SAMPLE PROTOCOL, micro_samples: MICRO_SAMPLE times it), any other
-## findings_per_cabbage. A mini's share is exact, not rounded: _take tallies the fractions.
+## findings_per_cabbage. A mini's share is exact, not rounded: _take tallies the fractions. Flicked in
+## by the player themself (Cabbage.by_player: no lab hand, not the tube), all of it times
+## save.own_lab (managerial work), fractions tallied the same way.
 static func findings_for(cabbage: Cabbage, save: SaveGame) -> float:
+	var own := save.own_lab if cabbage.by_player() else 1.0
 	if cabbage.golden:
-		return roundf(save.findings_per_cabbage * save.golden_lab)
+		return roundf(save.findings_per_cabbage * save.golden_lab) * own
 	if cabbage.research:
-		return roundf(save.findings_per_cabbage * save.research_mult)
+		return roundf(save.findings_per_cabbage * save.research_mult) * own
 	if cabbage.mini:
 		var share := MICRO_SAMPLE if save.stamped.has("micro_samples") else save.mini_value
-		return save.findings_per_cabbage * share
-	return float(save.findings_per_cabbage)
+		return save.findings_per_cabbage * share * own
+	return save.findings_per_cabbage * own
 
 
 ## The whole Findings a unit worth `worth` yields with `owed` already on the tally, and the tally

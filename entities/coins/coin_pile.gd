@@ -1,9 +1,9 @@
 class_name CoinPile
 extends MultiMeshInstance3D
 ## Every loose coin, drawn as one MultiMesh. Coins are animated, not simulated: they arc in,
-## bounce once and land on a height grid. One payout comes as silver ($1), gold ($5) and big
-## bronze ($10, bigger and thicker) coins that all aim at one spot and stack there, at most MAX_STACK high; extra coins
-## start a stack right beside it. Sweeping an empty hand over them sends them into the deposit.
+## bounce once and land on a height grid. One payout comes as silver ($1), gold ($5), bronze ($10),
+## steel ($50) and platinum ($100) coins, each bigger and thicker from $10 up, that all aim at one
+## spot and stack there, at most MAX_STACK high; extra coins start a stack right beside it. Sweeping an empty hand over them sends them into the deposit.
 
 signal thrown(origin: Vector3, count: int)
 signal bounced(position: Vector3)
@@ -22,16 +22,29 @@ const THICKNESS := 0.014
 const MAX_STACK := 10
 const GOLD_VALUE := 5
 const BIG_VALUE := 10
+const FIFTY_VALUE := 50
+const HUNDRED_VALUE := 100
+## Every coin face, smallest first: the index is its column in the coin atlas.
+const DENOMINATIONS: Array[int] = [1, GOLD_VALUE, BIG_VALUE, FIFTY_VALUE, HUNDRED_VALUE]
 const MAX_THROW := 30
 const SILVER := Color(0.8, 0.82, 0.86)
 const GOLD := Color(1.0, 0.72, 0.32)
-## The $10 coin (and the rare $100+ ones a huge payout is made of): dark bronze, wider and thicker.
+## The $10 coin: dark bronze, wider and thicker.
 const BRONZE := Color(0.62, 0.42, 0.26)
 const BIG_SCALE := Vector3(1.2, 1.5, 1.2)
+## The $50 coin: dark blue-grey gunmetal with an octagon stamped inside its rim, wider again.
+const STEEL := Color(0.42, 0.48, 0.56)
+const FIFTY_SCALE := Vector3(1.32, 1.7, 1.32)
+## The $100 coin (and the rare $1000+ ones a huge payout is made of): pale platinum with a dark
+## inlaid centre and a reeded rim, the biggest and thickest.
+const PLATINUM := Color(0.92, 0.88, 0.78)
+const HUNDRED_SCALE := Vector3(1.5, 1.9, 1.5)
+const COLOURS: Array[Color] = [SILVER, GOLD, BRONZE, STEEL, PLATINUM]
+const SCALES: Array[Vector3] = [Vector3.ONE, Vector3.ONE, BIG_SCALE, FIFTY_SCALE, HUNDRED_SCALE]
 ## How far (in cells) a payout's coins scatter around its spot, and sit off a stack's centre.
 const AIM_JITTER := 0.25
 const STACK_JITTER := 0.12
-const FLOATS := 20  # per instance: 12 transform + 4 colour + 4 custom (x: the coin face, 0/1/2 = $1/$5/$10)
+const FLOATS := 20  # per instance: 12 transform + 4 colour + 4 custom (x: the coin face, 0..4 = $1/$5/$10/$50/$100)
 const GRAVITY := 9.8
 const SETTLE_TIME := 0.12
 const HOME_TIME := 0.5
@@ -379,7 +392,7 @@ func _top(cell: Vector2i) -> float:
 
 
 static func thickness(value: int) -> float:
-	return THICKNESS * BIG_SCALE.y if value >= BIG_VALUE else THICKNESS
+	return THICKNESS * SCALES[tier(value)].y
 
 
 ## Resting coins still in the slot they were last written to are skipped: the buffer keeps them.
@@ -394,7 +407,7 @@ func _upload() -> void:
 		_coins[i].slot = i
 		var xf := _coins[i].xf
 		if _coins[i].value >= BIG_VALUE:
-			xf.basis = xf.basis * Basis.from_scale(BIG_SCALE)
+			xf.basis = xf.basis * Basis.from_scale(SCALES[tier(_coins[i].value)])
 		if _coins[i].state == State.FLYING and _coins[i].delay > 0.0:
 			xf = Transform3D(Basis.from_scale(Vector3.ZERO), xf.origin)
 		var o := i * FLOATS
@@ -422,11 +435,19 @@ func _upload() -> void:
 
 ## Which face of the coin atlas (assets/shaders/coin.gdshader) the coin shows.
 static func coin_face(value: int) -> float:
-	return 2.0 if value >= BIG_VALUE else 1.0 if value >= GOLD_VALUE else 0.0
+	return float(tier(value))
 
 
 static func coin_colour(value: int) -> Color:
-	return BRONZE if value >= BIG_VALUE else GOLD if value >= GOLD_VALUE else SILVER
+	return COLOURS[tier(value)]
+
+
+## The biggest denomination `value` reaches (its index in DENOMINATIONS): $1000+ coins show as $100.
+static func tier(value: int) -> int:
+	for i in range(DENOMINATIONS.size() - 1, 0, -1):
+		if value >= DENOMINATIONS[i]:
+			return i
+	return 0
 
 
 static func cell_of(point: Vector3) -> Vector2i:
@@ -437,27 +458,24 @@ static func cell_centre(cell: Vector2i) -> Vector2:
 	return (Vector2(cell) + Vector2(0.5, 0.5)) * CELL
 
 
-## The fewest coins: silver for the change, a gold $5, then a bronze $10 for every full ten of
-## `amount`: thrown in this order, the biggest end up on top of the stack where the camera sees
-## them. A big amount comes as bronze worth ten times more, and again, so one payout never throws
-## much more than MAX_THROW coins.
+## The fewest coins, largest first ($100, $50, $10, $5, $1), thrown smallest first so the biggest
+## end up on top of the stack where the camera sees them. A big amount comes as $100 coins worth
+## ten times more, and again, so one payout never throws much more than MAX_THROW coins.
 static func coin_values(amount: int) -> Array[int]:
-	var big := BIG_VALUE
+	var denominations := DENOMINATIONS.duplicate()
 	@warning_ignore("integer_division")
-	while amount / big > MAX_THROW:
-		big *= 10
+	while amount / denominations[-1] > MAX_THROW:
+		denominations.append(denominations[-1] * 10)
+	var counts: Array[int] = []
+	for i in range(denominations.size() - 1, -1, -1):
+		@warning_ignore("integer_division")
+		var count := maxi(amount / denominations[i], 0)
+		counts.push_front(count)
+		amount -= count * denominations[i]
 	var out: Array[int] = []
-	for i in amount % GOLD_VALUE:
-		out.append(1)
-	@warning_ignore("integer_division")
-	for i in (amount % BIG_VALUE) / GOLD_VALUE:
-		out.append(GOLD_VALUE)
-	@warning_ignore("integer_division")
-	for i in (amount % big) / BIG_VALUE:
-		out.append(BIG_VALUE)
-	@warning_ignore("integer_division")
-	for i in amount / big:
-		out.append(big)
+	for i in denominations.size():
+		for n in counts[i]:
+			out.append(denominations[i])
 	return out
 
 

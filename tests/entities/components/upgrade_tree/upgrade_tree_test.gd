@@ -107,5 +107,6 @@ func test_an_effect_multiplies_and_adds_the_save_numbers_it_names_keeping_whole_
 	assert_int(save.farm_hands).is_equal(2)
 
 
-func test_on_the_projector_the_flavour_line_shines_brighter_than_the_description() -> void:
-	assert_float(UpgradeTree.FLAVOUR_ALPHA).is_greater(UpgradeTree.BODY_ALPHA)
+func test_on_the_projector_and_farm_tree_the_description_shines_brighter_than_the_flavour_line() -> void:
+	assert_float(UpgradeTree.BODY_ALPHA).is_greater(UpgradeTree.FLAVOUR_ALPHA)
+	assert_float(UpgradeTree.BODY_ALPHA).is_equal(1.0)

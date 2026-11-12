@@ -1,6 +1,6 @@
 class_name ChuteLever
 extends Node3D
-## The supply interruption lever (desk card chute_control, dealt after off-site storage): a steel flap hangs from an axle across the chute,
+## The supply interruption lever (desk card chute_control, dealt with the farm): a steel flap hangs from an axle across the chute,
 ## a heavy lever on the axle's front end. Clicked, the lever swings down and the flap drops onto the
 ## chute (save.chute_blocked): the feeder sends nothing more and stock piles up. Clicked again it
 ## swings up and the flap is hauled back up, clear of the units rolling under it. Units already on

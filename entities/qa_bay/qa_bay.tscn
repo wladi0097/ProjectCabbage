@@ -21,6 +21,16 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_1.wav" id="sfx_slip_land_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_2.wav" id="sfx_slip_land_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_3.wav" id="sfx_slip_land_3"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Machines/qa_load_gauge.res" id="5_gauge"]
+[ext_resource type="Shader" path="res://assets/shaders/cell_gauge.gdshader" id="5_cells"]
+[ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="5_font"]
+
+[sub_resource type="ShaderMaterial" id="GaugeCells"]
+shader = ExtResource("5_cells")
+
+[sub_resource type="QuadMesh" id="GaugeRow"]
+material = SubResource("GaugeCells")
+size = Vector2(0.104, 0.034)
 
 [sub_resource type="BoxShape3D" id="Panel"]
 size = Vector3(0.3, 0.3, 0.4)
@@ -191,6 +201,26 @@ gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.13, 0.213, 0.1187)
 cast_shadow = 0
 mesh = SubResource("LampDome")
+
+[node name="Gauge" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("5_gauge")
+
+[node name="Cells" type="MeshInstance3D" parent="Gauge"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.297, 0.1946, 0.1372)
+cast_shadow = 0
+mesh = SubResource("GaugeRow")
+
+[node name="Count" type="Label3D" parent="Gauge"]
+transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.2065, 0.1946, 0.1372)
+pixel_size = 0.0006
+modulate = Color(0.45, 0.68, 0.74, 1)
+shaded = false
+text = "0/1"
+font = ExtResource("5_font")
+font_size = 64
+outline_size = 0
 
 [node name="Thud" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_drop")

@@ -10,6 +10,8 @@ const ROUTES := ["farm_hand_route", "farm_tractor_route"]
 const HARVEST_NUMBERS := ["hand_yield", "hand_replant", "golden_chance"]
 ## When the standing seed order buys and which pack.
 const SEED_ORDER := ["farm_seed_reserve", "farm_seed_pack"]
+## How long a ripe square waits before it rots (COLD CHAIN).
+const ROT := ["rot_after"]
 
 var _real_save: SaveGame
 
@@ -47,10 +49,10 @@ func test_every_farm_node_is_paid_in_findings_so_coins_stay_for_the_projector() 
 		assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("findings")
 
 
-func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_and_the_seed_order() -> void:
+func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_the_seed_order_and_the_rot_delay() -> void:
 	for node: Dictionary in FarmTree.NODES:
 		for stat: String in node.get("add", {}).keys() + node.get("mul", {}).keys():
-			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER).override_failure_message("%s: %s" % [node.id, stat]).is_true()
+			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER or stat in ROT).override_failure_message("%s: %s" % [node.id, stat]).is_true()
 
 
 func test_every_number_a_node_changes_is_tracked_by_the_save() -> void:
@@ -211,3 +213,14 @@ func test_the_seed_order_nodes_wait_for_its_card_then_reorder_at_twenty_and_buy_
 	assert_int(save.farm_seed_reserve).is_equal(20)
 	assert_bool(FarmTree.buy("seed_bulk", save)).is_true()
 	assert_int(FarmScreen.SEED_PACKS[save.farm_seed_pack][0]).is_equal(50)
+
+
+func test_the_cold_chain_waits_for_the_golden_card_and_stretches_the_rot_from_three_to_twelve_minutes() -> void:
+	var save := _save(["farm_terminal"], 0, 1000000)
+	assert_bool(FarmTree.is_shown("cold_frames", save)).is_false()
+	save.stamped.append("golden_cabbage")  # A minute before the rot starts.
+	var waits: Array[float] = [save.rot_after]
+	for id: String in ["cold_frames", "refrigerated_tarpaulin", "shelf_life_review"]:
+		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
+		waits.append(save.rot_after)
+	assert_array(waits).is_equal([180.0, 300.0, 480.0, 720.0])

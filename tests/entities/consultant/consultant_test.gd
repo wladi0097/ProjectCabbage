@@ -87,16 +87,16 @@ func test_dearer_stage_two_crates_push_the_senior_consultants_price_up() -> void
 func test_during_the_squeeze_the_senior_consultant_ignores_crate_prices_since_none_are_bought() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
-	save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME
+	save.stamped.append("family_farm")
 
 	assert_int(Consultant.target_price(save, 2)).is_equal(3)
 
 
-func test_in_a_dear_squeeze_phase_the_consultant_never_aims_above_the_crate_unit_cost() -> void:
+func test_in_the_squeeze_the_consultant_never_aims_above_the_crate_unit_cost() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
 	save.marketing = 10
-	save.squeeze_left = SupplyConsole.SQUEEZE_TIME + SupplyConsole.LULL_TIME
+	save.stamped.append("family_farm")
 	var cost := SupplyConsole.crate_floor(save)
 	var open_price := Consultant.target_price(SaveGame.new(), 2)
 	save.consultant_markup = 0.5
@@ -104,16 +104,15 @@ func test_in_a_dear_squeeze_phase_the_consultant_never_aims_above_the_crate_unit
 		assert_int(Consultant.target_price(save, skill)).is_less_equal(floori(cost))
 		assert_int(Consultant.aim(save, skill)).is_less_equal(floori(cost))
 	assert_int(Consultant.squeeze_cap(save)).is_equal(floori(cost))
-	# Outside the squeeze nothing is capped.
-	save.squeeze_left = 0.0
+	# Outside the squeeze (the shock without the farm) nothing is capped.
+	save.stamped.clear()
 	assert_int(Consultant.squeeze_cap(save)).is_equal(Slate.max_price(save.marketing))
 	assert_int(Consultant.target_price(SaveGame.new(), 2)).is_equal(open_price)
 
 
-func test_once_the_squeeze_eases_the_senior_consultant_counts_crate_prices_again() -> void:
+func test_after_the_shock_without_the_farm_the_senior_consultant_counts_crate_prices() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
-	save.squeeze_left = SupplyConsole.LULL_TIME - 1.0
 
 	assert_int(Consultant.target_price(save, 2)).is_greater(3)
 

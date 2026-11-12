@@ -914,17 +914,40 @@ func test_before_the_overripe_event_a_ripe_square_waits_forever() -> void:
 	assert_bool(FarmScreen.is_ripe(save, 0)).is_true()
 
 
-func test_after_the_overripe_event_a_ripe_square_rots_ten_minutes_after_it_ripened() -> void:
+func test_after_the_overripe_event_a_ripe_square_rots_three_minutes_after_it_ripened() -> void:
 	var save := _ripe_square(["golden_cabbage"])
 	save.farm_golden.append(0)
 	save.overripe = true
-	FarmScreen.tick(save, FarmScreen.ROT_AFTER - 1.0)
+	FarmScreen.tick(save, 179.0)
 	assert_bool(FarmScreen.is_ripe(save, 0)).is_true()
 	FarmScreen.tick(save, 1.0)
 	assert_float(save.farm_growth[0]).is_equal(FarmScreen.ROTTEN)
 	assert_int(save.farm_rotted).is_equal(1)
 	assert_bool(FarmScreen.is_golden(save, 0)).is_false()
-	assert_float(FarmScreen.ROT_AFTER).is_equal(600.0)
+	assert_float(FarmScreen.ROT_AFTER).is_equal(180.0)
+	assert_float(SaveGame.new().rot_after).is_equal(FarmScreen.ROT_AFTER)
+
+
+func test_a_longer_rot_delay_keeps_a_ripe_square_ripe_that_long() -> void:
+	var save := _ripe_square()
+	save.overripe = true
+	save.rot_after = 720.0
+	assert_int(FarmScreen.tick(save, 719.0)).is_equal(0)
+	assert_bool(FarmScreen.is_ripe(save, 0)).is_true()
+	assert_int(FarmScreen.tick(save, 1.0)).is_equal(1)
+
+
+func test_a_loaded_square_already_past_its_rot_time_starts_its_wait_again_instead_of_rotting_at_once() -> void:
+	var save := _ripe_square()
+	save.overripe = true
+	save.farm_growth[1] = FarmScreen.GROW_TIME + 400.0  # Saved when squares waited 10 min.
+	save.farm_growth[2] = FarmScreen.GROW_TIME + 100.0  # Still inside the new limit: keeps its count.
+	FarmScreen.restart_overdue(save)
+	assert_float(save.farm_growth[1]).is_equal(FarmScreen.GROW_TIME)
+	assert_float(save.farm_growth[2]).is_equal(FarmScreen.GROW_TIME + 100.0)
+	assert_int(FarmScreen.tick(save, 1.0)).is_equal(0)
+	assert_int(FarmScreen.tick(save, 79.0)).is_equal(1)  # Square 2, on its old count.
+	assert_int(FarmScreen.tick(save, 100.0)).is_equal(2)  # Squares 0 and 1, a full wait after loading.
 
 
 func test_the_rot_tick_reports_how_many_squares_rotted_and_nothing_when_none_did() -> void:

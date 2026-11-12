@@ -408,3 +408,13 @@ func test_a_golden_unit_is_drawn_in_cold_metallic_gold() -> void:
 	var gold := spawn(func(c: Cabbage) -> void: c.golden = true)
 	assert_object(gold.get_node("Mesh").material_override).is_equal(CabbageScript.GOLD_MATERIAL)
 	assert_float((CabbageScript.GOLD_MATERIAL as StandardMaterial3D).metallic).is_greater(0.5)
+
+
+func test_a_cabbage_counts_as_the_players_unless_a_hand_lobbed_it_or_the_tube_sent_it() -> void:
+	var cabbage: Cabbage = auto_free(CabbageScript.new())
+	assert_bool(cabbage.by_player()).is_true()
+	cabbage.lobbed = true
+	assert_bool(cabbage.by_player()).is_false()
+	cabbage.lobbed = false
+	cabbage.tubed = true
+	assert_bool(cabbage.by_player()).is_false()

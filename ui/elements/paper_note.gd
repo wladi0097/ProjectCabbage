@@ -37,8 +37,8 @@ const PRICE_RULE := Color(0.5, 0.5, 0.49)
 
 var _form := ""
 var _title := ""
-var _price := ""
-var _currency := "coins"
+## What the card costs (UpgradeDesk.costs), printed in a row.
+var _bill := {}
 ## The card paper's dye (UpgradeCard.paper_tint): a priority form is oxblood here too.
 var _tint := Color.WHITE
 var _body := TextParagraph.new()
@@ -52,8 +52,7 @@ func set_card(card: Dictionary) -> void:
 	_form = tr(UpgradeCard.form_of(card))
 	_tint = UpgradeCard.paper_tint(card)
 	_title = tr(card.title)
-	_currency = card.get("currency", "coins")
-	_price = UpgradeCard.price_text(card.price, _currency)
+	_bill = UpgradeDesk.costs(card)
 	_body.clear()
 	_body.width = (TEXT_RIGHT - TEXT_LEFT) * SCALE
 	var parts := flavour_split(tr(card.body))
@@ -105,12 +104,12 @@ func _draw() -> void:
 	y = _piece(BLANK, y)
 	_piece(FOOT, y)
 	# The price in a ruled box like the card's, right-aligned to the writing.
-	var text := Vector2(UpgradeCard.price_width(_price, _currency, PRICE_SIZE, 1.0), TITLE_FONT.get_height(PRICE_SIZE))
+	var text := Vector2(UpgradeCard.bill_row_width(_bill, PRICE_SIZE), TITLE_FONT.get_height(PRICE_SIZE))
 	var box := Rect2(Vector2.ZERO, text + PRICE_PAD * 2.0)
 	box.position = Vector2(TEXT_RIGHT * SCALE - box.size.x, strip + (BLANK.size.y * SCALE - box.size.y) * 0.5)
 	draw_rect(box, PRICE_RULE, false, 2.0)
-	UpgradeCard.draw_price(self, TITLE_FONT, Vector2(box.end.x - PRICE_PAD.x, box.position.y + PRICE_PAD.y + TITLE_FONT.get_ascent(PRICE_SIZE)),
-			_price, _currency, PRICE_SIZE, INK)
+	UpgradeCard.draw_bill(self, TITLE_FONT, Vector2(box.end.x - PRICE_PAD.x, box.position.y + PRICE_PAD.y + TITLE_FONT.get_ascent(PRICE_SIZE)),
+			_bill, PRICE_SIZE, INK)
 
 
 ## Draws texture piece `region` across the paper's width at height `y`; returns where it ends.

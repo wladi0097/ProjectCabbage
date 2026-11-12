@@ -44,10 +44,17 @@ func test_a_payout_is_the_fewest_coins_with_the_biggest_thrown_last_onto_the_top
 	assert_array(CoinPile.coin_values(23)).is_equal([1, 1, 1, 10, 10])
 
 
-func test_up_to_thirty_tens_a_payout_comes_in_ten_dollar_coins() -> void:
-	var tens := CoinPile.coin_values(300)
-	assert_array(tens).has_size(CoinPile.MAX_THROW)
-	assert_bool(tens.all(func(v: int) -> bool: return v == 10)).is_true()
+func test_a_payout_uses_the_fifty_and_hundred_dollar_coins_largest_first() -> void:
+	assert_array(CoinPile.coin_values(150)).is_equal([50, 100])
+	assert_array(CoinPile.coin_values(50)).is_equal([50])
+	assert_array(CoinPile.coin_values(99)).is_equal([1, 1, 1, 1, 5, 10, 10, 10, 10, 50])
+	assert_array(CoinPile.coin_values(310)).is_equal([10, 100, 100, 100])
+
+
+func test_up_to_thirty_hundreds_a_payout_comes_in_hundred_dollar_coins() -> void:
+	var hundreds := CoinPile.coin_values(3000)
+	assert_array(hundreds).has_size(CoinPile.MAX_THROW)
+	assert_bool(hundreds.all(func(v: int) -> bool: return v == 100)).is_true()
 
 
 func test_nothing_or_a_negative_amount_throws_no_coins() -> void:
@@ -55,10 +62,10 @@ func test_nothing_or_a_negative_amount_throws_no_coins() -> void:
 	assert_array(CoinPile.coin_values(-7)).is_empty()
 
 
-func test_a_payout_past_thirty_tens_comes_in_bronze_worth_a_hundred_and_more() -> void:
-	assert_array(CoinPile.coin_values(310)).is_equal([10, 100, 100, 100])
-	var big := CoinPile.coin_values(1848)
-	assert_int(_sum(big)).is_equal(1848)
+func test_a_payout_past_thirty_hundreds_comes_in_coins_worth_a_thousand_and_more() -> void:
+	assert_array(CoinPile.coin_values(3100)).is_equal([100, 1000, 1000, 1000])
+	var big := CoinPile.coin_values(18480)
+	assert_int(_sum(big)).is_equal(18480)
 	assert_int(big.size()).is_less_equal(CoinPile.MAX_THROW)
 	var million := CoinPile.coin_values(1000000)
 	assert_array(million).has_size(10)
@@ -66,26 +73,26 @@ func test_a_payout_past_thirty_tens_comes_in_bronze_worth_a_hundred_and_more() -
 
 
 func test_a_payout_always_adds_up_to_its_amount() -> void:
-	for amount: int in [1, 9, 10, 99, 301, 4321, 31990, 123456, 2000000000]:
+	for amount: int in [1, 9, 10, 49, 50, 99, 150, 301, 4321, 31990, 123456, 2000000000]:
 		assert_int(_sum(CoinPile.coin_values(amount))).override_failure_message("payout %d" % amount).is_equal(amount)
 
 
-func test_each_denomination_looks_different_and_big_ones_look_like_the_ten() -> void:
-	assert_that(CoinPile.coin_colour(1)).is_equal(CoinPile.SILVER)
-	assert_that(CoinPile.coin_colour(5)).is_equal(CoinPile.GOLD)
-	assert_that(CoinPile.coin_colour(10)).is_equal(CoinPile.BRONZE)
-	assert_that(CoinPile.coin_colour(1000)).is_equal(CoinPile.BRONZE)
-	assert_float(CoinPile.coin_face(1)).is_equal(0.0)
-	assert_float(CoinPile.coin_face(5)).is_equal(1.0)
-	assert_float(CoinPile.coin_face(10)).is_equal(2.0)
-	assert_float(CoinPile.coin_face(100)).is_equal(2.0)
+func test_each_denomination_looks_different_and_big_ones_look_like_the_hundred() -> void:
+	var colours := [1, 5, 10, 50, 100].map(func(v: int) -> Color: return CoinPile.coin_colour(v))
+	assert_array(colours).is_equal([CoinPile.SILVER, CoinPile.GOLD, CoinPile.BRONZE, CoinPile.STEEL, CoinPile.PLATINUM])
+	assert_that(CoinPile.coin_colour(1000)).is_equal(CoinPile.PLATINUM)
+	for i in 5:
+		assert_float(CoinPile.coin_face(CoinPile.DENOMINATIONS[i])).is_equal(float(i))
+	assert_float(CoinPile.coin_face(100000)).is_equal(4.0)
 
 
-func test_only_ten_dollar_and_bigger_coins_are_thick() -> void:
+func test_coins_from_ten_dollars_up_get_thicker_with_their_value() -> void:
 	assert_float(CoinPile.thickness(1)).is_equal(CoinPile.THICKNESS)
 	assert_float(CoinPile.thickness(5)).is_equal(CoinPile.THICKNESS)
 	assert_float(CoinPile.thickness(10)).is_equal_approx(CoinPile.THICKNESS * 1.5, 0.00001)
-	assert_float(CoinPile.thickness(100)).is_equal(CoinPile.thickness(10))
+	assert_float(CoinPile.thickness(50)).is_greater(CoinPile.thickness(10))
+	assert_float(CoinPile.thickness(100)).is_greater(CoinPile.thickness(50))
+	assert_float(CoinPile.thickness(1000)).is_equal(CoinPile.thickness(100))
 
 
 func test_a_point_falls_in_the_grid_cell_whose_centre_is_within_half_a_cell() -> void:
