@@ -32,3 +32,10 @@ func test_a_total_too_big_for_the_drums_rolls_over_like_an_odometer() -> void:
 
 func test_a_negative_total_shows_all_zeros() -> void:
 	_assert_drums(-42.0, 5, [0, 0, 0, 0, 0])
+
+
+func test_the_tally_and_findings_drum_ticks_wait_at_least_30_ms_between_plays() -> void:
+	for scene: PackedScene in [preload("res://entities/tally_machine/tally_machine.tscn"),
+			preload("res://entities/tally_machine/findings_counter.tscn")]:
+		var machine: Node = auto_free(scene.instantiate())
+		assert_float((machine.get_node("Tick") as SoundCue).min_interval).is_equal_approx(0.03, 0.0001)

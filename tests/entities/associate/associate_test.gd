@@ -392,3 +392,8 @@ func test_hand_speed_upgrades_scale_every_move() -> void:
 	hand._move(start + Vector3.RIGHT * 10.0, Associate.REACH_SPEED, 1.0)
 
 	assert_float(hand._tip.distance_to(start)).is_equal_approx(Associate.REACH_SPEED * 2.0, 1e-4)
+
+
+func test_the_associates_grab_sound_waits_a_tenth_of_a_second_between_plays() -> void:
+	var associate: Node = auto_free(ASSOCIATE.instantiate())
+	assert_float((associate.get_node("Grab") as SoundCue).min_interval).is_equal(0.1)

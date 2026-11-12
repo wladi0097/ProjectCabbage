@@ -304,8 +304,9 @@ func _process(delta: float) -> void:
 		save.overripe = true
 		SaveManager.log_event("event", "overripe")
 		_deal()
-	if _shock_in <= 0.0 and save.tray_unlocked and _leaving == null and _offered.size() < OFFERED \
-			and next_cards(save.stamped, OFFERED, save).any(func(id: String) -> bool: return not _offered.any(
+	# Never while the tray is still dropping in (_drop_tray deals once it has landed).
+	if _shock_in <= 0.0 and save.tray_unlocked and _tray.position.is_equal_approx(_tray_rest) and _leaving == null \
+			and _offered.size() < OFFERED and next_cards(save.stamped, OFFERED, save).any(func(id: String) -> bool: return not _offered.any(
 				func(card: UpgradeCard) -> bool: return card.id == id)):
 		_deal()  # A `tree` card whose projector node was just bought, into a free slot.
 	if _shock_in <= 0.0:

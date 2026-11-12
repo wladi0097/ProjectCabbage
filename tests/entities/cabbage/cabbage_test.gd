@@ -192,6 +192,18 @@ func test_a_sold_golden_units_ring_outlives_the_unit_freed_at_the_window() -> vo
 	ring.free()
 
 
+## The scene must set the cap after the cue's script: Godot drops a script value written before it.
+func test_at_most_three_golden_sale_bells_ring_at_once() -> void:
+	assert_int((spawn().get_node("GoldSale") as SoundCue).max_instances).is_equal(3)
+
+
+func test_bumps_and_grabs_keep_their_rate_caps_and_impact_curve() -> void:
+	var bump := spawn().get_node("Bump") as SoundCue
+	assert_float(bump.min_interval).is_equal(0.08)
+	assert_float(bump.silent_strength).is_equal(0.4)
+	assert_float(bump.full_strength).is_equal(3.0)
+	assert_float((bump.get_parent().get_node("Grab") as SoundCue).min_interval).is_equal(0.1)
+
 func test_every_cabbage_joins_the_cabbages_group() -> void:
 	assert_bool(spawn().is_in_group(&"cabbages")).is_true()
 

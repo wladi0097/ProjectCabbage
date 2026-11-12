@@ -70,19 +70,19 @@ script = ExtResource("2_interactable")
 stream = SubResource("Rand_cabbage_bump")
 bus = &"SFX"
 max_polyphony = 2
+script = ExtResource("4_cue")
 min_interval = 0.08
 silent_strength = 0.4
 full_strength = 3.0
-script = ExtResource("4_cue")
 
 [node name="Grab" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_cabbage_grab")
 bus = &"SFX"
-min_interval = 0.1
 script = ExtResource("4_cue")
+min_interval = 0.1
 
 [node name="GoldSale" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_golden_sale")
 bus = &"SFX"
-max_instances = 3
 script = ExtResource("4_cue")
+max_instances = 3

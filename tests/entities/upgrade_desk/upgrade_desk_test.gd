@@ -583,6 +583,19 @@ func test_only_stock_units_still_in_stock_count_as_out_of_the_chute() -> void:
 	assert_that(UpgradeDesk.units_out([plain, gold, tiny, sold])).is_equal(Vector2i(2, 1))
 
 
+func test_no_card_is_dealt_before_the_dropping_tray_has_landed() -> void:
+	var save := SaveGame.new()
+	save.coins = UpgradeDesk.TRAY_COINS
+	SaveManager.save = save
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	add_child(desk)
+
+	desk._process(0.0)
+
+	assert_bool(save.tray_unlocked).is_true()
+	assert_array(_ids(desk._offered)).is_empty()
+
+
 func test_a_card_dealt_by_a_projector_node_comes_into_a_free_slot_as_soon_as_the_node_is_bought() -> void:
 	var save := _all_stamped_but(["golden_cabbage", "mechanisation", "standing_seed_order", "consolidation"])
 	save.tray_unlocked = true
