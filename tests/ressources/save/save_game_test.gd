@@ -126,6 +126,8 @@ func _another_value(save: SaveGame, field: String) -> Variant:
 			return PackedStringArray(["price_slate", "radio"])
 		TYPE_PACKED_FLOAT32_ARRAY:
 			return PackedFloat32Array([1.5, -1.0])
+		TYPE_PACKED_INT32_ARRAY:
+			return PackedInt32Array([3, 7])
 		TYPE_ARRAY:
 			var log_lines: Array[Dictionary] = [save.log_entry(95, "card", "price_slate", 12, "coins")]
 			return log_lines

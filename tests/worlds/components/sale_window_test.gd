@@ -82,3 +82,10 @@ func test_a_mini_is_accepted_35_percent_more_often_than_a_full_cabbage() -> void
 
 func test_a_minis_acceptance_never_goes_past_a_sure_sale() -> void:
 	assert_float(SaleWindow.acceptance_for(0.9, true)).is_equal(1.0)
+
+
+func test_a_golden_unit_sells_for_golden_sale_times_the_price() -> void:
+	var save := SaveGame.new()
+	assert_float(SaleWindow.golden_factor(true, save)).is_equal(10.0)
+	assert_float(SaleWindow.golden_factor(false, save)).is_equal(1.0)
+	assert_int(SaleWindow.payout(4 * SaleWindow.golden_factor(true, save), {})).is_equal(40)

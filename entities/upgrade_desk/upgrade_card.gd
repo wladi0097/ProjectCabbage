@@ -5,7 +5,7 @@ extends StaticBody3D
 ## The hand pinches it by its near left corner; held, the card hangs from that pinch. Let go, it emits
 ## `dropped` and the UpgradeDesk decides where it goes. Every move is a short paper arc with a
 ## flutter, so cards never teleport. Cabbages pass through it (its own collision layer).
-## A stage-changing card (an UpgradeDesk.CARDS entry with an `event`, like the family farm) is a
+## A stage-changing card (an UpgradeDesk.CARDS entry with `priority`: the family farm, a chapter's last card) is a
 ## priority form: the same stock dyed oxblood (PRIORITY_TINT), so it stands out in the tray.
 
 signal dropped(card: UpgradeCard)
@@ -46,6 +46,11 @@ const PINCH_AT := Vector3(-0.165, 0.0, 0.085)
 const PRICE_AT := Vector3(0.1316, 0.002, 0.0672)
 const PRICE_WIDTH := 0.064
 const PRICE_SIZE := 110
+## A price paid in cabbages (currency "stock") has ICON before its number: ICON_EM of the font size
+## high (about the digits' height), ICON_GAP of that from the digits.
+const ICON := preload("res://assets/sprites/icons/cabbage_icon.svg")
+const ICON_EM := 0.9
+const ICON_GAP := 0.12
 ## The heading wraps in HEADING_BOX (width, height in metres) under the form line, printed in
 ## HEADING_SIZE or smaller (fit_size, never under MIN_SIZE). The form line keeps to one line in FORM_BOX.
 const HEADING_BOX := Vector2(0.33, 0.11)
@@ -65,6 +70,7 @@ var _grip := Vector3.ZERO
 @onready var _look: Node3D = $Look
 @onready var _heading: Label3D = $Look/Heading
 @onready var _price: Label3D = $Look/Price
+@onready var _price_icon: Sprite3D = $Look/PriceIcon
 @onready var _interactable: Interactable = $Interactable
 var _lifting: Tween
 var _flying: Tween
@@ -94,8 +100,18 @@ func _fill(card: Dictionary) -> void:
 	heading.text = card.title
 	heading.font_size = fit_size(tr(card.title), HEADING_SIZE, HEADING_BOX)
 	var shown := price_text(price, currency)
-	($Look/Price as Label3D).text = shown
-	($Look/Price as Label3D).font_size = price_size(shown)
+	var label := $Look/Price as Label3D
+	label.text = shown
+	label.font_size = price_size(shown, currency)
+	# The icon and the number sit centred in the price box together.
+	var icon := $Look/PriceIcon as Sprite3D
+	icon.visible = shows_icon(currency)
+	var em := label.font_size * PIXEL
+	var text := TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, label.font_size).x * PIXEL
+	var left := PRICE_AT.x - price_width(shown, currency, label.font_size) * 0.5
+	label.position.x = left + price_width(shown, currency, label.font_size) - text * 0.5
+	icon.pixel_size = em * ICON_EM / ICON.get_height()
+	icon.position = Vector3(left + em * ICON_EM * 0.5, PRICE_AT.y, PRICE_AT.z)
 
 
 func _ready() -> void:
@@ -199,11 +215,11 @@ func blink() -> void:
 	if _blinking != null:
 		_blinking.kill()
 	_blinking = create_tween()
-	var labels: Array[Label3D] = [_heading, _price]
+	var labels: Array[Node3D] = [_heading, _price, _price_icon]
 	for colour: Color in [DENIED_RED, INK, DENIED_RED, INK]:
 		_blinking.tween_callback(func() -> void:
 			for label in labels:
-				label.modulate = colour)
+				label.set(&"modulate", colour))
 		_blinking.tween_interval(BLINK_TIME)
 	var shake := create_tween()
 	for x in [SHAKE, -SHAKE, SHAKE * 0.5, 0.0]:
@@ -217,17 +233,44 @@ func _cue(sound: StringName) -> void:
 		cue.cue(global_position)
 
 
-## "$130" or "¶10": the price with its currency's sign, as on the tally machine's plates.
+## "$130", "¶10" or "60" (paid from stock: the cabbage ICON is its sign, see shows_icon): the price
+## with its currency's sign, as on the tally machine's plates.
 static func price_text(amount: int, paid_in: String) -> String:
+	if paid_in == "stock":
+		return str(amount)
 	return ("¶%d" if paid_in == "findings" else "$%d") % amount
 
 
-## The font size that fits price text `shown` into the price box: PRICE_SIZE, or smaller.
-static func price_size(shown: String) -> int:
+## A price in `paid_in` is printed with the cabbage ICON before its number (paid in cabbages).
+static func shows_icon(paid_in: String) -> bool:
+	return paid_in == "stock"
+
+
+## How wide price text `shown` in `paid_in` prints in TITLE_FONT at font size `size` (ICON
+## included), times `unit` (PIXEL on the card, 1 in 2D).
+static func price_width(shown: String, paid_in: String, size: int, unit := PIXEL) -> float:
+	var icon := size * ICON_EM * (1.0 + ICON_GAP) if shows_icon(paid_in) else 0.0
+	return (TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x + icon) * unit
+
+
+## The font size that fits price text `shown` in `paid_in` into the price box: PRICE_SIZE, or smaller.
+static func price_size(shown: String, paid_in := "coins") -> int:
 	var size := PRICE_SIZE
-	while size > 40 and TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * PIXEL > PRICE_WIDTH:
+	while size > 40 and price_width(shown, paid_in, size) > PRICE_WIDTH:
 		size -= 2
 	return size
+
+
+## Draws price text `shown` in `paid_in` on `item` in `font` at `size`, ending at `right` (its
+## baseline), the cabbage ICON before it when it has one, all inked `ink`.
+static func draw_price(item: CanvasItem, font: Font, right: Vector2, shown: String, paid_in: String, size: int, ink: Color) -> void:
+	var text := font.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+	item.draw_string(font, Vector2(right.x - text, right.y), shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size, ink)
+	if shows_icon(paid_in):
+		var side := size * ICON_EM
+		# Centred on the digits' height (about 0.7 of the font size above the baseline).
+		var at := Vector2(right.x - text - side * ICON_GAP - side, right.y - size * 0.37 - side * 0.5)
+		item.draw_texture_rect(ICON, Rect2(at, Vector2(side, side)), false, ink)
 
 
 ## The biggest font size from `size` down (in steps of 4, not under MIN_SIZE) at which `shown`,
@@ -245,15 +288,15 @@ static func fits(shown: String, size: int, box: Vector2) -> bool:
 
 ## The form line printed across the top of card `card` (a CARDS entry).
 static func form_of(card: Dictionary) -> String:
-	if card.has("event"):
+	if card.get("priority", false):
 		return "FORM 0-P  PRIORITY ACQUISITION"
 	return "FORM 7-R  RESEARCH DIRECTIVE" if card.get("research", false) else "FORM 7-B  REQUISITION"
 
 
-## What card `card`'s paper is dyed with: PRIORITY_TINT for a stage-changing card (with an `event`),
-## else white (the plain stock).
+## What card `card`'s paper is dyed with: PRIORITY_TINT for a stage-changing card (`priority`: the
+## family farm, a chapter's last card), else white (the plain stock).
 static func paper_tint(card: Dictionary) -> Color:
-	return PRIORITY_TINT if card.has("event") else Color.WHITE
+	return PRIORITY_TINT if card.get("priority", false) else Color.WHITE
 
 
 static func _priority() -> StandardMaterial3D:

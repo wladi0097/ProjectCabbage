@@ -294,3 +294,13 @@ func _dear_node() -> String:
 		if node.get("price", 0) > Events.Demo.NODE_PRICE_CAP:
 			return node.id
 	return ""
+
+
+func test_the_boss_asks_to_invest_in_growth_only_once_chapter_twos_last_card_is_stamped() -> void:
+	var save := SaveGame.new()
+	save.reports = PackedStringArray(["welcome"])
+	save.stamped = PackedStringArray(["family_farm", "standing_seed_order"])
+	assert_array(Report.due(save)).not_contains(["invest_in_growth"])
+	save.stamped.append("consolidation")
+	assert_array(Report.due(save)).contains(["invest_in_growth"])
+	assert_str(Report.report("invest_in_growth").re).is_equal("WE SHOULD INVEST IN GROWTH")

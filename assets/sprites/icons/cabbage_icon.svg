@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- A cabbage head with its leaf veins cut out, the buy-pack button's cabbage on its own: white,
+       so a modulate inks it to the print around it. The price sign for prices paid in cabbages. -->
+  <defs>
+    <mask id="veins">
+      <rect width="64" height="64" fill="#fff"/>
+      <g fill="none" stroke="#000" stroke-width="5" stroke-linecap="round">
+        <path d="M32 12 V58"/>
+        <path d="M32 28 Q20 26 11 14"/>
+        <path d="M32 28 Q44 26 53 14"/>
+        <path d="M32 44 Q18 42 7 32"/>
+        <path d="M32 44 Q46 42 57 32"/>
+      </g>
+    </mask>
+  </defs>
+  <circle cx="32" cy="33" r="30" fill="#fff" mask="url(#veins)"/>
+</svg>

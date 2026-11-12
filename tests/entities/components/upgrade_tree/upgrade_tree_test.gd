@@ -105,3 +105,7 @@ func test_an_effect_multiplies_and_adds_the_save_numbers_it_names_keeping_whole_
 	UpgradeTree.apply_effect({mul = {farm_hand_speed = 1.5}, add = {farm_hands = 2}}, save)
 	assert_float(save.farm_hand_speed).is_equal_approx(speed * 1.5, 0.0001)
 	assert_int(save.farm_hands).is_equal(2)
+
+
+func test_on_the_projector_the_flavour_line_shines_brighter_than_the_description() -> void:
+	assert_float(UpgradeTree.FLAVOUR_ALPHA).is_greater(UpgradeTree.BODY_ALPHA)

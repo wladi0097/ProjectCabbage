@@ -27,10 +27,14 @@ func test_play_time_reads_as_hours_minutes_and_seconds() -> void:
 	assert_str(Ledger.clock(360000)).is_equal("100:00:00")
 
 
-func test_findings_are_written_in_pilcrows_and_coins_in_dollars() -> void:
+func test_findings_are_written_in_pilcrows_coins_in_dollars_and_cabbages_as_a_bare_number_beside_the_icon() -> void:
 	assert_str(Ledger.money(10, "findings")).is_equal("¶10")
 	assert_str(Ledger.money(12, "coins")).is_equal("$12")
 	assert_str(Ledger.money(12, "")).is_equal("$12")
+	assert_str(Ledger.money(60, "stock")).is_equal("60")
+	assert_bool(UpgradeCard.shows_icon("stock")).is_true()
+	assert_bool(UpgradeCard.shows_icon("coins")).is_false()
+	assert_bool(UpgradeCard.shows_icon("findings")).is_false()
 
 
 func test_the_summary_reports_the_save_as_written_figures() -> void:
@@ -78,15 +82,15 @@ func test_requisitions_list_every_card_and_node_bought_newest_first_with_its_tit
 	save.playtest_log.append(save.log_entry(900, "card", "street_posters", 10, "findings"))
 	var reqs := Ledger.requisitions(save)
 	assert_array(reqs).has_size(3)
-	assert_array(reqs[0]).is_equal(["T+0:15:00", "STREET POSTER CAMPAIGN", "¶10"])
-	assert_array(reqs[1]).is_equal(["T+0:11:40", "SLOGAN I", "$70"])
-	assert_array(reqs[2]).is_equal(["T+0:01:05", "PRICE SLATE", "$12"])
+	assert_array(reqs[0]).is_equal(["T+0:15:00", "STREET POSTER CAMPAIGN", "¶10", "findings"])
+	assert_array(reqs[1]).is_equal(["T+0:11:40", "SLOGAN I", "$70", "coins"])
+	assert_array(reqs[2]).is_equal(["T+0:01:05", "PRICE SLATE", "$12", "coins"])
 
 
 func test_a_purchase_of_an_unknown_id_is_filed_under_its_id_in_capitals() -> void:
 	var save := SaveGame.new()
 	save.playtest_log.append(save.log_entry(1, "card", "retired_card", 3, "coins"))
-	assert_array(Ledger.requisitions(save)[0]).is_equal(["T+0:00:01", "RETIRED_CARD", "$3"])
+	assert_array(Ledger.requisitions(save)[0]).is_equal(["T+0:00:01", "RETIRED_CARD", "$3", "coins"])
 
 
 func test_the_coin_chart_plots_every_log_entry_then_now() -> void:

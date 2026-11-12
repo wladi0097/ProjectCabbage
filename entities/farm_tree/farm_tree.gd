@@ -3,62 +3,88 @@ extends Control
 ## CH2 on the farm TV (entities/farm_tv/): the farm's own upgrade tree, the projector's tree view
 ## (UpgradeTree) in the CRT's green phosphor, its layout and palette in farm_tree.tscn. Until desk
 ## card `farm_terminal` is stamped the channel shows SUBSCRIPTION PENDING instead. Bought ids go into
-## save.farm_bought. Coins buy more (farm hands, tractors, their speed, longer shifts), Findings (¶) buy smarter
-## (their routes, irrigation). Hand nodes wait for card seasonal_workforce, tractor nodes for
+## save.farm_bought. Every node is paid in Findings (¶): coins stay for the projector (stage 2's coin
+## sinks were walling the projector's mat and storage chains). Hand nodes wait for card seasonal_workforce, tractor nodes for
 ## mechanisation (the desk cards that bring the first of each). The farm's old one-off upgrades keep
 ## their ids (seed_contract, fertiliser, irrigation, greenhouse): FarmScreen reads them from farm_bought.
 
 const CARD := "farm_terminal"
 ## Every node (UpgradeTree's format: parent, at, icon, price, currency, add/mul on save numbers,
-## needs). ponytail: prices are placeholders, unpaced (the old farm list's 2,500-30,000 coins); set
-## them with tools/pace.py once CH1's workers are in.
+## needs). ponytail: prices are placeholders, unpaced (the old coin prices / ~12, the sim's $ per ¶
+## at 70-90 min); set them with tools/pace.py once CH1's workers are in.
 const NODES := [
-	{id = "hand_2", parent = "", at = Vector2(-0.6, -0.42), icon = "hand", price = 5000,
+	{id = "hand_2", parent = "", at = Vector2(-0.6, -0.42), icon = "hand", price = 400, currency = "findings",
 		needs = ["seasonal_workforce"], add = {farm_hands = 1}, title = "SECOND FARM HAND",
 		body = "Seasonal contract. The season is permanent.\nOne more farm hand plants empty squares: 1 to 2 hands."},
-	{id = "hand_speed", parent = "hand_2", at = Vector2(-1.05, -0.72), icon = "clock", price = 7500,
+	{id = "hand_speed", parent = "hand_2", at = Vector2(-1.05, -0.72), icon = "clock", price = 600, currency = "findings",
 		mul = {farm_hand_speed = 1.5}, title = "WORK BOOTS",
 		body = "Boots are issued. Laces are extra.\nFarm hands walk 50% faster."},
-	{id = "hand_3", parent = "hand_speed", at = Vector2(-1.5, -1.02), icon = "hand", price = 15000,
+	{id = "hand_3", parent = "hand_speed", at = Vector2(-1.5, -1.02), icon = "hand", price = 1200, currency = "findings",
 		add = {farm_hands = 1}, title = "THIRD FARM HAND",
 		body = "The bunkhouse is at capacity.\nOne more farm hand plants empty squares: 2 to 3 hands."},
 	{id = "hand_route", parent = "hand_2", at = Vector2(-1.1, -0.2), icon = "lens", price = 150,
 		currency = "findings", add = {farm_hand_route = 1}, title = "PLANTING ROSTER",
 		body = "A roster is pinned to the barn door.\nFarm hands walk straight to an empty square instead of wandering the field."},
-	# ponytail: shift prices are placeholders, unpaced; set them with tools/pace.py.
-	{id = "hand_shift", parent = "hand_2", at = Vector2(-0.55, -0.95), icon = "clock", price = 9000,
+	{id = "hand_shift", parent = "hand_2", at = Vector2(-0.55, -0.95), icon = "clock", price = 700, currency = "findings",
 		add = {farm_hand_shift = 1}, title = "MANDATORY OVERTIME",
 		body = "Overtime is voluntary. Volunteering is mandatory.
 Farm hands carry one more seed per trip and plant one more square before returning to the yard."},
-	{id = "tractor_2", parent = "", at = Vector2(0.6, -0.42), icon = "tractor", price = 12000,
+	{id = "tractor_2", parent = "", at = Vector2(0.6, -0.42), icon = "tractor", price = 1000, currency = "findings",
 		needs = ["mechanisation"], add = {farm_tractors = 1}, title = "SECOND TRACTOR",
 		body = "Leased. Never owned.\nOne more tractor harvests ripe squares: 1 to 2 tractors."},
-	{id = "tractor_speed", parent = "tractor_2", at = Vector2(1.05, -0.72), icon = "clock", price = 18000,
+	{id = "tractor_speed", parent = "tractor_2", at = Vector2(1.05, -0.72), icon = "clock", price = 1500, currency = "findings",
 		mul = {farm_tractor_speed = 1.5}, title = "GOVERNOR REMOVED",
 		body = "The speed governor is now optional.\nTractors drive 50% faster."},
-	{id = "tractor_3", parent = "tractor_speed", at = Vector2(1.5, -1.02), icon = "tractor", price = 30000,
+	{id = "tractor_3", parent = "tractor_speed", at = Vector2(1.5, -1.02), icon = "tractor", price = 2500, currency = "findings",
 		add = {farm_tractors = 1}, title = "THIRD TRACTOR",
 		body = "Three tractors. One gate.\nOne more tractor harvests ripe squares: 2 to 3 tractors."},
 	{id = "tractor_route", parent = "tractor_2", at = Vector2(1.1, -0.2), icon = "lens", price = 250,
 		currency = "findings", add = {farm_tractor_route = 1}, title = "HARVEST DISPATCH",
 		body = "Ripeness is now reported centrally.\nTractors drive straight to a ripe square instead of cruising the field."},
-	{id = "tractor_shift", parent = "tractor_2", at = Vector2(0.55, -0.95), icon = "clock", price = 20000,
+	{id = "tractor_shift", parent = "tractor_2", at = Vector2(0.55, -0.95), icon = "clock", price = 1600, currency = "findings",
 		add = {farm_tractor_shift = 1}, title = "DOUBLE SHIFT",
 		body = "The night shift is the day shift, continued.
 Tractors harvest one more ripe square before returning to the yard."},
 	# The old one-off farm upgrades, same ids: FarmScreen reads them from farm_bought.
-	{id = "fertiliser", parent = "", at = Vector2(-0.6, 0.48), icon = "sprout", price = 3000,
+	{id = "fertiliser", parent = "", at = Vector2(-0.6, 0.48), icon = "sprout", price = 250, currency = "findings",
 		title = "FERTILISER",
 		body = "Its contents are not disclosed.\nSquares ripen in 20 s instead of 30 s."},
-	{id = "greenhouse", parent = "fertiliser", at = Vector2(-1.05, 0.82), icon = "sprout", price = 30000,
+	{id = "greenhouse", parent = "fertiliser", at = Vector2(-1.05, 0.82), icon = "sprout", price = 2500, currency = "findings",
 		title = "GREENHOUSE",
 		body = "Weather is no longer a factor. Nor is daylight.\nSquares ripen in 15 s."},
 	{id = "irrigation", parent = "fertiliser", at = Vector2(-1.1, 0.3), icon = "lens", price = 300,
 		currency = "findings", title = "IRRIGATION",
 		body = "The water is metered by the drop.\nEvery harvest gives 1 more cabbage."},
-	{id = "seed_contract", parent = "", at = Vector2(0.6, 0.48), icon = "crate", price = 2500,
+	{id = "seed_contract", parent = "", at = Vector2(0.6, 0.48), icon = "crate", price = 200, currency = "findings",
 		title = "SEED CONTRACT",
 		body = "A supplier has been found. Do not ask which.\nSeed packs cost half."},
+	# STANDING SEED ORDER (desk card standing_seed_order, FarmScreen.auto_seed): when it reorders and what.
+	{id = "seed_reserve", parent = "seed_contract", at = Vector2(1.1, 0.3), icon = "clock", price = 300, currency = "findings",
+		needs = ["standing_seed_order"], add = {farm_seed_reserve = 15}, title = "SAFETY SEED STOCK",
+		body = "Running out is a planning failure. Planning has been increased.
+The standing seed order buys when the crate is down to 20 seeds, not 5."},
+	{id = "seed_bulk", parent = "seed_reserve", at = Vector2(1.05, 0.82), icon = "crate", price = 600, currency = "findings",
+		add = {farm_seed_pack = 1}, title = "BULK SEED CONTRACT",
+		body = "The supplier prefers fewer, larger invoices.
+The standing seed order buys the 50-seed pack instead of the 10."},
+	# GREEN THUMB (desk card green_thumb): the hand harvest's multiplier and replanting (FarmScreen.harvest).
+	{id = "thumb_yield", parent = "", at = Vector2(0.0, -1.0), icon = "hand", price = 600, currency = "findings",
+		needs = ["green_thumb"], add = {hand_yield = 1.0}, title = "EMPLOYEE OF THE MONTH",
+		body = "Your photograph is on the barn wall.\nA square you pull by hand yields 3× instead of 2×."},
+	{id = "thumb_replant", parent = "thumb_yield", at = Vector2(0.0, -1.45), icon = "sprout", price = 900, currency = "findings",
+		add = {hand_replant = 1}, title = "ONE IN, ONE OUT",
+		body = "The hole is never left empty. It is policy.\nA square you pull by hand is replanted at once with a seed from the crate."},
+	# Golden squares (desk card golden_cabbage): how often one grows golden (save.golden_chance). What a
+	# golden unit pays is the projector's (coins), not this tree's.
+	{id = "gold_chance_1", parent = "", at = Vector2(0.0, 0.95), icon = "sprout", price = 1500, currency = "findings",
+		needs = ["golden_cabbage"], add = {golden_chance = 0.015}, title = "SELECTIVE BREEDING",
+		body = "Only the promising seeds are spoken to.\n1 square in 25 grows golden, not 1 in 40."},
+	{id = "gold_chance_2", parent = "gold_chance_1", at = Vector2(0.0, 1.4), icon = "sprout", price = 4000, currency = "findings",
+		add = {golden_chance = 0.0267}, title = "PEDIGREE SEED STOCK",
+		body = "The seeds now have papers.\n1 square in 15 grows golden, not 1 in 25."},
+	{id = "gold_chance_3", parent = "gold_chance_2", at = Vector2(0.0, 1.85), icon = "sprout", price = 9000, currency = "findings",
+		add = {golden_chance = 0.0333}, title = "GILDED STRAIN",
+		body = "It is no longer entirely a vegetable.\n1 square in 10 grows golden, not 1 in 15."},
 ]
 ## Each theme's heading: [title, spot (as a node's `at`), its first nodes], part of its branch (the
 ## edges to its first nodes run through it; spots by tools/_theme_place.gd).
@@ -67,6 +93,8 @@ const THEMES := [
 	["TRACTORS", Vector2(0.30, -0.21), ["tractor_2"]],
 	["SOIL", Vector2(-0.30, 0.24), ["fertiliser"]],
 	["SUPPLY", Vector2(0.30, 0.24), ["seed_contract"]],
+	["BY HAND", Vector2(0.0, -0.55), ["thumb_yield"]],
+	["GOLDEN", Vector2(0.0, 0.55), ["gold_chance_1"]],
 ]
 
 @export var approve_sound: AudioStream

@@ -371,32 +371,137 @@ func test_a_bought_mat_step_is_never_bought_again() -> void:
 	assert_int(save.desk_capacity).is_equal(4)
 
 
-func test_storage_grows_from_20_to_9999_in_six_steps_each_at_least_doubling() -> void:
-	var save := _save(["projector"], 1000000000)
+## The storage chain in order, from the department down.
+func _storage_chain() -> Array[String]:
+	var out: Array[String] = []
+	for node: Dictionary in Projector.NODES:
+		if node.get("add", {}).has("storage_cap"):
+			out.append(node.id)
+	return out
+
+
+func test_storage_is_its_own_branch_off_manual_handling_with_its_own_heading_not_under_procurement() -> void:
+	var chain := _storage_chain()
+	assert_str(Projector.node_data(chain[0]).parent).is_equal("dept_manual")
+	for i in range(1, chain.size()):
+		assert_str(Projector.node_data(chain[i]).parent).override_failure_message(chain[i]).is_equal(chain[i - 1])
+	var heading := UpgradeTree.theme_of(Projector.THEMES, chain[0])
+	assert_int(heading).is_greater_equal(0)
+	assert_str(Projector.THEMES[heading][0]).is_equal("STORAGE")
+
+
+func test_storage_grows_from_20_to_9999_in_many_small_steps_each_at_least_a_quarter_more_room() -> void:
+	var save := _save(["projector", "offsite_storage"], 1000000000)
 	var caps := [save.storage_cap]
-	assert_bool(Projector.buy("pack_1", save)).is_true()
-	for step in range(1, 7):
-		assert_bool(Projector.buy("storage_%d" % step, save)).override_failure_message("step %d" % step).is_true()
+	var prices := [0]
+	for id: String in _storage_chain():
+		assert_bool(Projector.buy(id, save)).override_failure_message(id).is_true()
 		caps.append(save.storage_cap)
-	assert_array(caps).is_equal([20, 75, 200, 500, 1500, 4000, 9999])
+		prices.append(Projector.price_of(id, save))
+	assert_int(caps.size()).is_greater_equal(16)
+	assert_int(caps[1]).is_equal(25)
+	assert_int(caps[-1]).is_equal(9999)
 	for i in range(1, caps.size()):
-		assert_float(float(caps[i]) / caps[i - 1]).is_greater_equal(2.0)
+		assert_float(float(caps[i]) / caps[i - 1]).override_failure_message("%d to %d" % [caps[i - 1], caps[i]]).is_greater_equal(1.25)
+		assert_int(prices[i]).is_greater(prices[i - 1])
 
 
-func test_container_orders_wait_for_the_stock_room_since_53_units_would_not_fit_in_20() -> void:
-	assert_str(Projector.node_data("pack_2").parent).is_equal("storage_1")
-	var cap: int = SaveGame.new().storage_cap + Projector.node_data("storage_1").add.storage_cap
-	var pack: int = SaveGame.new().pack_size + Projector.node_data("pack_1").add.pack_size + Projector.node_data("pack_2").add.pack_size
-	assert_int(cap).is_greater_equal(pack + 10)  # Room for the pack above the safety-stock reserve.
+func test_the_old_storage_ids_keep_their_room_so_old_saves_keep_their_meaning() -> void:
+	var caps := {storage_1 = 75, storage_2 = 200, storage_3 = 500, storage_4 = 1500, storage_5 = 4000, storage_6 = 9999}
+	for id: String in caps:
+		assert_int(Projector.cap_at(id)).override_failure_message(id).is_equal(caps[id])
 
 
-func test_an_old_save_with_container_orders_gets_the_stock_room_once() -> void:
+func test_each_storage_step_states_its_new_room_and_the_old() -> void:
+	for id: String in _storage_chain():
+		var node := Projector.node_data(id)
+		var old_cap := Projector.cap_at(node.parent)
+		var line := "Storage holds %s units instead of %s." % [_grouped(Projector.cap_at(id)), _grouped(old_cap)]
+		assert_str(node.body).override_failure_message(id).ends_with(line)
+		assert_str(node.body.get_slice("\n", 0)).override_failure_message(id).is_not_equal(line)  # A flavour line first.
+
+
+func _grouped(n: int) -> String:
+	return "%d,%03d" % [floori(n / 1000.0), n % 1000] if n >= 1000 else str(n)
+
+
+func test_storage_past_the_stock_room_shows_with_a_padlock_until_the_off_site_storage_card() -> void:
+	var save := _save(["projector", "family_farm"], 1000000)
+	save.tree_bought = PackedStringArray(["stock_25", "stock_32", "stock_40", "stock_50", "storage_1"])
+	var next: String = _storage_chain()[_storage_chain().find("storage_1") + 1]
+	assert_bool(Projector.is_shown(next, save)).is_true()
+	assert_bool(Projector.is_reachable(next, save)).is_true()
+	assert_str(Projector.locked_by(next, save)).is_equal("offsite_storage")
+	assert_bool(Projector.can_hold(next, save)).is_false()
+	assert_bool(Projector.buy(next, save)).is_false()
+	assert_array(Projector.requirement(next, save)).is_equal(["REQUIRES DESK CARD:", "REQUISITION OFF-SITE STORAGE"])
+	for id: String in ["storage_2", "storage_6"]:  # The rest of the chain shows too, greyed.
+		assert_bool(Projector.is_shown(id, save)).override_failure_message(id).is_true()
+		assert_bool(Projector.is_reachable(id, save)).override_failure_message(id).is_false()
+	save.stamped.append("offsite_storage")
+	assert_str(Projector.locked_by(next, save)).is_empty()
+	assert_bool(Projector.buy(next, save)).is_true()
+
+
+func test_the_off_site_lock_sits_between_the_stock_room_and_the_basement_annex() -> void:
+	var chain := _storage_chain()
+	var locked := chain.filter(func(id: String) -> bool: return Projector.node_data(id).has("lock"))
+	assert_array(locked).has_size(1)
+	assert_str(Projector.node_data(locked[0]).lock).is_equal("offsite_storage")
+	assert_int(chain.find(locked[0])).is_greater(chain.find("storage_1"))
+	assert_int(chain.find(locked[0])).is_less_equal(chain.find("storage_2"))
+	assert_str(UpgradeDesk.card_data("offsite_storage").tree).is_equal("storage_1")
+	assert_str(UpgradeDesk.card_data("golden_cabbage").tree).is_equal("storage_2")
+
+
+func test_container_orders_sit_under_procurement_locked_until_storage_holds_a_53_unit_pack_and_more() -> void:
+	var pack_2 := Projector.node_data("pack_2")
+	assert_str(pack_2.parent).is_equal("pack_1")
+	var pack: int = SaveGame.new().pack_size + Projector.node_data("pack_1").add.pack_size + pack_2.add.pack_size
+	assert_int(Projector.cap_at(pack_2.after)).is_greater_equal(pack + 10)  # Room above the safety-stock reserve.
+	assert_int(Projector.cap_at(Projector.node_data(pack_2.after).parent)).is_less(pack + 10)  # Not a step sooner.
+	var save := _save(["projector"], 100000)
+	save.tree_bought = PackedStringArray(["pack_1"])
+	assert_bool(Projector.is_reachable("pack_2", save)).is_true()
+	assert_str(Projector.locked_by("pack_2", save)).is_equal(pack_2.after)
+	assert_bool(Projector.buy("pack_2", save)).is_false()
+	assert_array(Projector.requirement("pack_2", save)).is_equal(["REQUIRES:", Projector.node_data(pack_2.after).title])
+	save.tree_bought.append(pack_2.after)
+	assert_array(Projector.requirement("pack_2", save)).is_empty()  # Open now: its popup shows the price.
+	assert_bool(Projector.buy("pack_2", save)).is_true()
+	assert_array(Projector.requirement("pack_2", save)).is_empty()
+
+
+func test_an_old_save_with_container_orders_gets_the_stock_room_and_the_steps_before_it_once() -> void:
 	var save := _save(["projector"])
 	save.tree_bought = PackedStringArray(["pack_1", "pack_2"])
 	Projector.migrate_storage(save)
 	Projector.migrate_storage(save)
 	assert_int(save.tree_bought.count("storage_1")).is_equal(1)
+	assert_int(save.tree_bought.count("stock_25")).is_equal(1)
 	assert_int(save.storage_cap).is_equal(75)
+
+
+func test_an_old_save_holding_a_storage_step_counts_every_earlier_step_bought_and_keeps_its_room() -> void:
+	var save := _save(["projector", "offsite_storage"], 1000000000)
+	save.tree_bought = PackedStringArray(["pack_1", "storage_1", "storage_2", "storage_3"])
+	save.storage_cap = 500
+	Projector.migrate_storage(save)
+	var chain := _storage_chain()
+	for id: String in chain.slice(0, chain.find("storage_3") + 1):
+		assert_bool(Projector.is_bought(id, save)).override_failure_message(id).is_true()
+	assert_bool(Projector.is_bought(chain[chain.find("storage_3") + 1], save)).is_false()
+	assert_int(save.storage_cap).is_equal(500)
+	var next: String = chain[chain.find("storage_3") + 1]
+	assert_bool(Projector.buy(next, save)).is_true()
+	assert_int(save.storage_cap).is_equal(Projector.cap_at(next))
+
+
+func test_a_save_without_storage_keeps_its_twenty() -> void:
+	var save := SaveGame.new()
+	Projector.migrate_storage(save)
+	assert_int(save.storage_cap).is_equal(20)
+	assert_bool(save.tree_bought.is_empty()).is_true()
 
 
 func test_an_old_save_counts_its_mat_units_as_bought_chain_nodes_and_pays_for_the_next_from_there() -> void:
@@ -825,3 +930,20 @@ func test_each_theme_heading_sits_on_its_branch_between_the_parent_and_its_first
 func test_an_edge_to_a_branchs_first_node_is_routed_through_its_heading() -> void:
 	assert_int(UpgradeTree.theme_of(Projector.THEMES, "mini_rate_1")).is_greater_equal(0)
 	assert_int(UpgradeTree.theme_of(Projector.THEMES, "mini_rate_2")).is_equal(-1)
+
+
+func test_the_golden_value_nodes_wait_for_the_golden_card_and_raise_sale_and_lab_by_at_least_a_quarter_each() -> void:
+	var save := _save(["projector", "offsite_storage"], 10000000)
+	save.tree_bought = PackedStringArray(["storage_2"])
+	assert_bool(Projector.is_shown("gold_sale_1", save)).is_false()
+	save.stamped.append("golden_cabbage")
+	var sale: Array[float] = [save.golden_sale]
+	var lab: Array[float] = [save.golden_lab]
+	for id: String in ["gold_sale_1", "gold_sale_2"]:
+		assert_bool(Projector.buy(id, save)).override_failure_message(id).is_true()
+		sale.append(save.golden_sale)
+	for id: String in ["gold_lab_1", "gold_lab_2"]:
+		assert_bool(Projector.buy(id, save)).override_failure_message(id).is_true()
+		lab.append(save.golden_lab)
+	assert_array(sale).is_equal([10.0, 15.0, 20.0])
+	assert_array(lab).is_equal([10.0, 15.0, 25.0])

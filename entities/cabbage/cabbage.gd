@@ -33,6 +33,8 @@ const MINI_SCALE := 0.63
 ## A research unit: a cold cyan lab glow, and a faint light of the same tint on the mat around it.
 const RESEARCH_MATERIAL := preload("res://assets/materials/cabbage_research.tres")
 const RESEARCH_LIGHT := Color(0.45, 0.9, 1.0)
+## A golden unit (desk card golden_cabbage): cold metallic gold, the one exception to the palette.
+const GOLD_MATERIAL := preload("res://assets/materials/cabbage_gold.tres")
 ## Let go by the hand near the bin (RottenBin.let_go_over), it may drop in for this long (a drop or
 ## a short toss lands by then).
 const BIN_GRACE := 1.0
@@ -57,6 +59,9 @@ var mini := false
 var grown := false
 ## A research unit: glows a cold cyan, yields save.research_mult times the Findings in the QA bay. Never rotten.
 var research := false
+## A golden unit from a golden farm square: stock (save.golden_stock), sold for save.golden_sale times
+## the price or analysed for save.golden_lab times the Findings. Never rotten, mini or research.
+var golden := false
 ## Out of the window or on its way back after a refusal: the SaleWindow leaves it alone.
 var away := false
 ## Seconds the SaleWindow has seen it off the mat in a row.
@@ -67,6 +72,8 @@ var in_flight := false:
 		in_flight = flying
 		$Interactable.catchable = flying
 var _held := false
+## It has left save.stock (leave_stock).
+var _left_stock := false
 ## Until this tick (msec) the RottenBin may take it (aim_for_bin).
 var _bin_until := 0
 var _look := Basis()
@@ -95,6 +102,8 @@ func _ready() -> void:
 	if rotten:
 		$Mesh.material_override = ROTTEN_MATERIAL
 		_look = Basis.from_scale(SLUMP) * _look
+	elif golden:
+		$Mesh.material_override = GOLD_MATERIAL
 	elif research:
 		$Mesh.material_override = RESEARCH_MATERIAL
 		var glow := OmniLight3D.new()
@@ -123,6 +132,23 @@ func _ready() -> void:
 ## grown ones never did.
 func is_stock() -> bool:
 	return not mini and not grown
+
+
+## Still counted in save.stock: a stock unit that hasn't left it yet (out of the chute, it can't pay
+## a card: UpgradeDesk.units_out).
+func in_stock() -> bool:
+	return is_stock() and not _left_stock
+
+
+## It leaves the stock (sold, binned or analysed), once: one unit off save.stock, and off golden_stock
+## if golden, never below 0. Minis and grown ones never were stock.
+func leave_stock(save: SaveGame) -> void:
+	if not in_stock():
+		return
+	_left_stock = true
+	save.stock = maxi(save.stock - 1, 0)
+	if golden:
+		save.golden_stock = maxi(save.golden_stock - 1, 0)
 
 
 ## The growing station's work, out of sight in the tube: the mini becomes a full-size unit (mesh,
@@ -171,6 +197,17 @@ static func carry_velocity(velocity: Vector3, to_target: Vector3, delta: float, 
 ## Weightless (FRICTIONLESS HANDLING): the speed that closes `to_target` in one step, up to FREE_SPEED.
 static func free_velocity(to_target: Vector3, delta: float) -> Vector3:
 	return (to_target / maxf(delta, 0.001)).limit_length(FREE_SPEED)
+
+
+## A golden unit was sold: its cold bell and coin pour plays from where it went out. The player is
+## handed to the cabbage's parent first, since the cabbage is freed at the window mid-sound.
+func ring_golden_sale() -> void:
+	var ring: SoundCue = $GoldSale
+	ring.reparent(get_parent())
+	ring.finished.connect(ring.queue_free)
+	ring.cue(global_position)
+	if not ring.playing:  # Dropped by the game-wide cap.
+		ring.queue_free()
 
 
 ## Sold: the hand lets go, nothing can grab it, and it is pulled out through the gap to `to`

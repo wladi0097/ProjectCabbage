@@ -1,6 +1,6 @@
 class_name ChuteLever
 extends Node3D
-## The end of stage 2 (desk card chute_control): a steel flap hangs from an axle across the chute,
+## The supply interruption lever (desk card chute_control, dealt after off-site storage): a steel flap hangs from an axle across the chute,
 ## a heavy lever on the axle's front end. Clicked, the lever swings down and the flap drops onto the
 ## chute (save.chute_blocked): the feeder sends nothing more and stock piles up. Clicked again it
 ## swings up and the flap is hauled back up, clear of the units rolling under it. Units already on
@@ -32,6 +32,8 @@ var _tween: Tween
 @onready var _flap: Node3D = $Flap
 @onready var _rest := position
 @onready var _shape: CollisionShape3D = $Arm/Handle/Shape
+@onready var _shut_sound: AudioStreamPlayer3D = $Flap/Shut
+@onready var _lift_sound: AudioStreamPlayer3D = $Flap/Lift
 
 
 func _ready() -> void:
@@ -68,18 +70,21 @@ func pull() -> void:
 	var blocked := save.chute_blocked
 	if _tween != null:
 		_tween.kill()
+	# One file per direction, timed to the tween below: shut = latch at the swing's end, slam at
+	# SWING_TIME + DROP_TIME; lift = latch, ratchet while the flap rises, stop at 0.1 + LIFT_TIME.
+	_lift_sound.stop()
+	_shut_sound.stop()
+	(_shut_sound if blocked else _lift_sound).play()
 	_tween = create_tween()
 	_tween.tween_property(_arm, "rotation:z", lever_angle(blocked), SWING_TIME) \
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	if blocked:
 		# The latch lets go at the bottom of the swing: the flap falls, slams, settles.
-		# A heavy clunk goes here (at the flap) once there is sound.
 		_tween.tween_property(_flap, "rotation:z", FLAP_SHUT, DROP_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		# The rebound kicks back toward the side it fell from.
 		_tween.tween_property(_flap, "rotation:z", FLAP_SHUT + BOUNCE * signf(FLAP_OPEN), 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		_tween.tween_property(_flap, "rotation:z", FLAP_SHUT, 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	else:
-		# A ratchet grind would go here.
 		_tween.parallel().tween_property(_flap, "rotation:z", FLAP_OPEN, LIFT_TIME) \
 				.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_delay(0.1)
 

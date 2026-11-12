@@ -158,10 +158,12 @@ func _admit(cabbage: Cabbage) -> void:
 	scan.tween_property(self, "_scan", 0.0, RETURN_TIME).set_trans(Tween.TRANS_SINE)
 
 
-## Findings one analysed unit is worth: a research unit research_mult times findings_per_cabbage,
+## Findings one analysed unit is worth: a golden unit golden_lab times findings_per_cabbage, a research unit research_mult times findings_per_cabbage,
 ## a mini mini_value of it (MICRO-SAMPLE PROTOCOL, micro_samples: MICRO_SAMPLE times it), any other
 ## findings_per_cabbage. A mini's share is exact, not rounded: _take tallies the fractions.
 static func findings_for(cabbage: Cabbage, save: SaveGame) -> float:
+	if cabbage.golden:
+		return roundf(save.findings_per_cabbage * save.golden_lab)
 	if cabbage.research:
 		return roundf(save.findings_per_cabbage * save.research_mult)
 	if cabbage.mini:
@@ -183,8 +185,7 @@ static func tally(owed: float, worth: float) -> Array:
 ## whole Findings (a mini's fraction waits on _owed).
 func _take(cabbage: Cabbage) -> int:
 	var save := SaveManager.save
-	if cabbage.is_stock():
-		save.stock -= 1
+	cabbage.leave_stock(save)
 	if cabbage.research:
 		save.research_units += 1
 	var counted := tally(_owed, findings_for(cabbage, save))

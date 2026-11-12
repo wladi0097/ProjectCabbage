@@ -72,3 +72,19 @@ func test_the_open_flap_swings_up_the_chute_to_the_right() -> void:
 	var flap_end := Vector3.DOWN.rotated(Vector3.BACK, ChuteLever.FLAP_OPEN)
 	assert_float(flap_end.x).is_greater(0.9)
 
+
+
+func test_pulling_down_plays_the_slam_and_pulling_up_cuts_it_for_the_ratchet() -> void:
+	var save := SaveGame.new()
+	save.stamped.append("chute_control")
+	var lever := _lever(save)
+	var shut := lever.get_node("Flap/Shut") as AudioStreamPlayer3D
+	var lift := lever.get_node("Flap/Lift") as AudioStreamPlayer3D
+	assert_object(shut.stream).is_not_null()
+	assert_object(lift.stream).is_not_null()
+	lever.pull()
+	assert_bool(shut.playing).is_true()
+	assert_bool(lift.playing).is_false()
+	lever.pull()
+	assert_bool(shut.playing).is_false()
+	assert_bool(lift.playing).is_true()

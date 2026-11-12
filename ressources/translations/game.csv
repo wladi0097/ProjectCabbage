@@ -106,9 +106,9 @@ About every 60 s a lamp lights a crate in the street for 15 s. Throw a cabbage o
 Etwa alle 60 s beleuchtet eine Lampe 15 s lang eine Kiste auf der Straße. Werfen Sie einen Kohlkopf in ihrer Richtung aus dem Fenster: Dieser Verkauf bringt zusätzlich 10× seine Münzen."
 RESEARCH: MATERIALS HANDLING,RESEARCH: MATERIALS HANDLING,FORSCHUNG: MATERIALFLUSS
 "Units are found to be heavy.
-Unlocks Container Orders (40 more units per pack) and the Conveyor Retrofit on the projector.","Cabbages are found to be heavy.
-Unlocks Container Orders (+40 cabbages per pack) and Conveyor Retrofit on the projector.","Kohlköpfe erweisen sich als schwer.
-Schaltet CONTAINERBESTELLUNG (+40 Kohlköpfe pro Lieferung) und FÖRDERBAND-NACHRÜSTUNG am Projektor frei."
+Unlocks the Conveyor Retrofit on the projector (a unit down the chute every 0.5 s).","Cabbages are found to be heavy.
+Unlocks Conveyor Retrofit on the projector (a cabbage down the chute every 0.5 s).","Kohlköpfe erweisen sich als schwer.
+Schaltet FÖRDERBAND-NACHRÜSTUNG am Projektor frei (alle 0,5 s ein Kohlkopf aus der Rutsche)."
 STANDING PURCHASE ORDER,STANDING PURCHASE ORDER,DAUERBESTELLUNG
 "Nobody signs anything.
 At 3 units of stock or fewer, a pack is bought by itself if you can pay. The switch beside the AUTO lamp on the supply console turns it off or on.","Nobody signs anything.
@@ -233,36 +233,111 @@ CONTAINER ORDERS,CONTAINER ORDERS,CONTAINERBESTELLUNG
 Every pack holds 40 more units: 53 instead of 13.","A container is parked in the street.
 Every pack holds 40 more cabbages: 53 instead of 13.","Auf der Straße parkt ein Container.
 Jede Lieferung enthält 40 Kohlköpfe mehr: 53 statt 13."
+SHELF BRACKET,SHELF BRACKET,WANDKONSOLE
+"A bracket is screwed to the wall. It is load-bearing.
+Storage holds 25 units instead of 20.","A bracket is screwed to the wall. It is load-bearing.
+Storage holds 25 cabbages instead of 20.","Eine Konsole wird an die Wand geschraubt. Sie ist tragend.
+Das Lager fasst 25 Kohlköpfe statt 20."
+STACKING POLICY,STACKING POLICY,STAPELRICHTLINIE
+"Units may now be stacked. Two high. Carefully.
+Storage holds 32 units instead of 25.","Units may now be stacked. Two high. Carefully.
+Storage holds 32 cabbages instead of 25.","Einheiten dürfen jetzt gestapelt werden. Zwei hoch. Vorsichtig.
+Das Lager fasst 32 Kohlköpfe statt 25."
+UNDER-DESK ALLOCATION,UNDER-DESK ALLOCATION,UNTERTISCHZUWEISUNG
+"Your legs are relocated to the left.
+Storage holds 40 units instead of 32.","Your legs are relocated to the left.
+Storage holds 40 cabbages instead of 32.","Ihre Beine werden nach links verlegt.
+Das Lager fasst 40 Kohlköpfe statt 32."
+FILING CABINET,FILING CABINET,AKTENSCHRANK
+"The files are shredded to make room.
+Storage holds 50 units instead of 40.","The files are shredded to make room.
+Storage holds 50 cabbages instead of 40.","Die Akten werden geschreddert, um Platz zu schaffen.
+Das Lager fasst 50 Kohlköpfe statt 40."
 STOCK ROOM,STOCK ROOM,LAGERRAUM
 "The broom cupboard is reassigned.
-Storage holds 75 units instead of 20.","The broom cupboard is reassigned.
-Storage holds 75 cabbages instead of 20.","Die Besenkammer wird umgewidmet.
-Das Lager fasst 75 Kohlköpfe statt 20."
+Storage holds 75 units instead of 50.","The broom cupboard is reassigned.
+Storage holds 75 cabbages instead of 50.","Die Besenkammer wird umgewidmet.
+Das Lager fasst 75 Kohlköpfe statt 50."
+OFF-SITE LOCKER,OFF-SITE LOCKER,AUSWÄRTIGES SCHLIESSFACH
+"A locker at the bus depot. The key is laminated.
+Storage holds 100 units instead of 75.","A locker at the bus depot. The key is laminated.
+Storage holds 100 cabbages instead of 75.","Ein Schließfach am Busdepot. Der Schlüssel ist laminiert.
+Das Lager fasst 100 Kohlköpfe statt 75."
+CORRIDOR OVERFLOW,CORRIDOR OVERFLOW,FLURÜBERLAUF
+"Fire exits are reclassified as aspirational.
+Storage holds 125 units instead of 100.","Fire exits are reclassified as aspirational.
+Storage holds 125 cabbages instead of 100.","Notausgänge gelten jetzt als Zielvorgabe.
+Das Lager fasst 125 Kohlköpfe statt 100."
+LIFT SHAFT,LIFT SHAFT,AUFZUGSSCHACHT
+"The lift is out of order. Permanently. On purpose.
+Storage holds 160 units instead of 125.","The lift is out of order. Permanently. On purpose.
+Storage holds 160 cabbages instead of 125.","Der Aufzug ist außer Betrieb. Dauerhaft. Mit Absicht.
+Das Lager fasst 160 Kohlköpfe statt 125."
 BASEMENT ANNEX,BASEMENT ANNEX,KELLERANBAU
 "The archive is moved to the car park.
-Storage holds 200 units instead of 75.","The archive is moved to the car park.
-Storage holds 200 cabbages instead of 75.","Das Archiv zieht auf den Parkplatz.
-Das Lager fasst 200 Kohlköpfe statt 75."
+Storage holds 200 units instead of 160.","The archive is moved to the car park.
+Storage holds 200 cabbages instead of 160.","Das Archiv zieht auf den Parkplatz.
+Das Lager fasst 200 Kohlköpfe statt 160."
+RENTED GARAGE,RENTED GARAGE,MIETGARAGE
+"The car now lives outside.
+Storage holds 250 units instead of 200.","The car now lives outside.
+Storage holds 250 cabbages instead of 200.","Das Auto wohnt jetzt draußen.
+Das Lager fasst 250 Kohlköpfe statt 200."
+MEZZANINE,MEZZANINE,ZWISCHENGESCHOSS
+"A second floor is added halfway up the first.
+Storage holds 320 units instead of 250.","A second floor is added halfway up the first.
+Storage holds 320 cabbages instead of 250.","Auf halber Höhe des ersten Stocks wird ein zweiter eingezogen.
+Das Lager fasst 320 Kohlköpfe statt 250."
+PALLET RACKING,PALLET RACKING,PALETTENREGAL
+"Units are now filed vertically.
+Storage holds 400 units instead of 320.","Units are now filed vertically.
+Storage holds 400 cabbages instead of 320.","Einheiten werden jetzt senkrecht abgelegt.
+Das Lager fasst 400 Kohlköpfe statt 320."
 COLD STORE,COLD STORE,KÜHLHAUS
 "Kept at four degrees. So is the staff room.
-Storage holds 500 units instead of 200.","Kept at four degrees. So is the staff room.
-Storage holds 500 cabbages instead of 200.","Gelagert bei vier Grad. Der Pausenraum auch.
-Das Lager fasst 500 Kohlköpfe statt 200."
+Storage holds 500 units instead of 400.","Kept at four degrees. So is the staff room.
+Storage holds 500 cabbages instead of 400.","Gelagert bei vier Grad. Der Pausenraum auch.
+Das Lager fasst 500 Kohlköpfe statt 400."
+BONDED WAREHOUSE,BONDED WAREHOUSE,ZOLLLAGER
+"Customs has been told it is cabbage.
+Storage holds 750 units instead of 500.","Customs has been told it is cabbage.
+Storage holds 750 cabbages instead of 500.","Dem Zoll wurde gesagt, es sei Kohl.
+Das Lager fasst 750 Kohlköpfe statt 500."
+DECOMMISSIONED SCHOOL,DECOMMISSIONED SCHOOL,STILLGELEGTE SCHULE
+"Education has been rationalised.
+Storage holds 1,000 units instead of 750.","Education has been rationalised.
+Storage holds 1,000 cabbages instead of 750.","Die Bildung wurde rationalisiert.
+Das Lager fasst 1.000 Kohlköpfe statt 750."
 REGIONAL DEPOT,REGIONAL DEPOT,REGIONALLAGER
 "A warehouse on the ring road. Nobody visits.
-Storage holds 1,500 units instead of 500.","A warehouse on the ring road. Nobody visits.
-Storage holds 1,500 cabbages instead of 500.","Eine Halle an der Umgehungsstraße. Niemand kommt vorbei.
-Das Lager fasst 1.500 Kohlköpfe statt 500."
+Storage holds 1,500 units instead of 1,000.","A warehouse on the ring road. Nobody visits.
+Storage holds 1,500 cabbages instead of 1,000.","Eine Halle an der Umgehungsstraße. Niemand kommt vorbei.
+Das Lager fasst 1.500 Kohlköpfe statt 1.000."
+AIRCRAFT HANGAR,AIRCRAFT HANGAR,FLUGZEUGHANGAR
+"The aircraft were surplus to requirements.
+Storage holds 2,000 units instead of 1,500.","The aircraft were surplus to requirements.
+Storage holds 2,000 cabbages instead of 1,500.","Die Flugzeuge waren überzählig.
+Das Lager fasst 2.000 Kohlköpfe statt 1.500."
+SALT MINE,SALT MINE,SALZBERGWERK
+"Underground, stable, and nobody asks.
+Storage holds 3,000 units instead of 2,000.","Underground, stable, and nobody asks.
+Storage holds 3,000 cabbages instead of 2,000.","Unterirdisch, stabil, und niemand fragt.
+Das Lager fasst 3.000 Kohlköpfe statt 2.000."
 STRATEGIC RESERVE,STRATEGIC RESERVE,STRATEGISCHE RESERVE
 "Classified as critical infrastructure.
-Storage holds 4,000 units instead of 1,500.","Classified as critical infrastructure.
-Storage holds 4,000 cabbages instead of 1,500.","Als kritische Infrastruktur eingestuft.
-Das Lager fasst 4.000 Kohlköpfe statt 1.500."
+Storage holds 4,000 units instead of 3,000.","Classified as critical infrastructure.
+Storage holds 4,000 cabbages instead of 3,000.","Als kritische Infrastruktur eingestuft.
+Das Lager fasst 4.000 Kohlköpfe statt 3.000."
+FORMER MINISTRY,FORMER MINISTRY,EHEMALIGES MINISTERIUM
+"The ministry has been consolidated into a memo.
+Storage holds 6,000 units instead of 4,000.","The ministry has been consolidated into a memo.
+Storage holds 6,000 cabbages instead of 4,000.","Das Ministerium wurde in einer Aktennotiz zusammengefasst.
+Das Lager fasst 6.000 Kohlköpfe statt 4.000."
 NATIONAL CABBAGE RESERVE,NATIONAL CABBAGE RESERVE,NATIONALE KOHLRESERVE
 "The nation's cabbages are now your problem.
-Storage holds 9,999 units instead of 4,000.","The nation's cabbages are now your problem.
-Storage holds 9,999 cabbages instead of 4,000.","Der Kohl der Nation ist jetzt Ihr Problem.
-Das Lager fasst 9.999 Kohlköpfe statt 4.000."
+Storage holds 9,999 units instead of 6,000.","The nation's cabbages are now your problem.
+Storage holds 9,999 cabbages instead of 6,000.","Der Kohl der Nation ist jetzt Ihr Problem.
+Das Lager fasst 9.999 Kohlköpfe statt 6.000."
 FULL,FULL,VOLL
 Storage full (%d units). Sell some first.,Storage full (%d cabbages). Sell some first.,Lager voll (%d Kohlköpfe). Erst verkaufen.
 CONVEYOR RETROFIT,CONVEYOR RETROFIT,FÖRDERBAND-NACHRÜSTUNG
@@ -522,14 +597,14 @@ It changes your price every 2 s, not every 4 s.","Der Berater rechnet pro Antipp
 Er ändert Ihren Preis alle 2 s statt alle 4 s."
 READS THE ROOM,READS THE ROOM,STIMMUNGSGESPÜR
 "The consultant looks out of the window.
-The street's mood shifts its prices by up to ±25%
-every minute. The consultant now follows it,
+The street's mood shifts its prices by up to ±10%
+every minute, never past ±25%. The consultant now follows it,
 so ~90% of units keep selling.","The consultant looks out of the window.
-The street's mood moves its prices by up to ±25%
-every minute. The consultant now follows it,
+The street's mood moves its prices by up to ±10%
+every minute, never past ±25%. The consultant now follows it,
 so ~90% of cabbages keep selling.","Der Berater schaut aus dem Fenster.
 Die Laune der Straße verschiebt ihre Preise jede
-Minute um bis zu ±25%. Der Berater folgt ihr jetzt,
+Minute um bis zu ±10%, nie über ±25%. Der Berater folgt ihr jetzt,
 sodass weiter ~90% gekauft werden."
 YIELD OPTIMISATION,YIELD OPTIMISATION,ERTRAGSOPTIMIERUNG
 "Some units may now be refused.
@@ -621,11 +696,11 @@ A rotten cabbage in the bin pops out $8 in coins
 Ein fauler Kohlkopf im Eimer wirft $8 in Münzen aus
 (vorher $5), egal bei welchem Preis."
 SPOILAGE PREMIUM,SPOILAGE PREMIUM,VERDERBSZUSCHLAG
-"A rotten unit is worth more than a fresh one. Fine.
+"A rotten unit is worth more than a fresh one.
 A binned rotten unit pops out $12 in coins
-($8 before), whatever your price.","A rotten cabbage is worth more than a fresh one. Fine.
+($8 before), whatever your price.","A rotten cabbage is worth more than a fresh one.
 A rotten cabbage in the bin pops out $12 in coins
-($8 before), whatever your price.","Ein fauler Kohlkopf ist mehr wert als ein frischer. Nun gut.
+($8 before), whatever your price.","Ein fauler Kohlkopf ist mehr wert als ein frischer.
 Ein fauler Kohlkopf im Eimer wirft $12 in Münzen aus
 (vorher $8), egal bei welchem Preis."
 WASTE HANDLING PROTOCOL,WASTE HANDLING PROTOCOL,ABFALLPROTOKOLL
@@ -915,6 +990,7 @@ CABBAGES %d/%d,CABBAGES %d/%d,KOHL %d/%d
 LOCKED,LOCKED,GESPERRT
 FAMILY FARM - CH 3,FAMILY FARM - CH 3,FAMILIENHOF - KANAL 3
 PROCUREMENT,PROCUREMENT,BESCHAFFUNG
+STORAGE,STORAGE,LAGERHALTUNG
 DESK SPACE,DESK SPACE,TISCHFLÄCHE
 SALES EVENTS,SALES EVENTS,VERKAUFSAKTIONEN
 MANAGEMENT,MANAGEMENT,FÜHRUNG
@@ -1247,9 +1323,9 @@ A growing chamber is bolted over the tube's intake. 1 mini in 20 comes out a ful
 Über dem Einlass des Rohrs wird eine Wachstumskammer verschraubt. 1 Mini von 20 kommt als ganzer Kohlkopf heraus: kein Lager, voller Preis, zählt als verkauft."
 FARM ADMINISTRATION TERMINAL,FARM ADMINISTRATION TERMINAL,FARMVERWALTUNGSTERMINAL
 "The farm is now managed remotely.
-Channel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with coins or Findings (¶).","The farm is now managed remotely.
-Channel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with coins or Findings (¶).","Der Hof wird jetzt aus der Ferne verwaltet.
-Kanal 2 am Fernseher: der eigene Upgrade-Baum des Hofs. Halten Sie die Maus auf ein Upgrade, um es mit Münzen oder Befunden (¶) zu kaufen."
+Channel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with Findings (¶).","The farm is now managed remotely.
+Channel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with Findings (¶).","Der Hof wird jetzt aus der Ferne verwaltet.
+Kanal 2 am Fernseher: der eigene Upgrade-Baum des Hofs. Halten Sie die Maus auf ein Upgrade, um es mit Befunden (¶) zu kaufen."
 AUTHORISE A SEASONAL WORKFORCE,AUTHORISE A SEASONAL WORKFORCE,SAISONKRÄFTE GENEHMIGEN
 "Seasonal. Indefinitely.
 A farm hand walks onto the fields (channel 1) and plants empty squares with your seeds. More hands on channel 2.","Seasonal. Indefinitely.
@@ -1257,9 +1333,9 @@ A farm hand walks onto the fields (channel 1) and plants empty squares with your
 Ein Knecht betritt die Felder (Kanal 1) und bepflanzt leere Felder mit Ihrem Saatgut. Mehr Knechte auf Kanal 2."
 MECHANISATION PROGRAMME,MECHANISATION PROGRAMME,MECHANISIERUNGSPROGRAMM
 "The horse has been informed.
-A tractor drives onto the fields (channel 1) and harvests ripe squares. More tractors on channel 2.","The horse has been informed.
-A tractor drives onto the fields (channel 1) and harvests ripe squares. More tractors on channel 2.","Das Pferd wurde informiert.
-Ein Traktor fährt auf die Felder (Kanal 1) und erntet reife Felder. Mehr Traktoren auf Kanal 2."
+A tractor drives onto the fields (channel 1) and harvests ripe squares before they rot. More tractors on channel 2.","The horse has been informed.
+A tractor drives onto the fields (channel 1) and harvests ripe squares before they rot. More tractors on channel 2.","Das Pferd wurde informiert.
+Ein Traktor fährt auf die Felder (Kanal 1) und erntet reife Felder, bevor sie verrotten. Mehr Traktoren auf Kanal 2."
 SECOND FARM HAND,SECOND FARM HAND,ZWEITER KNECHT
 "Seasonal contract. The season is permanent.
 One more farm hand plants empty squares: 1 to 2 hands.","Seasonal contract. The season is permanent.
@@ -1382,3 +1458,100 @@ Drag a seed from the box on the right onto an empty square. Ripe after %d s: pul
 Seed in hand. Let go over an empty square to plant it.,Seed in hand. Let go over an empty square to plant it.,"Samen in der Hand. Über einem leeren Feld loslassen, um zu säen."
 Drag a seed from the box onto an empty square.,Drag a seed from the box onto an empty square.,Einen Samen aus der Kiste auf ein leeres Feld ziehen.
 Grab the cabbage and yank it off its square.,Grab the cabbage and yank it off its square.,Den Kohl packen und mit einem Ruck vom Feld reißen.
+REQUISITION OFF-SITE STORAGE,REQUISITION OFF-SITE STORAGE,AUSLAGERUNGSFLÄCHE ANFORDERN
+"Space is allocated to those who can prove they need it.
+Paid in units from your stock, not coins: fill the stock room first. Unlocks the storage past the stock room on the projector.","Space is allocated to those who can prove they need it.
+Paid in units from your stock, not coins: fill the stock room first. Unlocks the storage past the stock room on the projector.","Platz erhält, wer nachweist, dass er ihn braucht.
+Bezahlt mit Einheiten aus Ihrem Lager, nicht mit Münzen: Füllen Sie zuerst den Lagerraum. Gibt am Projektor das Lager hinter dem Lagerraum frei."
+GREEN THUMB COMMENDATION,GREEN THUMB COMMENDATION,BELOBIGUNG: GRÜNER DAUMEN
+"Manual labour is recognised. Briefly.
+A square you harvest by hand on channel 1 (pull the cabbage out) yields double. Tractors are not commended. More on channel 2.","Manual labour is recognised. Briefly.
+A square you harvest by hand on channel 1 (pull the cabbage out) yields double. Tractors are not commended. More on channel 2.","Handarbeit wird anerkannt. Kurz.
+Ein Feld, das Sie auf Kanal 1 von Hand ernten (den Kohlkopf herausziehen), bringt das Doppelte. Traktoren werden nicht belobigt. Mehr auf Kanal 2."
+PILOT SCHEME: PREMIUM UNITS,PILOT SCHEME: PREMIUM CABBAGES,PILOTPROJEKT: PREMIUM-KOHLKÖPFE
+"Some units are better than others. Officially.
+About 1 square in 40 planted on the farm grows golden. Its cabbages come down the chute gold: sold, each pays 10× your price; flicked into the research lab, 10× the Findings.","Some cabbages are better than others. Officially.
+About 1 square in 40 planted on the farm grows golden. Its cabbages come down the chute gold: sold, each pays 10× your price; flicked into the research lab, 10× the Findings.","Manche Kohlköpfe sind besser als andere. Offiziell.
+Etwa 1 von 40 bepflanzten Feldern auf dem Hof wächst golden. Seine Kohlköpfe kommen golden die Rutsche herunter: verkauft bringt jeder das 10-Fache Ihres Preises, ins Forschungslabor geschnippt das 10-Fache an Befunden."
+SPOILAGE ON THE FARM,SPOILAGE ON THE FARM,VERDERB AUF DEM HOF
+Premium units have raised expectations. The farm no longer meets them. From today a ripe square left unharvested for 10 minutes rots: it yields nothing and blocks the square until you clear it. Farm hands will not touch it. The mechanisation programme is the remedy. Compost is not a product category.,Premium cabbages have raised expectations. The farm no longer meets them. From today a ripe square left unharvested for 10 minutes rots: it yields nothing and blocks the square until you clear it. Farm hands will not touch it. The mechanisation programme is the remedy. Compost is not a product category.,"Premium-Kohlköpfe haben die Erwartungen gehoben. Der Hof erfüllt sie nicht mehr. Ab heute verrottet ein reifes Feld, das 10 Minuten nicht geerntet wird: Es bringt nichts und blockiert das Feld, bis Sie es räumen. Die Knechte fassen es nicht an. Das Mechanisierungsprogramm ist die Abhilfe. Kompost ist keine Produktkategorie."
+Rotten square cleared.,Rotten square cleared.,Verrottetes Feld geräumt.
+Golden harvest: +%d golden units to stock.,Golden harvest: +%d golden cabbages to stock.,Goldene Ernte: +%d goldene Kohlköpfe in den Bestand.
+Harvested by hand: +%d cabbages (GREEN THUMB ×%d).,Harvested by hand: +%d cabbages (GREEN THUMB ×%d).,Von Hand geerntet: +%d Kohlköpfe (GRÜNER DAUMEN ×%d).
+ROTTEN,ROTTEN,VERROTTET
+EMPLOYEE OF THE MONTH,EMPLOYEE OF THE MONTH,MITARBEITER DES MONATS
+"Your photograph is on the barn wall.
+A square you pull by hand yields 3× instead of 2×.","Your photograph is on the barn wall.
+A square you pull by hand yields 3× instead of 2×.","Ihr Foto hängt an der Scheunenwand.
+Ein Feld, das Sie von Hand ziehen, bringt 3× statt 2×."
+"ONE IN, ONE OUT","ONE IN, ONE OUT","EINER RAUS, EINER REIN"
+"The hole is never left empty. It is policy.
+A square you pull by hand is replanted at once with a seed from the crate.","The hole is never left empty. It is policy.
+A square you pull by hand is replanted at once with a seed from the crate.","Das Loch bleibt nie leer. So ist die Vorschrift.
+Ein Feld, das Sie von Hand ziehen, wird sofort mit einem Samen aus der Kiste neu bepflanzt."
+SELECTIVE BREEDING,SELECTIVE BREEDING,SELEKTIVE ZUCHT
+"Only the promising seeds are spoken to.
+1 square in 25 grows golden, not 1 in 40.","Only the promising seeds are spoken to.
+1 square in 25 grows golden, not 1 in 40.","Nur mit den vielversprechenden Samen wird gesprochen.
+1 von 25 Feldern wächst golden, nicht 1 von 40."
+PEDIGREE SEED STOCK,PEDIGREE SEED STOCK,SAATGUT MIT STAMMBAUM
+"The seeds now have papers.
+1 square in 15 grows golden, not 1 in 25.","The seeds now have papers.
+1 square in 15 grows golden, not 1 in 25.","Die Samen haben jetzt Papiere.
+1 von 15 Feldern wächst golden, nicht 1 von 25."
+GILDED STRAIN,GILDED STRAIN,VERGOLDETE SORTE
+"It is no longer entirely a vegetable.
+1 square in 10 grows golden, not 1 in 15.","It is no longer entirely a vegetable.
+1 square in 10 grows golden, not 1 in 15.","Es ist nicht mehr ganz ein Gemüse.
+1 von 10 Feldern wächst golden, nicht 1 von 15."
+BY HAND,BY HAND,VON HAND
+GOLDEN,GOLDEN,GOLD
+PREMIUM SHELF,PREMIUM SHELF,PREMIUMREGAL
+"The golden ones are kept at eye level.
+A golden unit sold pays 15× your price, not 10×.","The golden ones are kept at eye level.
+A golden cabbage sold pays 15× your price, not 10×.","Die goldenen stehen auf Augenhöhe.
+Ein verkaufter goldener Kohlkopf bringt das 15-Fache Ihres Preises, nicht das 10-Fache."
+LUXURY CLASSIFICATION,LUXURY CLASSIFICATION,LUXUSEINSTUFUNG
+"The street is told it cannot afford them.
+A golden unit sold pays 20× your price, not 15×.","The street is told it cannot afford them.
+A golden cabbage sold pays 20× your price, not 15×.","Der Straße wird gesagt, dass sie sie sich nicht leisten kann.
+Ein verkaufter goldener Kohlkopf bringt das 20-Fache Ihres Preises, nicht das 15-Fache."
+ASSAY OFFICE,ASSAY OFFICE,PROBIERAMT
+"Gold is tested. The test is gold.
+A golden unit in the research lab gives 15× the
+Findings, not 10×.","Gold is tested. The test is gold.
+A golden cabbage in the research lab gives 15× the
+Findings, not 10×.","Gold wird geprüft. Die Prüfung ist Gold.
+Ein goldener Kohlkopf im Forschungslabor bringt das 15-Fache an Befunden, nicht das 10-Fache."
+PRECIOUS METALS DESK,PRECIOUS METALS DESK,EDELMETALLREFERAT
+"Nobody is sure which metal.
+A golden unit in the research lab gives 25× the
+Findings, not 15×.","Nobody is sure which metal.
+A golden cabbage in the research lab gives 25× the
+Findings, not 15×.","Niemand weiß genau, welches Metall.
+Ein goldener Kohlkopf im Forschungslabor bringt das 25-Fache an Befunden, nicht das 15-Fache."
+STANDING SEED ORDER,STANDING SEED ORDER,DAUERAUFTRAG SAATGUT
+"Seeds are a recurring cost. Recurrence has been automated.
+An AUTO SEED switch in the yard on channel 1. On, a 10-seed pack is bought by itself whenever the crate is down to 5 seeds and the money is there. More on channel 2.","Seeds are a recurring cost. Recurrence has been automated.
+An AUTO SEED switch in the yard on channel 1. On, a 10-seed pack is bought by itself whenever the crate is down to 5 seeds and the money is there. More on channel 2.","Saatgut ist ein wiederkehrender Kostenpunkt. Die Wiederkehr wurde automatisiert.
+Ein Schalter AUTO-SAAT im Hof auf Kanal 1. Eingeschaltet wird von selbst eine 10er-Packung Samen gekauft, sobald nur noch 5 Samen in der Kiste sind und das Geld reicht. Mehr auf Kanal 2."
+SAFETY SEED STOCK,SAFETY SEED STOCK,SICHERHEITSBESTAND SAATGUT
+"Running out is a planning failure. Planning has been increased.
+The standing seed order buys when the crate is down to 20 seeds, not 5.","Running out is a planning failure. Planning has been increased.
+The standing seed order buys when the crate is down to 20 seeds, not 5.","Ausgehen ist ein Planungsfehler. Die Planung wurde erhöht.
+Der Dauerauftrag kauft, sobald nur noch 20 Samen in der Kiste sind, nicht erst bei 5."
+BULK SEED CONTRACT,BULK SEED CONTRACT,GROSSABNAHMEVERTRAG SAATGUT
+"The supplier prefers fewer, larger invoices.
+The standing seed order buys the 50-seed pack instead of the 10.","The supplier prefers fewer, larger invoices.
+The standing seed order buys the 50-seed pack instead of the 10.","Der Lieferant bevorzugt weniger, dafür größere Rechnungen.
+Der Dauerauftrag kauft die 50er-Packung statt der 10er."
+AUTO SEED: ON,AUTO SEED: ON,AUTO-SAAT: AN
+AUTO SEED: OFF,AUTO SEED: OFF,AUTO-SAAT: AUS
+Standing order: %d seeds delivered.,Standing order: %d seeds delivered.,Dauerauftrag: %d Samen geliefert.
+CONSOLIDATED GROWTH REQUISITION,CONSOLIDATED GROWTH REQUISITION,ANFORDERUNG: KONSOLIDIERTES WACHSTUM
+"The desk has outgrown the desk.
+Paid in units from stock, more than a bonded warehouse holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","The desk has outgrown the desk.
+Paid in cabbages from stock, more than a bonded warehouse holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","Der Schreibtisch ist dem Schreibtisch entwachsen.
+Bezahlt in Kohlköpfen aus dem Lager, mehr als ein Zolllager fasst: Lager ausbauen, Rutsche schließen, den Hof es füllen lassen. Abgestempelt prüft der Vorstand die Zukunft des Schreibtischs."
+WE SHOULD INVEST IN GROWTH,WE SHOULD INVEST IN GROWTH,WIR SOLLTEN IN WACHSTUM INVESTIEREN
+"The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Units remain units. Some of them will now be shares.","The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Cabbages remain cabbages. Some of them will now be shares.","Der Vorstand hat Ihre Zahlen geprüft. Kohl wächst mit der Geschwindigkeit von Kohl, und so lange kann der Vorstand nicht warten. Ab heute wächst der Schreibtisch durch Übernahmen: Wir kaufen andere Firmen, und wir investieren am Aktienmarkt. Sie bekommen einen Ticker. Kohlköpfe bleiben Kohlköpfe. Einige davon sind ab jetzt Aktien."

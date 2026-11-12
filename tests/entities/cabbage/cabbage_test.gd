@@ -182,6 +182,16 @@ func test_a_fresh_unit_keeps_its_green_leaf_material() -> void:
 	assert_object(material).is_not_same(CabbageScript.RESEARCH_MATERIAL)
 
 
+func test_a_sold_golden_units_ring_outlives_the_unit_freed_at_the_window() -> void:
+	var golden := spawn(func(c: Cabbage) -> void: c.golden = true)
+	var ring: Node = golden.get_node("GoldSale")
+	golden.ring_golden_sale()
+
+	assert_object(ring.get_parent()).is_same(golden.get_parent())
+	assert_bool(golden.has_node("GoldSale")).is_false()
+	ring.free()
+
+
 func test_every_cabbage_joins_the_cabbages_group() -> void:
 	assert_bool(spawn().is_in_group(&"cabbages")).is_true()
 
@@ -358,3 +368,43 @@ func test_a_grown_mini_is_full_size_again_but_still_no_stock() -> void:
 func test_only_a_plain_unit_comes_out_of_the_stock() -> void:
 	assert_bool(spawn().is_stock()).is_true()
 	assert_bool(spawn(func(c: Cabbage) -> void: c.mini = true).is_stock()).is_false()
+
+
+func test_a_golden_unit_leaving_stock_takes_one_off_the_golden_stock_too() -> void:
+	var save := SaveGame.new()
+	save.stock = 10
+	save.golden_stock = 2
+	var gold: Cabbage = auto_free(Cabbage.new())
+	gold.golden = true
+	gold.leave_stock(save)
+	var plain: Cabbage = auto_free(Cabbage.new())
+	plain.leave_stock(save)
+	assert_int(save.stock).is_equal(8)
+	assert_int(save.golden_stock).is_equal(1)
+
+
+func test_a_unit_leaves_the_stock_only_once_and_the_stock_never_goes_below_zero() -> void:
+	var save := SaveGame.new()
+	save.stock = 1
+	var unit: Cabbage = auto_free(Cabbage.new())
+	unit.leave_stock(save)
+	unit.leave_stock(save)
+	assert_int(save.stock).is_equal(0)
+	var other: Cabbage = auto_free(Cabbage.new())
+	other.leave_stock(save)
+	assert_int(save.stock).is_equal(0)
+	assert_bool(unit.in_stock()).is_false()
+
+
+func test_a_mini_leaving_the_mat_is_no_stock_at_all() -> void:
+	var save := SaveGame.new()
+	var tiny: Cabbage = auto_free(Cabbage.new())
+	tiny.mini = true
+	tiny.leave_stock(save)
+	assert_int(save.stock).is_equal(SaveGame.new().stock)
+
+
+func test_a_golden_unit_is_drawn_in_cold_metallic_gold() -> void:
+	var gold := spawn(func(c: Cabbage) -> void: c.golden = true)
+	assert_object(gold.get_node("Mesh").material_override).is_equal(CabbageScript.GOLD_MATERIAL)
+	assert_float((CabbageScript.GOLD_MATERIAL as StandardMaterial3D).metallic).is_greater(0.5)

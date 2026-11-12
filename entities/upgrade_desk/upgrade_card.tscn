@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
 [ext_resource type="Material" path="res://assets/materials/card_paper.tres" id="3_paper"]
 [ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="4_font"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/cabbage_icon.svg" id="5_icon"]
 
 [sub_resource type="BoxShape3D" id="CardBox"]
 size = Vector3(0.36, 0.02, 0.2)
@@ -59,6 +60,15 @@ text = "$0"
 font = ExtResource("4_font")
 font_size = 110
 outline_size = 0
+
+[node name="PriceIcon" type="Sprite3D" parent="Look"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.1, 0.002, 0.0672)
+visible = false
+cast_shadow = 0
+modulate = Color(0.9, 0.89, 0.84, 1)
+pixel_size = 0.0002
+shaded = true
+texture = ExtResource("5_icon")
 
 [node name="Interactable" type="Node" parent="."]
 script = ExtResource("2_interactable")

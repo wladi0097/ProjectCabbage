@@ -176,3 +176,15 @@ func test_lifting_the_lever_lets_units_come_down_again() -> void:
 	save.chute_blocked = false
 	feeder._physics_process(1.0)
 	assert_array(feeder.rolled).has_size(1)
+
+
+func test_golden_units_come_down_at_their_share_of_the_stock_left_off_the_mat() -> void:
+	# 2 golden of 10 in stock, 2 units on the mat (none golden): 2 of the 8 left are golden.
+	assert_bool(Feeder.is_golden(2, 0, 10, 2, 0.24)).is_true()
+	assert_bool(Feeder.is_golden(2, 0, 10, 2, 0.26)).is_false()
+	assert_bool(Feeder.is_golden(0, 0, 10, 0, 0.0)).is_false()
+
+
+func test_golden_units_already_on_the_mat_are_not_sent_again() -> void:
+	assert_bool(Feeder.is_golden(1, 1, 10, 1, 0.0)).is_false()
+	assert_bool(Feeder.is_golden(3, 0, 3, 3, 0.0)).is_false()

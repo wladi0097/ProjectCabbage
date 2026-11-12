@@ -6,6 +6,10 @@ const CARRIED := ["seed_contract", "fertiliser", "irrigation", "greenhouse"]
 const WORKER_NUMBERS := ["farm_hands", "farm_tractors", "farm_hand_speed", "farm_tractor_speed",
 		"farm_hand_shift", "farm_tractor_shift"]
 const ROUTES := ["farm_hand_route", "farm_tractor_route"]
+## The hand harvest (GREEN THUMB) and how often a square grows golden.
+const HARVEST_NUMBERS := ["hand_yield", "hand_replant", "golden_chance"]
+## When the standing seed order buys and which pack.
+const SEED_ORDER := ["farm_seed_reserve", "farm_seed_pack"]
 
 var _real_save: SaveGame
 
@@ -38,13 +42,15 @@ func test_the_old_farm_upgrades_keep_their_ids_on_the_tree() -> void:
 		assert_dict(FarmTree.node_data(id)).override_failure_message(id).is_not_empty()
 
 
-func test_coins_buy_more_workers_and_speed_and_findings_buy_their_routes() -> void:
+func test_every_farm_node_is_paid_in_findings_so_coins_stay_for_the_projector() -> void:
 	for node: Dictionary in FarmTree.NODES:
-		var stats: Array = node.get("add", {}).keys() + node.get("mul", {}).keys()
-		for stat: String in stats:
-			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES).override_failure_message("%s: %s" % [node.id, stat]).is_true()
-			var want := "findings" if stat in ROUTES else "coins"
-			assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal(want)
+		assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("findings")
+
+
+func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_and_the_seed_order() -> void:
+	for node: Dictionary in FarmTree.NODES:
+		for stat: String in node.get("add", {}).keys() + node.get("mul", {}).keys():
+			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER).override_failure_message("%s: %s" % [node.id, stat]).is_true()
 
 
 func test_every_number_a_node_changes_is_tracked_by_the_save() -> void:
@@ -68,17 +74,17 @@ func test_hand_nodes_wait_for_the_seasonal_workforce_and_tractor_nodes_for_mecha
 
 
 func test_nothing_is_bought_before_the_farm_terminal_is_stamped() -> void:
-	var save := _save(["seasonal_workforce"], 1000000)
+	var save := _save(["seasonal_workforce"], 0, 1000000)
 	assert_bool(FarmTree.buy("fertiliser", save)).is_false()
-	assert_int(save.coins).is_equal(1000000)
+	assert_int(save.findings).is_equal(1000000)
 
 
-func test_a_farm_tree_node_bought_with_coins_adds_a_farm_hand_and_goes_into_farm_bought() -> void:
-	var save := _save(["farm_terminal", "seasonal_workforce"], 10000)
+func test_a_farm_tree_node_bought_with_findings_adds_a_farm_hand_and_goes_into_farm_bought() -> void:
+	var save := _save(["farm_terminal", "seasonal_workforce"], 0, 10000)
 	save.farm_hands = 1
 	assert_bool(FarmTree.buy("hand_2", save)).is_true()
 	assert_int(save.farm_hands).is_equal(2)
-	assert_int(save.coins).is_equal(10000 - FarmTree.price_of("hand_2", save))
+	assert_int(save.findings).is_equal(10000 - FarmTree.price_of("hand_2", save))
 	assert_array(Array(save.farm_bought)).is_equal(["hand_2"])
 	assert_bool(save.tree_bought.is_empty()).is_true()
 
@@ -92,7 +98,7 @@ func test_a_farm_tree_node_bought_with_findings_sets_the_tractor_route() -> void
 
 
 func test_overtime_and_double_shift_let_hands_and_tractors_do_one_more_job_a_trip() -> void:
-	var save := _save(["farm_terminal", "seasonal_workforce", "mechanisation"], 1000000)
+	var save := _save(["farm_terminal", "seasonal_workforce", "mechanisation"], 0, 1000000)
 	save.farm_bought = PackedStringArray(["hand_2", "tractor_2"])
 	assert_bool(FarmTree.buy("hand_shift", save)).is_true()
 	assert_bool(FarmTree.buy("tractor_shift", save)).is_true()
@@ -100,16 +106,14 @@ func test_overtime_and_double_shift_let_hands_and_tractors_do_one_more_job_a_tri
 	assert_int(save.farm_tractor_shift).is_equal(2)
 
 
-func test_findings_do_not_pay_for_a_coin_node_nor_coins_for_a_findings_node() -> void:
-	var save := _save(["farm_terminal", "seasonal_workforce"], 0, 1000000)
+func test_coins_do_not_pay_for_a_farm_node() -> void:
+	var save := _save(["farm_terminal", "seasonal_workforce"], 1000000, 0)
 	assert_bool(FarmTree.buy("hand_2", save)).is_false()
-	save = _save(["farm_terminal", "seasonal_workforce"], 1000000, 0)
-	save.farm_bought = PackedStringArray(["hand_2"])
-	assert_bool(FarmTree.buy("hand_route", save)).is_false()
+	assert_int(save.coins).is_equal(1000000)
 
 
 func test_a_node_waits_for_its_parent_and_is_bought_only_once() -> void:
-	var save := _save(["farm_terminal"], 1000000)
+	var save := _save(["farm_terminal"], 0, 1000000)
 	assert_bool(FarmTree.buy("greenhouse", save)).is_false()
 	assert_array(FarmTree.requirement("greenhouse", save)).is_equal(["REQUIRES:", "FERTILISER"])
 	assert_bool(FarmTree.buy("fertiliser", save)).is_true()
@@ -123,11 +127,9 @@ func test_a_node_an_old_save_bought_without_its_parent_still_shows_as_bought() -
 	assert_array(FarmTree.requirement("greenhouse", save)).is_empty()
 
 
-func test_every_node_costs_something_and_coin_prices_stay_near_the_old_farm_list() -> void:
+func test_every_node_costs_something() -> void:
 	for node: Dictionary in FarmTree.NODES:
 		assert_int(node.price).override_failure_message(node.id).is_greater(0)
-		if UpgradeTree.currency_of(node) == "coins":
-			assert_int(node.price).override_failure_message(node.id).is_between(2500, 30000)
 
 
 func test_no_two_nodes_sit_on_the_same_spot_and_every_heading_names_real_first_nodes() -> void:
@@ -165,3 +167,44 @@ func test_the_farm_tree_is_drawn_in_the_screens_green_phosphor() -> void:
 func test_each_farm_heading_sits_on_its_branch_between_the_hub_and_its_first_node() -> void:
 	for heading: Array in FarmTree.THEMES:
 		assert_float(UpgradeTree.heading_bend(FarmTree, heading)).override_failure_message(heading[0]).is_less_equal(30.5)
+
+
+func test_the_golden_chance_lives_on_the_farm_tree_and_climbs_from_one_in_forty_to_one_in_ten() -> void:
+	var save := _save(["farm_terminal", "golden_cabbage"], 0, 1000000)
+	var odds: Array[int] = [roundi(1.0 / save.golden_chance)]
+	for id: String in ["gold_chance_1", "gold_chance_2", "gold_chance_3"]:
+		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
+		odds.append(roundi(1.0 / save.golden_chance))
+	assert_array(odds).is_equal([40, 25, 15, 10])
+	for node: Dictionary in Projector.NODES:
+		assert_bool(node.get("add", {}).has("golden_chance") or node.get("mul", {}).has("golden_chance")).override_failure_message(node.id).is_false()
+
+
+func test_golden_nodes_wait_for_the_golden_card_and_hand_nodes_for_green_thumb() -> void:
+	var save := _save(["farm_terminal"], 0, 1000000)
+	assert_bool(FarmTree.is_shown("gold_chance_1", save)).is_false()
+	assert_bool(FarmTree.is_shown("thumb_yield", save)).is_false()
+	save.stamped.append("golden_cabbage")
+	save.stamped.append("green_thumb")
+	assert_bool(FarmTree.can_buy("gold_chance_1", save)).is_true()
+	assert_bool(FarmTree.can_buy("thumb_yield", save)).is_true()
+
+
+func test_employee_of_the_month_makes_a_hand_harvest_triple_and_one_in_one_out_replants() -> void:
+	var save := _save(["farm_terminal", "green_thumb"], 0, 1000000)
+	FarmTree.buy("thumb_yield", save)
+	FarmTree.buy("thumb_replant", save)
+	assert_float(save.hand_yield).is_equal(3.0)
+	assert_int(save.hand_replant).is_equal(1)
+
+
+func test_the_seed_order_nodes_wait_for_its_card_then_reorder_at_twenty_and_buy_the_fifty_pack() -> void:
+	var save := _save(["farm_terminal"], 0, 100000)
+	save.farm_bought.append("seed_contract")
+	assert_bool(FarmTree.is_shown("seed_reserve", save)).is_false()
+	save.stamped.append(FarmScreen.AUTO_CARD)
+	assert_bool(FarmTree.can_buy("seed_bulk", save)).is_false()  # Its parent first.
+	assert_bool(FarmTree.buy("seed_reserve", save)).is_true()
+	assert_int(save.farm_seed_reserve).is_equal(20)
+	assert_bool(FarmTree.buy("seed_bulk", save)).is_true()
+	assert_int(FarmScreen.SEED_PACKS[save.farm_seed_pack][0]).is_equal(50)

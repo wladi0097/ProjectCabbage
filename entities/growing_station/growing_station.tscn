@@ -5,8 +5,8 @@
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Machines/growing_station_glow.res" id="3_glow"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="5_cue"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/tray_drop.wav" id="6_thud"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/press_lever_1.wav" id="7_clunk1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/press_lever_2.wav" id="8_clunk2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/grow_pulse_1.wav" id="7_clunk1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/grow_pulse_2.wav" id="8_clunk2"]
 
 [sub_resource type="StandardMaterial3D" id="Glow"]
 albedo_color = Color(0.12, 0.13, 0.14, 1)
@@ -23,7 +23,7 @@ streams_count = 1
 stream_0/stream = ExtResource("6_thud")
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_Clunk"]
-random_pitch = 1.06
+random_pitch = 1.04
 random_volume_offset_db = 1.5
 streams_count = 2
 stream_0/stream = ExtResource("7_clunk1")

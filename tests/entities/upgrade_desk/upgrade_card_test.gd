@@ -16,11 +16,26 @@ func test_a_price_shows_its_currency_sign() -> void:
 	assert_str(UpgradeCard.price_text(130, "coins")).is_equal("$130")
 
 
+func test_a_price_paid_in_cabbages_is_the_number_with_the_cabbage_icon_before_it() -> void:
+	var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("offsite_storage")))
+	var coins: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("projector")))
+	var price := card.get_node("Look/Price") as Label3D
+	var icon := card.get_node("Look/PriceIcon") as Sprite3D
+
+	assert_str(price.text).is_equal("60")
+	assert_bool(icon.visible).is_true()
+	assert_float(icon.position.x).is_less(price.position.x)
+	assert_bool((coins.get_node("Look/PriceIcon") as Sprite3D).visible).is_false()
+	# The icon takes room: the cabbage price is wider than its bare number.
+	assert_float(UpgradeCard.price_width("60", "stock", 100)).is_greater(UpgradeCard.price_width("60", "coins", 100))
+
+
 func test_every_card_price_fits_its_box_and_short_ones_keep_the_full_size() -> void:
 	for card: Dictionary in UpgradeDesk.CARDS:
-		var shown := UpgradeCard.price_text(card.price, card.get("currency", "coins"))
-		var width := UpgradeCard.TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, UpgradeCard.price_size(shown)).x
-		assert_float(width * UpgradeCard.PIXEL).override_failure_message(shown).is_less_equal(UpgradeCard.PRICE_WIDTH)
+		var paid_in: String = card.get("currency", "coins")
+		var shown := UpgradeCard.price_text(card.price, paid_in)
+		var width := UpgradeCard.price_width(shown, paid_in, UpgradeCard.price_size(shown, paid_in))
+		assert_float(width).override_failure_message(shown).is_less_equal(UpgradeCard.PRICE_WIDTH)
 	assert_int(UpgradeCard.price_size("$6")).is_equal(UpgradeCard.PRICE_SIZE)
 	assert_int(UpgradeCard.price_size("¶3000")).is_less(UpgradeCard.PRICE_SIZE)
 
@@ -68,11 +83,12 @@ func test_a_short_title_keeps_the_full_size_and_a_long_word_prints_smaller() -> 
 
 
 func test_a_stage_changing_card_is_an_oxblood_priority_form_and_the_rest_plain_stock() -> void:
-	var farm := UpgradeDesk.card_data("family_farm")
-	assert_object(UpgradeCard.paper_tint(farm)).is_equal(UpgradeCard.PRIORITY_TINT)
-	assert_str(UpgradeCard.form_of(farm)).is_equal("FORM 0-P  PRIORITY ACQUISITION")
+	for id: String in ["family_farm", "consolidation"]:  # The farm, and chapter 2's last card.
+		var card := UpgradeDesk.card_data(id)
+		assert_object(UpgradeCard.paper_tint(card)).override_failure_message(id).is_equal(UpgradeCard.PRIORITY_TINT)
+		assert_str(UpgradeCard.form_of(card)).override_failure_message(id).is_equal("FORM 0-P  PRIORITY ACQUISITION")
 	for card: Dictionary in UpgradeDesk.CARDS:
-		if not card.has("event"):
+		if card.id not in ["family_farm", "consolidation"]:
 			assert_object(UpgradeCard.paper_tint(card)).override_failure_message(card.id).is_equal(Color.WHITE)
 
 

@@ -184,6 +184,32 @@ extends Resource
 ## does on one trip before it walks back to the yard (1 = back after every job; farm tree raises it).
 @export var farm_hand_shift := 1
 @export var farm_tractor_shift := 1
+## Golden units (desk card golden_cabbage): the chance a square planted on the farm grows golden
+## (farm tree raises it), the open squares that are golden, the golden units in stock (part of
+## stock, the mat's included), what one pays sold (× the price) and in the lab (× the Findings),
+## golden units sold, and farm_seconds when the card was stamped (-1: not yet; the overripe event
+## starts GameEvents.OVERRIPE_AFTER later).
+@export var golden_chance := 0.025
+@export var farm_golden := PackedInt32Array()
+@export var golden_stock := 0
+@export var golden_sale := 10.0
+@export var golden_lab := 10.0
+@export var golden_sold := 0
+@export var golden_at := -1.0
+## The overripe event has started (GameEvents "overripe"): ripe squares left FarmScreen.ROT_AFTER
+## seconds rot. Squares rotted so far.
+@export var overripe := false
+@export var farm_rotted := 0
+## GREEN THUMB (desk card green_thumb): a square harvested by hand yields hand_yield times; with
+## hand_replant (farm tree, 0/1) the pulled square is replanted at once from the crate.
+@export var hand_yield := 2.0
+@export var hand_replant := 0
+## STANDING SEED ORDER (desk card standing_seed_order): its AUTO SEED switch on CH1 (on from the
+## stamp), the crate's seed count at or under which it buys a pack (farm tree SAFETY SEED STOCK
+## raises it), and the pack it buys (FarmScreen.SEED_PACKS: 0 the 10, 1 the 50; farm tree).
+@export var farm_auto_seed := true
+@export var farm_seed_reserve := 5
+@export var farm_seed_pack := 0
 ## The TV channel last shown (1: the fields, 2: the farm tree).
 @export var farm_channel := 1
 ## The chute lever (card chute_control) is pulled: a metal blocker sits on the chute and no unit

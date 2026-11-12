@@ -6,7 +6,7 @@ extends Node3D
 ## it down: at the bottom the head comes down on the card. Paid from the tally, it is stamped
 ## approved and takes effect; once the head lifts it goes on the spike file and the next card is
 ## dealt. Too poor, the head thuds and the card's price blinks red. Cards with currency "findings"
-## are paid in Findings (¶) instead of coins. A card let go anywhere else
+## are paid in Findings (¶) instead of coins, "stock" in units from stock. A card let go anywhere else
 ## flies back. A card with `needs` is only dealt once all the cards it lists are stamped. Further
 ## hands are hired in the projector tree, not here. Retired ids in old saves (bulk_procurement,
 ## regional_billboard, rotten_bin) are skipped (migrate); a stamped billboard keeps the ×1.5 marketing it gave.
@@ -73,7 +73,7 @@ const CARDS := [
 	{id = "window_targets", price = 40, currency = "findings", title = "STREET TARGET PRACTICE",
 		needs = ["catch_combo"], body = "The street is given a target.\nAbout every 60 s a lamp lights a crate in the street for 15 s. A unit sold out of the window in line with it pays 10× its coins on top."},
 	{id = "research_materials", price = 50, currency = "findings", research = true, title = "RESEARCH: MATERIALS HANDLING",
-		needs = ["managerial_oversight"], body = "Units are found to be heavy.\nUnlocks Container Orders (40 more units per pack) and the Conveyor Retrofit on the projector."},
+		needs = ["managerial_oversight"], body = "Units are found to be heavy.\nUnlocks the Conveyor Retrofit on the projector (a unit down the chute every 0.5 s)."},
 	# Supply + automation: the console reorders packs on its own (entities/supply_console/), a coin
 	# vacuum docks on the mat (entities/vacuum/); their small upgrades are projector nodes.
 	{id = "auto_procurement", price = 80, currency = "findings", title = "STANDING PURCHASE ORDER",
@@ -95,36 +95,71 @@ const CARDS := [
 		needs = ["coin_collector", "desk_space"], body = "Floor space is a privilege, not a right.\nOne more unit fits on the mat now (2 to 3). Then the projector offers one more unit at a time, up to 20, each dearer than the last."},
 	# Stage 2 (GameEvents "supply_warning"): only dealt once that event has started (`event`), into a
 	# free tray slot. entities/farm_tv/ shows the remote and the TV, entities/farm_screen/ the farm.
-	{id = "family_farm", price = 2500, title = "ACQUIRE THE FAMILY FARM", event = "supply_warning",
+	{id = "family_farm", price = 2500, title = "ACQUIRE THE FAMILY FARM", event = "supply_warning", priority = true,
 		body = "Your uncle is selling. Family rates apply.\nA TV and a remote arrive. Click the remote to see the farm."},
-	# The farm's big steps. The terminal opens CH2 on the TV (entities/farm_tree/): the next card in
-	# the row once the farm is bought. ponytail: prices are placeholders, unpaced (tools/pace.py).
-	{id = "farm_terminal", price = 4000, title = "FARM ADMINISTRATION TERMINAL", needs = ["family_farm"],
-		body = "The farm is now managed remotely.\nChannel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with coins or Findings (¶)."},
-	# No effect here: entities/farm_screen/ draws its status row (FarmScreen.status_shown) once it is
-	# stamped. Dealt (timed) 30 farm seconds after the first harvest.
-	# ponytail: the price is a placeholder, unpaced (tools/pace.py).
-	{id = "farm_readout", price = 400, title = "FARM TELEMETRY PACKAGE", needs = ["family_farm"], after_harvest = 30.0,
-		body = "What is measured can be reported.\nA status line along the top of channel 1 (the fields): seeds, cabbages in stock against storage, and money, always in view."},
-	{id = "seasonal_workforce", price = 4000, title = "AUTHORISE A SEASONAL WORKFORCE", needs = ["farm_terminal"],
-		body = "Seasonal. Indefinitely.\nA farm hand walks onto the fields (channel 1) and plants empty squares with your seeds. More hands on channel 2."},
-	{id = "mechanisation", price = 9000, title = "MECHANISATION PROGRAMME", needs = ["farm_terminal"],
-		body = "The horse has been informed.\nA tractor drives onto the fields (channel 1) and harvests ripe squares. More tractors on channel 2."},
-	# The end of stage 2: no effect here, entities/chute_lever/ drops the lever onto the chute once it
-	# is stamped and worlds/components/cabbage_feeder.gd stops while it is pulled (save.chute_blocked).
-	# Price and needs are placeholders, not paced yet (tools/pace.py).
-	{id = "chute_control", price = 3000, title = "INSTALL A SUPPLY INTERRUPTION LEVER", needs = ["family_farm"],
+	# Paid in units from stock (currency "stock"): 60 only fit once STOCK ROOM (projector storage_1,
+	# `tree`) holds 75, so it is dealt once that node is bought, and only after the family farm (stage
+	# 2's cards cost units). Unlocks the storage chain past it (Projector stock_100's `lock`).
+	{id = "offsite_storage", price = 60, currency = "stock", tree = "storage_1", needs = ["family_farm"], title = "REQUISITION OFF-SITE STORAGE",
+		body = "Space is allocated to those who can prove they need it.\nPaid in units from your stock, not coins: fill the stock room first. Unlocks the storage past the stock room on the projector."},
+	# Dealt once off-site storage is in: blocking the chute piles stock up, which pays the cards priced
+	# in units (golden_cabbage, mechanisation). No effect here: entities/chute_lever/ drops the lever onto
+	# the chute once it is stamped and worlds/components/cabbage_feeder.gd stops while it is pulled
+	# (save.chute_blocked). Paced in tools/pace.py.
+	{id = "chute_control", price = 30, currency = "stock", title = "INSTALL A SUPPLY INTERRUPTION LEVER", needs = ["offsite_storage"],
 		body = "The street will adjust.\nA heavy lever on the back of the chute. Pull it down and a steel plate shuts the chute: no units come down, stock piles up. Pull it up to reopen."},
+	# The farm's big steps. The terminal opens CH2 on the TV (entities/farm_tree/): the next card in
+	# the row once the farm is bought. Stage 2's cards are paid in Findings (¶), the farm and the chute
+	# lever aside: coins stay for the projector. ponytail: prices are placeholders, unpaced (tools/pace.py).
+	{id = "farm_terminal", price = 500, currency = "findings", title = "FARM ADMINISTRATION TERMINAL", needs = ["family_farm"],
+		body = "The farm is now managed remotely.\nChannel 2 on the TV: the farm's own upgrade tree. Hold the mouse on an upgrade to buy it with Findings (¶)."},
+	# No effect here: entities/farm_screen/ draws its status row (FarmScreen.status_shown) once it is
+	# stamped. Dealt once the farm is bought (no card waits on a timer).
+	# ponytail: the price is a placeholder, unpaced (tools/pace.py).
+	{id = "farm_readout", price = 150, currency = "findings", title = "FARM TELEMETRY PACKAGE", needs = ["family_farm"],
+		body = "What is measured can be reported.\nA status line along the top of channel 1 (the fields): seeds, cabbages in stock against storage, and money, always in view."},
+	# From stage 2 on the next desk cards are paid in cabbages (units from stock). GREEN THUMB rewards
+	# the hand farming before the tractors take over: FarmScreen.harvest(by_hand).
+	{id = "green_thumb", price = 40, currency = "stock", title = "GREEN THUMB COMMENDATION", needs = ["farm_terminal"],
+		body = "Manual labour is recognised. Briefly.\nA square you harvest by hand on channel 1 (pull the cabbage out) yields double. Tractors are not commended. More on channel 2."},
+	{id = "seasonal_workforce", price = 800, currency = "findings", title = "AUTHORISE A SEASONAL WORKFORCE", needs = ["farm_terminal"],
+		body = "Seasonal. Indefinitely.\nA farm hand walks onto the fields (channel 1) and plants empty squares with your seeds. More hands on channel 2."},
+	# Golden units: FarmScreen.sow rolls save.golden_chance, the chute sends save.golden_stock down as
+	# gold units (Cabbage.golden), SaleWindow / QaBay pay golden_sale / golden_lab times. Needs the
+	# 200-unit Basement Annex (`tree`). Stamped, it also starts the clock on GameEvents "overripe" and
+	# deals mechanisation.
+	{id = "golden_cabbage", price = 120, currency = "stock", tree = "storage_2", needs = ["family_farm"],
+		title = "PILOT SCHEME: PREMIUM UNITS",
+		body = "Some units are better than others. Officially.\nAbout 1 square in 40 planted on the farm grows golden. Its cabbages come down the chute gold: sold, each pays 10× your price; flicked into the research lab, 10× the Findings."},
+	# Dealt right after the golden card (no card waits on a timer), ahead of GameEvents "overripe"
+	# (rot) a minute later: tractors harvest before squares rot.
+	{id = "mechanisation", price = 180, currency = "stock", title = "MECHANISATION PROGRAMME", needs = ["golden_cabbage"],
+		body = "The horse has been informed.\nA tractor drives onto the fields (channel 1) and harvests ripe squares before they rot. More tractors on channel 2."},
+	# No effect here: entities/farm_screen/ shows its AUTO SEED switch once it is stamped and buys seed
+	# packs by itself (FarmScreen.auto_seed); its CH2 nodes raise the reorder point and the pack.
+	{id = "standing_seed_order", price = 180, currency = "stock", title = "STANDING SEED ORDER", needs = ["mechanisation"],
+		body = "Seeds are a recurring cost. Recurrence has been automated.
+An AUTO SEED switch in the yard on channel 1. On, a 10-seed pack is bought by itself whenever the crate is down to 5 seeds and the money is there. More on channel 2."},
 	# Stage 2 mini cards (reports/mini_cabbages_2026-11-08.md). mini_thinning: entities/mini_drop/ sends one
 	# mini per farm harvest; micro_samples: QaBay.findings_for; mini_station: entities/growing_station/,
-	# its chance raised by the projector's growth chain. Prices: thinning $600 and micro ¶60 from the
-	# report's sim; the station's $1500 is a placeholder, not paced yet (tools/pace.py).
-	{id = "mini_thinning", price = 600, title = "FIELD THINNING PROGRAMME", needs = ["family_farm"],
+	# its chance raised by the projector's growth chain. Prices are placeholders, not paced yet
+	# (tools/pace.py); micro samples is dear (¶1000) because a tube on RESEARCH floods the lab with minis.
+	{id = "mini_thinning", price = 200, currency = "findings", title = "FIELD THINNING PROGRAMME", needs = ["family_farm"],
 		body = "The field produces waste. Waste is a product.\nEvery harvest on the farm also sends one mini unit down the tube (at most 6 minis out at once)."},
-	{id = "micro_samples", price = 60, currency = "findings", title = "RESEARCH: MICRO-SAMPLE PROTOCOL", needs = ["tube_lever", "family_farm"],
+	{id = "micro_samples", price = 1000, currency = "findings", title = "RESEARCH: MICRO-SAMPLE PROTOCOL", needs = ["tube_lever", "family_farm"],
 		body = "Research has established that a sample need not be large. Or whole.\nA mini sent to the research lab yields the Findings of two full units."},
-	{id = "mini_station", price = 1500, title = "INSTALL A UNIT GROWING STATION", needs = ["mini_thinning", "mini_tube"],
+	{id = "mini_station", price = 500, currency = "findings", title = "INSTALL A UNIT GROWING STATION", needs = ["mini_thinning", "mini_tube"],
 		body = "Small units are a temporary condition.\nA growing chamber is bolted over the tube's intake. 1 mini in 20 comes out a full unit: no stock, sold at your full price, counted as sold."},
+	# Stage 2's end (`priority`: the oxblood form, like the farm card). Dealt once every other stage-2
+	# card is stamped (these `needs` reach all of them, the mini cards aside; golden_cabbage named too, as
+	# an old save's mechanisation came from migrate_farm without it). Paid in more units than
+	# BONDED WAREHOUSE (Projector stock_750) holds, so it waits on DECOMMISSIONED SCHOOL (stock_1000, 1,000)
+	# and a nearly full store: below that cap by more than a harvest, as a harvest only goes in whole
+	# (FarmScreen.storage_room). Stamped, GameEvents "invest_in_growth" starts (chapter 3). Paced in
+	# tools/pace.py storage: dealt ~62 min, stamped ~90 min.
+	{id = "consolidation", price = 900, currency = "stock", priority = true, title = "CONSOLIDATED GROWTH REQUISITION",
+		needs = ["chute_control", "farm_readout", "green_thumb", "seasonal_workforce", "standing_seed_order", "golden_cabbage"],
+		body = "The desk has outgrown the desk.\nPaid in units from stock, more than a bonded warehouse holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future."},
 ]
 const OFFERED := 3
 const Events := preload("res://globalScripts/game_events.gd")
@@ -245,6 +280,14 @@ func _process(delta: float) -> void:
 		_deal()
 	if _shock_in <= 0.0 and Events.shock_due(save):
 		_start(save, "supply_shock")
+	if _shock_in <= 0.0 and Events.overripe_due(save):
+		save.overripe = true
+		SaveManager.log_event("event", "overripe")
+		_deal()
+	if _shock_in <= 0.0 and save.tray_unlocked and _leaving == null and _offered.size() < OFFERED \
+			and next_cards(save.stamped, OFFERED, save).any(func(id: String) -> bool: return not _offered.any(
+				func(card: UpgradeCard) -> bool: return card.id == id)):
+		_deal()  # A `tree` card whose projector node was just bought, into a free slot.
 	if _shock_in <= 0.0:
 		_shock_in = SHOCK_CHECK
 	if _cranking:
@@ -267,7 +310,7 @@ func _process(delta: float) -> void:
 
 
 ## The next `count` cards in the queue that are not stamped yet and whose `needs` all are. A timed
-## card (an `event` or `after_harvest`) also waits until it is due in `save` (never without a save),
+## card (an `event` or a `tree` node) also waits until it is due in `save` (never without a save),
 ## and once it is, comes before the rest.
 static func next_cards(stamped: PackedStringArray, count: int, save: SaveGame = null) -> Array[String]:
 	var out: Array[String] = []
@@ -282,19 +325,24 @@ static func next_cards(stamped: PackedStringArray, count: int, save: SaveGame = 
 	return out
 
 
-## A card that waits for something in the save besides other cards: a GameEvents `event`, or
-## `after_harvest` farm seconds since the first harvest.
+## A card that waits for something in the save besides other cards: a GameEvents `event` (only one
+## of UNTIMED_EVENTS, never a clock) or a projector node bought (`tree`).
 static func timed(card: Dictionary) -> bool:
-	return card.has("event") or card.has("after_harvest")
+	return card.has("event") or card.has("tree")
 
 
-## Whether timed card `card` is due in `save`: its event has started, its farm time has passed.
+## The only events a card may be dealt by: started by what the player does, never by a timer (the
+## warning: the tray has run dry). No upgrade card waits on a timer.
+const UNTIMED_EVENTS := ["supply_warning"]
+
+
+## Whether timed card `card` is due in `save`: its event has started, its projector node is bought.
 static func due(card: Dictionary, save: SaveGame) -> bool:
-	return (not card.has("event") or Events.due(card.event, save)) and (not card.has("after_harvest") \
-			or (save.farm_first_harvest >= 0.0 and save.farm_seconds - save.farm_first_harvest >= card.after_harvest))
+	return (not card.has("event") or Events.due(card.event, save)) 			and (not card.has("tree") or save.tree_bought.has(card.tree))
 
 
-## Stage 2's step `id` begins (GameEvents "supply_warning" or "supply_shock"), logged.
+## Stage 2's step `id` begins (GameEvents "supply_warning" or "supply_shock"), logged. The overripe
+## event starts in _process (Events.overripe_due).
 func _start(save: SaveGame, id: String) -> void:
 	if id == "supply_warning":
 		start_warning(save)
@@ -355,13 +403,25 @@ static func migrate(save: SaveGame) -> void:
 	Projector.migrate_mat(save)  # The mat allowance, once one repeatable node, now a chain.
 	if save.bin_coins == 0:  # The bin rebate, once a share of the price, now flat dollars per tier.
 		save.bin_coins = RottenBin.bin_coins_for(save.tree_bought)
-	Projector.migrate_storage(save)  # Container orders, from before storage had a cap.
+	Projector.migrate_storage(save)  # The storage chain, once 6 steps; container orders from before the cap.
+	if save.tree_bought.has("storage_2") and not save.stamped.has("offsite_storage"):
+		save.stamped.append("offsite_storage")  # Bought past the stock room before the card gated it.
+	save.stock = clamp_stock(save.stock, save.storage_cap)
+	save.golden_stock = clamp_stock(save.golden_stock, save.stock)
+	if save.stamped.has("golden_cabbage") and save.golden_at < 0.0:
+		save.golden_at = save.farm_seconds  # Stamped without a clock: the overripe event comes a minute from now.
 	if save.tree_bought.has("combo_window"):  # GRACE PERIOD, once a longer combo timer, now keeps half on a miss.
 		save.miss_keep = maxf(save.miss_keep, 0.5)
 	if save.migration < 4:
 		migrate_farm(save)
 	save.migration = SaveGame.MIGRATION
 	save.sale_price = mini(save.sale_price, PriceSlate.max_price(save.marketing))
+
+
+## Stock a loaded save holds, at most what storage can hold now (a save from a build with more room,
+## or an edited one).
+static func clamp_stock(stock: int, cap: int) -> int:
+	return mini(stock, cap)
 
 
 ## An old save's one-off FARM HAND / TRACTOR (farm_bought "farm_hand", "tractor"; the ids stay there,
@@ -413,6 +473,32 @@ static func apply(id: String, save: SaveGame) -> void:
 			save.farm_hands = maxi(save.farm_hands, 1)
 		"mechanisation":
 			save.farm_tractors = maxi(save.farm_tractors, 1)
+		"golden_cabbage":  # The overripe event comes Events.OVERRIPE_AFTER farm seconds from now.
+			save.golden_at = save.farm_seconds
+
+
+## What the save can pay in `currency`. In units only the ones still in the store: `out` of the
+## stock are out of the chute (on the mat, in a hand, refused in the street) and can't pay.
+static func spendable(save: SaveGame, currency: String, out := Vector2i.ZERO) -> int:
+	return save.get(currency) - (out.x if currency == "stock" else 0)
+
+
+## Takes `price` in `currency` from the save. Paid in units, they come from the store (not the `out`
+## ones, x of them, y golden) and plain ones go first: golden units in the store are kept as long as
+## there are plain ones to pay with.
+static func pay(save: SaveGame, currency: String, price: int, out := Vector2i.ZERO) -> void:
+	save.set(currency, save.get(currency) - price)
+	if currency == "stock":
+		save.golden_stock = out.y + maxi(clamp_stock(save.golden_stock - out.y, save.stock - out.x), 0)
+
+
+## The stock units out of the chute among `cabbages`: x all of them, y the golden ones (see spendable).
+static func units_out(cabbages: Array) -> Vector2i:
+	var out := Vector2i.ZERO
+	for cabbage: Cabbage in cabbages:
+		if cabbage.in_stock():
+			out += Vector2i(1, int(cabbage.golden))
+	return out
 
 
 ## The handle's centre (press space) with the lever cranked `crank` of the way down.
@@ -629,12 +715,13 @@ func _bottom_out() -> void:
 	$Press/Puff.restart()
 	var save := SaveManager.save
 	var card := _on_press
-	if card == null or save.get(card.currency) < card.price:
+	var out := units_out(get_tree().get_nodes_in_group(&"cabbages"))
+	if card == null or spendable(save, card.currency, out) < card.price:
 		$Denied.cue(_pad())
 		if card != null:
 			card.blink()
 		return
-	save.set(card.currency, save.get(card.currency) - card.price)
+	pay(save, card.currency, card.price, out)
 	save.stamped.append(card.id)
 	apply(card.id, save)
 	SaveManager.log_event("card", card.id, card.price, card.currency)

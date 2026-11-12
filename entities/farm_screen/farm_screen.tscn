@@ -11,6 +11,30 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/farm/pack_button_hover.svg" id="9_pack_hover"]
 [ext_resource type="Texture2D" path="res://assets/sprites/farm/pack_button_pressed.svg" id="10_pack_pressed"]
 [ext_resource type="Texture2D" path="res://assets/sprites/farm/seed_bag.svg" id="11_seed_bag"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_golden_harvest_1.wav" id="gh1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_golden_harvest_2.wav" id="gh2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_rot_1.wav" id="rt1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_rot_2.wav" id="rt2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_clear_1.wav" id="cl1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_clear_2.wav" id="cl2"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_GoldHarvest"]
+random_pitch = 1.05
+streams_count = 2
+stream_0/stream = ExtResource("gh1")
+stream_1/stream = ExtResource("gh2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Rot"]
+random_pitch = 1.05
+streams_count = 2
+stream_0/stream = ExtResource("rt1")
+stream_1/stream = ExtResource("rt2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Clear"]
+random_pitch = 1.05
+streams_count = 2
+stream_0/stream = ExtResource("cl1")
+stream_1/stream = ExtResource("cl2")
 
 [sub_resource type="StyleBoxFlat" id="Line"]
 content_margin_left = 8.0
@@ -104,6 +128,21 @@ stream = ExtResource("3_harvest")
 volume_db = -6.0
 bus = &"SFX"
 
+[node name="GoldHarvest" type="AudioStreamPlayer" parent="."]
+stream = SubResource("Rand_GoldHarvest")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="Rot" type="AudioStreamPlayer" parent="."]
+stream = SubResource("Rand_Rot")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="Clear" type="AudioStreamPlayer" parent="."]
+stream = SubResource("Rand_Clear")
+volume_db = -6.0
+bus = &"SFX"
+
 [node name="Buy" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("4_buy")
 volume_db = -6.0
@@ -118,6 +157,20 @@ bus = &"SFX"
 stream = ExtResource("7_grip")
 volume_db = -12.0
 bus = &"SFX"
+
+[node name="AutoSeed" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 1270.0
+offset_top = 414.0
+offset_right = 1466.0
+offset_bottom = 464.0
+mouse_default_cursor_shape = 2
+theme_override_styles/pressed = SubResource("Lit")
+theme_override_styles/hover_pressed = SubResource("Lit")
+auto_translate_mode = 2
+toggle_mode = true
+text = "AUTO SEED: ON"
 
 [node name="Packs" type="HBoxContainer" parent="."]
 layout_mode = 0

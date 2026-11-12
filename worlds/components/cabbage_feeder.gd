@@ -10,7 +10,9 @@ extends Node3D
 ## unit comes down a research unit with the save's research_chance (still stock, sold as usual).
 ## When that share grows (the card stamped, a sampling quota bought) a research unit comes down at
 ## once, even onto a full mat. While the chute lever is pulled (save.chute_blocked, card
-## chute_control, entities/chute_lever/) nothing comes down: stock just piles up.
+## chute_control, entities/chute_lever/) nothing comes down: stock just piles up. Golden units in
+## stock (save.golden_stock, from golden farm squares) come down gold, mixed in at their share of
+## the stock not on the mat yet (is_golden).
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
 const PLAY_AREA_LAYER := 2
@@ -33,6 +35,7 @@ const MAX_ROTTEN := 2
 
 var _on_desk: Array[Cabbage] = []
 var _rotten_on_desk := 0
+var _golden_on_desk := 0
 var _cooldown := 0.0
 var _shown := 0.0
 var _drums := PackedInt32Array()
@@ -70,6 +73,7 @@ func _physics_process(delta: float) -> void:
 	var save := SaveManager.save
 	var gone := false
 	_rotten_on_desk = 0
+	_golden_on_desk = 0
 	for i in range(_on_desk.size() - 1, -1, -1):
 		var cabbage := _on_desk[i]
 		if not is_instance_valid(cabbage) or cabbage.sold:
@@ -77,6 +81,8 @@ func _physics_process(delta: float) -> void:
 			gone = true
 		elif cabbage.rotten:
 			_rotten_on_desk += 1
+		elif cabbage.golden:
+			_golden_on_desk += 1
 	_cooldown -= delta
 	if gone:
 		_cooldown = maxf(_cooldown, restock_wait(save.restock_delay, randf()))
@@ -108,6 +114,13 @@ static func is_research(stamped: bool, roll: float, chance: float) -> bool:
 	return stamped and roll < chance
 
 
+## Whether the next unit is golden: `golden` of the `stock` units are golden, `golden_out` and `out`
+## of them already on the mat; `roll` is 0..1. Each unit still in stock is equally likely to be next.
+static func is_golden(golden: int, golden_out: int, stock: int, out: int, roll: float) -> bool:
+	var left := stock - out
+	return left > 0 and roll * left < golden - golden_out
+
+
 ## The share of units that come down research units: research_chance once the card is stamped, else 0.
 static func research_share(save: SaveGame) -> float:
 	return save.research_chance if save.stamped.has("research_cabbage") else 0.0
@@ -124,7 +137,8 @@ func _roll() -> void:
 	var save := SaveManager.save
 	cabbage.rotten = not _research_due and is_rotten(save.rotten_unlocked, randf(), _rotten_on_desk)
 	var owed := _research_due
-	cabbage.research = owed or (not cabbage.rotten and is_research(save.stamped.has("research_cabbage"), randf(), save.research_chance))
+	cabbage.golden = not owed and not cabbage.rotten 			and is_golden(save.golden_stock, _golden_on_desk, save.stock, _on_desk.size(), randf())
+	cabbage.research = owed or not cabbage.golden and (not cabbage.rotten and is_research(save.stamped.has("research_cabbage"), randf(), save.research_chance))
 	_research_due = false
 	get_parent().add_child(cabbage)
 	_on_desk.append(cabbage)

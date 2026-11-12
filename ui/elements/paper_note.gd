@@ -3,12 +3,14 @@ extends Control
 ## An upgrade card as flat 2D paper, cut from the 3D card's own texture: the form line and title in
 ## the green header band, then the body written on the ruled lines, one texture row per wrapped
 ## line, so every line of text sits on a ruling. Never takes the mouse, so the hand under it keeps going.
-## The body's first line is flavour (deadpan, no rules in it): it is slanted (italic), the rest upright.
+## The body's first line is flavour (deadpan, no rules in it): it is slanted (italic) and a touch darker, the rest upright.
 
 const PAPER := preload("res://assets/textures/card_paper/card_paper_albedo.png")
 const TITLE_FONT := preload("res://assets/fonts/Oswald.ttf")
 const BODY_FONT := preload("res://assets/fonts/NunitoSans.ttf")
 const INK := Color(0.9, 0.89, 0.84)
+## The flavour line's ink: a touch darker, so it reads as an aside.
+const FLAVOUR_INK := Color(0.68, 0.68, 0.64)
 ## Pieces of the texture (px): the header band with its rule, one ruled row with its line RULE_AT
 ## from the row's top (the texture rules every 80 px), a blank strip of a row for the price, and the
 ## foot. The right edge leaves out the card's own price box.
@@ -36,9 +38,12 @@ const PRICE_RULE := Color(0.5, 0.5, 0.49)
 var _form := ""
 var _title := ""
 var _price := ""
+var _currency := "coins"
 ## The card paper's dye (UpgradeCard.paper_tint): a priority form is oxblood here too.
 var _tint := Color.WHITE
 var _body := TextParagraph.new()
+## Characters of _body that are the flavour line.
+var _flavour_len := 0
 static var _italics := {}
 
 
@@ -47,10 +52,12 @@ func set_card(card: Dictionary) -> void:
 	_form = tr(UpgradeCard.form_of(card))
 	_tint = UpgradeCard.paper_tint(card)
 	_title = tr(card.title)
-	_price = UpgradeCard.price_text(card.price, card.get("currency", "coins"))
+	_currency = card.get("currency", "coins")
+	_price = UpgradeCard.price_text(card.price, _currency)
 	_body.clear()
 	_body.width = (TEXT_RIGHT - TEXT_LEFT) * SCALE
 	var parts := flavour_split(tr(card.body))
+	_flavour_len = parts[0].length()
 	if parts[0] != "":
 		_body.add_string(parts[0] + ("\n" if parts[1] != "" else ""), italic(BODY_FONT), BODY_SIZE)
 	_body.add_string(parts[1], BODY_FONT, BODY_SIZE)
@@ -63,6 +70,11 @@ func set_card(card: Dictionary) -> void:
 static func flavour_split(body: String) -> PackedStringArray:
 	var at := body.find("\n")
 	return PackedStringArray(["", body]) if at < 0 else PackedStringArray([body.left(at), body.substr(at + 1)])
+
+
+## The ink of a body line starting at character `start`, the flavour line `flavour_len` long.
+static func line_ink(start: int, flavour_len: int) -> Color:
+	return FLAVOUR_INK if start < flavour_len else INK
 
 
 ## `font` slanted like italic (one FontVariation per font, shared).
@@ -88,16 +100,17 @@ func _draw() -> void:
 		# The baseline sits just above the row's ruled line.
 		var baseline := y + (RULE_AT - 6.0) * SCALE
 		y = _piece(ROW, y)
-		_body.draw_line(get_canvas_item(), Vector2(x, baseline - _body.get_line_ascent(line)), line, INK)
+		_body.draw_line(get_canvas_item(), Vector2(x, baseline - _body.get_line_ascent(line)), line, line_ink(_body.get_line_range(line).x, _flavour_len))
 	var strip := y
 	y = _piece(BLANK, y)
 	_piece(FOOT, y)
 	# The price in a ruled box like the card's, right-aligned to the writing.
-	var text := TITLE_FONT.get_string_size(_price, HORIZONTAL_ALIGNMENT_LEFT, -1, PRICE_SIZE)
+	var text := Vector2(UpgradeCard.price_width(_price, _currency, PRICE_SIZE, 1.0), TITLE_FONT.get_height(PRICE_SIZE))
 	var box := Rect2(Vector2.ZERO, text + PRICE_PAD * 2.0)
 	box.position = Vector2(TEXT_RIGHT * SCALE - box.size.x, strip + (BLANK.size.y * SCALE - box.size.y) * 0.5)
 	draw_rect(box, PRICE_RULE, false, 2.0)
-	draw_string(TITLE_FONT, box.position + Vector2(PRICE_PAD.x, PRICE_PAD.y + TITLE_FONT.get_ascent(PRICE_SIZE)), _price, HORIZONTAL_ALIGNMENT_LEFT, -1, PRICE_SIZE, INK)
+	UpgradeCard.draw_price(self, TITLE_FONT, Vector2(box.end.x - PRICE_PAD.x, box.position.y + PRICE_PAD.y + TITLE_FONT.get_ascent(PRICE_SIZE)),
+			_price, _currency, PRICE_SIZE, INK)
 
 
 ## Draws texture piece `region` across the paper's width at height `y`; returns where it ends.

@@ -79,6 +79,11 @@ static func payout(price: float, factors: Dictionary) -> int:
 	return maxi(1, roundi(total))
 
 
+## What a unit's price is multiplied by: save.golden_sale for a golden one, else 1.
+static func golden_factor(is_golden: bool, save: SaveGame) -> float:
+	return save.golden_sale if is_golden else 1.0
+
+
 ## The chance the street buys a unit when a full cabbage sells with `chance` (a mini: MINI_ACCEPTANCE more).
 static func acceptance_for(chance: float, is_mini: bool) -> float:
 	return minf(1.0, chance * MINI_ACCEPTANCE) if is_mini else chance
@@ -141,7 +146,7 @@ func _judge(cabbage: Cabbage) -> void:
 	if cabbage.rotten:
 		# Inspected at the window and confiscated: no refusal, no coins, a fine.
 		cabbage.suck_out(out, SUCK_TIME)
-		save.stock -= 1
+		cabbage.leave_stock(save)
 		var fine := fine_for(price, save.coins)
 		save.coins -= fine
 		save.fines += 1
@@ -161,10 +166,12 @@ func _judge(cabbage: Cabbage) -> void:
 		save.minis_sold += 1
 		paid = payout(price * save.mini_value, boosts)
 	else:
-		if cabbage.is_stock():  # A grown mini (growing station) is a full unit but no stock.
-			save.stock -= 1
+		cabbage.leave_stock(save)  # A grown mini (growing station) is a full unit but no stock.
 		save.sold += 1
-		paid = payout(price, boosts)
+		save.golden_sold += int(cabbage.golden)
+		paid = payout(price * golden_factor(cabbage.golden, save), boosts)
+		if cabbage.golden:
+			cabbage.ring_golden_sale()
 	sold.emit(cabbage, paid)
 	coins.throw_in_after(THROW_DELAY, Vector3(x, throw_from.y, throw_from.z), paid)
 

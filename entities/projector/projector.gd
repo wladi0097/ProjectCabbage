@@ -17,8 +17,8 @@ extends Control
 ## waits for, so the path ahead can be seen. One that becomes reachable for the first time is marked
 ## NEW (a pulsing ring) until the screen is rolled up (save.tree_seen); on the very first open
 ## everything showing counts as seen already (mark_first_open), so the first look doesn't all blink. A node with `research` (a
-## research card on the desk) is reachable but locked until that card is stamped: a padlock, and a
-## hold is refused. Like a phone map, a held
+## research card on the desk), `lock` (any other desk card) or `after` (another node) is reachable but
+## locked until that card is stamped or that node bought: a padlock, and a hold is refused. Like a phone map, a held
 ## press dragged across the slide pans the tree (kept on the slide) and the wheel zooms it; a
 ## double-click recentres.
 ##
@@ -32,12 +32,13 @@ const Events := preload("res://globalScripts/game_events.gd")
 
 ## Every node, in one list for retuning (prices from reports/economy_rework_2026-10-31.md). A bought
 ## node multiplies each save number in `mul`, raises each in `add`, and `hire` adds one hand.
-## `research` names the desk card that unlocks it (see locked_by).
+## `research` names the research card that unlocks it, `lock` any other desk card, `after` a node
+## that must be bought first (see locked_by): until then it shows with a padlock.
 ## `at` is the spot on the wheel (centre 0,0; x is drawn 1.6 times wider than y): marketing up, QA
 ## down (research, lab hands), manual handling right (procurement and desk space, minis, sales events,
 ## management fanning out), automation left (consultancy, supply chain, coin units, associates,
 ## headcount); THEMES names the fans. Generated, with no overlaps or crossing edges, by tools/projector_layout/layout.py from its
-## sectors.json.
+## sectors.json (the mat, procurement and storage chains are laid by hand, "fixed" there, and checked by it).
 ## The mat allowance: the desk card gives the 3rd unit, then a chain of nodes "mat_%d", one per
 ## unit from MAT_FIRST up to MAT_MAX (migrate_mat files an old save's units as bought).
 const MAT_FIRST := 4
@@ -77,36 +78,124 @@ const NODES := [
 		body = "\"Cabbage.\"\nEvery unit now sells even at a 25% higher price:\nraise yours on the slate to cash in."},
 	{id = "pack_1", parent = "dept_manual", at = Vector2(1.79, -0.18), icon = "crate", price = 250,
 		add = {pack_size = 3}, title = "BULK PROCUREMENT",
-		body = "Volume is policy.\nEvery pack from the supply console holds 3 more\nunits: 13 instead of 10."},
-	{id = "pack_2", parent = "storage_1", at = Vector2(2.63, -1.02), icon = "crate", price = 600,
-		add = {pack_size = 40}, title = "CONTAINER ORDERS",
-		body = "A container is parked in the street.\nEvery pack holds 40 more units: 53 instead of 13."},
-	# Storage: the most units the stock holds (save.storage_cap, 20 at the start). The first step comes
-	# before container orders, whose 53-unit packs would not fit in 20.
-	{id = "storage_1", parent = "pack_1", at = Vector2(2.20, -0.65), icon = "crate", price = 400,
-		add = {storage_cap = 55}, title = "STOCK ROOM",
+		body = "Volume is policy.
+Every pack from the supply console holds 3 more
+units: 13 instead of 10."},
+	# Its 53-unit packs need the room: locked (`after`) until the stock room (75) is bought.
+	{id = "pack_2", parent = "pack_1", at = Vector2(2.75, -0.20), icon = "crate", price = 600,
+		after = "storage_1", add = {pack_size = 40}, title = "CONTAINER ORDERS",
+		body = "A container is parked in the street.
+Every pack holds 40 more units: 53 instead of 13."},
+	# Storage (its own branch, STORAGE): the most units the stock holds (save.storage_cap, 20 at the
+	# start), a long chain of small steps, each the child of the last and at least 25% more room, up
+	# to 9,999. The kept ids storage_1..6 hold 75, 200, 500, 1,500, 4,000 and 9,999 as they did
+	# (migrate_storage); the steps between are stock_<cap>. Past the stock room the chain is shown
+	# but locked (`lock`) until the desk card REQUISITION OFF-SITE STORAGE is stamped.
+	{id = "stock_25", parent = "dept_manual", at = Vector2(2.20, -0.70), icon = "crate", price = 50,
+		add = {storage_cap = 5}, title = "SHELF BRACKET",
+		body = "A bracket is screwed to the wall. It is load-bearing.
+Storage holds 25 units instead of 20."},
+	{id = "stock_32", parent = "stock_25", at = Vector2(2.47, -1.13), icon = "crate", price = 90,
+		add = {storage_cap = 7}, title = "STACKING POLICY",
+		body = "Units may now be stacked. Two high. Carefully.
+Storage holds 32 units instead of 25."},
+	{id = "stock_40", parent = "stock_32", at = Vector2(2.74, -0.70), icon = "crate", price = 150,
+		add = {storage_cap = 8}, title = "UNDER-DESK ALLOCATION",
+		body = "Your legs are relocated to the left.
+Storage holds 40 units instead of 32."},
+	{id = "stock_50", parent = "stock_40", at = Vector2(3.01, -1.13), icon = "crate", price = 240,
+		add = {storage_cap = 10}, title = "FILING CABINET",
+		body = "The files are shredded to make room.
+Storage holds 50 units instead of 40."},
+	{id = "storage_1", parent = "stock_50", at = Vector2(3.28, -0.70), icon = "crate", price = 400,
+		add = {storage_cap = 25}, title = "STOCK ROOM",
 		body = "The broom cupboard is reassigned.
-Storage holds 75 units instead of 20."},
-	{id = "storage_2", parent = "storage_1", at = Vector2(2.69, -0.64), icon = "crate", price = 2500,
-		add = {storage_cap = 125}, title = "BASEMENT ANNEX",
+Storage holds 75 units instead of 50."},
+	{id = "stock_100", parent = "storage_1", at = Vector2(3.55, -1.13), icon = "crate", price = 500,
+		lock = "offsite_storage", add = {storage_cap = 25}, title = "OFF-SITE LOCKER",
+		body = "A locker at the bus depot. The key is laminated.
+Storage holds 100 units instead of 75."},
+	{id = "stock_125", parent = "stock_100", at = Vector2(3.82, -0.70), icon = "crate", price = 750,
+		add = {storage_cap = 25}, title = "CORRIDOR OVERFLOW",
+		body = "Fire exits are reclassified as aspirational.
+Storage holds 125 units instead of 100."},
+	{id = "stock_160", parent = "stock_125", at = Vector2(4.09, -1.13), icon = "crate", price = 1100,
+		add = {storage_cap = 35}, title = "LIFT SHAFT",
+		body = "The lift is out of order. Permanently. On purpose.
+Storage holds 160 units instead of 125."},
+	{id = "storage_2", parent = "stock_160", at = Vector2(4.36, -0.70), icon = "crate", price = 1600,
+		add = {storage_cap = 40}, title = "BASEMENT ANNEX",
 		body = "The archive is moved to the car park.
-Storage holds 200 units instead of 75."},
-	{id = "storage_3", parent = "storage_2", at = Vector2(3.14, -0.82), icon = "crate", price = 8000,
-		add = {storage_cap = 300}, title = "COLD STORE",
+Storage holds 200 units instead of 160."},
+	# Golden units (desk card golden_cabbage): what one pays, sold (save.golden_sale) or in the lab
+	# (golden_lab). How often a square grows golden is the farm tree's (¶). Under the annex, below
+	# the chain, clear of every node and edge (by hand, not from layout.py).
+	{id = "gold_sale_1", parent = "storage_2", at = Vector2(4.06, -0.27), icon = "crate", price = 6000,
+		needs = ["golden_cabbage"], add = {golden_sale = 5.0}, title = "PREMIUM SHELF",
+		body = "The golden ones are kept at eye level.
+A golden unit sold pays 15× your price, not 10×."},
+	{id = "gold_sale_2", parent = "gold_sale_1", at = Vector2(4.06, 0.16), icon = "crate", price = 20000,
+		add = {golden_sale = 5.0}, title = "LUXURY CLASSIFICATION",
+		body = "The street is told it cannot afford them.
+A golden unit sold pays 20× your price, not 15×."},
+	{id = "gold_lab_1", parent = "storage_2", at = Vector2(4.66, -0.27), icon = "pilcrow", price = 5000,
+		needs = ["golden_cabbage"], add = {golden_lab = 5.0}, title = "ASSAY OFFICE",
+		body = "Gold is tested. The test is gold.
+A golden unit in the research lab gives 15× the
+Findings, not 10×."},
+	{id = "gold_lab_2", parent = "gold_lab_1", at = Vector2(4.66, 0.16), icon = "pilcrow", price = 18000,
+		add = {golden_lab = 10.0}, title = "PRECIOUS METALS DESK",
+		body = "Nobody is sure which metal.
+A golden unit in the research lab gives 25× the
+Findings, not 15×."},
+	{id = "stock_250", parent = "storage_2", at = Vector2(4.63, -1.13), icon = "crate", price = 2400,
+		add = {storage_cap = 50}, title = "RENTED GARAGE",
+		body = "The car now lives outside.
+Storage holds 250 units instead of 200."},
+	{id = "stock_320", parent = "stock_250", at = Vector2(4.63, -1.56), icon = "crate", price = 3400,
+		add = {storage_cap = 70}, title = "MEZZANINE",
+		body = "A second floor is added halfway up the first.
+Storage holds 320 units instead of 250."},
+	{id = "stock_400", parent = "stock_320", at = Vector2(4.63, -1.99), icon = "crate", price = 5000,
+		add = {storage_cap = 80}, title = "PALLET RACKING",
+		body = "Units are now filed vertically.
+Storage holds 400 units instead of 320."},
+	{id = "storage_3", parent = "stock_400", at = Vector2(4.63, -2.42), icon = "crate", price = 7000,
+		add = {storage_cap = 100}, title = "COLD STORE",
 		body = "Kept at four degrees. So is the staff room.
-Storage holds 500 units instead of 200."},
-	{id = "storage_4", parent = "storage_3", at = Vector2(3.60, -1.00), icon = "crate", price = 30000,
-		add = {storage_cap = 1000}, title = "REGIONAL DEPOT",
+Storage holds 500 units instead of 400."},
+	{id = "stock_750", parent = "storage_3", at = Vector2(4.63, -2.85), icon = "crate", price = 11000,
+		add = {storage_cap = 250}, title = "BONDED WAREHOUSE",
+		body = "Customs has been told it is cabbage.
+Storage holds 750 units instead of 500."},
+	{id = "stock_1000", parent = "stock_750", at = Vector2(4.63, -3.28), icon = "crate", price = 17000,
+		add = {storage_cap = 250}, title = "DECOMMISSIONED SCHOOL",
+		body = "Education has been rationalised.
+Storage holds 1,000 units instead of 750."},
+	{id = "storage_4", parent = "stock_1000", at = Vector2(4.63, -3.71), icon = "crate", price = 26000,
+		add = {storage_cap = 500}, title = "REGIONAL DEPOT",
 		body = "A warehouse on the ring road. Nobody visits.
-Storage holds 1,500 units instead of 500."},
-	{id = "storage_5", parent = "storage_4", at = Vector2(4.05, -1.18), icon = "crate", price = 100000,
-		add = {storage_cap = 2500}, title = "STRATEGIC RESERVE",
+Storage holds 1,500 units instead of 1,000."},
+	{id = "stock_2000", parent = "storage_4", at = Vector2(4.13, -3.71), icon = "crate", price = 40000,
+		add = {storage_cap = 500}, title = "AIRCRAFT HANGAR",
+		body = "The aircraft were surplus to requirements.
+Storage holds 2,000 units instead of 1,500."},
+	{id = "stock_3000", parent = "stock_2000", at = Vector2(4.13, -3.28), icon = "crate", price = 62000,
+		add = {storage_cap = 1000}, title = "SALT MINE",
+		body = "Underground, stable, and nobody asks.
+Storage holds 3,000 units instead of 2,000."},
+	{id = "storage_5", parent = "stock_3000", at = Vector2(4.13, -2.85), icon = "crate", price = 95000,
+		add = {storage_cap = 1000}, title = "STRATEGIC RESERVE",
 		body = "Classified as critical infrastructure.
-Storage holds 4,000 units instead of 1,500."},
-	{id = "storage_6", parent = "storage_5", at = Vector2(4.51, -1.36), icon = "crate", price = 350000,
-		add = {storage_cap = 5999}, title = "NATIONAL CABBAGE RESERVE",
+Storage holds 4,000 units instead of 3,000."},
+	{id = "stock_6000", parent = "storage_5", at = Vector2(4.13, -2.42), icon = "crate", price = 150000,
+		add = {storage_cap = 2000}, title = "FORMER MINISTRY",
+		body = "The ministry has been consolidated into a memo.
+Storage holds 6,000 units instead of 4,000."},
+	{id = "storage_6", parent = "stock_6000", at = Vector2(4.13, -1.99), icon = "crate", price = 240000,
+		add = {storage_cap = 3999}, title = "NATIONAL CABBAGE RESERVE",
 		body = "The nation's cabbages are now your problem.
-Storage holds 9,999 units instead of 4,000."},
+Storage holds 9,999 units instead of 6,000."},
 	{id = "conveyor_1", parent = "dept_automation", at = Vector2(-0.99, -0.87), icon = "belt", price = 775,
 		research = "research_materials", mul = {dispense_interval = 0.5}, title = "CONVEYOR RETROFIT",
 		body = "The ramp is motorised.\nThe chute rolls a unit down every 0.5 s, not 1 s."},
@@ -210,7 +299,7 @@ Storage holds 9,999 units instead of 4,000."},
 	{id = "mat_20", parent = "mat_19", at = Vector2(3.26, -3.29), icon = "desk", price = 457350,
 		add = {desk_capacity = 1}, title = "20-UNIT MAT",
 		body = "There is no more desk. There is only the mat.\nOne more unit fits on the mat\n(the chute keeps it full): 19 to 20."},
-	{id = "discount_1", parent = "pack_1", at = Vector2(2.28, -0.07), icon = "crate", price = 350,
+	{id = "discount_1", parent = "pack_1", at = Vector2(2.28, 0.05), icon = "crate", price = 350,
 		mul = {pack_discount = 0.7}, title = "SUPPLIER REVIEW",
 		body = "The supplier is reminded of alternatives.\nPacks cost 30% less. The ticker shows the cut price."},
 	{id = "auto_reserve_1", parent = "dept_automation", at = Vector2(-1.21, -0.44), icon = "clock", price = 600,
@@ -289,7 +378,7 @@ Storage holds 9,999 units instead of 4,000."},
 		body = "The consultant bills by the tap.\nIt taps the slate every 2 s instead of 4 s."},
 	{id = "consultant_mood", parent = "consultant_speed_1", at = Vector2(-0.94, -1.96), icon = "lens", price = 725,
 		add = {consultant_skill = 1}, title = "READS THE ROOM",
-		body = "The consultant looks out of the window.\nThe street's mood shifts its prices by up to ±25%\nevery minute. The consultant now follows it,\nso ~90% of units keep selling."},
+		body = "The consultant looks out of the window.\nThe street's mood shifts its prices by up to ±10%\nevery minute, never past ±25%. The consultant now follows it,\nso ~90% of units keep selling."},
 	{id = "consultant_smart", parent = "consultant_mood", at = Vector2(-1.02, -2.45), icon = "crate", price = 2000,
 		add = {consultant_skill = 1}, title = "YIELD OPTIMISATION",
 		body = "Some units may now be refused.\nIt picks the price with the most profit per unit\n(sale minus pack cost). While hired hands find the\nmat empty, it adds $1 a tap (up to 1.6× the price\nevery unit sells at)."},
@@ -336,7 +425,7 @@ Storage holds 9,999 units instead of 4,000."},
 		body = "Spoilage now has its own quarterly target.\nA binned rotten unit pops out $8 in coins\n($5 before), whatever your price."},
 	{id = "bin_rebate_5", parent = "bin_rebate_4", at = Vector2(3.76, 4.07), icon = "crate", price = 40000,
 		add = {bin_coins = 4}, title = "SPOILAGE PREMIUM",
-		body = "A rotten unit is worth more than a fresh one. Fine.\nA binned rotten unit pops out $12 in coins\n($8 before), whatever your price."},
+		body = "A rotten unit is worth more than a fresh one.\nA binned rotten unit pops out $12 in coins\n($8 before), whatever your price."},
 	{id = "hands_bin", parent = "dept_automation", at = Vector2(-0.52, 0.96), icon = "hand", price = 400,
 		needs = ["junior_associate", "catch_combo"], add = {hands_bin = 1}, title = "WASTE HANDLING PROTOCOL",
 		body = "Associates are shown where the bin is.\nHired hands throw rotten units into the bin\ninstead of selling them or leaving them."},
@@ -417,7 +506,8 @@ Storage holds 9,999 units instead of 4,000."},
 ## (same units as a node's `at`; spots by tools/_theme_place.gd, on the branch line, clear of every
 ## node, edge and other heading in English and German).
 const THEMES := [
-	["PROCUREMENT", Vector2(1.31, -0.09), ["pack_1"]],
+	["PROCUREMENT", Vector2(1.34, -0.07), ["pack_1"]],
+	["STORAGE", Vector2(1.44, -0.31), ["stock_25"]],
 	["DESK SPACE", Vector2(1.55, -0.79), ["mat_4"]],
 	["SALES EVENTS", Vector2(1.25, 0.46), ["lamp_mult", "combo_window", "target_size", "bin_mouth"]],
 	["MANAGEMENT", Vector2(0.90, 0.46), ["manager_time"]],
@@ -743,13 +833,20 @@ static func is_open(id: String, save: SaveGame) -> bool:
 	return save.tree_bought.has(id)
 
 
-## The research card node `id` still waits for, "demo" if the demo locks it (dearer than
-## Demo.NODE_PRICE_CAP), or "" (none, stamped, or the node already bought).
+## What node `id` still waits for although reachable: "demo" if the demo locks it (dearer than
+## Demo.NODE_PRICE_CAP), its `research` or `lock` desk card not stamped yet, its `after` node not
+## bought yet, or "" (none, all in, or the node already bought).
 static func locked_by(id: String, save: SaveGame) -> String:
-	if Events.Demo.active() and price_of(id, save) > Events.Demo.NODE_PRICE_CAP and not save.tree_bought.has(id):
+	if save.tree_bought.has(id):
+		return ""
+	if Events.Demo.active() and price_of(id, save) > Events.Demo.NODE_PRICE_CAP:
 		return "demo"
-	var card: String = node_data(id).get("research", "")
-	return "" if card == "" or save.stamped.has(card) or save.tree_bought.has(id) else card
+	var node := node_data(id)
+	for card: String in [node.get("research", ""), node.get("lock", "")]:
+		if card != "" and not save.stamped.has(card):
+			return card
+	var after: String = node.get("after", "")
+	return after if after != "" and not save.tree_bought.has(after) else ""
 
 
 static func is_bought(id: String, save: SaveGame) -> bool:
@@ -760,12 +857,32 @@ static func price_of(id: String, _save: SaveGame) -> int:
 	return node_data(id).get("price", 0)
 
 
-## An old save that bought container orders before storage had a cap: the stock room counts as
-## bought, so a 53-unit pack still fits. Safe to rerun.
+## The storage a save holds with storage node `id` bought (and so the whole chain up to it).
+static func cap_at(id: String) -> int:
+	var node := node_data(id)
+	if not node.get("add", {}).has("storage_cap"):
+		return SaveGame.new().storage_cap
+	return cap_at(node.parent) + node.add.storage_cap
+
+
+## An old save's storage: container orders bought before storage had a cap count the stock room as
+## bought; every step before a bought one counts as bought (the chain was 6 nodes before the steps
+## between them), and the cap is the chain's (cap_at), so storage_1..6 keep 75 ... 9,999. Safe to rerun.
 static func migrate_storage(save: SaveGame) -> void:
 	if save.tree_bought.has("pack_2") and not save.tree_bought.has("storage_1"):
 		save.tree_bought.append("storage_1")
-		apply("storage_1", save)
+	var top := ""
+	for node: Dictionary in NODES:  # In chain order: the last bought one is the top.
+		if node.get("add", {}).has("storage_cap") and save.tree_bought.has(node.id):
+			top = node.id
+	if top == "":
+		return
+	save.storage_cap = cap_at(top)
+	var step := top
+	while node_data(step).get("add", {}).has("storage_cap"):
+		if not save.tree_bought.has(step):
+			save.tree_bought.append(step)
+		step = node_data(step).parent
 
 
 ## An old save's mat: with the allowance card stamped it holds at least 3 (the card's free unit), and
@@ -797,12 +914,17 @@ static func requirement(id: String, save: SaveGame) -> Array:
 	for card: String in node.get("needs", []):
 		if not save.stamped.has(card):
 			return ["REQUIRES DESK CARD:", UpgradeDesk.card_data(card).get("title", card)]
-	var research := locked_by(id, save)
-	if research == "demo":
+	var lock := locked_by(id, save)
+	if lock == "demo":
 		return ["FULL GAME ONLY:", "Wishlist it on Steam"]
-	if research != "":
-		return ["REQUIRES RESEARCH:", UpgradeDesk.card_data(research).get("title", research).trim_prefix("RESEARCH: ")]
-	return []
+	if lock == "":
+		return []
+	if lock == node.get("after", ""):
+		return ["REQUIRES:", node_data(lock).title]
+	var card := UpgradeDesk.card_data(lock)
+	if card.get("research", false):
+		return ["REQUIRES RESEARCH:", card.title.trim_prefix("RESEARCH: ")]
+	return ["REQUIRES DESK CARD:", card.get("title", lock)]
 
 
 ## Pays for node `id` and applies it; false (and nothing changes) if it can't be bought.

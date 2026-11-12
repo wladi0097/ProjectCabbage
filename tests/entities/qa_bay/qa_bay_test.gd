@@ -238,3 +238,12 @@ func test_a_grown_mini_taken_in_costs_no_stock_and_yields_a_full_units_findings(
 	unit.grown = true
 	assert_int(_bay()._take(unit)).is_equal(3)
 	assert_int(_save.stock).is_equal(5)
+
+
+func test_a_golden_unit_yields_golden_lab_times_the_findings() -> void:
+	_save.findings_per_cabbage = 2
+	var gold := _unit()
+	gold.golden = true
+	assert_float(QaBay.findings_for(gold, _save)).is_equal(20.0)
+	_save.golden_lab = 25.0
+	assert_float(QaBay.findings_for(gold, _save)).is_equal(50.0)

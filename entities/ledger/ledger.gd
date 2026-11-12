@@ -112,7 +112,7 @@ static func clock(seconds: int) -> String:
 
 
 static func money(amount: int, currency: String) -> String:
-	return ("¶%d" if currency == "findings" else "$%d") % amount
+	return UpgradeCard.price_text(amount, currency)
 
 
 ## The performance summary: [label, value] rows.
@@ -131,7 +131,7 @@ static func summary_rows(save: SaveGame, seconds: int) -> Array:
 	]
 
 
-## Every card and tree node bought, newest first: [play time, what, price].
+## Every card and tree node bought, newest first: [play time, what, price, currency].
 static func requisitions(save: SaveGame) -> Array:
 	var rows := []
 	for entry: Dictionary in save.playtest_log:
@@ -139,7 +139,7 @@ static func requisitions(save: SaveGame) -> Array:
 				else Projector.node_data(entry.id) if entry.kind == "node" else {}
 		if entry.kind in ["card", "node"]:
 			rows.push_front(["T+" + clock(entry.t), data.get("title", str(entry.id).to_upper()),
-					money(entry.price, entry.currency)])
+					money(entry.price, entry.currency), entry.currency])
 	return rows
 
 
@@ -387,7 +387,7 @@ func _draw_page(rect: Rect2, index: int, side: int) -> void:
 				var row: Array = page.rows[i]
 				draw_string(_type, Vector2(x, row_y.call(i)), row[0], HORIZONTAL_ALIGNMENT_LEFT, w, int(text * 0.8), Color(INK, 0.75))
 				draw_string(_type, Vector2(x + w * 0.27, row_y.call(i)), tr(row[1]), HORIZONTAL_ALIGNMENT_LEFT, w * 0.58, int(text * 0.8), INK)
-				draw_string(_type, Vector2(x, row_y.call(i)), row[2], HORIZONTAL_ALIGNMENT_RIGHT, w, int(text * 0.8), INK)
+				UpgradeCard.draw_price(self, _type, Vector2(x + w, row_y.call(i)), row[2], row[3], int(text * 0.8), INK)
 			draw_string(_type, Vector2(x, row_y.call(REQ_PER_PAGE) + line_h), tr("%d REQUISITIONS APPROVED IN TOTAL.") % _reqs.size(),
 					HORIZONTAL_ALIGNMENT_LEFT, w, int(text * 0.8), Color(INK, 0.7))
 		"chart":

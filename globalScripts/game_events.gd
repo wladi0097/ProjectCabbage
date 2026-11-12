@@ -33,7 +33,18 @@ const EVENTS := {
 	## (SupplyConsole.SQUEEZE_TIME), from whichever came second.
 	supply_squeeze = {card = "family_farm", flag = "supply_shock", report = {re = "THE WHOLESALERS RETALIATE",
 		body = "Word of the farm got out. Crates now cost more than a unit sells for: 10 minutes at a time, with a 1 minute break in between. The standing order will not buy them meanwhile. Live off the farm: the remote on your desk switches to it."}},
+	## Stage 2, after the golden units: OVERRIPE_AFTER farm seconds after the golden_cabbage card,
+	## ripe squares left FarmScreen.ROT_AFTER s rot. The mechanisation card, the cure, is dealt
+	## right after the golden card, not by this event (no card waits on a timer).
+	overripe = {flag = "overripe", report = {re = "SPOILAGE ON THE FARM",
+		body = "Premium units have raised expectations. The farm no longer meets them. From today a ripe square left unharvested for 10 minutes rots: it yields nothing and blocks the square until you clear it. Farm hands will not touch it. The mechanisation programme is the remedy. Compost is not a product category."}},
+	## The end of stage 2 (chapter 2): the CONSOLIDATED GROWTH REQUISITION card is stamped. Chapter 3
+	## (buying other companies, the stock market) starts from here: chapter_3(save).
+	invest_in_growth = {card = "consolidation", report = {re = "WE SHOULD INVEST IN GROWTH",
+		body = "The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Units remain units. Some of them will now be shares."}},
 }
+## Farm seconds after the golden_cabbage card until the overripe event starts.
+const OVERRIPE_AFTER := 60.0
 ## Units sold after the warning until wholesale prices explode (tools/pace.py: about 4 min; the
 ## demo: Demo.SHOCK_AFTER).
 const SHOCK_AFTER := 150
@@ -52,6 +63,11 @@ static func shock_after() -> int:
 static func due(id: String, save: SaveGame) -> bool:
 	var event: Dictionary = EVENTS[id]
 	return (not event.has("flag") or save.get(event.flag)) and (not event.has("card") or save.stamped.has(event.card))
+
+
+## Whether chapter 3 has begun: chapter 2's last card is stamped (the "invest_in_growth" event).
+static func chapter_3(save: SaveGame) -> bool:
+	return due("invest_in_growth", save)
 
 
 ## Whether the tray has nothing left to deal but DRY_LEFT cards (event cards aside).
@@ -74,6 +90,11 @@ static func warning_ready(save: SaveGame) -> bool:
 static func warning_due(save: SaveGame) -> bool:
 	return warning_ready(save) and (Demo.active() \
 			or UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save).size() < UpgradeDesk.OFFERED)
+
+
+## Whether the overripe event starts now: OVERRIPE_AFTER farm seconds after the golden card.
+static func overripe_due(save: SaveGame) -> bool:
+	return not save.overripe and save.golden_at >= 0.0 and save.farm_seconds >= save.golden_at + OVERRIPE_AFTER
 
 
 ## Whether wholesale prices explode now: shock_after() units sold since the warning.

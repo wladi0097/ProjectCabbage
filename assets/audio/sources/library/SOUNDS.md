@@ -517,3 +517,91 @@ True peaks (ffmpeg volumedetect). Most CRT takes came out near-silent, as before
 | `combo_sting_35gY.wav` | (above) | 0.88s | -0.5 dB | 0.02s | — |
 | `combo_sting_nayt.wav` | (above) | 0.88s | -0.9 dB | 0.04s | — |
 | `combo_sting_D62x.wav` | (above) | 0.88s | -3.5 dB | 0.08s | — |
+### chute_slam (2026-11-12)
+> A heavy steel plate flap dropping and slamming shut across a sheet steel chute, one deep heavy metallic clunk with a short iron ring and a small rebound rattle, close-mic, dry
+| `chute_slam_Pr3t.wav` | (above) | 0.80s | -0.1 dB | 0.03s | chute_shut |
+| `chute_slam_1TyO.wav` | (above) | 0.80s | -2.6 dB | 0.02s | — |
+| `chute_slam_p5ML.wav` | (above) | 0.80s | -4.0 dB | 0.01s | — |
+| `chute_slam_6ABs.wav` | (above) | 0.80s | -7.9 dB | 0.01s | — |
+### chute_latch (2026-11-12)
+> A heavy cast-iron lever on an industrial machine thrown hard to its stop, one solid mechanical latch clack, short, close-mic, dry
+| `chute_latch_8mWm.wav` | (above) | 0.48s | -2.5 dB | 0.07s | chute_shut |
+| `chute_latch_JV1W.wav` | (above) | 0.48s | -0.3 dB | 0.10s | chute_lift |
+| `chute_latch_BbbC.wav` | (above) | 0.48s | -2.4 dB | 0.17s | — |
+| `chute_latch_p7l8.wav` | (above) | 0.48s | -4.5 dB | 0.07s | — |
+### chute_winch (2026-11-12)
+> A heavy steel flap hauled up by a hand-cranked ratchet winch, steady fast metallic ratchet clicking with a low gear grind, continuous, no impact, close-mic, dry
+| `chute_winch_J4kT.wav` | (above) | 1.00s | -4.2 dB | 0.15s | chute_lift |
+| `chute_winch_6lNN.wav` | (above) | 1.00s | -5.1 dB | 0.36s | — |
+| `chute_winch_QVOA.wav` | (above) | 1.00s | -8.3 dB | 0.66s | — (level to 0.9 s) |
+| `chute_winch_YRVS.wav` | (above) | 1.00s | -3.7 dB | 0.37s | — (dies at 0.5 s) |
+### chute_stop (2026-11-12)
+> A heavy steel flap swung up coming to rest against a steel stop, one dull muted metallic clunk with a ratchet pawl click, short, close-mic, dry
+| `chute_stop_zYfK.wav` | (above) | 0.48s | -2.2 dB | 0.01s | chute_lift |
+| `chute_stop_Upse.wav` | (above) | 0.48s | -2.5 dB | 0.03s | — |
+| `chute_stop_2Q7k.wav` | (above) | 0.48s | -4.0 dB | 0.01s | — |
+| `chute_stop_rt6N.wav` | (above) | 0.48s | -25.7 dB | 0.00s | — (near-silent) |
+### grow_hum (2026-11-12)
+> Inside an old industrial office machine, a cold electrical transformer hum surging up quickly then slowly dying away, audible low mains buzz, no music, no beeps, close-mic, dry
+All four came out steady (no surge); grow_pulse shapes them with `afade=t=in:d=0.3:curve=qsin,afade=t=out:st=0.3:d=1.55:curve=qsin` (the shaped copies sit in `sources/grow_pulse_*/`).
+| `grow_hum_SC8S.wav` | (above) | 1.88s | -8.4 dB | 1.47s | grow_pulse_1 |
+| `grow_hum_G9sF.wav` | (above) | 1.88s | -7.0 dB | 0.01s | grow_pulse_2 |
+| `grow_hum_FbOx.wav` | (above) | 1.88s | -1.2 dB | 0.71s | — (loud, flat buzz) |
+| `grow_hum_C9Xt.wav` | (above) | 1.88s | -8.0 dB | 0.29s | — |
+### grow_clunk (2026-11-12)
+> A heavy steel ring clamp on an industrial machine engaging around a pipe, one dull deep metallic clunk followed by a short sharp pneumatic hiss, close-mic, dry
+| `grow_clunk_MACS.wav` | (above) | 0.68s | -1.4 dB | 0.02s | grow_pulse_1 |
+| `grow_clunk_IQE1.wav` | (above) | 0.68s | -7.7 dB | 0.01s | grow_pulse_2 |
+| `grow_clunk_gLu2.wav` | (above) | 0.68s | -8.5 dB | 0.01s | — |
+| `grow_clunk_2kEM.wav` | (above) | 0.68s | -27.5 dB | 0.00s | — (near-silent) |
+
+
+### gold_bell
+> A heavy old bank teller bell struck once, one deep rich cold metallic ding with a long clean shimmering ring out, no music, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `gold_bell_IJ8B.wav` | (above) | 1.20s | -19.4 dB (true -13.8) | 0.01s | — |
+| `gold_bell_VGWb.wav` | (above) | 1.20s | -31.6 dB (true -30.6) | 0.00s | — (near-silent) |
+| `gold_bell_v1iX.wav` | (above) | 1.20s | -18.0 dB (true -17.7) | 0.00s | golden_sale_1 |
+| `gold_bell_vEFF.wav` | (above) | 1.20s | -21.1 dB (true -16.0) | 0.02s | golden_sale_2 |
+
+### gold_coins
+> A handful of heavy gold coins dropped onto a steel bank counter, dense rich cold metallic clinking jingle settling quickly, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `gold_coins_CBSr.wav` | (above) | 1.00s | -9.0 dB (true -2.7) | 0.14s | — |
+| `gold_coins_O8Z3.wav` | (above) | 1.00s | -5.7 dB (true -0.8) | 0.11s | golden_sale_2 |
+| `gold_coins_eVqa.wav` | (above) | 1.00s | -4.9 dB (true -0.6) | 0.43s | — |
+| `gold_coins_l1Ty.wav` | (above) | 1.00s | -2.1 dB (true -0.0) | 0.22s | golden_sale_1 |
+
+### gold_shimmer
+> A short cold bright metallic shimmer, a few small gold coins tinkling together once, sparkling, no music, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `gold_shimmer_GGVW.wav` | (above) | 0.80s | -30.8 dB (true -5.0) | 0.23s | farm_golden_harvest_1 |
+| `gold_shimmer_HacM.wav` | (above) | 0.80s | -23.2 dB (true -7.5) | 0.00s | — |
+| `gold_shimmer_afWg.wav` | (above) | 0.80s | -31.3 dB (true -9.5) | 0.26s | — |
+| `gold_shimmer_t1mu.wav` | (above) | 0.80s | -29.0 dB (true -5.8) | 0.00s | farm_golden_harvest_2 |
+
+### rot_slump
+> An overripe cabbage head sagging and collapsing onto dry soil, a dull soft damp leafy slump with a low deflating sigh, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `rot_slump_8Hgk.wav` | (above) | 1.00s | -2.6 dB (true -0.9) | 0.37s | farm_rot_2 |
+| `rot_slump_HsDk.wav` | (above) | 1.00s | -17.2 dB (true -13.9) | 0.24s | — |
+| `rot_slump_ejQU.wav` | (above) | 1.00s | -13.3 dB (true -10.2) | 0.16s | — |
+| `rot_slump_oyzV.wav` | (above) | 1.00s | -5.8 dB (true -3.7) | 0.09s | farm_rot_1 |
+
+### rot_scrape
+> A steel garden spade scooping quickly through dry soil, one short gritty scrape, no impact, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `rot_scrape_CsVg.wav` | (above) | 0.48s | -9.1 dB (true -6.1) | 0.00s | — |
+| `rot_scrape_PsfZ.wav` | (above) | 0.48s | -3.6 dB (true -2.1) | 0.11s | farm_clear_1 |
+| `rot_scrape_iV4J.wav` | (above) | 0.48s | -13.7 dB (true -11.9) | 0.04s | — |
+| `rot_scrape_q4OR.wav` | (above) | 0.48s | -5.0 dB (true -1.3) | 0.02s | farm_clear_2 |

@@ -146,8 +146,7 @@ func _take(cabbage: Cabbage) -> void:
 	var save := SaveManager.save
 	var rim: float = global_position.y + RIM * (1.0 - SINK) * $Model.scale.y
 	cabbage.drop_into(global_position + Vector3.DOWN * 0.06, rim + CLEAR, FALL_TIME)
-	if cabbage.is_stock():
-		save.stock -= 1  # Minis (and grown ones) are free: no stock.
+	cabbage.leave_stock(save)  # Minis (and grown ones) are free: no stock.
 	if cabbage.rotten:
 		save.binned += 1
 		if save.bin_coins > 0 and coins != null:
