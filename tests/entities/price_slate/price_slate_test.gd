@@ -166,18 +166,43 @@ func test_the_forecast_clock_survives_a_reload() -> void:
 	assert_float(loaded.demand_mood).is_equal_approx(0.8, 0.0001)
 
 
-func test_the_slate_shows_the_forecast_only_once_reads_the_room_is_bought() -> void:
-	var save := _slate_save()
+func test_the_slate_shows_no_forecast_before_either_node_is_bought() -> void:
+	_slate_save()
 	var slate := _slate()
 	slate._process(0.1)
 	assert_bool(slate.get_node("Forecast").visible).is_false()
 
-	save.tree_bought.append(Slate.FORECAST)
-	save.mood_next = 0.1
-	save.mood_clock = 18.0
+
+func test_the_slate_shows_the_arrow_only_with_reads_the_room_and_the_countdown_only_with_the_timetable() -> void:
+	for case: Array in [[[Slate.FORECAST], true, false], [[Slate.FORECAST_TIME], false, true],
+			[[Slate.FORECAST, Slate.FORECAST_TIME], true, true]]:
+		var save := _slate_save()
+		save.tree_bought = PackedStringArray(case[0])
+		save.mood_next = 0.1
+		save.mood_clock = 18.0
+		var slate := _slate()
+		slate._process(0.0)
+		var arrow: Label3D = slate.get_node("Forecast/Arrow")
+		var time: Label3D = slate.get_node("Forecast/Time")
+		assert_bool(slate.get_node("Forecast").visible).is_true()
+		assert_bool(arrow.visible).override_failure_message(str(case[0])).is_equal(case[1])
+		assert_bool(time.visible).override_failure_message(str(case[0])).is_equal(case[2])
+		if case[2]:
+			assert_str(time.text).is_equal("0:42")
+
+
+func test_a_lone_forecast_half_sits_centred_under_the_price_and_the_pair_sits_side_by_side() -> void:
+	var save := _slate_save()
+	var slate := _slate()
+	var arrow: Label3D = slate.get_node("Forecast/Arrow")
+	var time: Label3D = slate.get_node("Forecast/Time")
+	for half: String in [Slate.FORECAST, Slate.FORECAST_TIME]:
+		save.tree_bought = PackedStringArray([half])
+		slate._process(0.0)
+		assert_float((arrow if half == Slate.FORECAST else time).position.x).override_failure_message(half).is_zero()
+	save.tree_bought = PackedStringArray([Slate.FORECAST, Slate.FORECAST_TIME])
 	slate._process(0.0)
-	assert_bool(slate.get_node("Forecast").visible).is_true()
-	assert_str((slate.get_node("Forecast/Time") as Label3D).text).is_equal("0:42")
+	assert_float(arrow.position.x).is_less(time.position.x)
 
 
 func _slate_save() -> SaveGame:

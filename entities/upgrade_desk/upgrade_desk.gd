@@ -175,9 +175,9 @@ Every cabbage you flick into the research lab yourself gives 20% more Findings. 
 	# 2,000) and a nearly full store: below that cap by more than a harvest and a full mat, as a
 	# harvest only goes in whole (FarmScreen.storage_room) and the mat can't pay. The steps past it
 	# (SALT MINE to ANNEXED PROVINCE) are growth, optional before the stamp.
-	# Stamped, GameEvents "invest_in_growth" starts (chapter 3). Price set by the designer: $20,000
-	# and 1,900 units, no Findings. Paced in tools/pace.py storage.
-	{id = "consolidation", price = 1900, currency = "stock", also = {coins = 20000}, priority = true, title = "CONSOLIDATED GROWTH REQUISITION",
+	# Stamped, GameEvents "invest_in_growth" starts (chapter 3). Price set by the designer: $20,000,
+	# 1,900 units and ¶4,000 (the ¶ ready under 2 min after the units). Paced in tools/pace.py storage.
+	{id = "consolidation", price = 1900, currency = "stock", also = {findings = 4000, coins = 20000}, priority = true, title = "CONSOLIDATED GROWTH REQUISITION",
 		needs = ["offsite_storage", "farm_readout", "green_thumb", "seasonal_workforce", "standing_seed_order", "golden_cabbage"],
 		body = "The desk has outgrown the desk.\nPaid in cabbages from stock, more than the regional depot holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future."},
 ]
@@ -232,6 +232,16 @@ const NOTICE := {id = "progress_notice", form = "MEMO 0-0  STANDING NOTICE", tit
 	body = "Head office reminds you.\nEvery form on this desk must be approved for you to progress. The projector is optional."}
 ## Debug builds only: a double click within this many seconds of dropping a card stamps it free.
 const DEBUG_DOUBLE := 0.6
+## The first-stamp hint (first_stamp_hint), until a save has ever stamped a form: none; the ghost form
+## on the pad ($Press/Ghost) while the hand holds something; the ghost and the tray's affordable form
+## nudging (UpgradeCard.nudge); or, a form on the pad, the STAMP tag ($Press/Handle/Tag) and the lever bobbing.
+enum Hint { NONE, PAD, NUDGE, STAMP }
+## The nudge or bob comes every this many checks (SHOCK_CHECK each); a bob pulls the lever this far (crank).
+const HINT_BEAT := 6
+const BOB := 0.08
+## The ghost's outline draws on over GHOST_DRAW s as it appears, then flashes GHOST_FLASH brighter once.
+const GHOST_DRAW := 0.45
+const GHOST_FLASH := 1.2
 
 ## The cards on offer, in slot order (the one on the press included).
 var _offered: Array[UpgradeCard] = []
@@ -265,6 +275,9 @@ var _approved_seen := -1
 var _menu: CanvasItem
 ## The milestone memo layer (entities/milestone/), which posts SPIKE_MEMO.
 @export var memo: Node
+## Whether the first-stamp hint is still looked at (_hint): false for good once any form is stamped.
+var _hinting := true
+var _hint_beats := 0
 
 @onready var _tray: Node3D = $Tray
 @onready var _press: Node3D = $Press
@@ -280,6 +293,8 @@ var _menu: CanvasItem
 @onready var _slip_rest := _slip.position
 @onready var _note: Control = $Note/Center
 @onready var _papers: Control = $Approved/Shade/List/Papers
+@onready var _ghost: MeshInstance3D = $Press/Ghost
+@onready var _tag: Node3D = $Press/Handle/Tag
 
 
 func _ready() -> void:
@@ -292,6 +307,7 @@ func _ready() -> void:
 	$Approved/Shade.gui_input.connect(_on_shade_input)
 	_menu = get_tree().root.find_child("InGameMenu", true, false) as CanvasItem
 	var save := SaveManager.save
+	_hinting = save.stamped.is_empty()  # A save that ever stamped a form never sees the first-stamp hint.
 	var slip_hover: Interactable = $Tray/Slip/Hit/Interactable
 	slip_hover.hovered.connect(_on_slip_hover.bind(true))
 	slip_hover.unhovered.connect(_on_slip_hover.bind(false))
@@ -339,6 +355,8 @@ func _process(delta: float) -> void:
 		_deal()  # A `tree` card whose projector node was just bought, into a free slot.
 	if _shock_in <= 0.0 and not _slip.visible and slip_shown(save):
 		_pop_slip()
+	if _shock_in <= 0.0 and _hinting:
+		_hint(save, true)
 	if _shock_in <= 0.0:
 		_tick_progress(save, _since_check)
 		_since_check = 0.0
@@ -380,6 +398,61 @@ func _tick_progress(save: SaveGame, delta: float) -> void:
 	if Events.progress_due(save.progress_wait, save.progress_warned, affordable):
 		save.progress_warned = true
 		SaveManager.log_event("event", "progress_required")
+
+
+## What the desk shows a player who has never stamped a form (Hint): nothing once any form was ever
+## stamped or while no form on offer is affordable; with a form on the pad the press asks to be
+## pulled; else the pad asks for a form, and the affordable form in the tray nudges unless the hand
+## holds something.
+static func first_stamp_hint(stamped_ever: bool, affordable: bool, on_pad: bool, holding: bool) -> Hint:
+	if stamped_ever or not affordable:
+		return Hint.NONE
+	if on_pad:
+		return Hint.STAMP
+	return Hint.PAD if holding else Hint.NUDGE
+
+
+## Shows the first-stamp hint for the desk as it is; on a `beat` every HINT_BEAT-th call nudges the
+## affordable form at rest in the tray, or bobs the lever. Once a form is stamped it hides and is never
+## looked at again (_hinting).
+func _hint(save: SaveGame, beat := false) -> void:
+	var out := units_out(get_tree().get_nodes_in_group(&"cabbages"))
+	var affordable := _offered.filter(func(card: UpgradeCard) -> bool: return affords(save, card.costs, out))
+	var hint := first_stamp_hint(not save.stamped.is_empty(), not affordable.is_empty(), _on_press != null, Hand.held != null)
+	var ghost := hint == Hint.PAD or hint == Hint.NUDGE
+	if ghost and not _ghost.visible:
+		_draw_ghost()
+	_ghost.visible = ghost
+	_tag.visible = hint == Hint.STAMP
+	_hinting = save.stamped.is_empty()
+	if not beat:
+		return
+	_hint_beats = (_hint_beats + 1) % HINT_BEAT
+	if _hint_beats != 0:
+		return
+	if hint == Hint.NUDGE:
+		for card: UpgradeCard in affordable:
+			var i := _offered.find(card)
+			if card.position.is_equal_approx(_slot(i)) and (Hand.hovered == null or Hand.hovered.get_parent() != card):
+				card.nudge(_pad() - card.position)
+				return
+	elif hint == Hint.STAMP and not _cranking and (_springing == null or not _springing.is_running()):
+		_springing = create_tween().set_trans(Tween.TRANS_SINE)
+		_springing.tween_property(self, "_crank", BOB, 0.16)
+		_springing.tween_property(self, "_crank", 0.0, 0.22)
+		_springing.tween_callback(_pose_press)
+
+
+## The ghost's attention beat as it appears: its outline draws itself on around the form (GHOST_DRAW s),
+## then flashes once and fades back to its slow pulse (form_ghost.gdshader `draw`, `flash`).
+func _draw_ghost() -> void:
+	var ink := _ghost.mesh.surface_get_material(0) as ShaderMaterial
+	ink.set_shader_parameter(&"draw", 0.0)
+	ink.set_shader_parameter(&"flash", 0.0)
+	var tween := create_tween()
+	tween.tween_property(ink, "shader_parameter/draw", 1.0, GHOST_DRAW)
+	tween.tween_property(ink, "shader_parameter/flash", GHOST_FLASH, 0.08)
+	tween.tween_property(ink, "shader_parameter/flash", 0.0, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 
 ## Whether the reminder slip is on the tray: once head office's progress note has been signed and filed.
@@ -836,10 +909,12 @@ func _on_dropped(card: UpgradeCard) -> void:
 			_on_press.fly_to(_slot(_offered.find(_on_press)))
 		_on_press = card
 		card.fly_to(pad, true, _press.rotation.y)
-		return
-	if _on_press == card:
-		_on_press = null
-	card.fly_to(_slot(_offered.find(card)))
+	else:
+		if _on_press == card:
+			_on_press = null
+		card.fly_to(_slot(_offered.find(card)))
+	if _hinting:
+		_hint(SaveManager.save)
 
 
 func _grab_lever() -> void:
@@ -897,6 +972,8 @@ func _bottom_out() -> void:
 	_offered.erase(card)
 	_record_offered()
 	_leaving = card
+	if _hinting:
+		_hint(save)  # The first stamp ever: the hint is gone for good.
 	var squash := create_tween()
 	squash.tween_property($Press/Model, "scale", Vector3(1.04, 0.94, 1.04), 0.05)
 	squash.tween_property($Press/Model, "scale", Vector3.ONE, 0.25).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
@@ -931,6 +1008,8 @@ func _stamp_free(card: UpgradeCard) -> void:
 	card.spike_to(_spike_spot(sheets_under(_spiked + 1)), randf_range(-0.5, 0.5)).finished.connect(_file.bind(card))
 	_count_spiked(card)
 	_deal()
+	if _hinting:
+		_hint(save)
 	print("debug: stamped %s free" % card.id)
 
 

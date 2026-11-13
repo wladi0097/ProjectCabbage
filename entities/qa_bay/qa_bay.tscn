@@ -22,6 +22,11 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_2.wav" id="sfx_slip_land_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_3.wav" id="sfx_slip_land_3"]
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Machines/qa_load_gauge.res" id="5_gauge"]
+[ext_resource type="Mesh" path="res://assets/meshes/Tokens/findings_token_2.obj" id="6_token_2"]
+[ext_resource type="Material" path="res://assets/materials/findings_token_500.tres" id="6_token_500"]
+[ext_resource type="Material" path="res://assets/materials/findings_token_1K.tres" id="6_token_1k"]
+[ext_resource type="Material" path="res://assets/materials/findings_token_5K.tres" id="6_token_5k"]
+[ext_resource type="Material" path="res://assets/materials/findings_token_10K.tres" id="6_token_10k"]
 
 [sub_resource type="StandardMaterial3D" id="JewelFree"]
 albedo_color = Color(0.03, 0.055, 0.065, 1)
@@ -345,6 +350,34 @@ transform = Transform3D(1.48, 0, 0, 0, 1.65, 0, 0, 0, 1.48, 0, 0, 0)
 visible = false
 mesh = ExtResource("4_token")
 surface_material_override/0 = SubResource("Token100")
+
+[node name="Slip500" type="MeshInstance3D" parent="."]
+gi_mode = 0
+transform = Transform3D(1.58, 0, 0, 0, 1.75, 0, 0, 0, 1.58, 0, 0, 0)
+visible = false
+mesh = ExtResource("4_token")
+surface_material_override/0 = ExtResource("6_token_500")
+
+[node name="Slip1000" type="MeshInstance3D" parent="."]
+gi_mode = 0
+transform = Transform3D(1.68, 0, 0, 0, 1.85, 0, 0, 0, 1.68, 0, 0, 0)
+visible = false
+mesh = ExtResource("6_token_2")
+surface_material_override/0 = ExtResource("6_token_1k")
+
+[node name="Slip5000" type="MeshInstance3D" parent="."]
+gi_mode = 0
+transform = Transform3D(1.78, 0, 0, 0, 1.95, 0, 0, 0, 1.78, 0, 0, 0)
+visible = false
+mesh = ExtResource("6_token_2")
+surface_material_override/0 = ExtResource("6_token_5k")
+
+[node name="Slip10000" type="MeshInstance3D" parent="."]
+gi_mode = 0
+transform = Transform3D(1.88, 0, 0, 0, 2.05, 0, 0, 0, 1.88, 0, 0, 0)
+visible = false
+mesh = ExtResource("6_token_2")
+surface_material_override/0 = ExtResource("6_token_10k")
 
 [node name="SlipLand" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_slip_land")

@@ -28,7 +28,7 @@ const PRESS_LIFT := -0.006
 const TIP_BACK := 0.04
 ## Seconds of hovering before a tooltip already seen comes up, its slip's width and its offset
 ## from the mouse (px).
-const TOOLTIP_DELAY := 1.0
+const TOOLTIP_DELAY := 0.5
 const TOOLTIP_WIDTH := 300.0
 const TOOLTIP_OFFSET := Vector2(34, -20)
 const TOOLTIP_PAPER := Color(0.72, 0.73, 0.69)

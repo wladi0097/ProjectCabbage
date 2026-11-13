@@ -1,11 +1,12 @@
-[gd_resource type="ShaderMaterial" format=3]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://bnsl2drvuvaaq"]
 
-[ext_resource type="Shader" path="res://assets/shaders/coin.gdshader" id="1_shader"]
-[ext_resource type="Texture2D" path="res://assets/textures/coin/coin_albedo.png" id="1_albedo"]
-[ext_resource type="Texture2D" path="res://assets/textures/coin/coin_normal.png" id="2_normal"]
-[ext_resource type="Texture2D" path="res://assets/textures/coin/coin_orm.png" id="3_packed"]
+[ext_resource type="Texture2D" uid="uid://bypjaicnxnhh4" path="res://assets/textures/coin/coin_albedo.png" id="1_albedo"]
+[ext_resource type="Shader" uid="uid://dqvfs7qgqqukx" path="res://assets/shaders/coin.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" uid="uid://kxuxo3ns6brw" path="res://assets/textures/coin/coin_normal.png" id="2_normal"]
+[ext_resource type="Texture2D" uid="uid://bnekfjqvcioub" path="res://assets/textures/coin/coin_orm.png" id="3_packed"]
 
 [resource]
+render_priority = 0
 shader = ExtResource("1_shader")
 shader_parameter/albedo_tex = ExtResource("1_albedo")
 shader_parameter/normal_tex = ExtResource("2_normal")

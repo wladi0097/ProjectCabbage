@@ -1,18 +1,8 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" format=3 uid="uid://4hxn8qtjqhop"]
 
-[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="1_font"]
-
-[sub_resource type="StyleBoxFlat" id="Paper"]
-content_margin_left = 30.0
-content_margin_top = 24.0
-content_margin_right = 30.0
-content_margin_bottom = 24.0
-bg_color = Color(0.78, 0.78, 0.72, 1)
-border_width_top = 6
-border_color = Color(0.2, 0.23, 0.21, 1)
-shadow_color = Color(0, 0, 0, 0.45)
-shadow_size = 2
-shadow_offset = Vector2(12, 12)
+[ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="1_font"]
+[ext_resource type="Texture2D" uid="uid://dchlqkan6d0w7" path="res://assets/sprites/ui/mandate_box_off.svg" id="2_box_off"]
+[ext_resource type="Texture2D" uid="uid://b8fu8hvqf7g1k" path="res://assets/sprites/ui/mandate_box_on.svg" id="3_box_on"]
 
 [sub_resource type="StyleBoxFlat" id="ButtonNormal"]
 content_margin_left = 10.0
@@ -25,6 +15,8 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.13, 0.14, 0.14, 0.6)
+
+[sub_resource type="StyleBoxEmpty" id="Focus"]
 
 [sub_resource type="StyleBoxFlat" id="ButtonHover"]
 content_margin_left = 10.0
@@ -50,11 +42,21 @@ border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.13, 0.14, 0.14, 1)
 
-[sub_resource type="StyleBoxEmpty" id="Focus"]
-
 [sub_resource type="StyleBoxLine" id="Rule"]
 color = Color(0.13, 0.14, 0.14, 0.55)
 thickness = 2
+
+[sub_resource type="StyleBoxFlat" id="Paper"]
+content_margin_left = 30.0
+content_margin_top = 24.0
+content_margin_right = 30.0
+content_margin_bottom = 24.0
+bg_color = Color(0.78, 0.78, 0.72, 1)
+border_width_top = 6
+border_color = Color(0.2, 0.23, 0.21, 1)
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 2
+shadow_offset = Vector2(12, 12)
 
 [resource]
 default_font = ExtResource("1_font")
@@ -72,6 +74,24 @@ Button/styles/hover = SubResource("ButtonHover")
 Button/styles/hover_pressed = SubResource("ButtonPressed")
 Button/styles/normal = SubResource("ButtonNormal")
 Button/styles/pressed = SubResource("ButtonPressed")
+CheckBox/colors/font_color = Color(0.13, 0.14, 0.14, 1)
+CheckBox/colors/font_focus_color = Color(0.13, 0.14, 0.14, 1)
+CheckBox/colors/font_hover_color = Color(0.13, 0.14, 0.14, 1)
+CheckBox/colors/font_hover_pressed_color = Color(0.13, 0.14, 0.14, 1)
+CheckBox/colors/font_pressed_color = Color(0.13, 0.14, 0.14, 1)
+CheckBox/constants/h_separation = 12
+CheckBox/font_sizes/font_size = 18
+CheckBox/fonts/font = ExtResource("1_font")
+CheckBox/icons/checked = ExtResource("3_box_on")
+CheckBox/icons/checked_disabled = ExtResource("3_box_on")
+CheckBox/icons/unchecked = ExtResource("2_box_off")
+CheckBox/icons/unchecked_disabled = ExtResource("2_box_off")
+CheckBox/styles/disabled = SubResource("ButtonNormal")
+CheckBox/styles/focus = SubResource("Focus")
+CheckBox/styles/hover = SubResource("ButtonHover")
+CheckBox/styles/hover_pressed = SubResource("ButtonHover")
+CheckBox/styles/normal = SubResource("ButtonNormal")
+CheckBox/styles/pressed = SubResource("ButtonNormal")
 HSeparator/constants/separation = 14
 HSeparator/styles/separator = SubResource("Rule")
 Label/colors/font_color = Color(0.13, 0.14, 0.14, 1)

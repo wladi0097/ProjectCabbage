@@ -124,9 +124,11 @@ const THEMES := [
 
 @onready var _tree: UpgradeTree = $Tree
 @onready var _locked: Control = $Locked
-## The budget line; its ¶ figure is a label of its own in the Findings counter's Oswald Bold and cream.
-@onready var _budget: Label = $BudgetLine/Budget
-@onready var _findings: Label = $BudgetLine/Findings
+## The cream of the Findings counter, for the budget line's ¶ figure.
+@export var findings_color: Color
+## The budget line: one rich text line, so the ¶ figure (its bold font is the Findings counter's
+## Oswald Bold) and the terminal words share a baseline whatever the fonts' ascents.
+@onready var _budget: RichTextLabel = $BudgetLine
 @onready var _sfx: AudioStreamPlayer = $Sfx
 
 
@@ -141,8 +143,10 @@ func _process(_delta: float) -> void:
 	var open := unlocked(save)
 	_locked.visible = not open
 	_tree.visible = open
-	_budget.text = tr("BUDGET  $%d   |   FINDINGS") % save.coins
-	_findings.text = "¶%d" % save.findings
+	var line := tr("BUDGET  $%d   |   FINDINGS") % save.coins \
+			+ " [b][color=%s]¶%d[/color][/b]" % [findings_color.to_html(false), save.findings]
+	if _budget.text != line:
+		_budget.text = line
 
 
 func _approved(id: String, paid: int) -> void:

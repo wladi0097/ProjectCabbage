@@ -21,6 +21,13 @@ const DRAG_HEIGHT := 0.9
 ## Hovered in the tray, the paper lifts this far off the stack over HOVER_TIME.
 const HOVER_LIFT := 0.035
 const HOVER_TIME := 0.14
+## A nudge (nudge) lifts the paper NUDGE_LIFT and slides it NUDGE_SLIDE (m) over NUDGE_OUT s, rocks it
+## this many radians each way, NUDGE_STEP s a swing, and brings it back the same way.
+const NUDGE_LIFT := 0.07
+const NUDGE_SLIDE := 0.05
+const NUDGE_OUT := 0.2
+const NUDGE_ROCK := 0.12
+const NUDGE_STEP := 0.08
 ## Held, the card rises to DRAG_HEIGHT at this rate (per second); sideways it moves 1:1 with the hand.
 const HOLD_RISE := 20.0
 ## A move takes FLY_TIME and arcs ARC high; dealt cards come from off-screen left, slower and higher.
@@ -184,10 +191,26 @@ func _pinch_offset() -> Vector3:
 func lift(on: bool) -> void:
 	if _lifting != null:
 		_lifting.kill()
+	_look.rotation.z = 0.0  # A nudge cut mid-rock or mid-slide.
+	_look.position = Vector3(0.0, _look.position.y, 0.0)
 	_lifting = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_lifting.tween_property(_look, "position:y", HOVER_LIFT if on else 0.0, HOVER_TIME)
 	if on:
 		_cue(&"Hover")
+
+
+## Asks to be picked up (UpgradeDesk's first-stamp hint): lifts NUDGE_LIFT and slides NUDGE_SLIDE
+## toward `toward` (a direction in the parent's space: the pad), rocks NUDGE_ROCK either way like paper
+## pushed by a finger, and settles back. Silent; hovering or a grab cuts it (lift).
+func nudge(toward := Vector3.ZERO) -> void:
+	if _lifting != null:
+		_lifting.kill()
+	var slide := basis.inverse() * Vector3(toward.x, 0.0, toward.z).normalized() * NUDGE_SLIDE
+	_lifting = create_tween().set_trans(Tween.TRANS_SINE)
+	_lifting.tween_property(_look, "position", Vector3(slide.x, NUDGE_LIFT, slide.z), NUDGE_OUT)
+	for z in [NUDGE_ROCK, -NUDGE_ROCK, NUDGE_ROCK * 0.5, 0.0]:
+		_lifting.tween_property(_look, "rotation:z", z, NUDGE_STEP)
+	_lifting.tween_property(_look, "position", Vector3.ZERO, NUDGE_OUT)
 
 
 ## Arcs from where it is to `to` (turned `yaw`), out of reach on the way; `grabbable` says whether

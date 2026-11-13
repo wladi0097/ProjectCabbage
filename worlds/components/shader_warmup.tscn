@@ -44,6 +44,11 @@
 [ext_resource type="Material" path="res://assets/materials/tv_chrome.tres" id="42_tv_chrome"]
 [ext_resource type="Material" path="res://assets/materials/tv_powder.tres" id="43_tv_powder"]
 [ext_resource type="Script" path="res://worlds/components/shader_warmup.gd" id="44_shader_warmup"]
+[ext_resource type="Mesh" path="res://assets/meshes/Tokens/findings_token_2.obj" id="45_findings_token_2"]
+[ext_resource type="Material" path="res://assets/materials/findings_token_500.tres" id="46_token_500"]
+[ext_resource type="Material" path="res://assets/materials/findings_token_1K.tres" id="47_token_1k"]
+[ext_resource type="Material" path="res://assets/materials/findings_token_5K.tres" id="48_token_5k"]
+[ext_resource type="Material" path="res://assets/materials/findings_token_10K.tres" id="49_token_10k"]
 
 [sub_resource type="BoxMesh" id="Box"]
 size = Vector3(0.12, 0.12, 0.12)
@@ -200,6 +205,30 @@ transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0840, 0.0140, 0)
 gi_mode = 0
 mesh = ExtResource("9_findings_token")
 material_override = SubResource("Token")
+
+[node name="Token500" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0840, 0.0140, 0.0480)
+gi_mode = 0
+mesh = ExtResource("9_findings_token")
+material_override = ExtResource("46_token_500")
+
+[node name="Token1K" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0840, 0.0140, 0.0960)
+gi_mode = 0
+mesh = ExtResource("45_findings_token_2")
+material_override = ExtResource("47_token_1k")
+
+[node name="Token5K" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0840, 0.0140, -0.0480)
+gi_mode = 0
+mesh = ExtResource("45_findings_token_2")
+material_override = ExtResource("48_token_5k")
+
+[node name="Token10K" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0840, 0.0140, -0.0960)
+gi_mode = 0
+mesh = ExtResource("45_findings_token_2")
+material_override = ExtResource("49_token_10k")
 
 [node name="ScanGlow" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0560, 0.0140, 0)

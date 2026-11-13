@@ -1085,6 +1085,15 @@ $ PER MINUTE,$ PER MINUTE,$ JE MINUTE
 ¶ PER MINUTE,¶ PER MINUTE,¶ JE MINUTE
 MINUTES ON SHIFT,MINUTES ON SHIFT,MINUTEN IM DIENST
 FORM QP-2,FORM QP-2,FORMULAR QP-2
+CABBAGES SOLD PER MINUTE,CABBAGES SOLD PER MINUTE,VERKAUFTE KOHLKÖPFE JE MINUTE
+CABBAGES PER MINUTE,CABBAGES PER MINUTE,KOHLKÖPFE JE MINUTE
+FORM QP-3,FORM QP-3,FORMULAR QP-3
+TO DATE %s,TO DATE %s,BISHER %s
+NO FINDINGS ON FILE.,NO FINDINGS ON FILE.,KEINE BEFUNDE IN DER AKTE.
+DOTS: %d-MINUTE READINGS. LINE: AVERAGE OF 3.,DOTS: %d-MINUTE READINGS. LINE: AVERAGE OF 3.,PUNKTE: %d-MINUTEN-MESSWERTE. LINIE: MITTEL AUS 3.
+%d-MINUTE READINGS.,%d-MINUTE READINGS.,%d-MINUTEN-MESSWERTE.
+COINS EARNED TO DATE,COINS EARNED TO DATE,BISHER VERDIENTE MÜNZEN
+FINDINGS EARNED TO DATE,FINDINGS EARNED TO DATE,BISHER ERHALTENE BEFUNDE
 PERSONNEL,PERSONNEL,PERSONAL
 FORM HR-4,FORM HR-4,FORMULAR HR-4
 REQUISITIONS APPROVED,REQUISITIONS APPROVED,GENEHMIGTE ANTRÄGE
@@ -1764,12 +1773,22 @@ THE STREET HAS BECOME VOLATILE,THE STREET HAS BECOME VOLATILE,DIE STRASSE IST VO
 "Your price per cabbage. Click ""<"" or "">"" to change it by $1. Under it: when the street's mood next moves, and which way.","Your price per cabbage. Click ""<"" or "">"" to change it by $1. Under it: when the street's mood next moves, and which way.","Ihr Preis pro Kohlkopf. Klicken Sie auf ""<"" oder "">"", um ihn um $1 zu ändern. Darunter: wann sich die Laune der Straße als Nächstes ändert, und in welche Richtung."
 "Pricing consultant switch. Click to open its mandate: on or off, how many cabbages the street may refuse, its lowest and highest price. The lamp is lit while it is on duty.","Pricing consultant switch. Click to open its mandate: on or off, how many cabbages the street may refuse, its lowest and highest price. The lamp is lit while it is on duty.","Schalter des Preisberaters. Klicken öffnet sein Mandat: an oder aus, wie viele Kohlköpfe die Straße ablehnen darf, sein niedrigster und höchster Preis. Die Lampe leuchtet, solange er im Dienst ist."
 "The consultant reads the room in advance.
-The slate and the mandate show when the street
-next moves its prices, and which way.","The consultant reads the room in advance.
-The slate and the mandate show when the street
-next moves its prices, and which way.","Der Berater spürt die Stimmung im Voraus.
-Tafel und Mandat zeigen, wann die Straße ihre
-Preise als Nächstes ändert, und in welche Richtung."
+The slate and the mandate show which way
+the street next moves its prices.","The consultant reads the room in advance.
+The slate and the mandate show which way
+the street next moves its prices.","Der Berater spürt die Stimmung im Voraus.
+Tafel und Mandat zeigen, in welche Richtung
+die Straße ihre Preise als Nächstes ändert."
+STREET TIMETABLE,STREET TIMETABLE,STRASSENFAHRPLAN
+"The street's mood swings are scheduled by memo.
+The slate and the mandate count down to
+the street's next price move.","The street's mood swings are scheduled by memo.
+The slate and the mandate count down to
+the street's next price move.","Die Launen der Straße werden per Memo terminiert.
+Tafel und Mandat zählen die Zeit bis zur
+nächsten Preisbewegung der Straße herunter."
+"Your price per cabbage. Click ""<"" or "">"" to change it by $1. Under it: when the street's mood next moves.","Your price per cabbage. Click ""<"" or "">"" to change it by $1. Under it: when the street's mood next moves.","Ihr Preis pro Kohlkopf. Klicken Sie auf ""<"" oder "">"", um ihn um $1 zu ändern. Darunter: wann sich die Laune der Straße als Nächstes ändert."
+"Your price per cabbage. Click ""<"" or "">"" to change it by $1. Under it: which way the street's mood moves next.","Your price per cabbage. Click ""<"" or "">"" to change it by $1. Under it: which way the street's mood moves next.","Ihr Preis pro Kohlkopf. Klicken Sie auf ""<"" oder "">"", um ihn um $1 zu ändern. Darunter: in welche Richtung sich die Laune der Straße als Nächstes ändert."
 "Billed per tap, delivered in one.
 The consultant chalks its target price in a single
 tap instead of $1 at a time. Wild streets, met at once.","Billed per tap, delivered in one.
@@ -1779,9 +1798,7 @@ Der Berater schreibt seinen Zielpreis mit einem
 Tipp an statt $1 nach dem anderen. Wilde Straßen, sofort bedient."
 PRICING MANDATE,PRICING MANDATE,PREISMANDAT
 "Standing instructions to the retained pricing consultant, Desk 4. Effective on signature. Signed already.","Standing instructions to the retained pricing consultant, Desk 4. Effective on signature. Signed already.","Dauerweisung an den beauftragten Preisberater, Schreibtisch 4. Gültig ab Unterschrift. Bereits unterschrieben."
-Consultant,Consultant,Berater
-ON DUTY,ON DUTY,IM DIENST
-OFF DUTY,OFF DUTY,AUSSER DIENST
+Consultant on duty,Consultant on duty,Berater im Dienst
 Cabbages the street may refuse,Cabbages the street may refuse,"Kohlköpfe, die die Straße ablehnen darf"
 Lowest price it may chalk,Lowest price it may chalk,"Niedrigster Preis, den er anschreiben darf"
 Highest price it may chalk,Highest price it may chalk,"Höchster Preis, den er anschreiben darf"
@@ -1792,6 +1809,10 @@ The street's next move,The street's next move,Nächste Bewegung der Straße
 UP IN %s,UP IN %s,HOCH IN %s
 DOWN IN %s,DOWN IN %s,RUNTER IN %s
 NO MOVE IN %s,NO MOVE IN %s,KEINE ÄNDERUNG IN %s
+UP,UP,HOCH
+DOWN,DOWN,RUNTER
+NO MOVE,NO MOVE,KEINE ÄNDERUNG
+IN %s,IN %s,IN %s
 "The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Touch the slate yourself and it waits 15 s. It is billed either way.","The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Touch the slate yourself and it waits 15 s. It is billed either way.","Der Berater hält den Preis so nah wie möglich an den erlaubten Ablehnungen, innerhalb Ihrer Grenzen, während sich die Straße bewegt. Fassen Sie die Tafel selbst an, wartet er 15 s. Abgerechnet wird so oder so."
 PROGRESS IS REQUIRED,PROGRESS IS REQUIRED,FORTSCHRITT IST ERFORDERLICH
 "Head office notes that a form on your desk could have been approved five minutes ago and was not. Forms are orders. Approving them is how the company advances, and with it your position. The projector is discretionary. Progress is not.","Head office notes that a form on your desk could have been approved five minutes ago and was not. Forms are orders. Approving them is how the company advances, and with it your position. The projector is discretionary. Progress is not.","Die Zentrale stellt fest, dass ein Formular auf Ihrem Schreibtisch seit fünf Minuten genehmigt werden könnte und nicht genehmigt wurde. Formulare sind Anweisungen. Wer sie genehmigt, bringt das Unternehmen voran und mit ihm die eigene Position. Der Projektor ist freiwillig. Fortschritt nicht."
@@ -1801,3 +1822,5 @@ MEMO 0-0  STANDING NOTICE,MEMO 0-0  STANDING NOTICE,MEMO 0-0  STÄNDIGER HINWEIS
 Every form on this desk must be approved for you to progress. The projector is optional.","Head office reminds you.
 Every form on this desk must be approved for you to progress. The projector is optional.","Die Zentrale erinnert Sie.
 Jedes Formular auf diesem Schreibtisch muss genehmigt werden, damit Sie vorankommen. Der Projektor ist freiwillig."
+PLACE FORM HERE,PLACE FORM HERE,FORMULAR HIER ABLEGEN
+PULL TO STAMP,PULL TO STAMP,ZUM STEMPELN ZIEHEN

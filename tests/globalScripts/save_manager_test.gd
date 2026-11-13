@@ -130,7 +130,7 @@ func test_an_old_saves_in_save_log_moves_to_the_log_file_once_and_the_ledger_sti
 	assert_bool(SaveManagerScript.adopt_log(again, log_path, true)).is_false()
 	assert_int(again.playtest_log.size()).is_equal(2)
 	# That build logged no coins_earned: the income chart has no line to draw (insufficient data).
-	assert_array(Array(Ledger.rate_points(again.playtest_log, "coins_earned", 30, again.coins_earned, 60))).is_empty()
+	assert_array(Array(Ledger.rate_points(again.playtest_log, ["coins_earned"], 30, again.coins_earned, 60))).is_empty()
 	assert_int(Ledger.requisitions(again).size()).is_equal(1)
 	_clear_temp()
 

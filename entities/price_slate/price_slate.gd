@@ -6,8 +6,8 @@ extends Node3D
 ## through the window. The full-sale price is BASE_REF_PRICE times the save's marketing, times a
 ## mood that drifts each minute (MOOD_STEP at most) within MOOD_RANGE, and once the street turns
 ## volatile (save.street_volatile, after the promotion) jumps up to WILD_STEP within WILD_RANGE. The
-## next move is rolled a minute ahead (save.mood_next, save.mood_clock): with the READS THE ROOM node
-## bought a chalk forecast under the price shows when it comes and which way. A progression item: it drops onto the desk once its upgrade card is stamped;
+## next move is rolled a minute ahead (save.mood_next, save.mood_clock): a chalk forecast under the
+## price shows which way it goes (READS THE ROOM) and when it comes (STREET TIMETABLE). A progression item: it drops onto the desk once its upgrade card is stamped;
 ## until then cabbages sell at the save's starting price. With the acceptance meter card stamped, a
 ## gauge clamps onto the slate's corner and its needle shows the chance the street buys at the price.
 
@@ -25,8 +25,10 @@ const MOOD_PERIOD := 60.0
 ## still sells 36% (never a street that buys nothing).
 const WILD_RANGE := Vector2(0.6, 1.4)
 const WILD_STEP := 0.3
-## The projector node that shows the forecast.
+## The projector nodes that show the forecast: READS THE ROOM the way, STREET TIMETABLE the time.
+## Each works alone; a lone half sits centred under the price.
 const FORECAST := "consultant_mood"
+const FORECAST_TIME := "consultant_clock"
 ## Sets how fast sales fall above the full-sale price: at 2, a price a third over it sells 56%.
 const ELASTICITY := 2.0
 ## Held on an arrow: the first repeat comes after HOLD_DELAY, then one every HOLD_REPEAT.
@@ -51,7 +53,11 @@ const NEEDLE_REST := 0.001
 const GAUGE_DROP := 0.6
 ## What hovering the slate and the gauge explains; the gauge's dial (its own space) is hoverable.
 const BOARD_TIP := "Your price per cabbage. Click \"<\" or \">\" to change it by $1. Higher pays more per sale, but the street refuses more cabbages."
-const FORECAST_TIP := "Your price per cabbage. Click \"<\" or \">\" to change it by $1. Under it: when the street's mood next moves, and which way."
+## The slate's tip by the forecast halves bought, at 2 * way + time: none, time, way, both.
+const FORECAST_TIPS := [BOARD_TIP,
+	"Your price per cabbage. Click \"<\" or \">\" to change it by $1. Under it: when the street's mood next moves.",
+	"Your price per cabbage. Click \"<\" or \">\" to change it by $1. Under it: which way the street's mood moves next.",
+	"Your price per cabbage. Click \"<\" or \">\" to change it by $1. Under it: when the street's mood next moves, and which way."]
 const GAUGE_TIP := "Acceptance meter: how likely the street buys a cabbage at your price right now. Left is never, right is always."
 const GAUGE_BOX := AABB(Vector3(-0.068, -0.08, -0.056), Vector3(0.136, 0.148, 0.092))
 ## The pricing consultant's tap lights its arrow this long.
@@ -80,6 +86,8 @@ var _needle_speed := 0.0
 @onready var _forecast_arrow: Label3D = $Forecast/Arrow
 @onready var _forecast_time: Label3D = $Forecast/Time
 @onready var _arrow_basis := _forecast_arrow.basis
+@onready var _arrow_x := _forecast_arrow.position.x
+@onready var _time_x := _forecast_time.position.x
 @onready var _board: Interactable = $Board/Interactable
 
 
@@ -289,15 +297,20 @@ static func clock(seconds: int) -> String:
 	return "%d:%02d" % [seconds / 60, seconds % 60]
 
 
-## With READS THE ROOM bought, the chalk forecast under the price: a chevron up or down (a dash when
-## the street sits at its edge) and the time to the move.
+## The chalk forecast under the price: with READS THE ROOM a chevron up or down (a dash when the
+## street sits at its edge), with STREET TIMETABLE the time to the move. A lone half sits centred.
 func _show_forecast(save: SaveGame) -> void:
-	var on := save.tree_bought.has(FORECAST)
-	_forecast.visible = on
-	_board.tooltip = FORECAST_TIP if on else BOARD_TIP
-	if not on:
-		return
-	var way := forecast(save)
-	_forecast_arrow.text = ">" if way != 0 else "-"
-	_forecast_arrow.basis = _arrow_basis * Basis(Vector3.BACK, way * PI / 2.0)
-	_forecast_time.text = clock(forecast_seconds(save))
+	var way_on := save.tree_bought.has(FORECAST)
+	var time_on := save.tree_bought.has(FORECAST_TIME)
+	_forecast.visible = way_on or time_on
+	_forecast_arrow.visible = way_on
+	_forecast_time.visible = time_on
+	_board.tooltip = FORECAST_TIPS[2 * int(way_on) + int(time_on)]
+	_forecast_arrow.position.x = _arrow_x if time_on else 0.0
+	_forecast_time.position.x = _time_x if way_on else 0.0
+	if way_on:
+		var way := forecast(save)
+		_forecast_arrow.text = ">" if way != 0 else "-"
+		_forecast_arrow.basis = _arrow_basis * Basis(Vector3.BACK, way * PI / 2.0)
+	if time_on:
+		_forecast_time.text = clock(forecast_seconds(save))

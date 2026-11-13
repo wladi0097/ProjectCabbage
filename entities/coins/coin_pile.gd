@@ -2,7 +2,8 @@ class_name CoinPile
 extends MultiMeshInstance3D
 ## Every loose coin, drawn as one MultiMesh. Coins are animated, not simulated: they arc in,
 ## bounce once and land on a height grid. One payout comes as silver ($1), gold ($5), bronze ($10),
-## steel ($50) and platinum ($100) coins, each bigger and thicker from $10 up, that all aim at one
+## steel ($50) and platinum ($100) coins, and for a big one $500 / $1K / $5K / $10K coins (see
+## coin_values), each bigger and thicker from $10 up, that all aim at one
 ## spot and stack there, at most MAX_STACK high; extra coins start a stack right beside it. Sweeping an empty hand over them sends them into the deposit.
 
 signal thrown(origin: Vector3, count: int)
@@ -24,8 +25,12 @@ const GOLD_VALUE := 5
 const BIG_VALUE := 10
 const FIFTY_VALUE := 50
 const HUNDRED_VALUE := 100
-## Every coin face, smallest first: the index is its column in the coin atlas.
-const DENOMINATIONS: Array[int] = [1, GOLD_VALUE, BIG_VALUE, FIFTY_VALUE, HUNDRED_VALUE]
+## Every coin face, smallest first: the index is its column in the coin atlas. $1..$100 make change
+## for every payout; the high coins from $500 up join a payout only when it would otherwise throw
+## more than MAX_THROW of the coin below them (coin_values).
+const DENOMINATIONS: Array[int] = [1, GOLD_VALUE, BIG_VALUE, FIFTY_VALUE, HUNDRED_VALUE, 500, 1000, 5000, 10000]
+## How many of DENOMINATIONS (from $1) every payout may use.
+const CHANGE := 5
 const MAX_THROW := 30
 const SILVER := Color(0.8, 0.82, 0.86)
 const GOLD := Color(1.0, 0.72, 0.32)
@@ -35,16 +40,25 @@ const BIG_SCALE := Vector3(1.2, 1.5, 1.2)
 ## The $50 coin: dark blue-grey gunmetal with an octagon stamped inside its rim, wider again.
 const STEEL := Color(0.42, 0.48, 0.56)
 const FIFTY_SCALE := Vector3(1.32, 1.7, 1.32)
-## The $100 coin (and the rare $1000+ ones a huge payout is made of): pale platinum with a dark
-## inlaid centre and a reeded rim, the biggest and thickest.
+## The $100 coin: pale platinum with a dark inlaid centre and a reeded rim.
 const PLATINUM := Color(0.92, 0.88, 0.78)
 const HUNDRED_SCALE := Vector3(1.5, 1.9, 1.5)
-const COLOURS: Array[Color] = [SILVER, GOLD, BRONZE, STEEL, PLATINUM]
-const SCALES: Array[Vector3] = [Vector3.ONE, Vector3.ONE, BIG_SCALE, FIFTY_SCALE, HUNDRED_SCALE]
+## The $500 coin: grey steel, a pale centre inside a near-black band broken by 8 bars.
+const PEWTER := Color(0.68, 0.7, 0.72)
+## The $1K coin: pale cold gold (desaturated), a scalloped seal on a dark field.
+const PALE_GOLD := Color(0.86, 0.79, 0.6)
+## The $5K coin: dark oxidised bronze, a square seal.
+const OXIDE := Color(0.55, 0.4, 0.3)
+## The $10K coin (and the rare $100K+ ones a huge payout is made of): blackened steel, a pale double
+## reeded rim and numeral on a black field, the biggest and thickest.
+const BLACK_STEEL := Color(0.6, 0.63, 0.67)
+const COLOURS: Array[Color] = [SILVER, GOLD, BRONZE, STEEL, PLATINUM, PEWTER, PALE_GOLD, OXIDE, BLACK_STEEL]
+const SCALES: Array[Vector3] = [Vector3.ONE, Vector3.ONE, BIG_SCALE, FIFTY_SCALE, HUNDRED_SCALE,
+		Vector3(1.58, 2.0, 1.58), Vector3(1.66, 2.1, 1.66), Vector3(1.74, 2.2, 1.74), Vector3(1.82, 2.3, 1.82)]
 ## How far (in cells) a payout's coins scatter around its spot, and sit off a stack's centre.
 const AIM_JITTER := 0.25
 const STACK_JITTER := 0.12
-const FLOATS := 20  # per instance: 12 transform + 4 colour + 4 custom (x: the coin face, 0..4 = $1/$5/$10/$50/$100)
+const FLOATS := 20  # per instance: 12 transform + 4 colour + 4 custom (x: the coin face, 0..8 = $1 .. $10K)
 const GRAVITY := 9.8
 const SETTLE_TIME := 0.12
 const HOME_TIME := 0.5
@@ -57,6 +71,11 @@ const THROW_STAGGER := 0.05
 ## Seconds a coin popped out of the bin (pop_out) takes from the mouth to the desk.
 const POP_TIME := 0.45
 const PICKUP_RADIUS := 0.1
+## The longest step (m on the desk) between two frames' hand points still swept as one stroke; a
+## bigger jump (the mouse back from outside the window) starts afresh instead of sweeping a line.
+const MAX_STROKE := 0.5
+## Everything swept up in one frame has left within this many seconds, however much it is.
+const HOME_SPREAD := 0.3
 
 @export var desk_height := 0.76
 @export var deposit: Node3D
@@ -97,6 +116,15 @@ var _buffer := PackedFloat32Array()
 var _held := 0
 ## Value of payouts set to arrive by throw_in_after and not thrown yet.
 var _scheduled := 0
+## The empty hand's point on the desk last frame (null while it holds something).
+var _last_hand: Variant = null
+## The tallest a stack can be (m above the desk), for _sweep's window: MAX_STACK of the thickest
+## coin, raised by _land should a stack on a full mat spill past MAX_STACK. Never lowered.
+var _tallest: float = MAX_STACK * THICKNESS * SCALES.map(func(s: Vector3) -> float: return s.y).max()
+## The end and mouse ray of the last stroke _sweep tested, and whether a coin has landed since.
+var _swept_to := Vector3.INF
+var _swept_rise := Vector3.ZERO
+var _landed := false
 
 
 func _ready() -> void:
@@ -186,7 +214,11 @@ func pop_out(origin: Vector3, spot: Vector3, amount: int) -> void:
 
 func _process(delta: float) -> void:
 	if Hand.held == null:
-		_sweep(Hand.point_on_height(desk_height))
+		var now := Hand.point_on_height(desk_height)
+		_sweep(stroke_start(_last_hand, now), now, Hand.point_on_height(desk_height + 1.0) - now)
+		_last_hand = now
+	else:
+		_last_hand = null
 	var moving := false
 	for i in range(_coins.size() - 1, -1, -1):
 		var coin := _coins[i]
@@ -201,7 +233,9 @@ func _process(delta: float) -> void:
 					coin.slot = -1  # its final spot still has to be written
 			State.HOMING:
 				if _home(coin, delta):
-					_coins.remove_at(i)
+					# The last coin (already done this frame) takes its place: only that one is re-uploaded.
+					_coins[i] = _coins[-1]
+					_coins.pop_back()
 					bank(SaveManager.save, coin.value)
 					deposited.emit(coin.xf.origin)
 			State.RESTING:
@@ -250,27 +284,87 @@ func _land(coin: Coin) -> void:
 			Vector3(centre.x, below + thickness(coin.value) * 0.5, centre.y))
 	coin.state = State.SETTLING
 	coin.t = 0.0
+	_landed = true
+	_tallest = maxf(_tallest, below + thickness(coin.value) - desk_height)
 	landed.emit(coin.to.origin)
 
 
-## Coins under the empty hand fly off to the deposit, nearest first.
-func _sweep(point: Vector3) -> void:
-	var reach := ceili(PICKUP_RADIUS / CELL)
-	var centre := cell_of(point)
-	var order := 0
-	for dx in range(-reach, reach + 1):
-		for dz in range(-reach, reach + 1):
-			var cell := centre + Vector2i(dx, dz)
-			if not _stacks.has(cell) or cell_centre(cell).distance_to(Vector2(point.x, point.z)) > PICKUP_RADIUS:
-				continue
-			for coin: Coin in _stacks[cell]:
-				coin.state = State.HOMING
-				coin.from = coin.xf
-				coin.t = 0.0
-				coin.delay = order * HOME_STAGGER
-				order += 1
-				collected.emit(coin.xf.origin)
-			_stacks.erase(cell)
+## Stacks under the empty hand's stroke this frame (`from` last frame's point to `to`, `rise` the
+## mouse ray per metre up) fly off to the deposit whole, each top coin first, all within HOME_SPREAD.
+func _sweep(from: Vector3, to: Vector3, rise: Vector3) -> void:
+	# Nothing new to find: no coins, or the hand still on the point it was tested on last and no coin
+	# landed since (stacks otherwise only shrink, and a shorter stack shows under less of the desk).
+	if _stacks.is_empty() or (from == to and to == _swept_to and rise == _swept_rise and not _landed):
+		return
+	_swept_to = to
+	_swept_rise = rise
+	_landed = false
+	var taken: Array[Coin] = []
+	# ponytail: a grid box around the stroke, widened by the tallest possible stack even where the
+	# stacks are short; narrow it per stack height if it shows in a profile again.
+	for cell in _stacks_near(from, to, rise):
+		var at := cell_centre(cell)
+		if not under_hand(from, to, rise, Vector3(at.x, desk_height, at.y), Vector3(at.x, _top(cell), at.y)):
+			continue
+		var stack: Array = _stacks[cell]
+		for i in range(stack.size() - 1, -1, -1):
+			taken.append(stack[i])
+		_stacks.erase(cell)
+	for i in taken.size():
+		var coin := taken[i]
+		coin.state = State.HOMING
+		coin.from = coin.xf
+		coin.t = 0.0
+		coin.delay = home_delay(i, taken.size())
+		collected.emit(coin.xf.origin)
+
+
+## The cells of the stacks that could show under the stroke `from`..`to` (see under_hand): a foot
+## within PICKUP_RADIUS of the stroke slid back along `rise` by up to _tallest. Looks them up in that
+## box of the grid, or walks the stacks instead when there are fewer of them than cells in the box.
+func _stacks_near(from: Vector3, to: Vector3, rise: Vector3) -> Array[Vector2i]:
+	var flat := Vector2(rise.x, rise.z)
+	var low := flat * (desk_height - from.y)
+	var high := flat * (desk_height + _tallest - from.y)
+	var reach := Vector2.ONE * (PICKUP_RADIUS + 0.001)  # a hair more: no float edge drops a stack
+	var lo := Vector2(minf(from.x, to.x), minf(from.z, to.z)) + low.min(high) - reach
+	var hi := Vector2(maxf(from.x, to.x), maxf(from.z, to.z)) + low.max(high) + reach
+	var a := cell_of(Vector3(lo.x, 0.0, lo.y))
+	var b := cell_of(Vector3(hi.x, 0.0, hi.y))
+	var out: Array[Vector2i] = []
+	if (b.x - a.x + 1) * (b.y - a.y + 1) < _stacks.size():
+		for x in range(a.x, b.x + 1):
+			for z in range(a.y, b.y + 1):
+				if _stacks.has(Vector2i(x, z)):
+					out.append(Vector2i(x, z))
+	else:
+		for cell: Vector2i in _stacks:
+			if cell.x >= a.x and cell.x <= b.x and cell.y >= a.y and cell.y <= b.y:
+				out.append(cell)
+	return out
+
+
+## Whether the empty hand's stroke this frame (`from` to `to` on the desk) passes within
+## PICKUP_RADIUS of something reaching from `low` up to `high` where the player sees it: each end
+## slides down the mouse ray (`rise`: how far it moves per metre up) onto the desk first, so a coin
+## high on a heap counts where it shows under the hand, not where its foot is.
+static func under_hand(from: Vector3, to: Vector3, rise: Vector3, low: Vector3, high: Vector3) -> bool:
+	var a := low - rise * (low.y - from.y)
+	var b := high - rise * (high.y - from.y)
+	var closest := Geometry3D.get_closest_points_between_segments(from, to, a, b)
+	return Vector2(closest[0].x - closest[1].x, closest[0].z - closest[1].z).length() <= PICKUP_RADIUS
+
+
+## Where this frame's stroke of the empty hand starts: where it was last frame, or where it is now
+## (first frame empty-handed, or a jump longer than MAX_STROKE).
+static func stroke_start(last: Variant, now: Vector3) -> Vector3:
+	return last if last is Vector3 and (last as Vector3).distance_to(now) <= MAX_STROKE else now
+
+
+## Seconds the `i`th of `count` things swept up at once waits before it flies off: HOME_STAGGER
+## apart, closer for a big haul so the last one has left within HOME_SPREAD.
+static func home_delay(i: int, count: int) -> float:
+	return i * minf(HOME_STAGGER, HOME_SPREAD / maxi(count, 1))
 
 
 ## A coin vacuum at `point` sucks up the resting stacks within `reach`, at most `room` coins, and
@@ -442,7 +536,7 @@ static func coin_colour(value: int) -> Color:
 	return COLOURS[tier(value)]
 
 
-## The biggest denomination `value` reaches (its index in DENOMINATIONS): $1000+ coins show as $100.
+## The biggest denomination `value` reaches (its index in DENOMINATIONS): $100K+ coins show as $10K.
 static func tier(value: int) -> int:
 	for i in range(DENOMINATIONS.size() - 1, 0, -1):
 		if value >= DENOMINATIONS[i]:
@@ -459,13 +553,16 @@ static func cell_centre(cell: Vector2i) -> Vector2:
 
 
 ## The fewest coins, largest first ($100, $50, $10, $5, $1), thrown smallest first so the biggest
-## end up on top of the stack where the camera sees them. A big amount comes as $100 coins worth
-## ten times more, and again, so one payout never throws much more than MAX_THROW coins.
+## end up on top of the stack where the camera sees them. A big amount, one that would take more than
+## MAX_THROW of the top coin, brings in the next coin up ($500, $1K, $5K, $10K), and past $10K coins
+## worth ten times more (drawn as $10K), and again, so one payout never throws much more than
+## MAX_THROW coins and a big one still comes as a handful, not one lonely coin.
 static func coin_values(amount: int) -> Array[int]:
-	var denominations := DENOMINATIONS.duplicate()
+	var denominations := DENOMINATIONS.slice(0, CHANGE)
 	@warning_ignore("integer_division")
 	while amount / denominations[-1] > MAX_THROW:
-		denominations.append(denominations[-1] * 10)
+		var up := denominations.size()
+		denominations.append(DENOMINATIONS[up] if up < DENOMINATIONS.size() else denominations[-1] * 10)
 	var counts: Array[int] = []
 	for i in range(denominations.size() - 1, -1, -1):
 		@warning_ignore("integer_division")

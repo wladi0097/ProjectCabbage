@@ -197,6 +197,44 @@ func _bay_in_tree() -> QaBay:
 	return bay
 
 
+func test_a_slip_high_on_the_pile_is_swept_up_where_it_shows_under_the_hand() -> void:
+	var bay := _bay_in_tree()
+	var intake := Node3D.new()
+	intake.name = "Intake"
+	bay.counter.add_child(intake)
+	add_child(bay.counter)
+	var rise := Vector3(0.0, 1.0, 0.55)  # the game camera's mouse ray per metre up
+	var low := _slip(Vector3(0.0, QaBay.DESK_Y + 0.01, 0.5), 1)
+	var high := _slip(Vector3(0.0, QaBay.DESK_Y + 0.25, 0.5), 5)
+	var far := _slip(Vector3(0.0, QaBay.DESK_Y + 0.01, 0.1), 10)
+	bay._slips = [low, high, far] as Array[Node3D]
+	# The hand drawn right over the high slip: its ray meets the desk 0.14 m short of the slip's foot.
+	var hand := Vector3(0.0, QaBay.DESK_Y, 0.5 - 0.25 * 0.55)
+	bay._sweep(hand, hand, rise)
+	assert_bool(high.get_meta(&"resting")).is_false()
+	assert_bool(low.get_meta(&"resting")).is_true()
+	assert_bool(far.get_meta(&"resting")).is_true()
+
+
+func test_a_slip_landing_under_a_still_hand_is_taken() -> void:
+	var bay := _bay_in_tree()
+	var intake := Node3D.new()
+	intake.name = "Intake"
+	bay.counter.add_child(intake)
+	add_child(bay.counter)
+	var rise := Vector3(0.0, 1.0, 0.55)
+	var hand := Vector3(0.0, QaBay.DESK_Y, 0.5)
+	var other := _slip(Vector3(0.6, QaBay.DESK_Y + 0.01, 0.5), 1)
+	var flying := _slip(Vector3(0.0, QaBay.DESK_Y + 0.01, 0.5), 5, false)
+	bay._slips = [other, flying] as Array[Node3D]
+	bay._sweep(hand, hand, rise)
+	bay._sweep(hand, hand, rise)
+	bay._settle_slip(flying)
+	bay._sweep(hand, hand, rise)
+	assert_bool(flying.get_meta(&"resting")).is_false()
+	assert_bool(other.get_meta(&"resting")).is_true()
+
+
 ## A mini as the tube hands it over: hidden, frozen, out of the physics.
 func _tube_mini() -> Cabbage:
 	var cabbage: Cabbage = auto_free(preload("res://entities/cabbage/cabbage.tscn").instantiate())
@@ -399,3 +437,29 @@ func test_a_hundred_findings_payout_ejects_one_hundred_token_bigger_than_a_fifty
 	assert_object(look.call("Slip100")).is_not_equal(look.call("Slip10"))
 	assert_object(look.call("Slip50")).is_not_equal(look.call("Slip10"))
 	assert_object(look.call("Slip100")).is_not_equal(look.call("Slip50"))
+
+
+func test_a_big_findings_payout_comes_as_a_handful_of_high_tokens_each_bigger_than_the_last() -> void:
+	var bay := _bay_in_tree()
+	var ten_k := CoinPile.coin_values(10000)
+	assert_array(ten_k).has_size(20)
+	assert_bool(ten_k.all(func(v: int) -> bool: return QaBay.slip_template(v) == "Slip500")).is_true()
+	var templates := {}
+	for amount: int in [26000, 140000, 400000, 5000000]:
+		for value in CoinPile.coin_values(amount):
+			templates[QaBay.slip_template(value)] = true
+	assert_array(templates.keys()).contains(["Slip1000", "Slip5000", "Slip10000"])
+	var previous := 0.0
+	for denomination in CoinPile.DENOMINATIONS:
+		var template: MeshInstance3D = bay.get_node(QaBay.slip_template(denomination))
+		assert_float(template.scale.x).is_greater(previous)
+		previous = template.scale.x
+	for high in ["Slip500", "Slip1000", "Slip5000", "Slip10000"]:
+		var look: Material = (bay.get_node(high) as MeshInstance3D).get_surface_override_material(0)
+		assert_str(look.resource_path).starts_with("res://assets/materials/findings_token_")
+	bay._eject(10000)
+	assert_array(bay._slips).has_size(20)
+	var total := 0
+	for slip in bay._slips:
+		total += slip.get_meta(&"value")
+	assert_int(total).is_equal(10000)

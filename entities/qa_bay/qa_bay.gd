@@ -41,9 +41,10 @@ const COUNTER_DROP_TIME := 0.4
 ## Report slips: square bakelite Findings tokens (one mesh, a material per denomination, each
 ## template's scale sets its size and thickness), thrown out of the mouth onto this patch of desk
 ## (bay space, in front of the flap), arcing SLIP_LIFT high in SLIP_EJECT_TIME, then flying into the
-## machine's hopper (the counter's Intake) exactly like a coin. A payout comes as the fewest ¶1, ¶5,
-## ¶10, ¶50 and ¶100 tokens (CoinPile.coin_values; a huge one also as ¶1000s and up, drawn as the
-## ¶100 token, as coins are). The template is the Slip<n> node of the value's tier (slip_template).
+## machine's hopper (the counter's Intake) exactly like a coin. A payout is split like coins
+## (CoinPile.coin_values): the fewest ¶1, ¶5, ¶10, ¶50 and ¶100 tokens, a big one also ¶500, ¶1K,
+## ¶5K and ¶10K tokens (¶500 and up carry a cold cyan rim), a huge one ¶100Ks drawn as the ¶10K.
+## The template is the Slip<n> node of the value's tier (slip_template).
 ## SLIP_HALF is the token mesh's half thickness at scale 1; layers stack SLIP_LAYER apart.
 const SLIP_AREA := AABB(Vector3(-0.1, 0.0, 0.46), Vector3(0.47, 0.0, 0.16))
 const SLIP_LIFT := 0.18
@@ -73,6 +74,12 @@ var _yields: Array[int] = []
 var _owed := 0.0
 ## Slips out of the bay and not filed yet (on their way out, on the desk or homing); value in meta.
 var _slips: Array[Node3D] = []
+## The empty hand's point on the desk last frame (null while it holds something), as CoinPile's.
+var _last_hand: Variant = null
+## The end and mouse ray of the last stroke _sweep tested, and whether a slip has come to rest since.
+var _swept_to := Vector3.INF
+var _swept_rise := Vector3.ZERO
+var _landed := false
 ## What the load gauge shows: (cabbages on the benches, benches).
 var _shown := Vector2i(-1, -1)
 var _progress := 0.0
@@ -119,7 +126,11 @@ func _process(delta: float) -> void:
 			_deliver()
 		return
 	if Hand.held == null:
-		_sweep(Hand.point_on_height(DESK_Y))
+		var now := Hand.point_on_height(DESK_Y)
+		_sweep(CoinPile.stroke_start(_last_hand, now), now, Hand.point_on_height(DESK_Y + 1.0) - now)
+		_last_hand = now
+	else:
+		_last_hand = null
 	if _jobs.is_empty():
 		return
 	for i in _jobs.size():
@@ -277,7 +288,7 @@ func pending_findings() -> int:
 	return total
 
 
-## A finished unit's report slips (`amount` in the fewest ¶1/¶5/¶10/¶50/¶100) fly out onto the desk in front.
+## A finished unit's report slips (`amount` split like coins, CoinPile.coin_values) fly out onto the desk in front.
 func _eject(amount: int) -> void:
 	var delay := 0.0
 	for value in CoinPile.coin_values(amount):
@@ -285,7 +296,7 @@ func _eject(amount: int) -> void:
 		delay += CoinPile.THROW_STAGGER * 2.0
 
 
-## The token a slip worth `value` is drawn as: its tier's Slip<n> (¶1000 and up look like ¶100).
+## The token a slip worth `value` is drawn as: its tier's Slip<n> (¶100K and up look like ¶10K).
 static func slip_template(value: int) -> String:
 	return "Slip%d" % CoinPile.DENOMINATIONS[CoinPile.tier(value)]
 
@@ -314,19 +325,34 @@ func _eject_slip(value: int, delay: float) -> void:
 		slip.global_position = from.lerp(spot, t) + Vector3.UP * SLIP_LIFT * 4.0 * t * (1.0 - t)
 		slip.global_basis = global_basis * Basis(Vector3.UP, turn * t) * Basis(Vector3.RIGHT, TAU * (1.0 - t)) * size,
 		0.0, 1.0, SLIP_EJECT_TIME)
-	tween.tween_callback(func() -> void:
-		slip.set_meta(&"resting", true)
-		$SlipLand.cue(slip.global_position))
+	tween.tween_callback(_settle_slip.bind(slip))
 
 
-## Resting slips under the empty hand fly into the Findings counter.
-func _sweep(point: Vector3) -> void:
-	var order := 0
-	for slip in _slips:
-		if slip.get_meta(&"resting") and Vector2(slip.global_position.x - point.x, slip.global_position.z - point.z).length() <= CoinPile.PICKUP_RADIUS:
+## A slip lands on the desk: from now on the hand and the vacuums can take it.
+func _settle_slip(slip: Node3D) -> void:
+	slip.set_meta(&"resting", true)
+	_landed = true
+	$SlipLand.cue(slip.global_position)
+
+
+## Resting slips under the empty hand's stroke (CoinPile._sweep) fly into the Findings counter,
+## the top of the pile (the newest) first.
+func _sweep(from: Vector3, to: Vector3, rise: Vector3) -> void:
+	# Nothing new to find: no slips, or the hand still where it was tested last and none came to rest since.
+	if _slips.is_empty() or (from == to and to == _swept_to and rise == _swept_rise and not _landed):
+		return
+	_swept_to = to
+	_swept_rise = rise
+	_landed = false
+	var taken: Array[Node3D] = []
+	# ponytail: every slip (a few dozen at most, ~0.03 ms); a grid like CoinPile's if they ever pile up in hundreds.
+	for i in range(_slips.size() - 1, -1, -1):
+		var slip := _slips[i]
+		if slip.get_meta(&"resting") and CoinPile.under_hand(from, to, rise, slip.global_position, slip.global_position):
 			slip.set_meta(&"resting", false)
-			_home(slip, order * CoinPile.HOME_STAGGER)
-			order += 1
+			taken.append(slip)
+	for i in taken.size():
+		_home(taken[i], CoinPile.home_delay(i, taken.size()))
 
 
 ## Where the slips lying on the desk are (the coin vacuums' goals once token_recovery is stamped).

@@ -2,7 +2,7 @@ class_name ShaderWarmup
 extends Node3D
 ## Shader warm-up: a small cluster of everything that first appears mid-game (every cabbage look on
 ## every cabbage mesh incl. the research one under its cyan omni light, the coin MultiMesh, the
-## Findings token, the lab's scan glow and jewels, the CRT glass and TV static, card paper and text,
+## Findings tokens (the ORM one and the ¶500-¶10K findings_token shader), the lab's scan glow and jewels, the CRT glass and TV static, card paper and text,
 ## the associate's sleeve, the particle looks, every shared material), all in shader_warmup.tscn.
 ## For its first FRAMES frames it hangs in the bottom-left corner of the game camera's view, really
 ## drawn (lit, casting shadows), so their pipelines compile at boot instead of hitching later; then

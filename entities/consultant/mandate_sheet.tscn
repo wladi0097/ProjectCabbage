@@ -69,23 +69,14 @@ autowrap_mode = 3
 [node name="Rule" type="HSeparator" parent="Sheet/Paper/Stack" unique_id=2100400010]
 layout_mode = 2
 
-[node name="DutyRow" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400011]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Sheet/Paper/Stack/DutyRow" unique_id=2100400012]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Consultant"
-
-[node name="Duty" type="Button" parent="Sheet/Paper/Stack/DutyRow" unique_id=2100400013]
+[node name="Duty" type="CheckBox" parent="Sheet/Paper/Stack" unique_id=2100400013]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(156, 36)
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 focus_mode = 0
 mouse_default_cursor_shape = 2
-toggle_mode = true
 button_pressed = true
-text = "ON DUTY"
+text = "Consultant on duty"
 
 [node name="BounceRow" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400014]
 layout_mode = 2
@@ -246,7 +237,7 @@ volume_db = -10.0
 bus = &"SFX"
 
 [connection signal="button_down" from="Sheet/Paper/Stack/Head/Close" to="Click" method="play"]
-[connection signal="button_down" from="Sheet/Paper/Stack/DutyRow/Duty" to="Click" method="play"]
+[connection signal="button_down" from="Sheet/Paper/Stack/Duty" to="Click" method="play"]
 [connection signal="button_down" from="Sheet/Paper/Stack/BounceRow/BounceDown" to="Click" method="play"]
 [connection signal="button_down" from="Sheet/Paper/Stack/BounceRow/BounceUp" to="Click" method="play"]
 [connection signal="button_down" from="Sheet/Paper/Stack/FloorRow/FloorDown" to="Click" method="play"]

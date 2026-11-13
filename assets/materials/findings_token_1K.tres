@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/findings_token.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_high_albedo.png" id="1_albedo"]
+[ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_high_normal.png" id="2_normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_high_orm.png" id="3_orm"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/albedo_tex = ExtResource("1_albedo")
+shader_parameter/normal_tex = ExtResource("2_normal")
+shader_parameter/orm_tex = ExtResource("3_orm")
+shader_parameter/column = 1.0
+shader_parameter/rim_level = 0.65

@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://ui/elements/paper_note.tscn" id="8_note"]
 [ext_resource type="Material" uid="uid://bskprm6ttwxpr" path="res://assets/materials/card_paper.tres" id="9_paper"]
 [ext_resource type="Texture2D" uid="uid://bgkvw0g1orfpm" path="res://assets/textures/card_paper/card_paper_albedo.png" id="10_paper_tex"]
+[ext_resource type="Shader" path="res://assets/shaders/form_ghost.gdshader" id="11_ghost"]
 [ext_resource type="AudioStream" uid="uid://wbc8wcvrd8t7" path="res://assets/audio/effects/card_hover_1.wav" id="sfx_card_hover_1"]
 [ext_resource type="AudioStream" uid="uid://caca7dfoh7wp6" path="res://assets/audio/effects/card_hover_2.wav" id="sfx_card_hover_2"]
 [ext_resource type="AudioStream" uid="uid://btjnudu3qy3jm" path="res://assets/audio/effects/card_impale_1.wav" id="sfx_card_impale_1"]
@@ -89,6 +90,14 @@ inner_radius = 0.11
 outer_radius = 0.125
 rings = 48
 ring_segments = 4
+
+[sub_resource type="ShaderMaterial" id="GhostInk"]
+render_priority = 0
+shader = ExtResource("11_ghost")
+
+[sub_resource type="PlaneMesh" id="GhostMesh"]
+material = SubResource("GhostInk")
+size = Vector2(0.36, 0.2)
 
 [sub_resource type="SphereShape3D" id="HandleShape"]
 radius = 0.07985576
@@ -301,9 +310,40 @@ cast_shadow = 0
 gi_mode = 0
 mesh = SubResource("RingMesh")
 
+[node name="Ghost" type="MeshInstance3D" parent="Press" unique_id=1203348801]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0475, 0)
+visible = false
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("GhostMesh")
+
+[node name="Words" type="Label3D" parent="Press/Ghost" unique_id=1203348802]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0005, 0.035)
+pixel_size = 0.0003
+modulate = Color(0.82, 0.81, 0.76, 0.85)
+text = "PLACE FORM HERE"
+font = ExtResource("7_font")
+font_size = 130
+outline_size = 0
+autowrap_mode = 2
+width = 1000.0
+
 [node name="Handle" type="StaticBody3D" parent="Press" unique_id=740587006]
 collision_layer = 8
 collision_mask = 0
+
+[node name="Tag" type="Label3D" parent="Press/Handle" unique_id=1203348803]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0.045, 0)
+visible = false
+pixel_size = 0.0007
+billboard = 1
+modulate = Color(0.9, 0.89, 0.84, 1)
+outline_modulate = Color(0.08, 0.09, 0.08, 0.9)
+text = "PULL TO STAMP"
+font = ExtResource("7_font")
+font_size = 72
+outline_size = 16
+horizontal_alignment = 0
 
 [node name="Shape" type="CollisionShape3D" parent="Press/Handle" unique_id=1060894887]
 shape = SubResource("HandleShape")

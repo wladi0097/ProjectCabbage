@@ -1091,3 +1091,68 @@ func test_a_bought_farm_loaded_without_its_squares_has_every_square_before_the_f
 	save.farm_plots = 8
 	_screen(save)
 	assert_int(save.farm_growth.size()).is_equal(8)
+
+
+## A farm screen on a TV (its SubViewport) that is `watched` (rendering: the camera is off the desk)
+## or off, showing `save`.
+func _tv_screen(save: SaveGame, watched: bool) -> FarmScreen:
+	var tv: SubViewport = auto_free(SubViewport.new())
+	tv.render_target_update_mode = SubViewport.UPDATE_ALWAYS if watched else SubViewport.UPDATE_DISABLED
+	add_child(tv)
+	SaveManager.save = save
+	var screen: FarmScreen = load("res://entities/farm_screen/farm_screen.tscn").instantiate()
+	tv.add_child(screen)
+	return screen
+
+
+## A bought farm of one square with a farm hand and a tractor: with a single square nothing is left
+## to chance (which square a worker picks), so two runs can be compared number for number.
+func _one_square_farm() -> SaveGame:
+	var save := SaveGame.new()
+	save.stamped.append("family_farm")
+	save.farm_plots = 1
+	save.farm_seeds = 20
+	save.farm_hands = 1
+	save.farm_tractors = 1
+	save.storage_cap = 1000
+	return save
+
+
+func test_the_farm_grows_the_same_with_the_tv_off() -> void:
+	var runs := []
+	for watched: bool in [false, true]:
+		var save := _one_square_farm()
+		var screen := _tv_screen(save, watched)
+		for k in 5400:  # 3 minutes at 30 frames a second.
+			screen._process(1.0 / 30.0)
+		runs.append([save.farm_harvests, save.stock, save.farm_seeds, save.farm_hand_planted, save.tractor_harvested,
+				Array(save.farm_growth), save.farm_seconds])
+	assert_int(runs[0][0]).is_greater(2)
+	assert_array(runs[0]).is_equal(runs[1])
+
+
+func test_a_farm_nobody_is_looking_at_is_not_redrawn() -> void:
+	var screen := _tv_screen(_one_square_farm(), false)
+	var draws := [0]
+	screen.draw.connect(func() -> void: draws[0] += 1)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	draws[0] = 0  # Its first picture is drawn; from here on the set is off.
+	for k in 5:
+		await get_tree().process_frame
+	assert_int(draws[0]).is_equal(0)
+
+
+func test_the_picture_is_redrawn_the_moment_the_tv_comes_on() -> void:
+	var screen := _tv_screen(_one_square_farm(), false)
+	var draws := [0]
+	screen.draw.connect(func() -> void: draws[0] += 1)
+	for k in 5:
+		await get_tree().process_frame
+	draws[0] = 0
+	(screen.get_viewport() as SubViewport).render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	await get_tree().process_frame  # The very next frame draws the farm as it is now.
+	assert_int(draws[0]).is_greater_equal(1)
+	for k in 4:
+		await get_tree().process_frame
+	assert_int(draws[0]).is_greater_equal(4)  # And every frame after it, while the set is on.

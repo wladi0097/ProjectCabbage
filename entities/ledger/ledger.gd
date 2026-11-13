@@ -7,9 +7,11 @@ extends Control
 ## The game keeps running behind it.
 ##
 ## The pages (pages()) are built from the save once a frame while it is open: a performance summary,
-## a chart of the coins (and Findings) earned per minute from the playtest log, personnel, then every requisition approved,
-## by play time. The requisition rows are only rescanned when the log changes; the chart's two lines
-## rescan the whole log every frame its page is open, as they end at the live totals and play second.
+## coins and Findings earned per minute (two charts stacked on one time axis), cabbages sold per
+## minute, personnel, then every requisition approved, by play time. The requisition rows are only
+## rescanned when the log changes; the chart lines rescan the whole log every frame their page is
+## open, as they end at the live totals and play second. A chart's time axis spans the history the
+## log holds (a debug start or an old save holds only the recent part), not the whole shift.
 ## The open book is drawn in 2D like the projector (the camera looks steeply down, a 3D book would
 ## read as a strip); while it is out it takes every click.
 
@@ -37,13 +39,19 @@ const INK := Color(0.13, 0.14, 0.14)
 const BOARD := Color(0.2, 0.23, 0.21)
 ## The Findings line: the lab's cold cyan, darkened to read as ink on the paper.
 const LAB_INK := Color(0.04, 0.47, 0.58)
-## The chart: at most CHART_POINTS points per line (wider intervals on a long run, CHART_STEPS
-## minutes each), CHART_ROWS grid rows, about CHART_TICKS minute ticks, label gutters (px).
+## The cabbages line: the cabbage's green, darkened to read as ink.
+const LEAF_INK := Color(0.27, 0.5, 0.15)
+## The charts: at most CHART_POINTS readings per line (wider intervals on a long run, CHART_STEPS
+## minutes each), CHART_ROWS grid rows, about CHART_TICKS minute ticks, the y labels' gutter (px), a
+## time axis at least MIN_SPAN s wide (a fresh shift's first readings sit at its left, not stretched).
 const CHART_POINTS := 60
 const CHART_STEPS := [1, 2, 5, 10, 15, 30, 60, 120, 240, 480]
 const CHART_ROWS := 4
 const CHART_TICKS := 6
 const GUTTER := 70.0
+const MIN_SPAN := 300.0
+const SMOOTH_FROM := 5
+const INKS := {ink = Color(INK, 0.8), lab = LAB_INK, leaf = LEAF_INK}
 
 @export var latch_sound: AudioStream
 @export var thud_sound: AudioStream
@@ -132,7 +140,9 @@ static func summary_rows(save: SaveGame, seconds: int) -> Array:
 		["INTERCEPTION RATE", "%d%%" % roundi(100.0 * save.catches / maxi(save.sold, 1))],
 		["CABBAGES IN INVENTORY", "%d / %d" % [save.stock, save.storage_cap]],
 		["COINS ON HAND", "$%d" % save.coins],
+		["COINS EARNED TO DATE", "$" + FarmScreen._thousands(save.coins_earned)],
 		["FINDINGS FILED", "¶%d" % save.findings],
+		["FINDINGS EARNED TO DATE", "¶" + FarmScreen._thousands(save.findings_earned)],
 		["PRICE PER CABBAGE", "$%d" % save.sale_price],
 		["MARKETING MULTIPLIER", "x%.2f" % save.marketing],
 		["HANDS EMPLOYED", str(save.hands)],
@@ -171,17 +181,18 @@ static func chart_step(seconds: float, most := CHART_POINTS) -> int:
 	return CHART_STEPS.back() * 60
 
 
-## Income per minute from the log's running total `column` (an "_earned" total, never spent), with
-## `total` now at play second `now`: one point (end of the interval in s, per minute) for every whole
-## `step` s. Between rows the total is read off a straight line, so a purchase or event row is just one
-## more sample of the same rising curve (no dent, no spike) and a gap in the log spreads evenly. Rows
-## without the column (older builds) are skipped; too few samples give no points.
-static func rate_points(entries: Array, column: String, now: int, total: int, step: int) -> PackedVector2Array:
+## Rate per minute of the log's running total, the sum of `columns` (totals that only ever rise:
+## "_earned", sales), with `total` now at play second `now`: one point (end of the interval in s,
+## per minute) for every whole `step` s. Between rows the total is read off a straight line, so a
+## purchase or event row is just one more sample of the same rising curve (no dent, no spike) and a
+## gap in the log spreads evenly. Rows missing any column (older builds) are skipped; samples are kept
+## in time order (a row at or before the last one never sends the line back); too few give no points.
+static func rate_points(entries: Array, columns: Array, now: int, total: int, step: int) -> PackedVector2Array:
 	var ts: Array[float] = []
 	var vs: Array[float] = []
 	for entry: Dictionary in entries:
-		if entry.has("t") and entry.has(column):
-			_sample(ts, vs, float(entry.t), float(entry[column]))
+		if _has_all(entry, columns):
+			_sample(ts, vs, float(entry.t), columns.reduce(func(sum: float, c: String) -> float: return sum + float(entry[c]), 0.0))
 	_sample(ts, vs, now, total)
 	var points := PackedVector2Array()
 	if ts.size() < 2:
@@ -199,6 +210,10 @@ static func rate_points(entries: Array, column: String, now: int, total: int, st
 	return points
 
 
+static func _has_all(entry: Dictionary, columns: Array) -> bool:
+	return entry.has("t") and columns.all(func(c: String) -> bool: return entry.has(c))
+
+
 ## Adds a sample at play second `t`, later than the last; one at the same second replaces it.
 static func _sample(ts: Array[float], vs: Array[float], t: float, value: float) -> void:
 	if not ts.is_empty() and t <= ts[-1]:
@@ -209,7 +224,56 @@ static func _sample(ts: Array[float], vs: Array[float], t: float, value: float) 
 	vs.append(value)
 
 
-## The Findings line is pencilled in once any came in.
+## Play second of the log's first row carrying every one of `columns`, where a chart's history
+## starts (`now` when there is none yet).
+static func series_start(entries: Array, columns: Array, now: int) -> int:
+	for entry: Dictionary in entries:
+		if _has_all(entry, columns):
+			return mini(int(entry.t), now)
+	return now
+
+
+## Seconds per reading for a history from play second `start` to `now` (chart_step of what is held,
+## so a short recent history is read minute by minute however long the shift).
+static func history_step(start: int, now: int) -> int:
+	return chart_step(maxf(now - start, 60.0))
+
+
+## The time axis (start, end in play s) for readings `points` `step` s apart: from the first
+## reading's interval start to the last reading, at least MIN_SPAN wide, so the line fills the plot.
+static func chart_window(points: PackedVector2Array, step: int) -> Vector2:
+	if points.is_empty():
+		return Vector2(0.0, MIN_SPAN)
+	var start := points[0].x - step
+	return Vector2(start, maxf(points[-1].x, start + MIN_SPAN))
+
+
+## The minutes to label along `window` (chart_window): round minutes about CHART_TICKS apart, inside it.
+static func time_ticks(window: Vector2) -> Array[int]:
+	@warning_ignore("integer_division")
+	var every := chart_step(window.y - window.x, CHART_TICKS) / 60
+	var ticks: Array[int] = []
+	var minute := ceili(window.x / 60.0 / every) * every
+	while minute * 60.0 <= window.y + 0.001:
+		ticks.append(minute)
+		minute += every
+	return ticks
+
+
+## Readings averaged with their neighbours (three in a row, two at the ends), to calm coins banked
+## in bursts; the times stay as they are. Fewer than SMOOTH_FROM readings are left as recorded (two
+## averaged would only draw their mean as a flat line).
+static func smooth(points: PackedVector2Array) -> PackedVector2Array:
+	if points.size() < SMOOTH_FROM:
+		return points
+	var out := PackedVector2Array()
+	for i in points.size():
+		var near := Array(points.slice(maxi(i - 1, 0), mini(i + 2, points.size())))
+		out.append(Vector2(points[i].x, near.reduce(func(sum: float, p: Vector2) -> float: return sum + p.y, 0.0) / near.size()))
+	return out
+
+
+## A line is pencilled in once anything came in (the Findings chart waits for the lab).
 static func shows_line(points: PackedVector2Array) -> bool:
 	return Array(points).any(func(p: Vector2) -> bool: return p.y > 0.0)
 
@@ -219,6 +283,12 @@ static func peak(points: PackedVector2Array) -> float:
 	for p in points:
 		top = maxf(top, p.y)
 	return top
+
+
+## The y scale's top: CHART_ROWS round steps over the highest reading as recorded (smoothing never
+## hides the best minute off the scale).
+static func scale_top(points: PackedVector2Array) -> float:
+	return nice_step(peak(points) / CHART_ROWS) * CHART_ROWS
 
 
 ## A grid step of 1, 2 or 5 times a power of ten, the smallest at least `value` (1 for nothing).
@@ -232,8 +302,10 @@ static func nice_step(value: float) -> float:
 	return 10.0 * power
 
 
-## A scale's tick: "$1,200", "¶0.5".
+## A scale's tick: "$1,200", "¶0.5", "$15K" (steps of a thousand or more count in thousands).
 static func tick_text(value: float, step: float, mark: String) -> String:
+	if step >= 1000.0:
+		return mark + String.num(value / 1000.0, 1).trim_suffix(".0") + "K"
 	return mark + (FarmScreen._thousands(roundi(value)) if step >= 1.0 else String.num(value, 2))
 
 
@@ -249,6 +321,20 @@ static func personnel_rows(save: SaveGame) -> Array:
 	return rows
 
 
+## A chart page's rows: one chart each, stacked on one time axis (the first chart's history):
+## {caption, columns (log totals summed), mark (before each number), total (to date), ink (INKS), empty}.
+static func charts(save: SaveGame, kind: String) -> Array:
+	if kind == "cabbages":
+		return [{caption = "CABBAGES PER MINUTE", columns = ["sold", "minis_sold"], mark = "",
+				total = save.sold + save.minis_sold, ink = "leaf", empty = "INSUFFICIENT DATA. CONTINUE WORKING."}]
+	return [
+		{caption = "$ PER MINUTE", columns = ["coins_earned"], mark = "$", total = save.coins_earned,
+				ink = "ink", empty = "INSUFFICIENT DATA. CONTINUE WORKING."},
+		{caption = "¶ PER MINUTE", columns = ["findings_earned"], mark = "¶", total = save.findings_earned,
+				ink = "lab", empty = "NO FINDINGS ON FILE."},
+	]
+
+
 ## Every page, an even count: {title, form, kind ("rows", "chart", "list" or "blank"), rows}.
 static func pages(save: SaveGame, seconds: int) -> Array:
 	return pages_from(save, seconds, requisitions(save))
@@ -258,7 +344,8 @@ static func pages(save: SaveGame, seconds: int) -> Array:
 static func pages_from(save: SaveGame, seconds: int, reqs: Array) -> Array:
 	var list := [
 		{title = "QUARTERLY PERFORMANCE SUMMARY", form = "FORM QP-1", kind = "rows", rows = summary_rows(save, seconds)},
-		{title = "EARNINGS PER MINUTE WORKED", form = "FORM QP-2", kind = "chart", rows = []},
+		{title = "EARNINGS PER MINUTE WORKED", form = "FORM QP-2", kind = "chart", rows = charts(save, "earnings")},
+		{title = "CABBAGES SOLD PER MINUTE", form = "FORM QP-3", kind = "chart", rows = charts(save, "cabbages")},
 		{title = "PERSONNEL", form = "FORM HR-4", kind = "rows", rows = personnel_rows(save)},
 	]
 	for start in range(0, maxi(reqs.size(), 1), REQ_PER_PAGE):
@@ -474,8 +561,7 @@ func _draw_page(rect: Rect2, index: int, side: int) -> void:
 			draw_string(_type, Vector2(x, row_y.call(REQ_PER_PAGE) + line_h), tr("%d REQUISITIONS APPROVED IN TOTAL.") % approved_total(_reqs),
 					HORIZONTAL_ALIGNMENT_LEFT, w, int(text * 0.8), Color(INK, 0.7))
 		"chart":
-			_draw_chart(Rect2(Vector2(x + GUTTER, rect.position.y + line_h * 4.5), Vector2(w - GUTTER * 2.0, line_h * 10.5)),
-					save, seconds, line_h)
+			_draw_charts(page.rows, x, w, rect.position.y, line_h, save, seconds)
 		"blank":
 			draw_string(_type, Vector2(rect.position.x, rect.get_center().y), tr("THIS PAGE INTENTIONALLY LEFT BLANK."),
 					HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, int(text * 0.8), Color(INK, 0.6))
@@ -490,65 +576,78 @@ func _draw_page(rect: Rect2, index: int, side: int) -> void:
 			w * 0.3 - ear, int(line_h * 0.42), Color(INK, 0.55 if _hover_side == side else 0.35))
 
 
-## Earnings per minute over the whole shift, pencilled in with a slightly unsteady hand: coins in
-## graphite on the left scale, Findings in the lab's cyan on the right scale once any came in.
-func _draw_chart(area: Rect2, save: SaveGame, seconds: int, line_h: float) -> void:
-	var pencil := Color(INK, 0.8)
+
+
+## A chart page: its charts (`specs`, charts()) stacked in the page's ruled area on one time axis,
+## the history the first chart's columns hold, labelled once under the last chart.
+func _draw_charts(specs: Array, x: float, w: float, top_y: float, line_h: float, save: SaveGame, seconds: int) -> void:
+	var pencil: Color = INKS.ink
 	var small := int(line_h * 0.34)
-	var step := chart_step(seconds)
-	var coins := rate_points(save.playtest_log, "coins_earned", seconds, save.coins_earned, step)
-	var findings := rate_points(save.playtest_log, "findings_earned", seconds, save.findings_earned, step)
-	var enough := coins.size() >= 2
-	var lab := enough and shows_line(findings)
-	var coin_step := nice_step(peak(coins) / CHART_ROWS)
-	var find_step := nice_step(peak(findings) / CHART_ROWS)
-	var lift := small * 0.35
-	# Grid rows, each scale's ticks in its own colour and sign, captioned over its axis.
-	for i in CHART_ROWS + 1:
-		var y := area.end.y - area.size.y * i / CHART_ROWS
-		if i > 0:
-			draw_line(Vector2(area.position.x, y), Vector2(area.end.x, y), Color(INK, 0.14), 1.0)
-		if not enough:
-			continue
-		draw_string(_type, Vector2(area.position.x - GUTTER, y + lift), tick_text(coin_step * i, coin_step, "$"),
-				HORIZONTAL_ALIGNMENT_RIGHT, GUTTER - 6.0, small, pencil)
-		if lab:
-			draw_string(_type, Vector2(area.end.x + 6.0, y + lift), tick_text(find_step * i, find_step, "¶"),
-					HORIZONTAL_ALIGNMENT_LEFT, GUTTER - 6.0, small, LAB_INK)
-	draw_string(_type, Vector2(area.position.x - GUTTER, area.position.y - line_h * 0.5), tr("$ PER MINUTE"),
-			HORIZONTAL_ALIGNMENT_LEFT, area.size.x, small, pencil)
-	if lab:
-		draw_string(_type, Vector2(area.end.x + GUTTER - area.size.x, area.position.y - line_h * 0.5), tr("¶ PER MINUTE"),
-				HORIZONTAL_ALIGNMENT_RIGHT, area.size.x, small, LAB_INK)
-		draw_line(Vector2(area.end.x, area.position.y), area.end, LAB_INK, 2.0)
-	# Minute ticks along the time axis, the whole shift from 0 to now.
-	var span := maxf(seconds, 60.0)
-	@warning_ignore("integer_division")
-	var every := chart_step(span, CHART_TICKS) / 60
-	for minute in range(0, int(span / 60.0) + 1, every):
-		var px := area.position.x + minute * 60.0 / span * area.size.x
-		draw_line(Vector2(px, area.position.y), Vector2(px, area.end.y), Color(INK, 0.08), 1.0)
+	var first: Dictionary = specs[0]
+	var step := history_step(series_start(save.playtest_log, first.columns, seconds), seconds)
+	var lines := specs.map(func(spec: Dictionary) -> PackedVector2Array:
+		return rate_points(save.playtest_log, spec.columns, seconds, spec.total, step))
+	var window := chart_window(lines[0], step)
+	var ticks := time_ticks(window)
+	# Ruled lines 4.4 to 15.8 hold the plots, a caption's gap between two.
+	var gap := 1.4
+	var plot_h := (11.4 - gap * (specs.size() - 1)) / specs.size()
+	var area := Rect2()
+	for i in specs.size():
+		area = Rect2(Vector2(x + GUTTER, top_y + line_h * (4.4 + i * (plot_h + gap))), Vector2(w - GUTTER, line_h * plot_h))
+		_draw_chart(area, specs[i], lines[i], window, ticks, line_h)
+	for minute in ticks:
+		var px := _time_x(area, window, minute * 60.0)
 		draw_line(Vector2(px, area.end.y), Vector2(px, area.end.y + 6.0), pencil, 1.5)
 		draw_string(_type, Vector2(px - 40.0, area.end.y + line_h * 0.7), FarmScreen._thousands(minute),
 				HORIZONTAL_ALIGNMENT_CENTER, 80.0, small, pencil)
 	draw_string(_type, Vector2(area.position.x, area.end.y + line_h * 1.4), tr("MINUTES ON SHIFT"),
 			HORIZONTAL_ALIGNMENT_CENTER, area.size.x, small, pencil)
+	var legend := "DOTS: %d-MINUTE READINGS. LINE: AVERAGE OF 3." if lines[0].size() >= SMOOTH_FROM else "%d-MINUTE READINGS."
+	@warning_ignore("integer_division")
+	draw_string(_type, Vector2(x, area.end.y + line_h * 2.5), tr(legend) % (step / 60),
+			HORIZONTAL_ALIGNMENT_LEFT, w, int(small * 0.9), Color(INK, 0.55))
+
+
+## One chart in `area`: its caption and total to date above, round y ticks in the gutter, the
+## minute grid of `ticks`, each reading as a faint dot and their running average as the line.
+func _draw_chart(area: Rect2, spec: Dictionary, points: PackedVector2Array, window: Vector2, ticks: Array[int], line_h: float) -> void:
+	var pencil: Color = INKS.ink
+	var ink: Color = INKS[spec.ink]
+	var small := int(line_h * 0.34)
+	var caption_y := area.position.y - line_h * 0.45
+	draw_string(_type, Vector2(area.position.x - GUTTER, caption_y), tr(spec.caption), HORIZONTAL_ALIGNMENT_LEFT,
+			area.size.x, small, ink)
+	draw_string(_type, Vector2(area.position.x, caption_y), tr("TO DATE %s") % (spec.mark + FarmScreen._thousands(spec.total)),
+			HORIZONTAL_ALIGNMENT_RIGHT, area.size.x, small, ink)
+	var enough := shows_line(points)
+	var top := scale_top(points)
+	draw_rect(area, PAPER.lightened(0.08))
+	var lift := small * 0.35
+	for i in CHART_ROWS + 1:
+		var y := area.end.y - area.size.y * i / CHART_ROWS
+		if i > 0:
+			draw_line(Vector2(area.position.x, y), Vector2(area.end.x, y), Color(INK, 0.14), 1.0)
+		if enough:
+			draw_string(_type, Vector2(area.position.x - GUTTER, y + lift), tick_text(top * i / CHART_ROWS, top / CHART_ROWS, spec.mark),
+					HORIZONTAL_ALIGNMENT_RIGHT, GUTTER - 8.0, small, ink)
+	for minute in ticks:
+		var px := _time_x(area, window, minute * 60.0)
+		draw_line(Vector2(px, area.position.y), Vector2(px, area.end.y), Color(INK, 0.08), 1.0)
 	draw_line(area.position, Vector2(area.position.x, area.end.y), pencil, 2.5)
 	draw_line(Vector2(area.position.x, area.end.y), area.end, pencil, 2.5)
 	if not enough:
-		draw_string(_type, Vector2(area.position.x - GUTTER, area.get_center().y), tr("INSUFFICIENT DATA. CONTINUE WORKING."),
-				HORIZONTAL_ALIGNMENT_CENTER, area.size.x + GUTTER * 2.0, small, pencil)
+		draw_string(_type, Vector2(area.position.x, area.get_center().y + lift), tr(spec.empty),
+				HORIZONTAL_ALIGNMENT_CENTER, area.size.x, small, Color(INK, 0.6))
 		return
-	if lab:
-		_draw_line(area, findings, find_step * CHART_ROWS, span, LAB_INK)
-	_draw_line(area, coins, coin_step * CHART_ROWS, span, pencil)
-
-
-## One chart line against its scale `top`; the wobble is keyed to each point's time, so the line
-## holds still as points are added.
-func _draw_line(area: Rect2, points: PackedVector2Array, top: float, span: float, ink: Color) -> void:
-	var line := PackedVector2Array()
+	var at := func(p: Vector2) -> Vector2:
+		return Vector2(_time_x(area, window, p.x), area.end.y - p.y / top * area.size.y)
 	for p in points:
-		var wobble := Vector2(sin(p.x * 12.9898), cos(p.x * 78.233)) * 1.2
-		line.append(area.position + Vector2(p.x / span * area.size.x, (1.0 - p.y / top) * area.size.y) + wobble)
-	draw_polyline(line, ink, 2.5, true)
+		var faint := points.size() >= SMOOTH_FROM
+		draw_circle(at.call(p), 2.5 if faint else 3.5, Color(ink, 0.45) if faint else ink)
+	if points.size() > 1:
+		draw_polyline(PackedVector2Array(Array(smooth(points)).map(at)), ink, 2.5, true)
+
+
+func _time_x(area: Rect2, window: Vector2, t: float) -> float:
+	return area.position.x + (t - window.x) / (window.y - window.x) * area.size.x

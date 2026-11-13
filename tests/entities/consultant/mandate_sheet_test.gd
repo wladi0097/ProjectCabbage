@@ -81,15 +81,44 @@ func test_the_mandate_shows_the_price_and_the_refusals_right_now() -> void:
 	assert_str((sheet.get_node("%Ceiling") as Label).text).is_equal(tr("NONE"))
 
 
-func test_the_mandate_shows_the_forecast_only_once_reads_the_room_is_bought() -> void:
+func test_the_mandates_next_move_shows_the_way_with_reads_the_room_and_the_time_with_the_timetable() -> void:
 	var sheet := _sheet()
 	var row: Control = sheet.get_node("%ForecastRow")
-	sheet.open()
-	assert_bool(row.visible).is_false()
-
-	SaveManager.save.tree_bought.append(Slate.FORECAST)
+	var label: Label = sheet.get_node("%Forecast")
 	SaveManager.save.mood_next = 0.1
 	SaveManager.save.mood_clock = 18.0
 	sheet.open()
-	assert_bool(row.visible).is_true()
-	assert_str((sheet.get_node("%Forecast") as Label).text).is_equal(tr("UP IN %s") % "0:42")
+	assert_bool(row.visible).override_failure_message("neither").is_false()
+
+	for case: Array in [[[Slate.FORECAST], tr("UP")], [[Slate.FORECAST_TIME], tr("IN %s") % "0:42"],
+			[[Slate.FORECAST, Slate.FORECAST_TIME], tr("UP IN %s") % "0:42"]]:
+		SaveManager.save.tree_bought = PackedStringArray(case[0])
+		sheet.open()
+		assert_bool(row.visible).override_failure_message(str(case[0])).is_true()
+		assert_str(label.text).is_equal(case[1])
+
+
+func test_the_duty_box_is_as_wide_as_the_rows_below_it() -> void:
+	var sheet := _sheet()
+	sheet.open()
+	await get_tree().process_frame
+	var duty: Control = sheet.get_node("%Duty")
+	assert_float(duty.size.x).override_failure_message("laid out").is_greater(400.0)
+	for row: String in ["BounceRow", "FloorRow", "CeilingRow"]:
+		var other: Control = sheet.get_node("Paper/Stack/" + row)
+		assert_float(duty.global_position.x).override_failure_message(row + " left").is_equal(other.global_position.x)
+		assert_float(duty.size.x).override_failure_message(row + " width").is_equal(other.size.x)
+
+
+func test_the_duty_box_is_ticked_exactly_while_the_consultant_is_on() -> void:
+	var sheet := _sheet()
+	var duty: CheckBox = sheet.get_node("%Duty")
+	SaveManager.save.consultant_on = false
+	sheet.open()
+	assert_bool(duty.button_pressed).override_failure_message("off").is_false()
+	SaveManager.save.consultant_on = true
+	sheet.open()
+	assert_bool(duty.button_pressed).override_failure_message("on").is_true()
+
+	duty.toggled.emit(false)
+	assert_bool(SaveManager.save.consultant_on).override_failure_message("unticking sends it away").is_false()

@@ -306,3 +306,11 @@ vacuum_dock_2
 vacuum_nozzle_1
 vacuum_gyro
 also
+caption
+columns
+empty
+ink
+lab
+leaf
+mark
+total

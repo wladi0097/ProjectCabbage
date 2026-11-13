@@ -220,3 +220,19 @@ func test_the_tvs_keys_led_and_glass_keep_their_materials_when_the_editor_saves_
 	for part in ["BackArrow", "Led", "Screen", "Channel1", "Channel2"]:
 		assert_object((farm_tv.get_node("Corner/Tv/" + part) as GeometryInstance3D).material_override) \
 				.override_failure_message("%s lost its material" % part).is_not_null()
+
+
+func test_the_screen_is_only_rendered_while_the_camera_is_off_the_desk() -> void:
+	var camera := Camera3D.new()
+	add_child(auto_free(camera))
+	camera.make_current()
+	var farm_tv: FarmTv = auto_free(load("res://entities/farm_tv/farm_tv.tscn").instantiate())
+	add_child(farm_tv)
+	farm_tv._process(0.0)
+	assert_int(farm_tv.screen_viewport().render_target_update_mode).is_equal(SubViewport.UPDATE_DISABLED)
+	farm_tv._set_view(0.05)  # The pan to the TV has only just begun.
+	farm_tv._process(0.0)
+	assert_int(farm_tv.screen_viewport().render_target_update_mode).is_equal(SubViewport.UPDATE_ALWAYS)
+	farm_tv._set_view(0.0)  # Back at the desk.
+	farm_tv._process(0.0)
+	assert_int(farm_tv.screen_viewport().render_target_update_mode).is_equal(SubViewport.UPDATE_DISABLED)

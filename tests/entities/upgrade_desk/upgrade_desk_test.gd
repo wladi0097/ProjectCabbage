@@ -906,8 +906,8 @@ func test_the_managerial_cards_raise_the_players_own_sales_and_research_by_a_fif
 	assert_float(save.own_lab).is_equal_approx(1.2, 0.0001)
 
 
-func test_chapter_twos_last_card_costs_1900_cabbages_and_20000_coins_at_once_and_no_findings() -> void:
-	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("consolidation"))).is_equal({coins = 20000, stock = 1900})
+func test_chapter_twos_last_card_costs_1900_cabbages_4000_findings_and_20000_coins_at_once() -> void:
+	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("consolidation"))).is_equal({coins = 20000, findings = 4000, stock = 1900})
 	# A card in one currency costs just that.
 	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("projector"))).is_equal({coins = 75})
 	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("street_posters"))).is_equal({findings = 10})
@@ -917,10 +917,11 @@ func test_a_card_in_several_currencies_is_affordable_only_when_every_one_is_cove
 	var bill := UpgradeDesk.costs(UpgradeDesk.card_data("consolidation"))
 	var save := SaveGame.new()
 	save.stock = 1900
+	save.findings = 4000
 	save.coins = 20000
 	assert_bool(UpgradeDesk.affords(save, bill)).is_true()
 	assert_bool(UpgradeDesk.affords(save, bill, Vector2i(1, 0))).override_failure_message("one unit on the mat").is_false()
-	for short: String in ["coins", "stock"]:
+	for short: String in ["coins", "findings", "stock"]:
 		var poorer := save.duplicate() as SaveGame
 		poorer.set(short, int(poorer.get(short)) - 1)
 		assert_bool(UpgradeDesk.affords(poorer, bill)).override_failure_message(short).is_false()
@@ -934,7 +935,7 @@ func test_the_press_refuses_a_card_in_several_currencies_one_short_and_pays_them
 	add_child(desk)
 	save.storage_cap = Projector.cap_at("stock_2000")
 	save.stock = 1950  # After loading: the desk's migrate clamps stock to storage.
-	save.findings = 100
+	save.findings = 4100
 	save.coins = 19999
 	var card := desk._offered[0]
 	assert_str(card.id).is_equal("consolidation")
@@ -943,7 +944,7 @@ func test_the_press_refuses_a_card_in_several_currencies_one_short_and_pays_them
 	desk._bottom_out()  # A coin short: refused, nothing paid.
 
 	assert_bool(save.stamped.has("consolidation")).is_false()
-	assert_array([save.stock, save.findings, save.coins]).is_equal([1950, 100, 19999])
+	assert_array([save.stock, save.findings, save.coins]).is_equal([1950, 4100, 19999])
 	save.coins = 20100
 	desk._bottom_out()
 
@@ -1137,3 +1138,106 @@ func test_hovering_the_reminder_slip_opens_the_same_paper_as_a_form_does_explain
 	for key: String in [UpgradeDesk.NOTICE.form, UpgradeDesk.NOTICE.title, UpgradeDesk.NOTICE.body]:
 		assert_str(tr(key)).override_failure_message(key).is_not_equal(key)
 	TranslationServer.set_locale(locale)
+
+
+func test_the_pad_asks_for_a_form_until_the_first_form_is_ever_stamped() -> void:
+	assert_int(UpgradeDesk.first_stamp_hint(false, true, false, false)).is_equal(UpgradeDesk.Hint.NUDGE)
+
+
+func test_the_affordable_form_stops_nudging_while_the_hand_holds_something_but_the_pad_still_asks() -> void:
+	assert_int(UpgradeDesk.first_stamp_hint(false, true, false, true)).is_equal(UpgradeDesk.Hint.PAD)
+
+
+func test_the_stamp_asks_to_be_pressed_once_a_form_lies_on_the_pad() -> void:
+	assert_int(UpgradeDesk.first_stamp_hint(false, true, true, false)).is_equal(UpgradeDesk.Hint.STAMP)
+	assert_int(UpgradeDesk.first_stamp_hint(false, true, true, true)).is_equal(UpgradeDesk.Hint.STAMP)
+
+
+func test_no_hint_shows_while_no_form_is_affordable() -> void:
+	assert_int(UpgradeDesk.first_stamp_hint(false, false, false, false)).is_equal(UpgradeDesk.Hint.NONE)
+
+
+func test_no_hint_shows_once_any_form_has_been_stamped() -> void:
+	for on_pad: bool in [false, true]:
+		for holding: bool in [false, true]:
+			assert_int(UpgradeDesk.first_stamp_hint(true, true, on_pad, holding)).is_equal(UpgradeDesk.Hint.NONE)
+
+
+## A fresh desk with the tray down and the price slate dealt, `coins` on the tally.
+func _first_desk(coins: int) -> UpgradeDesk:
+	var save := SaveGame.new()
+	save.tray_unlocked = true
+	save.coins = coins
+	SaveManager.save = save
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	add_child(desk)
+	desk.set_process(false)
+	return desk
+
+
+func test_a_fresh_desk_shows_the_ghost_form_on_the_pad_once_the_first_form_is_affordable() -> void:
+	var desk := _first_desk(0)
+	desk._hint(SaveManager.save)
+	assert_bool(desk._ghost.visible).is_false()
+	SaveManager.save.coins = UpgradeDesk.TRAY_COINS
+	desk._hint(SaveManager.save)
+	assert_bool(desk._ghost.visible).is_true()
+	assert_bool(desk._tag.visible).is_false()
+
+
+func test_a_form_on_the_pad_swaps_the_ghost_for_the_stamp_tag_and_taking_it_off_brings_the_ghost_back() -> void:
+	var desk := _first_desk(UpgradeDesk.TRAY_COINS)
+	var card := desk._offered[0]
+	card.position = desk._pad()
+	desk._on_dropped(card)
+	assert_array([desk._ghost.visible, desk._tag.visible]).is_equal([false, true])
+	card.position = desk._slot(0)
+	desk._on_dropped(card)
+	assert_array([desk._ghost.visible, desk._tag.visible]).is_equal([true, false])
+
+
+func test_the_first_stamp_hides_the_hint_for_good() -> void:
+	var desk := _first_desk(UpgradeDesk.TRAY_COINS)
+	desk._on_press = desk._offered[0]
+	desk._hint(SaveManager.save)
+	desk._bottom_out()
+	assert_array([desk._ghost.visible, desk._tag.visible, desk._hinting]).is_equal([false, false, false])
+
+
+func test_a_loaded_save_with_a_stamped_form_never_looks_at_the_hint() -> void:
+	var save := SaveGame.new()
+	save.tray_unlocked = true
+	save.coins = 1000
+	save.stamped = PackedStringArray(["price_slate"])
+	SaveManager.save = save
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	add_child(desk)
+	assert_array([desk._hinting, desk._ghost.visible, desk._tag.visible]).is_equal([false, false, false])
+
+
+func test_the_ghost_form_draws_its_outline_on_from_nothing_the_moment_it_appears() -> void:
+	var desk := _first_desk(UpgradeDesk.TRAY_COINS)
+	var ink := desk._ghost.mesh.surface_get_material(0) as ShaderMaterial
+	ink.set_shader_parameter(&"draw", 1.0)
+	desk._hint(SaveManager.save)
+	assert_float(ink.get_shader_parameter(&"draw")).is_equal(0.0)
+	await await_millis(roundi((UpgradeDesk.GHOST_DRAW + 0.15) * 1000.0))
+	assert_float(ink.get_shader_parameter(&"draw")).is_equal(1.0)
+
+
+func test_the_nudged_form_lifts_and_slides_toward_the_pad_then_settles_back() -> void:
+	var desk := _first_desk(UpgradeDesk.TRAY_COINS)
+	var card := desk._offered[0]
+	var toward := desk._pad() - card.position
+	card.nudge(toward)
+	await await_millis(roundi(UpgradeCard.NUDGE_OUT * 1000.0))
+	var look: Node3D = card.get_node("Look")
+	assert_float(look.position.y).is_greater(UpgradeCard.HOVER_LIFT)
+	assert_float(Vector2(look.position.x, look.position.z).dot(Vector2(toward.x, toward.z))).is_greater(0.0)
+	await await_millis(roundi((UpgradeCard.NUDGE_OUT * 2.0 + UpgradeCard.NUDGE_STEP * 4.0) * 1000.0))
+	assert_vector(look.position).is_equal_approx(Vector3.ZERO, Vector3.ONE * 0.001)
+
+
+func test_the_stamp_tag_tells_the_player_to_pull_the_handle() -> void:
+	var desk := _first_desk(UpgradeDesk.TRAY_COINS)
+	assert_str((desk._tag as Label3D).text).is_equal("PULL TO STAMP")
