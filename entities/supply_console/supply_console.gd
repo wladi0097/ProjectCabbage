@@ -8,9 +8,11 @@ extends Node3D
 ## Every minute the price moves: around the base, ±50%, pushed up by the packs bought in the
 ## minute before, plus noise. It drops onto the desk once the first UNLOCK_SALES are sold.
 ## Sold out and unable to pay for a pack for BAILOUT_WAIT seconds, the price drops to the coins
-## left (a bailout) until the next pack is bought or the minute turns.
+## left (a bailout) until the next pack is bought or the minute turns. Only before the minis: once
+## mini_cabbages is stamped the free minis are the way out (bails_out).
 ## Once the auto_procurement card is stamped an AUTO lamp lights on the screen with a light switch
-## beside it: flicked (or the lamp pressed), it switches automatic buying on or off (save.auto_buy). On, a pack is bought whenever should_auto_buy says so.
+## beside it: a click on the lamp or the switch (one hit box, AutoSwitch, over both: the switch's own
+## is off) switches automatic buying on or off (save.auto_buy). On, a pack is bought whenever should_auto_buy says so.
 ## Stage 2 (GameEvents "supply_shock"): a pack unit costs at least crate_share of the street's
 ## full-sale price (crate_floor), whatever the ticker or the pack discount. The standing order then skips packs that would sell at a loss, and
 ## while the family farm has seeds or crops the bailout is off (the farm on the TV feeds the desk).
@@ -31,7 +33,8 @@ const DROP_HEIGHT := 1.6
 const DROP_TIME := 0.45
 ## How far the button sinks along the slope normal (Godot space) when pressed.
 const PRESS_DEPTH := Vector3(0, -0.0115, -0.0034)
-const BAILOUT_WAIT := 10.0
+## A short beat, so the price drop reads as the desk answering, not a glitch. Checked every frame.
+const BAILOUT_WAIT := 1.2
 const AMBER := Color(1, 0.62, 0.18, 1)
 const DENIED_RED := Color(1, 0.12, 0.08, 1)
 const BLINK_TIME := 0.12
@@ -76,7 +79,6 @@ func _ready() -> void:
 	_button.grabbed.connect(_push.bind(true))
 	_button.released.connect(_push.bind(false))
 	_auto_switch.grabbed.connect(_toggle_auto)
-	_toggle.flicked.connect(_toggle_auto)
 	_show_auto(false)
 	var save := SaveManager.save
 	if save.price_history.size() < 2:
@@ -135,7 +137,12 @@ static func fits(stock: int, pack: int, cap: int) -> bool:
 
 func _cost() -> int:
 	var save := SaveManager.save
-	return _bailout if _bailout >= 0 else overstock_price(pack_price(save.price_factor, save.pack_size, save.pack_discount, UNIT_COST, crate_floor(save)), save.stock)
+	return _bailout if _bailout >= 0 else pack_cost(save)
+
+
+## What the next pack costs now, without a bailout: the ticker's price, overstock included.
+static func pack_cost(save: SaveGame) -> int:
+	return overstock_price(pack_price(save.price_factor, save.pack_size, save.pack_discount, UNIT_COST, crate_floor(save)), save.stock)
 
 
 func _tick_price() -> void:
@@ -193,7 +200,6 @@ func _show_auto(animate := true) -> void:
 	var save := SaveManager.save
 	_auto.visible = save.stamped.has("auto_procurement")
 	_auto_switch.enabled = _auto.visible
-	_toggle.set_enabled(_auto.visible)
 	_auto_on = save.auto_buy
 	_auto.modulate = AMBER if save.auto_buy else AUTO_OFF
 	_toggle.show_on(save.auto_buy, animate)
@@ -281,10 +287,11 @@ static func squeezing(save: SaveGame) -> bool:
 	return save.supply_shock and save.stamped.has("family_farm")
 
 
-## Whether a broke desk may get a bailout pack: not while the farm feeds it (seeds or crops), and
-## never in the squeeze (the wholesalers hand out no cheap crates; the farm is the supply).
+## Whether a broke desk may get a bailout pack: not once minis exist (they drop for free and sell),
+## not while the farm feeds it (seeds or crops), and never in the squeeze (the wholesalers hand out
+## no cheap crates; the farm is the supply).
 static func bails_out(save: SaveGame) -> bool:
-	return not FarmScreen.feeds(save) and not squeezing(save)
+	return not save.stamped.has("mini_cabbages") and not FarmScreen.feeds(save) and not squeezing(save)
 
 
 ## Automatic buying: stock is down to the reserve and the tally can pay; while stock is left it

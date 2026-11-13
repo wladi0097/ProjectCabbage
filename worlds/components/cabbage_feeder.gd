@@ -115,6 +115,15 @@ static func restock_wait(delay: float, roll: float) -> float:
 	return delay * (0.5 + roll)
 
 
+## The shortest steady gap between cabbages off the chute (seconds) for a mat of `capacity` whose
+## cabbages are sold `flick` s after they land: every sale waits restock_wait (on average), then the
+## roll and the flight; and the chute never rolls faster than `interval` nor than that wait (a sale
+## sooner starts the wait again). The manager's quota cap reads it (entities/manager/).
+static func best_gap(interval: float, delay: float, capacity: int, flick: float) -> float:
+	var wait := restock_wait(delay, 0.5)
+	return maxf(maxf(interval, wait), (wait + ROLL_TIME + FLIGHT_TIME + flick) / maxi(capacity, 1))
+
+
 ## Whether the next unit comes down rotten: `rotten` already lie on the mat, `roll` is 0..1.
 static func is_rotten(unlocked: bool, roll: float, rotten := 0) -> bool:
 	return unlocked and rotten < MAX_ROTTEN and roll < 1.0 / ROTTEN_EVERY
@@ -167,10 +176,13 @@ func _roll() -> void:
 
 
 ## `catchable`: false for a research unit owed by a purchase (the player was busy paying for it), so
-## it lands without counting as a miss.
-func _fling(cabbage: Cabbage, interactable: Interactable, catchable := true) -> void:
-	if not is_instance_valid(cabbage):
+## it lands without counting as a miss. Untyped `body`/`part`: the cabbage may be freed during the roll,
+## and a freed object passed into a typed parameter is a script error.
+func _fling(body: Variant, part: Variant, catchable := true) -> void:
+	if not is_instance_valid(body):
 		return
+	var cabbage := body as Cabbage
+	var interactable := part as Interactable
 	interactable.enabled = true
 	cabbage.in_flight = catchable
 	cabbage.collision_mask &= ~PLAY_AREA_LAYER

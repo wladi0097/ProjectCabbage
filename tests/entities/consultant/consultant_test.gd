@@ -17,7 +17,7 @@ func after_test() -> void:
 	SaveManager.save = _real_save
 
 
-## A stamped consultant beside an unlocked slate at $2, aiming at $5 (marketing 1.5, skill 0).
+## A stamped consultant beside an unlocked slate at $2, aiming at $5 (marketing 1.5, mood 1, 10% refused).
 func _desk() -> Consultant:
 	var save := SaveManager.save
 	save.stamped.append(Consultant.CARD)
@@ -31,6 +31,7 @@ func _desk() -> Consultant:
 	consultant.slate = slate
 	add_child(auto_free(consultant))
 	consultant.set_process(false)
+	consultant._sheet.set_process(false)
 	return consultant
 
 
@@ -39,57 +40,82 @@ func _run(consultant: Consultant, seconds: float) -> void:
 		consultant._process(STEP)
 
 
-func test_a_junior_consultant_aims_where_about_nine_in_ten_units_sell_at_a_normal_mood() -> void:
+func _street(marketing: float, mood: float) -> SaveGame:
 	var save := SaveGame.new()
-	save.marketing = 1.5
-	save.demand_mood = 1.2
-
-	assert_int(Consultant.target_price(save, 0)).is_equal(5)
-
-
-func test_a_skilled_consultant_reads_the_streets_mood() -> void:
-	var save := SaveGame.new()
-	save.marketing = 1.5
-	save.demand_mood = 1.2
-
-	assert_int(Consultant.target_price(save, 1)).is_equal(6)
+	save.marketing = marketing
+	save.demand_mood = mood
+	return save
 
 
-func test_no_whole_price_sells_nearer_ninety_percent_than_the_juniors_aim() -> void:
-	var save := SaveGame.new()
-	save.marketing = 3.0
-	var ref := Slate.ref_price(save.marketing, 1.0)
-	var aim := Consultant.target_price(save, 0)
-	var miss := absf(Slate.demand(aim, ref) - Consultant.TARGET_ACCEPTANCE)
-	for price in range(Slate.MIN_PRICE, Slate.max_price(save.marketing) + 1):
-		assert_float(absf(Slate.demand(price, ref) - Consultant.TARGET_ACCEPTANCE)).is_greater_equal(miss - 0.0001)
+func test_the_helper_holds_the_bounce_the_player_asked_for() -> void:
+	var save := _street(1.5, 1.0)
+	assert_int(Consultant.target_price(save)).is_equal(5)
+	save.consultant_bounce = 50
+	assert_int(Consultant.target_price(save)).is_equal(6)
 
 
-func test_a_senior_consultant_earns_the_most_per_unit_after_pack_costs() -> void:
-	var save := SaveGame.new()
-	save.marketing = 1.5
-	save.demand_mood = 1.2
+func test_no_whole_price_comes_nearer_the_bounce_asked_than_the_helpers() -> void:
+	var save := _street(3.0, 0.8)
 	var ref := Slate.ref_price(save.marketing, save.demand_mood)
-	var cost := SupplyConsole.pack_price(save.price_factor, save.pack_size) / float(save.pack_size)
-	var best := Consultant.income(Consultant.target_price(save, 2), ref, cost)
-	for price in range(Slate.MIN_PRICE, Slate.max_price(save.marketing) + 1):
-		assert_float(Consultant.income(price, ref, cost)).is_less_equal(best + 0.001)
+	for asked in [0, 10, 25, 50]:
+		save.consultant_bounce = asked
+		var miss := absf(Consultant.bounce(Consultant.target_price(save), ref) - asked / 100.0)
+		for price in range(Slate.MIN_PRICE, Slate.max_price(save.marketing) + 1):
+			assert_float(absf(Consultant.bounce(price, ref) - asked / 100.0)).is_greater_equal(miss - 0.0001)
 
 
-func test_dearer_stage_two_crates_push_the_senior_consultants_price_up() -> void:
+func test_with_no_bounce_allowed_the_helper_chalks_the_dearest_price_that_sells_every_cabbage() -> void:
+	var save := _street(1.5, 1.0)
+	save.consultant_bounce = 0
+	assert_int(Consultant.target_price(save)).is_equal(4)
+
+
+func test_the_helper_obeys_its_mandate_against_the_current_mood() -> void:
+	assert_int(Consultant.target_price(_street(1.5, 1.2))).is_equal(6)
+	assert_int(Consultant.target_price(_street(1.5, 0.6))).is_equal(3)
+
+
+func test_the_helper_never_chalks_below_the_floor_or_above_the_ceiling() -> void:
+	var save := _street(1.5, 1.0)
+	save.consultant_floor = 7
+	assert_int(Consultant.target_price(save)).is_equal(7)
+	save.consultant_floor = 1
+	save.consultant_ceiling = 4
+	assert_int(Consultant.target_price(save)).is_equal(4)
+
+
+func test_the_bounce_allowed_steps_by_five_percent_from_none_to_half() -> void:
+	assert_int(Consultant.step_bounce(10, 1)).is_equal(15)
+	assert_int(Consultant.step_bounce(10, -1)).is_equal(5)
+	assert_int(Consultant.step_bounce(0, -1)).is_equal(0)
+	assert_int(Consultant.step_bounce(50, 1)).is_equal(50)
+
+
+func test_the_floor_never_climbs_over_the_ceiling_nor_the_ceiling_under_the_floor() -> void:
 	var save := SaveGame.new()
-	assert_int(Consultant.target_price(save, 2)).is_equal(3)
+	save.consultant_ceiling = 5
+	save.consultant_floor = 5
+	assert_int(Consultant.step_floor(save, 1)).is_equal(5)
+	assert_int(Consultant.step_ceiling(save, -1)).is_equal(5)
+	save.consultant_floor = 1
+	assert_int(Consultant.step_floor(save, -1)).is_equal(Slate.MIN_PRICE)
 
-	save.supply_shock = true
-	assert_int(Consultant.target_price(save, 2)).is_equal(4)
 
-
-func test_during_the_squeeze_the_senior_consultant_ignores_crate_prices_since_none_are_bought() -> void:
+func test_with_no_ceiling_set_the_ceiling_steps_down_from_the_slates_top_and_up_past_it_to_none() -> void:
 	var save := SaveGame.new()
-	save.supply_shock = true
-	save.stamped.append("family_farm")
+	assert_int(Consultant.ceiling_of(save)).is_equal(12)  # The slate's top at marketing 1.
+	assert_int(Consultant.step_ceiling(save, 1)).is_equal(0)
+	assert_int(Consultant.step_ceiling(save, -1)).is_equal(11)
+	save.consultant_ceiling = 12
+	assert_int(Consultant.step_ceiling(save, 1)).is_equal(0)
 
-	assert_int(Consultant.target_price(save, 2)).is_equal(3)
+
+func test_a_new_mandate_lets_ten_percent_be_refused_with_no_price_limits() -> void:
+	var save := SaveGame.new()
+	assert_int(save.consultant_bounce).is_equal(10)
+	assert_int(save.consultant_floor).is_equal(Slate.MIN_PRICE)
+	assert_int(save.consultant_ceiling).is_equal(0)
+	assert_bool(save.consultant_on).is_true()
 
 
 func test_in_the_squeeze_the_consultant_never_aims_above_the_crate_unit_cost() -> void:
@@ -97,88 +123,20 @@ func test_in_the_squeeze_the_consultant_never_aims_above_the_crate_unit_cost() -
 	save.supply_shock = true
 	save.marketing = 10
 	save.stamped.append("family_farm")
-	var cost := SupplyConsole.crate_floor(save)
-	var open_price := Consultant.target_price(SaveGame.new(), 2)
-	save.consultant_markup = 0.5
-	for skill in 3:
-		assert_int(Consultant.target_price(save, skill)).is_less_equal(floori(cost))
-		assert_int(Consultant.aim(save, skill)).is_less_equal(floori(cost))
-	assert_int(Consultant.squeeze_cap(save)).is_equal(floori(cost))
-	# Outside the squeeze (the shock without the farm) nothing is capped.
+	# A crate unit costs 125% of the $30 full-sale price: $37.50, so $37 at most.
+	for asked in [0, 10, 50]:
+		save.consultant_bounce = asked
+		assert_int(Consultant.target_price(save)).is_less_equal(37)
+	save.consultant_floor = 99
+	assert_int(Consultant.target_price(save)).is_less_equal(37)
+	assert_int(Consultant.squeeze_cap(save)).is_equal(37)
+	# Outside the squeeze (the shock without the farm) nothing is capped: the slate's $120 top.
 	save.stamped.clear()
-	assert_int(Consultant.squeeze_cap(save)).is_equal(Slate.max_price(save.marketing))
-	assert_int(Consultant.target_price(SaveGame.new(), 2)).is_equal(open_price)
-
-
-func test_after_the_shock_without_the_farm_the_senior_consultant_counts_crate_prices() -> void:
-	var save := SaveGame.new()
-	save.supply_shock = true
-
-	assert_int(Consultant.target_price(save, 2)).is_greater(3)
-
-
-func test_a_senior_consultant_prices_crates_as_the_console_does_after_its_discount() -> void:
-	var save := SaveGame.new()
-	save.supply_shock = true
-	save.pack_discount = 0.7
-	save.price_factor = 0.5
-	var discounted := Consultant.target_price(save, 2)
-	save.pack_discount = 1.0
-	save.price_factor = 1.0
-
-	assert_int(discounted).is_equal(Consultant.target_price(save, 2))
-
-
-func test_with_hired_hands_the_senior_consultant_throttles_only_while_no_markup_is_set() -> void:
-	var save := SaveGame.new()
-	save.consultant_skill = 2
-	save.hands = 1
-	assert_bool(Consultant.throttles(save)).is_true()
-	save.consultant_markup = 0.2
-	assert_bool(Consultant.throttles(save)).is_false()
-
-
-func test_a_step_down_on_the_slate_never_comes_back_as_a_dearer_price() -> void:
-	var consultant := _desk()
-	var save := SaveManager.save
-	save.consultant_skill = 2
-	save.hands = 1
-	var target := Consultant.target_price(save, 2)
-	consultant._extra = 3
-	save.sale_price = target + 2
-	consultant.slate.player_rewrote.emit()
-
-	_run(consultant, Consultant.PLAYER_PAUSE + 30.0)
-
-	assert_int(save.sale_price).is_less_equal(target + 2)
-	assert_int(consultant._extra).is_equal(0)
-
-
-func test_income_per_unit_is_the_chance_of_a_sale_times_the_margin() -> void:
-	assert_float(Consultant.income(6, 5.4, 1.1)).is_equal_approx(0.81 * 4.9, 0.0001)
-	assert_float(Consultant.income(4, 5.4, 1.1)).is_equal_approx(2.9, 0.0001)
+	assert_int(Consultant.squeeze_cap(save)).is_equal(120)
 
 
 func test_the_target_never_drops_under_the_slates_minimum() -> void:
-	var save := SaveGame.new()
-	save.marketing = 0.2
-
-	assert_int(Consultant.target_price(save, 0)).is_equal(Slate.MIN_PRICE)
-
-
-func test_the_throttle_asks_a_step_more_while_the_hands_are_starved() -> void:
-	assert_int(Consultant.throttle(0, false, 5, 5.0)).is_equal(1)
-	assert_int(Consultant.throttle(1, false, 5, 5.0)).is_equal(2)
-
-
-func test_the_throttle_stops_at_one_point_six_times_the_full_sale_price() -> void:
-	assert_int(Consultant.throttle(3, false, 5, 5.0)).is_equal(3)
-	assert_int(Consultant.throttle(0, false, 10, 5.0)).is_equal(0)
-
-
-func test_the_throttle_gives_a_step_back_whenever_a_unit_waits() -> void:
-	assert_int(Consultant.throttle(2, true, 5, 5.0)).is_equal(1)
-	assert_int(Consultant.throttle(0, true, 5, 5.0)).is_equal(0)
+	assert_int(Consultant.target_price(_street(0.2, 1.0))).is_equal(Slate.MIN_PRICE)
 
 
 func test_the_consultant_taps_the_price_one_step_toward_its_target() -> void:
@@ -187,6 +145,20 @@ func test_the_consultant_taps_the_price_one_step_toward_its_target() -> void:
 	_run(consultant, 7.0)
 
 	assert_int(SaveManager.save.sale_price).is_equal(3)
+
+
+func test_yield_optimisation_chalks_the_target_in_one_visit() -> void:
+	var save := SaveGame.new()
+	save.sale_price = 2
+	assert_int(Consultant.tap(save, 5)).is_equal(1)
+	save.tree_bought.append(Consultant.SMART)
+	assert_int(Consultant.tap(save, 5)).is_equal(3)
+	assert_int(Consultant.tap(save, 1)).is_equal(-1)
+
+	var consultant := _desk()
+	SaveManager.save.tree_bought.append(Consultant.SMART)
+	_run(consultant, 7.0)
+	assert_int(SaveManager.save.sale_price).is_equal(5)
 
 
 func test_on_target_the_consultant_never_reaches_in() -> void:
@@ -208,77 +180,17 @@ func test_the_consultant_does_nothing_before_its_card_is_stamped() -> void:
 	assert_int(SaveManager.save.sale_price).is_equal(2)
 
 
-func test_a_player_press_on_the_slate_sends_the_consultant_away_for_fifteen_seconds() -> void:
+func test_a_hand_press_only_pauses_the_helper() -> void:
 	var consultant := _desk()
-	_run(consultant, 3.0)
-
-	# The player leaves it at $2 (60% under the consultant's $5), then marketing moves its aim to $4.
 	consultant.slate.player_rewrote.emit()
-	SaveManager.save.marketing = 3.0
-	_run(consultant, Consultant.PLAYER_PAUSE - 1.0)
 
+	_run(consultant, Consultant.PLAYER_PAUSE - 1.0)
 	assert_int(SaveManager.save.sale_price).is_equal(2)
 	assert_int(consultant._phase).is_equal(Consultant.Phase.AWAY)
 
+	# Then back to its mandate, not to the player's price.
 	_run(consultant, 6.0)
 	assert_int(SaveManager.save.sale_price).is_equal(3)
-
-
-func test_the_adviser_keeps_the_markup_the_player_set() -> void:
-	var consultant := _desk()
-	SaveManager.save.sale_price = 6
-	consultant.slate.player_rewrote.emit()
-	assert_float(SaveManager.save.consultant_markup).is_equal_approx(0.2, 0.0001)
-
-	_run(consultant, 30.0)
-	assert_int(SaveManager.save.sale_price).is_equal(6)
-
-	# Its own target rises from $5 to $10, so it now steers to $12, 20% over.
-	SaveManager.save.marketing = 3.0
-	_run(consultant, 5.0)
-	assert_int(SaveManager.save.sale_price).is_equal(7)
-
-
-func test_holding_the_slates_arrow_resets_the_markup_on_every_step() -> void:
-	var consultant := _desk()
-	consultant.slate._step = 1
-	consultant.slate._wait = 0.0
-
-	consultant.slate._process(STEP)
-
-	assert_int(SaveManager.save.sale_price).is_equal(3)
-	assert_float(SaveManager.save.consultant_markup).is_equal_approx(-0.4, 0.0001)
-
-
-func test_with_no_markup_the_adviser_aims_at_its_own_target() -> void:
-	var save := SaveGame.new()
-	save.marketing = 1.5
-
-	assert_int(Consultant.aim(save, 0)).is_equal(Consultant.target_price(save, 0))
-
-
-func test_the_adviser_aims_the_players_markup_over_its_target_within_the_slate() -> void:
-	var save := SaveGame.new()
-	save.marketing = 3.0
-	save.consultant_markup = 0.2
-	assert_int(Consultant.aim(save, 0)).is_equal(12)
-
-	save.consultant_markup = 9.0
-	assert_int(Consultant.aim(save, 0)).is_equal(Slate.max_price(save.marketing))
-
-
-func test_left_on_its_target_the_players_markup_is_zero_again() -> void:
-	assert_float(Consultant.markup(5, 5)).is_equal(0.0)
-	assert_float(Consultant.markup(6, 5)).is_equal_approx(0.2, 0.0001)
-
-
-func test_pricing_before_the_consultant_is_retained_sets_no_markup() -> void:
-	var consultant := _desk()
-	SaveManager.save.stamped.clear()
-
-	consultant.slate.player_rewrote.emit()
-
-	assert_float(SaveManager.save.consultant_markup).is_equal(0.0)
 
 
 func test_switched_off_mid_reach_the_consultant_withdraws_and_stays_away() -> void:
@@ -292,13 +204,32 @@ func test_switched_off_mid_reach_the_consultant_withdraws_and_stays_away() -> vo
 	assert_int(consultant._phase).is_equal(Consultant.Phase.AWAY)
 
 
-func test_the_slate_switch_sends_the_consultant_away_and_calls_it_back() -> void:
+func test_clicking_the_slate_switch_opens_the_mandate_and_a_click_beside_it_closes_it() -> void:
 	var consultant := _desk()
+	assert_bool(consultant._sheet.visible).is_false()
 
-	consultant._flick()
+	consultant._switch.flicked.emit()
+	assert_bool(consultant._sheet.visible).is_true()
+	assert_bool(SaveManager.save.consultant_on).is_true()
+
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	consultant._sheet.get_node("Shade").gui_input.emit(click)
+	assert_bool(consultant._sheet.visible).is_false()
+
+
+func test_the_mandates_duty_switch_sends_the_consultant_away_and_the_desk_lamp_follows() -> void:
+	var consultant := _desk()
+	consultant._sheet.open()
+	var duty: Button = consultant._sheet.get_node("%Duty")
+
+	duty.button_pressed = false
 	assert_bool(SaveManager.save.consultant_on).is_false()
+	consultant._process(STEP)
+	assert_bool(consultant._shown_on).is_false()
 
-	consultant._flick()
+	duty.button_pressed = true
 	assert_bool(SaveManager.save.consultant_on).is_true()
 
 
@@ -313,12 +244,14 @@ func test_the_switch_is_on_the_slate_only_once_the_card_is_stamped() -> void:
 	assert_bool(consultant._switch.visible).is_true()
 
 
-func test_once_hired_hands_are_cleared_for_gold_a_mat_of_golden_cabbages_counts_as_waiting() -> void:
-	var gold := preload("res://entities/cabbage/cabbage.tscn").instantiate() as Cabbage
-	gold.golden = true
-	add_child(auto_free(gold))
-	gold.global_position = Vector3(1.2, 0.87, 0.9)
-	var save := SaveGame.new()
-	assert_bool(Consultant.waits(save, [gold], null)).is_false()
-	save.tree_bought.append(Associate.GOLD_SALE)
-	assert_bool(Consultant.waits(save, [gold], null)).is_true()
+func test_an_old_save_with_the_retired_skill_and_markup_still_loads() -> void:
+	var path := OS.get_user_data_dir().path_join("consultant_old_save_test.tres")
+	FileAccess.open(path, FileAccess.WRITE).store_string('[gd_resource type="Resource" script_class="SaveGame" format=3]\n\n'
+			+ '[ext_resource type="Script" path="res://ressources/save/save_game.gd" id="1"]\n\n'
+			+ '[resource]\nscript = ExtResource("1")\nsale_price = 7\nconsultant_skill = 2\nconsultant_markup = 0.2\n')
+	var old := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as SaveGame
+	DirAccess.remove_absolute(path)
+
+	assert_object(old).is_not_null()
+	assert_int(old.sale_price).is_equal(7)
+	assert_int(old.consultant_bounce).is_equal(10)

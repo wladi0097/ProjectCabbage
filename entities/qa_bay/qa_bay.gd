@@ -15,17 +15,18 @@ extends Node3D
 ## slips alone. A research unit yields research_mult times the Findings, a mini unit a share
 ## (findings_for); minis are no stock. The tube's research minis appear in the mouth as if thrown in,
 ## or are thrown back onto the mat when every bench is busy (file_direct). The load gauge on the
-## console, left of the busy lamp, shows one cell per bench (lit while a cabbage is on it) and the
-## count beside it ("1/3").
+## console, left of the busy lamp, is a row of jewel lamps under one chrome bezel, a socket for each of
+## the lab's (at most) MAX_BENCHES benches: dark glass while its bench is free, cold cyan while a
+## cabbage is on it, and no lens at all (a blanked-off socket) for a bench not bought yet.
 
 const FLAP_TIME := 0.18
 ## Where the cabbage is sucked to (bay space, behind the back wall) and how long that takes; the
 ## scan head and its line cross the chamber from SCAN_X0 (bay x) by SCAN_RUN in the same time, its
 ## light on, then the head glides back in RETURN_TIME.
-const SUCK_TO := Vector3(0.135, 0.08, -0.6)
+const SUCK_TO := Vector3(0.15, 0.08, -0.6)
 const SUCK_TIME := 0.45
 const SCAN_X0 := -0.04
-const SCAN_RUN := 0.35
+const SCAN_RUN := 0.38
 const RETURN_TIME := 0.8
 ## The console face's normal (bay and needle bone space): the needle turns about it.
 const NEEDLE_AXIS := Vector3(0.0, 0.7615, 0.6481)
@@ -40,8 +41,9 @@ const COUNTER_DROP_TIME := 0.4
 ## Report slips: square bakelite Findings tokens (one mesh, a material per denomination, each
 ## template's scale sets its size and thickness), thrown out of the mouth onto this patch of desk
 ## (bay space, in front of the flap), arcing SLIP_LIFT high in SLIP_EJECT_TIME, then flying into the
-## machine's hopper (the counter's Intake) exactly like a coin. A payout comes as the fewest ¶1, ¶5
-## and ¶10 tokens (CoinPile.coin_values: a huge one as ¶100s and up, drawn as the ¶10 token like coins).
+## machine's hopper (the counter's Intake) exactly like a coin. A payout comes as the fewest ¶1, ¶5,
+## ¶10, ¶50 and ¶100 tokens (CoinPile.coin_values; a huge one also as ¶1000s and up, drawn as the
+## ¶100 token, as coins are). The template is the Slip<n> node of the value's tier (slip_template).
 ## SLIP_HALF is the token mesh's half thickness at scale 1; layers stack SLIP_LAYER apart.
 const SLIP_AREA := AABB(Vector3(-0.1, 0.0, 0.46), Vector3(0.47, 0.0, 0.16))
 const SLIP_LIFT := 0.18
@@ -51,14 +53,17 @@ const SLIP_EJECT_TIME := 0.45
 const SLIP_HALF := 0.008
 const SLIP_LAYER := 0.022
 const DESK_Y := 0.76
-## MICRO-SAMPLE PROTOCOL (desk card micro_samples): a mini is read as this many full units.
-const MICRO_SAMPLE := 2.0
-## The load gauge's count: a dim grey-cyan while a bench is free, bright once every bench is busy.
-const GAUGE_FREE := Color(0.45, 0.68, 0.74)
-const GAUGE_FULL := Color(0.8, 1.0, 1.0)
+## MICRO-SAMPLE PROTOCOL (desk card micro_samples) multiplies a mini's share (save.mini_value) by
+## this: two full units at the base share of 0.25, and the projector's mini value nodes still count.
+const MICRO_SAMPLE := 8.0
+## Jewel lamp sockets on the load gauge: the lab never has more benches.
+const MAX_BENCHES := 5
 
 @export var window: SaleWindow
 @export var counter: Node3D
+## The load gauge's jewel lenses: a free bench, a busy one.
+@export var lamp_free: Material
+@export var lamp_busy: Material
 
 ## Seconds each unit on a bench has been analysed, oldest first.
 var _jobs: Array[float] = []
@@ -85,8 +90,7 @@ var _scan := 0.0:
 @onready var _needle_bone := _skeleton.find_bone("Needle")
 @onready var _head_bone := _skeleton.find_bone("ScanHead")
 @onready var _lamp: StandardMaterial3D = $BusyLamp.mesh.material
-@onready var _gauge_cells: MeshInstance3D = $Gauge/Cells
-@onready var _gauge_count: Label3D = $Gauge/Count
+@onready var _gauge_lamps: Array[Node] = $Gauge/Lamps.get_children()
 @onready var _rest := position
 @onready var _counter_rest := counter.position
 
@@ -127,22 +131,18 @@ func _process(delta: float) -> void:
 		_finish()
 
 
-## The load gauge follows the benches: every bench a cell, the busy ones lit, the count beside them.
-## Only redrawn when a cabbage comes or goes or a bench is added.
+## The load gauge follows the benches: a lens in the socket of every bench bought, lit while busy;
+## the sockets stay put, so a new bench only fills the next blanked-off one. Only redrawn when a
+## cabbage comes or goes or a bench is added.
 func _show_load() -> void:
 	var now := Vector2i(_jobs.size(), SaveManager.save.qa_slots)
 	if now == _shown:
 		return
 	_shown = now
-	_gauge_cells.set_instance_shader_parameter(&"filled", float(now.x))
-	_gauge_cells.set_instance_shader_parameter(&"cells", float(now.y))
-	_gauge_count.text = load_text(now.x, now.y)
-	_gauge_count.modulate = GAUGE_FULL if now.x >= now.y else GAUGE_FREE
-
-
-## The gauge's count: cabbages on the benches / benches.
-static func load_text(busy: int, benches: int) -> String:
-	return "%d/%d" % [busy, benches]
+	for i in _gauge_lamps.size():
+		var lamp := _gauge_lamps[i] as MeshInstance3D
+		lamp.visible = i < now.y
+		lamp.set_surface_override_material(0, lamp_busy if i < now.x else lamp_free)
 
 
 ## A bench is free (and the bay is in): a unit flicked or lobbed in now is taken.
@@ -188,7 +188,7 @@ func _admit(cabbage: Cabbage) -> void:
 
 
 ## Findings one analysed unit is worth: a golden unit golden_lab times findings_per_cabbage, a research unit research_mult times findings_per_cabbage,
-## a mini mini_value of it (MICRO-SAMPLE PROTOCOL, micro_samples: MICRO_SAMPLE times it), any other
+## a mini mini_value of it (MICRO-SAMPLE PROTOCOL, micro_samples: MICRO_SAMPLE times that), any other
 ## findings_per_cabbage. A mini's share is exact, not rounded: _take tallies the fractions. Flicked in
 ## by the player themself (Cabbage.by_player: no lab hand, not the tube), all of it times
 ## save.own_lab (managerial work), fractions tallied the same way.
@@ -199,7 +199,7 @@ static func findings_for(cabbage: Cabbage, save: SaveGame) -> float:
 	if cabbage.research:
 		return roundf(save.findings_per_cabbage * save.research_mult) * own
 	if cabbage.mini:
-		var share := MICRO_SAMPLE if save.stamped.has("micro_samples") else save.mini_value
+		var share := save.mini_value * (MICRO_SAMPLE if save.stamped.has("micro_samples") else 1.0)
 		return save.findings_per_cabbage * share * own
 	return save.findings_per_cabbage * own
 
@@ -277,7 +277,7 @@ func pending_findings() -> int:
 	return total
 
 
-## A finished unit's report slips (`amount` in the fewest ¶1/¶5/¶10) fly out onto the desk in front.
+## A finished unit's report slips (`amount` in the fewest ¶1/¶5/¶10/¶50/¶100) fly out onto the desk in front.
 func _eject(amount: int) -> void:
 	var delay := 0.0
 	for value in CoinPile.coin_values(amount):
@@ -285,15 +285,20 @@ func _eject(amount: int) -> void:
 		delay += CoinPile.THROW_STAGGER * 2.0
 
 
+## The token a slip worth `value` is drawn as: its tier's Slip<n> (¶1000 and up look like ¶100).
+static func slip_template(value: int) -> String:
+	return "Slip%d" % CoinPile.DENOMINATIONS[CoinPile.tier(value)]
+
+
 func _eject_slip(value: int, delay: float) -> void:
-	var slip: Node3D = (get_node("Slip10") if value >= 10 else get_node("Slip%d" % value)).duplicate()
+	var slip: Node3D = get_node(slip_template(value)).duplicate()
 	var size := Basis.from_scale(slip.scale)
 	slip.top_level = true
 	slip.set_meta(&"value", value)
 	slip.set_meta(&"resting", false)
 	add_child(slip)
 	_slips.append(slip)
-	var from := to_global(Vector3(0.135, 0.08, 0.15))
+	var from := to_global(Vector3(0.15, 0.08, 0.15))
 	# Side by side across the patch, then a layer on top of them.
 	var n := _slips.size() - 1
 	var spot := to_global(SLIP_AREA.position + Vector3((n % SLIP_ROW + randf_range(0.2, 0.8)) / SLIP_ROW, 0.0, randf()) * SLIP_AREA.size)

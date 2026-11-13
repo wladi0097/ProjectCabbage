@@ -1,0 +1,436 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_a.res" id="1_cabbage_a"]
+[ext_resource type="Material" path="res://assets/materials/cabbage.tres" id="2_cabbage"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_b.res" id="3_cabbage_b"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_c.res" id="4_cabbage_c"]
+[ext_resource type="Material" path="res://assets/materials/cabbage_rotten.tres" id="5_cabbage_rotten"]
+[ext_resource type="Material" path="res://assets/materials/cabbage_gold.tres" id="6_cabbage_gold"]
+[ext_resource type="Material" path="res://assets/materials/cabbage_research.tres" id="7_cabbage_research"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/coin.res" id="8_coin"]
+[ext_resource type="Mesh" path="res://assets/meshes/Tokens/findings_token.obj" id="9_findings_token"]
+[ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_albedo.png" id="10_findings_token_albedo"]
+[ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_orm.png" id="11_findings_token_orm"]
+[ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_normal.png" id="12_findings_token_normal"]
+[ext_resource type="Shader" path="res://assets/shaders/crt_screen.gdshader" id="13_crt_screen"]
+[ext_resource type="Shader" path="res://assets/shaders/tv_static.gdshader" id="14_tv_static"]
+[ext_resource type="Material" path="res://assets/materials/card_paper.tres" id="15_card_paper"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="16_Oswald"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Hand/hand.blend" id="17_hand"]
+[ext_resource type="Material" path="res://assets/materials/associate_hand.tres" id="18_associate_hand"]
+[ext_resource type="Material" path="res://assets/materials/hand.tres" id="19_hand"]
+[ext_resource type="Material" path="res://assets/materials/machine_dial.tres" id="20_machine_dial"]
+[ext_resource type="Material" path="res://assets/materials/machine_digits.tres" id="21_machine_digits"]
+[ext_resource type="Material" path="res://assets/materials/machine_metal.tres" id="22_machine_metal"]
+[ext_resource type="Material" path="res://assets/materials/machine_paint.tres" id="23_machine_paint"]
+[ext_resource type="Material" path="res://assets/materials/machine_paint_matte.tres" id="24_machine_paint_matte"]
+[ext_resource type="Material" path="res://assets/materials/mug_print.tres" id="25_mug_print"]
+[ext_resource type="Material" path="res://assets/materials/price_slate.tres" id="26_price_slate"]
+[ext_resource type="Material" path="res://assets/materials/prior_cover_1.tres" id="27_prior_cover_1"]
+[ext_resource type="Material" path="res://assets/materials/prior_cover_2.tres" id="28_prior_cover_2"]
+[ext_resource type="Material" path="res://assets/materials/prior_cover_3.tres" id="29_prior_cover_3"]
+[ext_resource type="Material" path="res://assets/materials/qa_glass.tres" id="30_qa_glass"]
+[ext_resource type="Material" path="res://assets/materials/ramp_steel.tres" id="31_ramp_steel"]
+[ext_resource type="Material" path="res://assets/materials/remote_plastic.tres" id="32_remote_plastic"]
+[ext_resource type="Material" path="res://assets/materials/room_blinds.tres" id="33_room_blinds"]
+[ext_resource type="Material" path="res://assets/materials/room_crates.tres" id="34_room_crates"]
+[ext_resource type="Material" path="res://assets/materials/room_street.tres" id="35_room_street"]
+[ext_resource type="Material" path="res://assets/materials/room_wall.tres" id="36_room_wall"]
+[ext_resource type="Material" path="res://assets/materials/room_window.tres" id="37_room_window"]
+[ext_resource type="Material" path="res://assets/materials/table_mat.tres" id="38_table_mat"]
+[ext_resource type="Material" path="res://assets/materials/table_wood.tres" id="39_table_wood"]
+[ext_resource type="Material" path="res://assets/materials/tube_glass.tres" id="40_tube_glass"]
+[ext_resource type="Material" path="res://assets/materials/tube_pipe_glass.tres" id="41_tube_pipe_glass"]
+[ext_resource type="Material" path="res://assets/materials/tv_chrome.tres" id="42_tv_chrome"]
+[ext_resource type="Material" path="res://assets/materials/tv_powder.tres" id="43_tv_powder"]
+[ext_resource type="Script" path="res://worlds/components/shader_warmup.gd" id="44_shader_warmup"]
+
+[sub_resource type="BoxMesh" id="Box"]
+size = Vector3(0.12, 0.12, 0.12)
+
+[sub_resource type="SphereMesh" id="Ball"]
+radius = 0.06
+height = 0.12
+
+[sub_resource type="QuadMesh" id="Quad"]
+size = Vector2(0.12, 0.12)
+
+[sub_resource type="MultiMesh" id="CoinMulti"]
+transform_format = 1
+use_colors = true
+use_custom_data = true
+mesh = ExtResource("8_coin")
+instance_count = 1
+buffer = PackedFloat32Array(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0)
+
+[sub_resource type="ORMMaterial3D" id="Token"]
+albedo_texture = ExtResource("10_findings_token_albedo")
+orm_texture = ExtResource("11_findings_token_orm")
+normal_enabled = true
+normal_texture = ExtResource("12_findings_token_normal")
+uv1_scale = Vector3(0.192, 0.96, 1)
+
+[sub_resource type="StandardMaterial3D" id="ScanGlow"]
+transparency = 1
+blend_mode = 1
+no_depth_test = true
+shading_mode = 0
+albedo_color = Color(0.75, 0.95, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="Jewel"]
+albedo_color = Color(0.04, 0.075, 0.085, 1)
+roughness = 0.12
+emission_enabled = true
+emission = Color(0.35, 0.9, 1, 1)
+
+[sub_resource type="ShaderMaterial" id="Crt"]
+render_priority = 0
+shader = ExtResource("13_crt_screen")
+
+[sub_resource type="ShaderMaterial" id="Static"]
+shader = ExtResource("14_tv_static")
+
+[sub_resource type="StandardMaterial3D" id="Dust"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.55, 0.53, 0.5, 0.5)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="DustQuad"]
+material = SubResource("Dust")
+size = Vector2(0.004, 0.004)
+
+[sub_resource type="StandardMaterial3D" id="Ring"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.85, 0.84, 0.78, 0.5)
+
+[node name="ShaderWarmup" type="Node3D"]
+script = ExtResource("44_shader_warmup")
+
+[node name="CabbageA" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, -0.0840, 0.0700, 0)
+gi_mode = 0
+mesh = ExtResource("1_cabbage_a")
+material_override = ExtResource("2_cabbage")
+
+[node name="CabbageB" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, -0.0560, 0.0700, 0)
+gi_mode = 0
+mesh = ExtResource("3_cabbage_b")
+material_override = ExtResource("2_cabbage")
+
+[node name="CabbageC" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, -0.0280, 0.0700, 0)
+gi_mode = 0
+mesh = ExtResource("4_cabbage_c")
+material_override = ExtResource("2_cabbage")
+
+[node name="RottenA" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, 0.0000, 0.0700, 0)
+gi_mode = 0
+mesh = ExtResource("1_cabbage_a")
+material_override = ExtResource("5_cabbage_rotten")
+
+[node name="RottenB" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, 0.0280, 0.0700, 0)
+gi_mode = 0
+mesh = ExtResource("3_cabbage_b")
+material_override = ExtResource("5_cabbage_rotten")
+
+[node name="RottenC" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, 0.0560, 0.0700, 0)
+gi_mode = 0
+mesh = ExtResource("4_cabbage_c")
+material_override = ExtResource("5_cabbage_rotten")
+
+[node name="GoldA" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, 0.0840, 0.0700, 0)
+gi_mode = 0
+mesh = ExtResource("1_cabbage_a")
+material_override = ExtResource("6_cabbage_gold")
+
+[node name="GoldB" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, -0.0840, 0.0420, 0)
+gi_mode = 0
+mesh = ExtResource("3_cabbage_b")
+material_override = ExtResource("6_cabbage_gold")
+
+[node name="GoldC" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, -0.0560, 0.0420, 0)
+gi_mode = 0
+mesh = ExtResource("4_cabbage_c")
+material_override = ExtResource("6_cabbage_gold")
+
+[node name="ResearchA" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, -0.0280, 0.0420, 0)
+gi_mode = 0
+mesh = ExtResource("1_cabbage_a")
+material_override = ExtResource("7_cabbage_research")
+
+[node name="ResearchB" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, 0.0000, 0.0420, 0)
+gi_mode = 0
+mesh = ExtResource("3_cabbage_b")
+material_override = ExtResource("7_cabbage_research")
+
+[node name="ResearchC" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17, 0, 0, 0, 0.17, 0, 0, 0, 0.17, 0.0280, 0.0420, 0)
+gi_mode = 0
+mesh = ExtResource("4_cabbage_c")
+material_override = ExtResource("7_cabbage_research")
+
+[node name="Mini" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.107, 0, 0, 0, 0.107, 0, 0, 0, 0.107, 0.0560, 0.0420, 0)
+gi_mode = 0
+mesh = ExtResource("1_cabbage_a")
+material_override = ExtResource("2_cabbage")
+
+[node name="Coin" type="MultiMeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0.0840, 0.0420, 0)
+gi_mode = 0
+multimesh = SubResource("CoinMulti")
+
+[node name="Token" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0840, 0.0140, 0)
+gi_mode = 0
+mesh = ExtResource("9_findings_token")
+material_override = SubResource("Token")
+
+[node name="ScanGlow" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0560, 0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = SubResource("ScanGlow")
+cast_shadow = 0
+
+[node name="Jewel" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0280, 0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Ball")
+material_override = SubResource("Jewel")
+
+[node name="Crt" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0000, 0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Quad")
+material_override = SubResource("Crt")
+
+[node name="Card" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0280, 0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Quad")
+material_override = ExtResource("15_card_paper")
+
+[node name="CardText" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0560, 0.0140, 0)
+cast_shadow = 0
+pixel_size = 0.0003
+shaded = true
+modulate = Color(0.9, 0.89, 0.84, 1)
+text = "¶0"
+font = ExtResource("16_Oswald")
+font_size = 60
+outline_size = 0
+
+[node name="CardTextFlat" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0560, 0.0040, 0)
+pixel_size = 0.0003
+text = "MINI"
+font = ExtResource("16_Oswald")
+font_size = 60
+outline_size = 0
+
+[node name="Sleeve" parent="." instance=ExtResource("17_hand")]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0.0840, 0.0140, 0)
+
+[node name="Hand" parent="Sleeve/Armature/Skeleton3D" index="0"]
+gi_mode = 0
+material_override = ExtResource("18_associate_hand")
+
+[node name="Dust" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0840, -0.0140, 0)
+amount = 4
+lifetime = 0.5
+mesh = SubResource("DustQuad")
+emission_shape = 1
+emission_sphere_radius = 0.005
+gravity = Vector3(0, 0, 0)
+
+[node name="Ring" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0560, -0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Quad")
+material_override = SubResource("Ring")
+cast_shadow = 0
+
+[node name="Hand" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0280, -0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("19_hand")
+
+[node name="MachineDial" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0000, -0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("20_machine_dial")
+
+[node name="MachineDigits" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0280, -0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("21_machine_digits")
+
+[node name="MachineMetal" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0560, -0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("22_machine_metal")
+
+[node name="MachinePaint" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0840, -0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("23_machine_paint")
+
+[node name="MachinePaintMatte" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0840, -0.0420, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("24_machine_paint_matte")
+
+[node name="MugPrint" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0560, -0.0420, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("25_mug_print")
+
+[node name="PriceSlate" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0280, -0.0420, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("26_price_slate")
+
+[node name="PriorCover1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0000, -0.0420, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("27_prior_cover_1")
+
+[node name="PriorCover2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0280, -0.0420, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("28_prior_cover_2")
+
+[node name="PriorCover3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0560, -0.0420, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("29_prior_cover_3")
+
+[node name="QaGlass" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0840, -0.0420, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("30_qa_glass")
+
+[node name="RampSteel" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0840, -0.0700, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("31_ramp_steel")
+
+[node name="RemotePlastic" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0560, -0.0700, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("32_remote_plastic")
+
+[node name="RoomBlinds" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0280, -0.0700, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("33_room_blinds")
+
+[node name="RoomCrates" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0000, -0.0700, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("34_room_crates")
+
+[node name="RoomStreet" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0280, -0.0700, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("35_room_street")
+
+[node name="RoomWall" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0560, -0.0700, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("36_room_wall")
+
+[node name="RoomWindow" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0840, -0.0700, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("37_room_window")
+
+[node name="TableMat" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0840, -0.0980, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("38_table_mat")
+
+[node name="TableWood" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0560, -0.0980, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("39_table_wood")
+
+[node name="TubeGlass" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0280, -0.0980, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("40_tube_glass")
+
+[node name="TubePipeGlass" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0000, -0.0980, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("41_tube_pipe_glass")
+
+[node name="TvChrome" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0280, -0.0980, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("42_tv_chrome")
+
+[node name="TvPowder" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0560, -0.0980, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("43_tv_powder")
+
+[node name="ResearchGlow" type="OmniLight3D" parent="."]
+light_bake_mode = 0
+light_color = Color(0.45, 0.9, 1, 1)
+light_energy = 0.5
+omni_range = 0.35
+
+[node name="Overlay" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Static" type="ColorRect" parent="Overlay"]
+material = SubResource("Static")
+offset_right = 2.0
+offset_bottom = 2.0
+mouse_filter = 2
+
+[editable path="Sleeve"]

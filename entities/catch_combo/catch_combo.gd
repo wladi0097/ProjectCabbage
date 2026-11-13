@@ -6,7 +6,7 @@ extends Node3D
 ## miss (a chute unit that lands uncaught: Cabbage calls `missed`), which ends the streak and keeps
 ## only save.miss_keep of the steps (none until the GRACE PERIOD node). `streak` counts the catches
 ## in a row since the last miss. A miss doesn't count while the player can't catch (missed_counts:
-## away at the farm TV, a boss note up, the hand full). Stencilled on the chute bed (the node lies
+## away at the farm TV, a boss note up, working the desk); holding a cabbage is no excuse. Stencilled on the chute bed (the node lies
 ## on it), drawn over the units and always shown once the card is stamped (×1.00 at no combo),
 ## popping on each catch; the ×multiplier is its big line. Its size and paint live in the scene.
 
@@ -70,7 +70,7 @@ static func sting_pitch(count: int) -> float:
 
 ## A chute unit landed uncaught: the streak is gone, and the multiplier down to what miss_keep keeps.
 func missed() -> void:
-	if (steps == 0 and streak == 0) or not missed_counts(FarmTv.away, BossReport.up, Hand.held != null):
+	if (steps == 0 and streak == 0) or not missed_counts(FarmTv.away, BossReport.up, at_the_desk(Hand.held)):
 		return
 	var save := SaveManager.save
 	steps = kept_steps(steps, save.miss_keep)
@@ -85,9 +85,15 @@ static func kept_steps(count: int, keep: float) -> int:
 
 
 ## Whether a unit landing uncaught breaks the streak: not while the camera is `at_tv`, a boss note
-## is `note_up` or the hand is `holding` something (the player couldn't have caught it).
-static func missed_counts(at_tv: bool, note_up: bool, holding: bool) -> bool:
-	return not (at_tv or note_up or holding)
+## is `note_up` or the player is `busy` working the desk (at_the_desk). Holding a cabbage is no excuse.
+static func missed_counts(at_tv: bool, note_up: bool, busy: bool) -> bool:
+	return not (at_tv or note_up or busy)
+
+
+## Whether the hand, holding `held`, is busy working the desk: any Interactable but a cabbage (the
+## price arrow, the projector pull, a lever). Untyped: a held cabbage may have been freed.
+static func at_the_desk(held: Variant) -> bool:
+	return is_instance_valid(held) and not (held as Node).get_parent() is Cabbage
 
 
 ## The sale multiplier at `count` steps of `step` each, capped at `cap`.

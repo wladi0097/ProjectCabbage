@@ -66,6 +66,7 @@
 [ext_resource type="AudioStream" uid="uid://bbbo22sd4tyyy" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tally_tick_2"]
 [ext_resource type="AudioStream" uid="uid://bgi2p7dr0c3b" path="res://assets/audio/effects/tally_tick_3.wav" id="sfx_tally_tick_3"]
 [ext_resource type="PackedScene" path="res://entities/vacuum/vacuum.tscn" id="supply_vacuums"]
+[ext_resource type="PackedScene" path="res://worlds/components/shader_warmup.tscn" id="shader_warmup_1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.45, 0.58, 0.75, 1)
@@ -329,7 +330,8 @@ coins = NodePath("../Coins")
 [node name="PriceSlate" parent="." unique_id=1047906906 instance=ExtResource("17_slate")]
 transform = Transform3D(0.79053783, -0.0023870962, 0.12265411, 0.009796036, 0.79852265, -0.047597174, -0.12228559, 0.048536126, 0.7891074, -0.814262, 0.75, -0.3019072)
 
-[node name="UpgradeDesk" parent="." unique_id=613601056 instance=ExtResource("19_upgrades")]
+[node name="UpgradeDesk" parent="." unique_id=613601056 node_paths=PackedStringArray("memo") instance=ExtResource("19_upgrades")]
+memo = NodePath("../MilestoneMemo")
 
 [node name="SaleWindow" type="Area3D" parent="." unique_id=1285898375 node_paths=PackedStringArray("coins")]
 collision_layer = 0
@@ -480,6 +482,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="ShaderWarmup" parent="." unique_id=1707384912 instance=ExtResource("shader_warmup_1")]
 
 [node name="MapSpecificSettings" parent="." unique_id=1221488417 instance=ExtResource("5_graphics")]
 

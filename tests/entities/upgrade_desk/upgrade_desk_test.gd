@@ -99,7 +99,7 @@ func test_once_the_boss_warns_the_farm_card_is_dealt_before_the_rest() -> void:
 
 func test_stamping_whatever_is_dealt_first_eventually_deals_every_card() -> void:
 	var due := _warned()  # Every timed card due: the warning given, the storage it waits for bought.
-	due.tree_bought = PackedStringArray(["storage_1", "storage_2"])
+	due.tree_bought = PackedStringArray(["storage_1"])
 	for start: Array in [[], BEFORE_RADIO]:
 		var stamped := PackedStringArray(start)
 		due.stamped = stamped  # Card-started events (the promotion) see what is stamped.
@@ -159,7 +159,7 @@ func test_the_first_farm_hand_costs_more_cabbages_than_the_off_site_locker_holds
 	var price: int = UpgradeDesk.card_data("seasonal_workforce").price
 	assert_int(price).is_greater(Projector.cap_at("stock_100"))
 	assert_int(price).is_less_equal(Projector.cap_at("stock_125") - 12)  # A full mat's units on top can't pay.
-	assert_int(price).is_less(UpgradeDesk.card_data("golden_cabbage").price)  # Before the basement annex's cards.
+	assert_int(price).is_less(UpgradeDesk.card_data("golden_cabbage").price)  # Before the golden card, which waits for it.
 
 
 func test_research_directives_are_paid_in_findings_and_titled_research() -> void:
@@ -449,16 +449,18 @@ func test_the_chute_lever_then_the_farm_terminal_are_dealt_right_after_the_farm_
 	assert_array(_next(save.stamped, 2, save)).is_equal(["chute_control", "farm_terminal"])
 
 
-func test_the_workforce_waits_for_the_terminal_and_the_lever_green_thumb_for_the_workforce_and_mechanisation_for_the_golden_card() -> void:
+func test_the_workforce_waits_for_off_site_storage_and_green_thumb_and_the_golden_card_wait_for_the_workforce() -> void:
 	assert_array(_next(["family_farm"], UpgradeDesk.CARDS.size())).not_contains(["seasonal_workforce", "green_thumb"])
 	var save := SaveGame.new()
-	save.stamped = PackedStringArray(["family_farm", "farm_terminal"])
+	save.stamped = PackedStringArray(["family_farm", "farm_terminal", "chute_control"])
+	save.tree_bought = PackedStringArray(["storage_1"])
+	# The lever alone is not enough: without off-site storage the store never holds the hand's 110.
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).not_contains(["seasonal_workforce", "green_thumb"])
-	save.stamped.append("chute_control")
+	save.stamped.append("offsite_storage")
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).contains(["seasonal_workforce"])
-	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).not_contains(["green_thumb"])
-	save.stamped.append("seasonal_workforce")  # GREEN THUMB comes after the first farm hand.
-	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).contains(["green_thumb"])
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).not_contains(["green_thumb", "golden_cabbage"])
+	save.stamped.append("seasonal_workforce")  # GREEN THUMB and the golden card come after the first farm hand.
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).contains(["green_thumb", "golden_cabbage"])
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).not_contains(["mechanisation"])
 	save.overripe = true  # The rot alone deals nothing.
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).not_contains(["mechanisation"])
@@ -499,11 +501,14 @@ func test_green_thumb_is_paid_in_units_that_fit_the_stock_room() -> void:
 	assert_int(card.price).is_less_equal(Projector.cap_at("storage_1"))
 
 
-func test_the_golden_card_is_dealt_once_the_basement_annex_is_bought_and_costs_more_than_the_stock_room_holds() -> void:
-	var save := _all_stamped_but(["golden_cabbage"])
+func test_the_golden_card_waits_for_the_workforce_not_a_projector_node_and_costs_more_than_the_stock_room_holds() -> void:
+	var save := _all_stamped_but(["golden_cabbage", "seasonal_workforce"])
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).not_contains(["golden_cabbage"])
-	save.tree_bought = PackedStringArray(["storage_1", "storage_2"])
+	save.stamped.append("seasonal_workforce")  # No storage node bought: the card alone deals it.
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).contains(["golden_cabbage"])
+	# The workforce's 110 took CORRIDOR OVERFLOW: by then the store holds the golden card's units.
+	assert_int(UpgradeDesk.card_data("golden_cabbage").price).is_less_equal(Projector.cap_at("stock_125"))
+	assert_int(UpgradeDesk.card_data("seasonal_workforce").price).is_greater(Projector.cap_at("stock_100"))
 	var stock_room := Projector.cap_at("storage_1")
 	var annex := Projector.cap_at("storage_2")
 	for id: String in ["golden_cabbage", "mechanisation"]:
@@ -597,7 +602,8 @@ func test_no_card_is_dealt_before_the_dropping_tray_has_landed() -> void:
 
 
 func test_a_card_dealt_by_a_projector_node_comes_into_a_free_slot_as_soon_as_the_node_is_bought() -> void:
-	var save := _all_stamped_but(["golden_cabbage", "mechanisation", "standing_seed_order", "consolidation"])
+	var save := _all_stamped_but(["offsite_storage", "seasonal_workforce", "green_thumb", "golden_cabbage", "mechanisation",
+			"standing_seed_order", "own_sales", "own_research", "consolidation"])
 	save.tray_unlocked = true
 	save.supply_warning = true
 	save.supply_shock = true
@@ -606,10 +612,10 @@ func test_a_card_dealt_by_a_projector_node_comes_into_a_free_slot_as_soon_as_the
 	add_child(desk)
 	assert_array(_ids(desk._offered)).is_empty()
 
-	save.tree_bought.append("storage_2")
+	save.tree_bought.append("storage_1")
 	desk._process(0.0)
 
-	assert_array(_ids(desk._offered)).is_equal(["golden_cabbage"])
+	assert_array(_ids(desk._offered)).is_equal(["offsite_storage"])
 
 
 func test_the_consolidation_card_waits_for_the_golden_card_even_on_an_old_save_with_mechanisation() -> void:
@@ -671,6 +677,75 @@ func test_every_card_paid_in_cabbages_waits_for_the_chute_lever_and_the_lever_is
 				reached[id] = true
 				open.append_array(UpgradeDesk.card_data(id).get("needs", []))
 		assert_bool(reached.has("chute_control")).override_failure_message(card.id).is_true()
+
+
+func test_no_card_paid_in_cabbages_is_dealt_before_storage_for_its_price_can_be_bought() -> void:
+	# Only the cards it needs (and theirs) are sure to be stamped when it is dealt: they alone must
+	# unlock enough of the storage chain, or the tray can freeze on a card nobody can pay.
+	for card: Dictionary in UpgradeDesk.CARDS:
+		if not UpgradeDesk.costs(card).has("stock"):
+			continue
+		var stamped := {}
+		var open: Array = card.get("needs", []).duplicate()
+		while not open.is_empty():
+			var id: String = open.pop_back()
+			stamped[id] = true
+			open.append_array(UpgradeDesk.card_data(id).get("needs", []))
+		var cap := SaveGame.new().storage_cap
+		for node: Dictionary in Projector.NODES:  # The storage chain, in order: it stops at the first lock.
+			if not node.get("add", {}).has("storage_cap"):
+				continue
+			if [node.get("lock", ""), node.get("research", "")].any(func(lock: String) -> bool: return lock != "" and not stamped.has(lock)):
+				break
+			cap = Projector.cap_at(node.id)
+		assert_int(UpgradeDesk.costs(card).stock).override_failure_message("%s costs more cabbages than storage can reach" % card.id) \
+				.is_less_equal(cap)
+
+
+class MemoSpy extends Node:
+	var posted: Array[Dictionary] = []
+
+	func post(m: Dictionary) -> void:
+		posted.append(m)
+
+
+func _desk_with_spy(save: SaveGame) -> Array:
+	SaveManager.save = save
+	var memo: MemoSpy = auto_free(MemoSpy.new())
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	desk.memo = memo
+	add_child(desk)
+	return [desk, memo]
+
+
+func _file_new(desk: UpgradeDesk, id: String) -> void:
+	SaveManager.save.stamped.append(id)
+	var card := UpgradeCard.create(UpgradeDesk.card_data(id))
+	desk.add_child(card)
+	desk._count_spiked(card)
+	desk._file(card)
+
+
+func test_the_first_card_ever_filed_posts_one_memo_that_the_spike_holds_every_approval_and_the_pile_hops() -> void:
+	var save := SaveGame.new()
+	var made := _desk_with_spy(save)
+	var desk: UpgradeDesk = made[0]
+	var memo: MemoSpy = made[1]
+
+	_file_new(desk, "price_slate")
+
+	assert_array(memo.posted).is_equal([UpgradeDesk.SPIKE_MEMO])
+	assert_bool(desk._riffling.is_running()).is_true()  # Every landing hops the pile.
+	_file_new(desk, "radio")
+	assert_int(memo.posted.size()).is_equal(1)
+	assert_bool(desk._riffling.is_running()).is_true()
+
+
+func test_a_loaded_save_with_approved_cards_never_posts_the_spike_memo_again() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["price_slate"])
+	var memo: MemoSpy = _desk_with_spy(save)[1]
+	assert_array(memo.posted).is_empty()
 
 
 func test_an_old_save_with_off_site_storage_but_no_chute_lever_is_still_dealt_the_lever() -> void:
@@ -769,26 +844,28 @@ func test_chapter_twos_last_card_is_dealt_only_once_every_other_chapter_two_card
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size())).contains(["consolidation"])
 
 
-func test_chapter_twos_last_card_costs_more_units_than_the_salt_mine_holds_and_fits_the_strategic_reserve() -> void:
+func test_chapter_twos_last_card_costs_more_cabbages_than_the_regional_depot_holds_and_fits_the_aircraft_hangar() -> void:
 	var card := UpgradeDesk.card_data("consolidation")
 	assert_str(card.currency).is_equal("stock")
-	assert_int(card.price).is_greater(Projector.cap_at(Projector.node_data("storage_5").parent))
-	# A harvest only goes in whole, and the mat's cabbages can't pay: a reserve one hand harvest short
+	assert_int(card.price).is_greater(Projector.cap_at(Projector.node_data("stock_2000").parent))
+	# A harvest only goes in whole, and the mat's cabbages can't pay: a hangar one hand harvest short
 	# of full, with a full mat, still pays it (else the chapter never ends).
 	var save := SaveGame.new()
 	save.stamped = PackedStringArray(["green_thumb"])
 	save.farm_bought = PackedStringArray(["irrigation"])
 	save.hand_yield = 3.0  # GREEN THUMB with EMPLOYEE OF THE MONTH
-	var room := Projector.cap_at("storage_5") - FarmScreen.harvest_yield(save, true) - Projector.MAT_MAX
+	var room := Projector.cap_at("stock_2000") - FarmScreen.harvest_yield(save, true) - Projector.MAT_MAX
 	assert_int(card.price).is_less_equal(room)
 
 
-func test_nothing_waits_on_the_golden_age_card() -> void:
-	# DECLARE A GOLDEN AGE is the last of its line: no card, projector node, farm node or event needs it.
+func test_nothing_waits_on_the_golden_age_card_but_gold_standard() -> void:
+	# DECLARE A GOLDEN AGE is the last of its line: no card, farm node or event needs it, and no projector
+	# node but GOLD STANDARD (optional, it only extends the Golden Age to golden cabbages).
 	for card: Dictionary in UpgradeDesk.CARDS:
 		assert_array(card.get("needs", [])).override_failure_message(card.id).not_contains(["golden_lamp"])
 	for node: Dictionary in Projector.NODES + FarmTree.NODES:
-		assert_array(node.get("needs", [])).override_failure_message(node.id).not_contains(["golden_lamp"])
+		if node.id != SaleWindow.GOLD_AGE:
+			assert_array(node.get("needs", [])).override_failure_message(node.id).not_contains(["golden_lamp"])
 		for key: String in ["lock", "research", "after", "parent"]:
 			assert_str(str(node.get(key, ""))).override_failure_message(node.id).is_not_equal("golden_lamp")
 	for event: String in UpgradeDesk.Events.EVENTS:
@@ -829,8 +906,8 @@ func test_the_managerial_cards_raise_the_players_own_sales_and_research_by_a_fif
 	assert_float(save.own_lab).is_equal_approx(1.2, 0.0001)
 
 
-func test_chapter_twos_last_card_costs_3800_cabbages_4000_findings_and_25000_coins_at_once() -> void:
-	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("consolidation"))).is_equal({coins = 25000, findings = 4000, stock = 3800})
+func test_chapter_twos_last_card_costs_1900_cabbages_and_20000_coins_at_once_and_no_findings() -> void:
+	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("consolidation"))).is_equal({coins = 20000, stock = 1900})
 	# A card in one currency costs just that.
 	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("projector"))).is_equal({coins = 75})
 	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("street_posters"))).is_equal({findings = 10})
@@ -839,12 +916,11 @@ func test_chapter_twos_last_card_costs_3800_cabbages_4000_findings_and_25000_coi
 func test_a_card_in_several_currencies_is_affordable_only_when_every_one_is_covered_units_from_the_store() -> void:
 	var bill := UpgradeDesk.costs(UpgradeDesk.card_data("consolidation"))
 	var save := SaveGame.new()
-	save.stock = 3800
-	save.findings = 4000
-	save.coins = 25000
+	save.stock = 1900
+	save.coins = 20000
 	assert_bool(UpgradeDesk.affords(save, bill)).is_true()
 	assert_bool(UpgradeDesk.affords(save, bill, Vector2i(1, 0))).override_failure_message("one unit on the mat").is_false()
-	for short: String in ["coins", "findings", "stock"]:
+	for short: String in ["coins", "stock"]:
 		var poorer := save.duplicate() as SaveGame
 		poorer.set(short, int(poorer.get(short)) - 1)
 		assert_bool(UpgradeDesk.affords(poorer, bill)).override_failure_message(short).is_false()
@@ -856,10 +932,10 @@ func test_the_press_refuses_a_card_in_several_currencies_one_short_and_pays_them
 	SaveManager.save = save
 	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
 	add_child(desk)
-	save.storage_cap = Projector.cap_at("storage_5")
-	save.stock = 3850  # After loading: the desk's migrate clamps stock to storage.
-	save.findings = 4100
-	save.coins = 24999
+	save.storage_cap = Projector.cap_at("stock_2000")
+	save.stock = 1950  # After loading: the desk's migrate clamps stock to storage.
+	save.findings = 100
+	save.coins = 19999
 	var card := desk._offered[0]
 	assert_str(card.id).is_equal("consolidation")
 	desk._on_press = card
@@ -867,9 +943,197 @@ func test_the_press_refuses_a_card_in_several_currencies_one_short_and_pays_them
 	desk._bottom_out()  # A coin short: refused, nothing paid.
 
 	assert_bool(save.stamped.has("consolidation")).is_false()
-	assert_array([save.stock, save.findings, save.coins]).is_equal([3850, 4100, 24999])
-	save.coins = 25100
+	assert_array([save.stock, save.findings, save.coins]).is_equal([1950, 100, 19999])
+	save.coins = 20100
 	desk._bottom_out()
 
 	assert_bool(save.stamped.has("consolidation")).is_true()
 	assert_array([save.stock, save.findings, save.coins]).is_equal([50, 100, 100])
+
+
+## A desk with a tray of affordable forms (cards dealt after the slate and the radio, coins to spare).
+func _progress_desk() -> UpgradeDesk:
+	var save := SaveGame.new()
+	save.tray_unlocked = true
+	save.stamped = PackedStringArray(["price_slate", "radio"])
+	save.coins = 1000000
+	save.findings = 1000000
+	SaveManager.save = save
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	add_child(desk)
+	desk.set_process(false)
+	return desk
+
+
+func _tick(desk: UpgradeDesk, seconds: float) -> void:
+	for i in roundi(seconds / 0.5):
+		desk._tick_progress(SaveManager.save, 0.5)
+
+
+func test_a_form_left_affordable_on_the_desk_for_five_minutes_warns_that_progress_is_required() -> void:
+	var desk := _progress_desk()
+	_tick(desk, UpgradeDesk.Events.PROGRESS_AFTER - 1.0)
+	assert_bool(SaveManager.save.progress_warned).is_false()
+	_tick(desk, 1.0)
+	assert_bool(SaveManager.save.progress_warned).is_true()
+
+
+## Plays `seconds` through the desk's own frame (_process), as the game does, in ordinary uneven
+## frames (a 0.1 s one, then 1/60 s ones), never a frame past it.
+func _play(desk: UpgradeDesk, seconds: float) -> void:
+	var played := 0.0
+	var i := 0
+	while true:
+		var frame := 0.1 if i % 4 == 0 else 1.0 / 60.0
+		if played + frame > seconds + 0.0001:
+			break
+		desk._process(frame)
+		played += frame
+		i += 1
+
+
+func test_the_five_minutes_run_while_the_player_plays() -> void:
+	var desk := _progress_desk()
+	_play(desk, 60.0)
+	assert_float(SaveManager.save.progress_wait).is_equal_approx(60.0, 0.5)
+	_play(desk, UpgradeDesk.Events.PROGRESS_AFTER - 61.0)
+	assert_bool(SaveManager.save.progress_warned).is_false()  # Not a second early...
+	_play(desk, 1.5)
+	assert_bool(SaveManager.save.progress_warned).is_true()  # ...nor late.
+
+
+func test_the_five_minutes_stand_still_while_a_boss_report_is_up_or_the_menu_is_open() -> void:
+	var menu: Control = auto_free(Control.new())
+	menu.name = "InGameMenu"
+	menu.visible = false
+	add_child(menu)
+	var desk := _progress_desk()
+	var report_was := BossReport.up
+	_play(desk, 30.0)
+	var wait := SaveManager.save.progress_wait
+	assert_float(wait).is_greater(0.0)
+
+	BossReport.up = true
+	_play(desk, 60.0)
+	BossReport.up = report_was
+	assert_float(SaveManager.save.progress_wait).is_equal(wait)
+
+	menu.visible = true
+	_play(desk, 60.0)
+	assert_float(SaveManager.save.progress_wait).is_equal(wait)
+
+	menu.visible = false
+	_play(desk, 30.0)
+	assert_float(SaveManager.save.progress_wait).is_greater(wait)
+
+
+func test_approving_any_form_on_the_desk_restarts_the_five_minutes() -> void:
+	var desk := _progress_desk()
+	_tick(desk, 200.0)
+	SaveManager.save.stamped.append("desk_space")
+	_tick(desk, 200.0)
+	assert_bool(SaveManager.save.progress_warned).is_false()
+	assert_float(SaveManager.save.progress_wait).is_less(200.0)
+
+
+func test_the_progress_clock_does_not_run_while_no_form_on_the_desk_is_affordable() -> void:
+	var desk := _progress_desk()
+	SaveManager.save.coins = 0
+	SaveManager.save.findings = 0
+	_tick(desk, 600.0)
+	assert_float(SaveManager.save.progress_wait).is_equal(0.0)
+	assert_bool(SaveManager.save.progress_warned).is_false()
+
+
+func test_no_progress_warning_after_the_chapters_last_form() -> void:
+	var desk := _progress_desk()
+	SaveManager.save.stamped.append(UpgradeDesk.Events.EVENTS.invest_in_growth.card)
+	_tick(desk, 600.0)
+	assert_bool(SaveManager.save.progress_warned).is_false()
+
+
+func test_the_warning_changes_nothing_but_the_paperwork() -> void:
+	var desk := _progress_desk()
+	var save := SaveManager.save
+	var skip := ["progress_wait", "progress_warned", "playtest_log"]
+	var was := {}
+	for property in save.get_property_list():
+		if property.usage & PROPERTY_USAGE_STORAGE and property.name not in skip:
+			was[property.name] = str(save.get(property.name))
+	_tick(desk, UpgradeDesk.Events.PROGRESS_AFTER + 30.0)
+	assert_bool(save.progress_warned).is_true()
+	for field: String in was:
+		assert_str(str(save.get(field))).override_failure_message(field).is_equal(was[field])
+
+
+func test_the_reminder_slip_appears_on_the_tray_once_the_progress_warning_is_signed() -> void:
+	var desk := _progress_desk()
+	_tick(desk, UpgradeDesk.Events.PROGRESS_AFTER + 1.0)
+	desk._process(1.0)
+	assert_bool(desk._slip.visible).is_false()  # Warned, but the note is still up, unsigned.
+
+	SaveManager.save.reports.append("progress_required")
+	desk._process(1.0)
+	assert_bool(desk._slip.visible).is_true()
+
+
+func test_a_save_that_already_signed_the_warning_shows_the_slip_on_load() -> void:
+	var save := SaveGame.new()
+	save.tray_unlocked = true
+	save.progress_warned = true
+	save.reports = PackedStringArray(["welcome", "progress_required"])
+	SaveManager.save = save
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	add_child(desk)
+	assert_bool(desk._slip.visible).is_true()
+
+
+func test_a_desk_that_never_got_the_warning_has_no_slip() -> void:
+	var desk := _progress_desk()
+	desk._process(1.0)
+	assert_bool(desk._slip.visible).is_false()
+	assert_bool(UpgradeDesk.slip_shown(SaveGame.new())).is_false()
+
+
+func test_the_reminder_slips_big_word_stays_inside_the_slip_in_english_and_german() -> void:
+	var locale := TranslationServer.get_locale()
+	var desk := _progress_desk()
+	var word: Label3D = desk.get_node("Tray/Slip/Word")
+	var slip: Vector2 = (desk._slip.mesh as PlaneMesh).size
+	for lang in ["en", "de"]:
+		TranslationServer.set_locale(lang)
+		var drawn := UpgradeCard.TITLE_FONT.get_string_size(tr(word.text), HORIZONTAL_ALIGNMENT_LEFT, -1, word.font_size) * word.pixel_size
+		assert_float(drawn.x).override_failure_message(lang).is_less_equal(UpgradeDesk.SLIP_BOX.x)
+		# Capitals only: they stand within the font's ascent.
+		assert_float(UpgradeCard.TITLE_FONT.get_ascent(word.font_size) * word.pixel_size).override_failure_message(lang).is_less_equal(UpgradeDesk.SLIP_BOX.y)
+	TranslationServer.set_locale(locale)
+	assert_float(UpgradeDesk.SLIP_BOX.x).is_less(slip.x)
+	assert_float(UpgradeDesk.SLIP_BOX.y).is_less(slip.y)
+
+
+func test_hovering_the_reminder_slip_opens_the_same_paper_as_a_form_does_explaining_that_every_form_must_be_approved_to_progress() -> void:
+	var desk := _progress_desk()
+	var hover: Interactable = desk.get_node("Tray/Slip/Hit/Interactable")
+	var shape: CollisionShape3D = desk.get_node("Tray/Slip/Hit/Shape")
+	assert_bool(hover.enabled).is_false()
+	assert_bool(shape.disabled).is_true()
+
+	SaveManager.save.reports.append("progress_required")
+	desk._process(1.0)
+	assert_bool(hover.enabled).is_true()
+	assert_bool(shape.disabled).is_false()
+	assert_str(hover.tooltip).is_empty()  # No hand tooltip: the form's own paper.
+	hover.hovered.emit()
+	var paper: PaperNote = desk.get_node("Note/Center/Paper")
+	assert_str(paper._title).is_equal(tr("NOTICE"))
+	assert_str(paper._form).is_equal(tr(UpgradeDesk.NOTICE.form))
+	assert_bool(paper._bill.is_empty()).is_true()
+	assert_str(UpgradeDesk.NOTICE.body).contains("Every form on this desk must be approved")
+	assert_str(UpgradeDesk.NOTICE.body).contains("projector is optional")
+	# Only a paper to read: nothing to press.
+	assert_bool(hover.pressable).is_false()
+	var locale := TranslationServer.get_locale()
+	TranslationServer.set_locale("de")
+	for key: String in [UpgradeDesk.NOTICE.form, UpgradeDesk.NOTICE.title, UpgradeDesk.NOTICE.body]:
+		assert_str(tr(key)).override_failure_message(key).is_not_equal(key)
+	TranslationServer.set_locale(locale)

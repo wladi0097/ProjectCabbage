@@ -31,6 +31,7 @@ body_y
 bonus
 brightness
 buttons
+buy
 buy_unlocked
 card
 catches
@@ -39,6 +40,10 @@ collider
 combo_cap
 combo_step
 carry_weight
+consultant_bounce
+consultant_ceiling
+consultant_floor
+locked
 miss_keep
 consultant_interval
 consultant_markup
@@ -115,7 +120,9 @@ mini_every
 mini_value
 minis_sold
 monitor_used
+mood_clock
 mood_drift
+mood_next
 mul
 music_muted
 music_volume
@@ -124,6 +131,7 @@ name
 needs
 node
 note
+offered
 pack_2
 pack_3
 pack_4
@@ -139,6 +147,9 @@ price
 price_factor
 price_history
 price_pressure
+progress_required
+progress_wait
+progress_warned
 projector_opened
 pt
 qa_slots
@@ -172,14 +183,18 @@ sfx_muted
 sfx_volume
 shadow_quality
 shirt
+short
 slate_unlocked
 sleeve
 sold
 songs_skipped
 stamped
 stat
+state
 stock
 storage_cap
+street_volatile
+street_volatility
 supply_shock
 supply_squeeze
 supply_warning
@@ -187,6 +202,7 @@ t
 target_every
 target_shower
 target_size
+thumb_replant
 title
 tooltips_seen
 tr
@@ -209,6 +225,7 @@ vacuum_speed_2
 vacuum_suction
 vacuums
 version
+volatile_wait
 vsync
 warning_sold
 farm_sold

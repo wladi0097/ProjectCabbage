@@ -103,6 +103,8 @@ func _draw() -> void:
 	var strip := y
 	y = _piece(BLANK, y)
 	_piece(FOOT, y)
+	if _bill.is_empty():
+		return  # Nothing to pay (the reminder slip's NOTICE): no price box.
 	# The price in a ruled box like the card's, right-aligned to the writing.
 	var text := Vector2(UpgradeCard.bill_row_width(_bill, PRICE_SIZE), TITLE_FONT.get_height(PRICE_SIZE))
 	var box := Rect2(Vector2.ZERO, text + PRICE_PAD * 2.0)

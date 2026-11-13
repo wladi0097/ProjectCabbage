@@ -209,3 +209,14 @@ func test_a_scene_reload_starts_with_the_camera_at_the_desk_not_the_tv() -> void
 	camera.make_current()
 	add_child(auto_free(load("res://entities/farm_tv/farm_tv.tscn").instantiate()))
 	assert_bool(FarmTv.away).is_false()
+
+
+func test_the_tvs_keys_led_and_glass_keep_their_materials_when_the_editor_saves_the_scene_again() -> void:
+	var scene := preload("res://entities/farm_tv/farm_tv.tscn").instantiate(PackedScene.GEN_EDIT_STATE_MAIN)
+	var resaved := PackedScene.new()
+	assert_int(resaved.pack(scene)).is_equal(OK)  # What the editor writes on a save.
+	scene.free()
+	var farm_tv: Node = auto_free(resaved.instantiate())
+	for part in ["BackArrow", "Led", "Screen", "Channel1", "Channel2"]:
+		assert_object((farm_tv.get_node("Corner/Tv/" + part) as GeometryInstance3D).material_override) \
+				.override_failure_message("%s lost its material" % part).is_not_null()

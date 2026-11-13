@@ -111,5 +111,84 @@ func test_managerial_work_pays_only_on_cabbages_the_player_sold_themself() -> vo
 func test_managerial_work_multiplies_with_gold_and_every_boost() -> void:
 	var save := SaveGame.new()
 	save.own_sale = 1.5
+	save.tree_bought.append(SaleWindow.GOLD_AGE)
 	var price := 4 * SaleWindow.golden_factor(true, save) * SaleWindow.own_factor(true, save)
-	assert_int(SaleWindow.payout(price, {combo = 2.0, lamp = 5.0})).is_equal(600)  # 4 × 10 × 1.5 × 2 × 5
+	assert_int(SaleWindow.payout(price, SaleWindow.boosts_for(true, {combo = 2.0, lamp = 5.0}, save))).is_equal(600)  # 4 × 10 × 1.5 × 2 × 5
+
+
+func test_a_golden_cabbage_sold_in_the_golden_age_pays_no_more_than_outside_it() -> void:
+	var save := SaveGame.new()
+	var price := 4 * SaleWindow.golden_factor(true, save)
+	var outside := SaleWindow.payout(price, SaleWindow.boosts_for(true, {}, save))
+	assert_int(SaleWindow.payout(price, SaleWindow.boosts_for(true, {lamp = 5.0}, save))).is_equal(outside)
+	assert_int(outside).is_equal(40)  # It keeps its own premium.
+
+
+func test_a_golden_cabbage_still_gets_every_other_boost_in_the_golden_age() -> void:
+	var save := SaveGame.new()
+	var price := 4 * SaleWindow.golden_factor(true, save)
+	assert_int(SaleWindow.payout(price, SaleWindow.boosts_for(true, {lamp = 5.0, combo = 1.5}, save))).is_equal(60)
+
+
+func test_an_ordinary_cabbage_still_gets_the_golden_ages_bonus() -> void:
+	var save := SaveGame.new()
+	assert_int(SaleWindow.payout(4, SaleWindow.boosts_for(false, {lamp = 5.0}, save))).is_equal(20)
+
+
+func test_with_gold_standard_the_golden_age_covers_golden_cabbages_too() -> void:
+	var save := SaveGame.new()
+	save.tree_bought.append(SaleWindow.GOLD_AGE)
+	var price := 4 * SaleWindow.golden_factor(true, save)
+	assert_int(SaleWindow.payout(price, SaleWindow.boosts_for(true, {lamp = 5.0}, save))).is_equal(200)
+
+
+func test_leaving_a_golden_cabbage_out_of_the_golden_age_does_not_end_it_for_the_rest() -> void:
+	var boosts := {lamp = 5.0}
+	SaleWindow.boosts_for(true, boosts, SaveGame.new())
+	assert_dict(boosts).is_equal({lamp = 5.0})
+
+
+## Records what the street is asked to throw back for a sale.
+class FakeCoins extends CoinPile:
+	var paid: Array[int] = []
+
+	func throw_in_after(_delay: float, _origin: Vector3, amount: int) -> void:
+		paid.append(amount)
+
+
+## A golden cabbage the player throws out of a window in the golden age ($1 chalked: a sure
+## sale; lamp ×5, golden ×10), judged through the window's own sale path: the coins the street throws back.
+func _golden_sale_in_the_golden_age(gold_standard: bool) -> int:
+	var real := SaveManager.save
+	var save := SaveGame.new()
+	save.sale_price = 1
+	save.golden_sale = 10.0
+	if gold_standard:
+		save.tree_bought.append(SaleWindow.GOLD_AGE)
+	SaveManager.save = save
+	var holder: Node3D = auto_free(Node3D.new())
+	add_child(holder)
+	var window := SaleWindow.new()
+	var coins: FakeCoins = auto_free(FakeCoins.new())
+	window.coins = coins
+	for cue: String in ["Suck", "Refuse"]:
+		var player: AudioStreamPlayer3D = preload("res://entities/components/sound_cue.gd").new()
+		player.name = cue
+		window.add_child(player)
+	holder.add_child(window)
+	window.boosts = {lamp = 5.0}
+	window._owed = 1.0  # The street buys this one.
+	var cabbage: Cabbage = preload("res://entities/cabbage/cabbage.tscn").instantiate()
+	cabbage.golden = true
+	holder.add_child(cabbage)
+	window._judge(cabbage)
+	SaveManager.save = real
+	return coins.paid[0] if coins.paid.size() == 1 else -1
+
+
+func test_a_golden_cabbage_thrown_out_of_the_window_in_the_golden_age_is_paid_without_the_golden_ages_bonus() -> void:
+	assert_int(_golden_sale_in_the_golden_age(false)).is_equal(10)  # $1 × 10, no lamp
+
+
+func test_a_golden_cabbage_thrown_out_of_the_window_in_the_golden_age_is_paid_with_it_once_gold_standard_is_bought() -> void:
+	assert_int(_golden_sale_in_the_golden_age(true)).is_equal(50)  # $1 × 10 × 5

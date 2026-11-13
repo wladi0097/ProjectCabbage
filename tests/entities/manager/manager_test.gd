@@ -82,6 +82,137 @@ func test_the_first_visit_right_after_the_card_reads_the_pace_over_at_least_thir
 	assert_int(Manager.quota_for(PackedInt32Array([0]), 3, 45.0, 1.25, 5.0)).is_equal(6)
 
 
+## A save with plenty in stock: only the chute limits what can be delivered.
+func _stocked(capacity: int) -> SaveGame:
+	var save := SaveGame.new()
+	save.stock = 1000
+	save.storage_cap = 1000
+	save.desk_capacity = capacity
+	return save
+
+
+func test_head_office_never_asks_for_more_cabbages_than_the_chute_can_drop_in_the_deadline() -> void:
+	# One mat slot, 1 s chute: a cabbage every 2.87 s at best (restock 0.67 + roll 0.4 + flight 0.8 +
+	# a 1 s flick), so 1 on the mat + 15 more in 45 s and the walk-in. A player already selling every
+	# one (104 in 5 minutes) would be asked 20 by the pace alone.
+	var save := _stocked(1)
+	var samples := PackedInt32Array()
+	for i in 61:
+		samples.append(roundi(i * 104 / 60.0))
+	var asked := Manager.quota_for(samples, 104, save.manager_time, save.manager_raise)
+	var can := Manager.deliverable(save, 1)
+
+	assert_int(can).is_equal(16)
+	assert_int(asked).is_greater(can)
+	assert_int(Manager.capped(asked, can)).is_equal(14)
+
+
+func test_a_sell_off_burst_does_not_make_the_next_quota_impossible() -> void:
+	# 120 sold in 30 s off a full ten-cabbage mat and hands asks 225; the 1 s chute drops 45 more.
+	var save := _stocked(10)
+	var asked := Manager.quota_for(PackedInt32Array([0, 20, 40, 60, 80, 100, 120]), 120, save.manager_time, save.manager_raise)
+	var can := Manager.deliverable(save, 10)
+
+	assert_int(asked).is_equal(225)
+	assert_int(can).is_equal(55)
+	assert_int(Manager.capped(asked, can)).is_equal(49)
+
+
+func test_the_quota_still_asks_for_more_than_your_pace_when_the_chute_can_deliver_it() -> void:
+	# 0.2 sold a second is 9 in 45 s; the pace quota of 12 fits under the chute's 55.
+	var save := _stocked(10)
+	var asked := Manager.quota_for(_rising_samples(60), 60, save.manager_time, save.manager_raise)
+
+	assert_int(Manager.capped(asked, Manager.deliverable(save, 10))).is_equal(12)
+
+
+func test_a_shut_chute_or_a_steep_price_does_not_lower_what_can_be_delivered() -> void:
+	var save := _stocked(3)
+	var can := Manager.deliverable(save, 2)
+	save.chute_blocked = true
+	save.sale_price = 500
+
+	assert_int(Manager.deliverable(save, 2)).is_equal(can)
+
+
+func test_a_faster_chute_or_a_bigger_mat_lets_head_office_ask_for_more() -> void:
+	var save := _stocked(1)
+	var one := Manager.deliverable(save, 0)
+	save.desk_capacity = 3
+	var three := Manager.deliverable(save, 0)
+	save.dispense_interval = 0.5
+
+	assert_int(three).is_greater(one)
+	assert_int(Manager.deliverable(save, 0)).is_greater(three)
+
+
+func test_rotten_cabbages_off_the_chute_do_not_count_toward_what_can_be_delivered() -> void:
+	var save := _stocked(10)
+	var fresh := Manager.deliverable(save, 0)
+	save.rotten_unlocked = true
+
+	assert_int(Manager.deliverable(save, 0)).is_less(fresh)
+
+
+func test_with_little_stock_and_no_packs_to_buy_the_quota_is_what_is_left() -> void:
+	var save := SaveGame.new()
+	save.stock = 2
+
+	assert_int(Manager.deliverable(save, 1)).is_equal(2)
+	assert_int(Manager.capped(Manager.MIN_QUOTA, 2)).is_equal(2)
+	assert_int(Manager.capped(Manager.MIN_QUOTA, 3)).is_equal(Manager.MIN_QUOTA)
+
+
+func test_coins_for_a_pack_that_pays_for_itself_count_as_stock_to_come() -> void:
+	var save := SaveGame.new()
+	save.stock = 2
+	save.buy_unlocked = true
+	save.coins = 100
+
+	assert_int(SupplyConsole.pack_cost(save)).is_less_equal(save.pack_size * save.sale_price)
+	assert_int(Manager.deliverable(save, 1)).is_equal(16)
+
+
+func test_in_the_squeeze_only_the_packs_the_tally_can_pay_for_count() -> void:
+	var save := SaveGame.new()
+	save.stock = 0
+	save.buy_unlocked = true
+	save.supply_shock = true
+	save.stamped.append("family_farm")
+	save.sale_price = 1
+	var cost := SupplyConsole.pack_cost(save)
+	save.coins = cost + 1
+
+	assert_int(cost).is_greater(save.pack_size * save.sale_price)
+	assert_int(Manager.deliverable(save, 0)).is_equal(save.pack_size)
+
+
+func test_the_farm_counts_the_squares_ripe_in_time_and_replants_while_seeds_last() -> void:
+	var save := SaveGame.new()
+	save.stamped.append("family_farm")
+	var ripe := FarmScreen.grow_time(save)
+	var crop := FarmScreen.harvest_yield(save, true)
+	# Ripe in 10 s, then again a grow time later (with a seed); an empty square once (with a seed).
+	save.farm_growth = PackedFloat32Array([ripe - 10.0, FarmScreen.EMPTY])
+	var time := 10.0 + ripe
+
+	assert_int(Manager.harvests(save, time)).is_equal(crop)
+	save.farm_seeds = 5
+	assert_int(Manager.harvests(save, time)).is_equal(3 * crop)
+
+
+func test_with_nothing_to_deliver_he_waits_and_comes_once_there_is() -> void:
+	var manager := _manager()
+	SaveManager.save.stock = 0
+
+	_asking(manager)
+	assert_int(manager.phase).is_equal(Manager.Phase.AWAY)
+
+	SaveManager.save.stock = 10
+	_run(manager, Manager.SAMPLE_EVERY + STEP)
+	assert_int(manager.phase).is_not_equal(Manager.Phase.AWAY)
+
+
 func test_the_bonus_is_quota_times_price_times_reward_rounded_up() -> void:
 	assert_int(Manager.bonus_for(12, 3, 1.0)).is_equal(36)
 	assert_int(Manager.bonus_for(12, 3, 1.5)).is_equal(54)

@@ -234,13 +234,85 @@ func test_grabbing_a_cabbage_that_is_not_flying_is_no_catch() -> void:
 	assert_int(SaveManager.save.catches).is_equal(0)
 
 
-func test_a_flying_cabbage_that_hits_something_is_no_longer_catchable() -> void:
-	var cabbage := spawn()
+## Something on the desk (the table's collider) for a flying unit to touch.
+func desk() -> StaticBody3D:
+	var body := StaticBody3D.new()
+	add_child(auto_free(body))
+	return body
+
+
+## A unit in flight at `height` (its centre), the physics held still so only the test moves it.
+func flying_at(height: float, setup := Callable()) -> Cabbage:
+	var cabbage := spawn(setup)
+	cabbage.freeze = true
+	cabbage.set_physics_process(false)
+	cabbage.global_position = Vector3(1.6, height, 0.5)
 	cabbage.in_flight = true
-	cabbage.body_entered.emit(cabbage)
+	return cabbage
+
+
+func test_a_flying_cabbage_that_lands_on_the_desk_is_no_longer_catchable() -> void:
+	var cabbage := flying_at(0.85)
+	cabbage.body_entered.emit(desk())
 
 	assert_bool(cabbage.in_flight).is_false()
 	assert_bool((cabbage.get_node("Interactable") as Interactable).catchable).is_false()
+
+
+func test_a_cabbage_that_grazes_the_ramp_on_the_way_out_is_still_catchable() -> void:
+	var tally := miss_log()
+	var cabbage := flying_at(1.0)
+	cabbage.body_entered.emit(desk())
+
+	assert_bool(cabbage.in_flight).is_true()
+	assert_int(tally.misses).is_equal(0)
+
+
+func test_two_cabbages_bumping_in_the_air_is_no_miss() -> void:
+	var tally := miss_log()
+	var cabbage := flying_at(0.9)
+	var other := flying_at(0.9)
+	cabbage.body_entered.emit(other)
+
+	assert_bool(cabbage.in_flight).is_true()
+	assert_int(tally.misses).is_equal(0)
+
+
+func test_a_flying_cabbage_coming_to_rest_atop_a_pile_has_landed() -> void:
+	var tally := miss_log()
+	var cabbage := flying_at(1.05)
+	cabbage.body_entered.emit(spawn())
+	assert_bool(cabbage.in_flight).is_true()
+	for i in 10:
+		cabbage._physics_process(1.0 / 60.0)
+	assert_bool(cabbage.in_flight).is_true()
+
+	for i in 10:
+		cabbage._physics_process(1.0 / 60.0)
+	assert_bool(cabbage.in_flight).is_false()
+	assert_int(tally.misses).is_equal(1)
+
+
+func test_a_cabbage_still_moving_through_the_air_never_settles() -> void:
+	var cabbage := flying_at(1.2)
+	cabbage.freeze = false
+	cabbage.linear_velocity = Vector3(1.0, 0.0, 0.0)
+	cabbage.gravity_scale = 0.0
+	for i in 60:
+		cabbage._physics_process(1.0 / 60.0)
+
+	assert_bool(cabbage.in_flight).is_true()
+
+
+func test_a_cabbage_never_bumps_into_the_chute_lever_handle_but_the_hand_still_finds_it() -> void:
+	var lever := preload("res://entities/chute_lever/chute_lever.tscn").instantiate()
+	var handle := lever.get_node("Arm/Handle") as StaticBody3D
+	var cabbage := spawn()
+
+	assert_int(handle.collision_layer & cabbage.collision_mask).is_equal(0)
+	assert_int(handle.collision_mask).is_equal(0)
+	assert_int(handle.collision_layer & ~2).is_not_equal(0)  # The hand's ray skips only the play area (2).
+	lever.free()
 
 
 ## Counts the misses reported to the "catch_combo" group (a bare CatchCombo: no scene, no label).
@@ -270,9 +342,7 @@ func miss_log() -> MissLog:
 
 func test_a_chute_unit_landing_uncaught_is_a_miss() -> void:
 	var tally := miss_log()
-	var cabbage := spawn()
-	cabbage.in_flight = true
-	cabbage.body_entered.emit(cabbage)
+	flying_at(0.85).body_entered.emit(desk())
 
 	assert_int(tally.misses).is_equal(1)
 
@@ -283,7 +353,7 @@ func test_a_caught_unit_is_no_miss_when_it_later_touches_something() -> void:
 	cabbage.set_physics_process(false)
 	cabbage.in_flight = true
 	(cabbage.get_node("Interactable") as Interactable).grabbed.emit()
-	cabbage.body_entered.emit(cabbage)
+	cabbage.body_entered.emit(desk())
 
 	assert_int(tally.misses).is_equal(0)
 
@@ -297,9 +367,7 @@ func test_a_unit_bumping_about_on_the_mat_is_no_miss() -> void:
 
 func test_a_mini_falling_from_upstairs_never_breaks_the_streak() -> void:
 	var tally := miss_log()
-	var cabbage := spawn(func(c: Cabbage) -> void: c.mini = true)
-	cabbage.in_flight = true
-	cabbage.body_entered.emit(cabbage)
+	flying_at(0.8, func(c: Cabbage) -> void: c.mini = true).body_entered.emit(desk())
 
 	assert_int(tally.misses).is_equal(0)
 

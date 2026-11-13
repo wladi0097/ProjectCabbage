@@ -995,7 +995,7 @@ func test_a_doubled_hand_harvest_waits_while_it_would_overfill_storage() -> void
 	assert_bool(FarmScreen.is_ripe(save, 0)).is_true()
 
 
-func test_one_in_one_out_replants_a_hand_harvested_square_from_the_crate() -> void:
+func test_one_in_one_out_replants_a_square_the_player_pulls_by_hand() -> void:
 	var save := _ripe_square(["green_thumb"])
 	save.hand_replant = 1
 	var seeds := save.farm_seeds
@@ -1006,6 +1006,38 @@ func test_one_in_one_out_replants_a_hand_harvested_square_from_the_crate() -> vo
 	FarmScreen.tick(save, FarmScreen.GROW_TIME)
 	FarmScreen.harvest(save, 0, true)
 	assert_float(save.farm_growth[0]).is_equal(FarmScreen.EMPTY)
+
+
+func test_a_tractors_harvest_is_not_replanted_by_one_in_one_out_the_square_waits_for_a_farm_hand() -> void:
+	var save := _ripe_squares(1)
+	save.hand_replant = 1
+	var seeds := save.farm_seeds
+	var workers := _crew(save, true)
+	assert_bool(_run_until(workers, save, func() -> bool: return save.farm_harvests > 0)).is_true()
+	assert_float(save.farm_growth[0]).is_equal(FarmScreen.EMPTY)
+	assert_int(save.farm_seeds).is_equal(seeds)
+	assert_int(save.hand_planted).is_equal(0)
+
+
+func test_a_farm_hand_still_plants_the_squares_tractors_empty_when_one_in_one_out_is_owned() -> void:
+	var save := _ripe_squares(1)
+	save.hand_replant = 1
+	save.farm_hands = 1
+	save.farm_tractors = 1
+	save.farm_hand_route = 1
+	save.farm_tractor_route = 1
+	var workers: Array[FarmScreen.Worker] = []
+	FarmScreen.sync_workers(workers, save)
+	assert_bool(_run_until(workers, save, func() -> bool: return save.farm_harvests > 0)).is_true()
+	assert_bool(_run_until(workers, save, func() -> bool: return save.farm_hand_planted > 0, 60.0)).is_true()
+
+
+func test_a_hand_pulled_square_replanted_at_once_counts_as_planted_by_hand() -> void:
+	var save := _ripe_squares(1)
+	save.hand_replant = 1
+	FarmScreen.harvest(save, 0, true)
+	assert_int(save.hand_planted).is_equal(1)
+	assert_int(save.farm_hand_planted).is_equal(0)
 
 
 func test_a_hand_harvest_shows_its_units_and_green_thumbs_multiplier_over_the_square() -> void:
@@ -1033,14 +1065,6 @@ func test_units_harvested_by_hand_and_by_tractor_are_counted_apart() -> void:
 	assert_int(save.farm_harvests).is_equal(3)
 
 
-func test_a_hand_pulled_square_replanted_at_once_counts_as_planted_by_hand() -> void:
-	var save := _ripe_squares(1)
-	save.hand_replant = 1
-	FarmScreen.harvest(save, 0, true)
-	assert_int(save.hand_planted).is_equal(1)
-	assert_int(save.farm_hand_planted).is_equal(0)
-
-
 func test_a_seed_the_player_plants_counts_as_planted_by_hand() -> void:
 	var save := _farm()
 	var screen := _screen(save)
@@ -1059,3 +1083,11 @@ func test_squares_a_farm_hand_plants_count_as_the_farm_hands() -> void:
 		FarmScreen.work(workers, save, 0.1)
 	assert_int(save.farm_hand_planted).is_equal(_planted(save))
 	assert_int(save.hand_planted).is_equal(0)
+
+
+func test_a_bought_farm_loaded_without_its_squares_has_every_square_before_the_first_draw() -> void:
+	var save := SaveGame.new()
+	save.stamped.append("family_farm")
+	save.farm_plots = 8
+	_screen(save)
+	assert_int(save.farm_growth.size()).is_equal(8)

@@ -44,7 +44,7 @@ height = 0.08
 radius = 0.058
 
 [sub_resource type="BoxShape3D" id="AutoShape"]
-size = Vector3(0.09, 0.03, 0.035)
+size = Vector3(0.14, 0.03, 0.02)
 
 [sub_resource type="StandardMaterial3D" id="DustMat"]
 transparency = 1
@@ -109,7 +109,7 @@ tooltip = "Buy a pack of cabbages at the ticker price, paid from your coins. The
 pressable = true
 
 [node name="Auto" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.0, 1.0, 0, -1.0, 0.0, 0.04, 0.084, 0.085)
+transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, 0.035, 0.08122789, 0.0821386)
 visible = false
 pixel_size = 0.0007
 modulate = Color(1, 0.62, 0.18, 1)
@@ -119,18 +119,18 @@ font_size = 32
 outline_size = 0
 
 [node name="Toggle" parent="Auto" instance=ExtResource("6_switch")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.088, 0.008, 0)
-tooltip = "Auto-buy switch. Up: a pack is bought by itself whenever stock runs low (and you can pay). Down: you buy by hand."
+transform = Transform3D(0, -0.72, 0, 0.72, 0, 0, 0, 0, 0.72, 0.078, 0, 0.0020)
+collision_layer = 0
 
 [node name="AutoSwitch" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, 0.065, 0.08, 0.085)
+transform = Transform3D(1, 0, 0, 0, 0.287, 0.958, 0, -0.958, 0.287, 0.068, 0.0833355, 0.08277)
 
 [node name="Shape" type="CollisionShape3D" parent="AutoSwitch"]
 shape = SubResource("AutoShape")
 
 [node name="Interactable" type="Node" parent="AutoSwitch"]
 script = ExtResource("2_interactable")
-tooltip = "Auto-buy lamp: amber while on. Click it (or the switch beside it) to turn automatic pack buying on or off."
+tooltip = "Auto-buy switch. Left: a pack is bought by itself whenever stock runs low (and you can pay). Right: you buy by hand."
 enabled = false
 pressable = true
 

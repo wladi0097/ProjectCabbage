@@ -40,8 +40,13 @@ const FLAVOUR_ALPHA := 0.6
 const BODY_ALPHA := 1.0
 const POPUP_STEP := 27.0
 const POPUP_TEXT := POPUP_WIDTH - 32.0
+## A point off every view: hovering it hovers nothing.
+const OFF := Vector2(-1e9, -1e9)
 
 @export var font: Font = FONT
+## The face of a popup's ¶ cost figure, when it differs from `font` (CH2's terminal font: the
+## Findings counter's Oswald Bold, so ¶ reads as the same currency everywhere); null: `font`.
+@export var price_font: Font
 ## Lines, rims and text; the contrast colour (a bought node's glyph, the popup's text); the ground
 ## the tree is drawn on; the hub's green; a refused hold; what a node waits for.
 @export var ink := Color(0.13, 0.15, 0.14)
@@ -60,6 +65,8 @@ var rules: Variant
 var light := 1.0
 
 var _hovered := ""
+## The THEMES heading under the mouse (index), or -1: its popup shows the category.
+var _hovered_theme := -1
 var _holding := ""
 var _hold := 0.0
 var _denied := 0.0
@@ -131,6 +138,7 @@ func close() -> PackedStringArray:
 	_fresh.clear()
 	_layer_key = []
 	_hovered = ""
+	_hovered_theme = -1
 	_holding = ""
 	return seen
 
@@ -160,7 +168,7 @@ func _gui_input(event: InputEvent) -> void:
 	var lit := light > 0.9
 	if button != null and button.pressed and lit and button.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 		_zoom_at(button.position, ZOOM_STEP if button.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / ZOOM_STEP)
-		_hovered = _node_at(button.position)
+		_hover(button.position)
 		accept_event()
 	elif button != null and button.button_index == MOUSE_BUTTON_LEFT:
 		if button.pressed and lit:
@@ -169,7 +177,7 @@ func _gui_input(event: InputEvent) -> void:
 			_panned = false
 			_pan_press = button.position
 			_pan_start = _pan
-			_hovered = _node_at(button.position)
+			_hover(button.position)
 			# Only a node that can be held reacts (bought or out of reach: no denied blink and sound).
 			_holding = _hovered if rules.can_hold(_hovered, save) else ""
 			_hold = 0.0
@@ -180,14 +188,14 @@ func _gui_input(event: InputEvent) -> void:
 			_panned = false
 			_holding = ""
 			_hold = 0.0
-			_hovered = _node_at(button.position) if lit else ""
+			_hover(button.position if lit else OFF)
 		accept_event()
 	elif event is InputEventMouseMotion:
 		var at := (event as InputEventMouseMotion).position
 		if _panning and (_panned or at.distance_to(_pan_press) > CLICK_PX):
 			_panned = true
 			_pan = _clamp_pan(_pan_start + at - _pan_press)
-		_hovered = _node_at(at) if lit and not _panned else ""
+		_hover(at if lit and not _panned else OFF)
 		if _holding != "" and _hovered != _holding:
 			_holding = ""
 			_hold = 0.0
@@ -197,7 +205,7 @@ func _gui_input(event: InputEvent) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_MOUSE_EXIT:
-		_hovered = ""
+		_hover(OFF)
 		_holding = ""
 
 
@@ -259,6 +267,24 @@ func _recentre() -> void:
 	tween.tween_property(self, "_zoom", 1.0, 0.25)
 
 
+## What is under `point`: a node (_hovered), else a theme heading (_hovered_theme). OFF: nothing.
+func _hover(point: Vector2) -> void:
+	_hovered = _node_at(point)
+	_hovered_theme = _theme_at(point) if _hovered == "" else -1
+
+
+## The index of the THEMES heading showing under `point`, or -1.
+func _theme_at(point: Vector2) -> int:
+	if not Rect2(Vector2.ZERO, size).has_point(point):
+		return -1
+	var wheel := _wheel()
+	for i in rules.THEMES.size():
+		if i < _themes_shown.size() and _themes_shown[i] \
+				and theme_plate(rules.THEMES[i], wheel[1], wheel[2], font).grow(4.0).has_point(point - wheel[0]):
+			return i
+	return -1
+
+
 func _node_at(point: Vector2) -> String:
 	if not Rect2(Vector2.ZERO, size).has_point(point):
 		return ""
@@ -305,7 +331,7 @@ func _draw_layer() -> void:
 	if not locked.is_empty():
 		_layer.draw_multiline(locked, Color(ink, 0.35), 3.0)
 	# Each theme's heading at the start of its branch: a green label plate like a department's (info
-	# only: no glyph, a thin rim, never hovered or held).
+	# only: no glyph, a thin rim, never held; hovered, it shows its category's popup).
 	var heading := _plate_font(r)
 	for i in rules.THEMES.size():
 		if i >= _themes_shown.size() or not _themes_shown[i]:
@@ -410,6 +436,13 @@ func _draw_top() -> void:
 		else:
 			_top.draw_circle(at, r, lit)
 		_draw_popup(rules.node_data(_hovered), at, reach, save, light, area)
+	elif _hovered_theme >= 0:
+		var heading: Array = rules.THEMES[_hovered_theme]
+		var box := theme_plate(heading, wheel[1], r, font)
+		box.position += wheel[0]
+		_draw_plate(_top, box, Color(glow, glow.a * light), Color.TRANSPARENT, 0.0)
+		_draw_category(heading[0], heading[3], theme_members(rules, _hovered_theme), box.get_center(), box.size.x / 2.0,
+				save, light, area)
 
 
 ## Where an edge stops short of node `id`: its circle's rim, or (under a department's plate) nowhere.
@@ -486,6 +519,79 @@ static func theme_plate(heading: Array, unit: Vector2, r: float, face: Font = FO
 	var height := font_size * 2.0
 	var dims := Vector2(face.get_string_size(TranslationServer.translate(heading[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + height, height)
 	return Rect2(heading[1] * unit - dims / 2.0, dims)
+
+
+## A node's popup while desk card `card` (a form) locks it: ["LOCKED", the form's title, the
+## sentence to fill with it]. The sentence tells the player to approve it while it is in the tray
+## (save.offered, what the desk really holds), else that it has not reached the desk yet (the tree
+## names undealt cards, as it always has).
+static func form_lock(card: String, save: SaveGame) -> Array:
+	var on_desk := save.tray_unlocked and save.offered.has(card)
+	return ["LOCKED", UpgradeDesk.card_data(card).get("title", card), FORM_ON_DESK if on_desk else FORM_NOT_YET]
+
+
+const FORM_ON_DESK := "Approve the form %s on your desk."
+const FORM_NOT_YET := "Needs the form %s, which has not reached your desk yet."
+
+## A category's popup (a THEMES heading or a department), under its description: the heading over
+## the node it points at, or one line when nothing is left to point at (next_pick).
+const PICK_HEADING := {buy = "CHEAPEST AFFORDABLE:", short = "CHEAPEST, NOT AFFORDABLE YET:", locked = "CHEAPEST, STILL LOCKED:"}
+const PICK_DONE := "Every upgrade here is approved. Nothing further to requisition."
+const PICK_LATER := "Nothing else here is on file yet."
+
+
+## The nodes of THEMES heading `index` of tree `tree`: its first nodes and everything under them,
+## up to where another heading's branch starts (the tree's own grouping), in NODES order.
+static func theme_members(tree: Script, index: int) -> Array[String]:
+	var stop := {}
+	for i in tree.THEMES.size():
+		if i != index:
+			for id: String in tree.THEMES[i][2]:
+				stop[id] = true
+	return _under(tree, tree.THEMES[index][2], stop)
+
+
+## The nodes under department `id`, every heading's branch included, in NODES order.
+static func dept_members(tree: Script, id: String) -> Array[String]:
+	return _under(tree, [id], {}).filter(func(member: String) -> bool: return member != id)
+
+
+static func _under(tree: Script, roots: Array, stop: Dictionary) -> Array[String]:
+	var inside := {}
+	for id: String in roots:
+		inside[id] = true
+	var out: Array[String] = []
+	for node: Dictionary in tree.NODES:  # Parents come before their children in NODES.
+		if not inside.has(node.id) and inside.has(node.parent) and not stop.has(node.id):
+			inside[node.id] = true
+		if inside.has(node.id):
+			out.append(node.id)
+	return out
+
+
+## What a category of `ids` (tree `tree`) points the player at in `save`, among its nodes showing and
+## not bought: {id, state "buy"} the cheapest it can buy now (reachable, not locked, paid for); else
+## {id, "short"} the cheapest open one it can't pay yet; else {id, "locked"} the cheapest of the rest
+## (its popup line is requirement: a form to approve, a parent first). Nothing showing left:
+## {state "done"} when every node is bought, else {state "later"} (the rest hidden behind cards).
+static func next_pick(tree: Script, ids: Array, save: SaveGame) -> Dictionary:
+	var left := ids.filter(func(id: String) -> bool: return not tree.is_dept(id) and not tree.is_bought(id, save))
+	if left.is_empty():
+		return {state = "done"}
+	var shown := left.filter(func(id: String) -> bool: return tree.is_shown(id, save))
+	if shown.is_empty():
+		return {state = "later"}
+	var open := shown.filter(func(id: String) -> bool: return tree.is_reachable(id, save) and tree.locked_by(id, save) == "")
+	var paid := open.filter(func(id: String) -> bool:
+		return save.get(currency_of(tree.node_data(id))) >= tree.price_of(id, save))
+	for pool: Array in [[paid, "buy"], [open, "short"], [shown, "locked"]]:
+		if not pool[0].is_empty():
+			var best: String = pool[0][0]
+			for id: String in pool[0]:
+				if tree.price_of(id, save) < tree.price_of(best, save):
+					best = id
+			return {id = best, state = pool[1]}
+	return {state = "later"}
 
 
 ## A popup body `text` (already translated) word-wrapped to POPUP_TEXT at POPUP_BODY: its own line
@@ -597,10 +703,16 @@ func _draw_icon(icon: String, at: Vector2, s: float, color: Color) -> void:
 
 
 func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, lit: float, area: Rect2) -> void:
+	var needs: Array = rules.requirement(node.id, save)
+	if node.get("dept", false) and needs.is_empty():
+		_draw_category(node.title, node.body, dept_members(rules, node.id), at, r, save, lit, area)
+		return
 	var width := POPUP_WIDTH
 	var lines := popup_lines(tr(node.body), font)
-	var needs: Array = rules.requirement(node.id, save)
-	var height := 100.0 + lines.size() * POPUP_STEP + (32.0 if not needs.is_empty() else 0.0)
+	# A form lock (form_lock) says what to do in a wrapped sentence under its heading.
+	var form := popup_lines(tr(needs[2]) % tr(needs[1]), font) if needs.size() > 2 else PackedStringArray()
+	var height := 100.0 + lines.size() * POPUP_STEP + (32.0 if not needs.is_empty() else 0.0) \
+			+ maxf(0.0, form.size() - 1) * POPUP_STEP
 	var pos := at + Vector2(r + 14.0, -height / 2.0)
 	if pos.x + width > area.end.x:
 		pos.x = at.x - r - 14.0 - width
@@ -618,16 +730,84 @@ func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, lit: f
 	if not needs.is_empty():
 		# What it waits for, on one line, its name under it.
 		var red := Color(warn, lit)
-		_top.draw_string(font, pos + Vector2(16, height - 48), tr(needs[0]), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 21, red)
-		_top.draw_string(font, pos + Vector2(16, height - 16), tr(needs[1]), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, red)
-		return
-	if node.get("dept", false):
-		_top.draw_string(font, pos + Vector2(16, height - 16), tr("DEPARTMENT"), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, text)
+		var below := maxf(0.0, form.size() - 1) * POPUP_STEP
+		_top.draw_string(font, pos + Vector2(16, height - 48 - below), tr(needs[0]), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 21, red)
+		if form.is_empty():
+			_top.draw_string(font, pos + Vector2(16, height - 16), tr(needs[1]), HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24, red)
+		for i in form.size():
+			_top.draw_string(font, pos + Vector2(16, height - 16 - below + i * POPUP_STEP), form[i], HORIZONTAL_ALIGNMENT_LEFT, POPUP_TEXT, POPUP_BODY, red)
 		return
 	var is_bought: bool = rules.is_bought(node.id, save)
 	var price: int = rules.price_of(node.id, save)
 	var findings := currency_of(node) == "findings"
 	var cost := tr("APPROVED") if is_bought else (tr("COST ¶%d") if findings else tr("COST $%d")) % price
 	var short: bool = not is_bought and save.get(currency_of(node)) < price
-	_top.draw_string(font, pos + Vector2(16, height - 16), cost, HORIZONTAL_ALIGNMENT_LEFT, width - 32.0, 24,
-			Color(warn, lit) if short else text)
+	_draw_cost(pos + Vector2(16, height - 16), cost, Color(warn, lit) if short else text)
+
+
+## A popup's cost line at `at` (its baseline): the ¶ figure in price_font (the Findings counter's
+## face), the words before it in `font`.
+func _draw_cost(at: Vector2, cost: String, color: Color) -> void:
+	var sign_at := cost.find("¶")
+	if price_font == null or sign_at < 0:
+		_top.draw_string(font, at, cost, HORIZONTAL_ALIGNMENT_LEFT, POPUP_TEXT, 24, color)
+		return
+	var words := cost.left(sign_at)
+	_top.draw_string(font, at, words, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, color)
+	var figure_at := at + Vector2(font.get_string_size(words, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x, 0)
+	_top.draw_string(price_font, figure_at, cost.substr(sign_at), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
+
+
+## The lines under a category's description for next_pick `pick`, each [text, size, warn?, cost?]:
+## its heading, the node's name, then its cost or what locks it; or one dry line.
+func _pick_rows(pick: Dictionary, save: SaveGame) -> Array:
+	if not pick.has("id"):
+		var dry := []
+		for line in popup_lines(tr(PICK_DONE if pick.state == "done" else PICK_LATER), font):
+			dry.append([line, POPUP_BODY, false, false])
+		return dry
+	var node: Dictionary = rules.node_data(pick.id)
+	var rows := [[tr(PICK_HEADING[pick.state]), 21, false, false], [tr(node.title), 24, false, false]]
+	if pick.state != "locked":
+		var cost := (tr("COST ¶%d") if currency_of(node) == "findings" else tr("COST $%d")) % rules.price_of(pick.id, save)
+		rows.append([cost, 24, pick.state == "short", true])
+		return rows
+	var needs: Array = rules.requirement(pick.id, save)
+	if needs.is_empty():
+		return rows
+	var why: String = tr(needs[2]) % tr(needs[1]) if needs.size() > 2 else tr(needs[0]) + " " + tr(needs[1])
+	for line in popup_lines(why, font):
+		rows.append([line, POPUP_BODY, true, false])
+	return rows
+
+
+## A category's popup (a THEMES heading or an open department) beside `at`: its name, its
+## description (`body`, a flavour line first), and the node next_pick points at among `ids`.
+func _draw_category(title: String, body: String, ids: Array, at: Vector2, r: float, save: SaveGame, lit: float,
+		area: Rect2) -> void:
+	var lines := popup_lines(tr(body), font)
+	var rows := _pick_rows(next_pick(rules, ids, save), save)
+	# Like a node's popup: the first row sits where its cost would, each further row one step lower.
+	var height := 100.0 + lines.size() * POPUP_STEP
+	for row: Array in rows.slice(0, -1):
+		height += POPUP_STEP if row[1] == POPUP_BODY else 32.0
+	var pos := at + Vector2(r + 14.0, -height / 2.0)
+	if pos.x + POPUP_WIDTH > area.end.x:
+		pos.x = at.x - r - 14.0 - POPUP_WIDTH
+	pos.x = clampf(pos.x, area.position.x + 6.0, area.end.x - POPUP_WIDTH - 6.0)
+	pos.y = clampf(pos.y, area.position.y + 6.0, area.end.y - height - 6.0)
+	_top.draw_rect(Rect2(pos, Vector2(POPUP_WIDTH, height)), Color(ink, lit * 0.92))
+	var text := Color(beam, lit)
+	_top.draw_string(font, pos + Vector2(16, 38), tr(title), HORIZONTAL_ALIGNMENT_LEFT, POPUP_TEXT, 30, text)
+	var flavour := flavour_lines(tr(body), font)
+	for i in lines.size():
+		_top.draw_string(PaperNote.italic(font) if i < flavour else font, pos + Vector2(16, 70 + i * POPUP_STEP), lines[i],
+				HORIZONTAL_ALIGNMENT_LEFT, POPUP_TEXT, POPUP_BODY, Color(text, lit * (FLAVOUR_ALPHA if i < flavour else BODY_ALPHA)))
+	var y := 70.0 + (lines.size() - 1) * POPUP_STEP + 41.0
+	for row: Array in rows:
+		var color := Color(warn, lit) if row[2] else text
+		if row[3]:
+			_draw_cost(pos + Vector2(16, y), row[0], color)
+		else:
+			_top.draw_string(font, pos + Vector2(16, y), row[0], HORIZONTAL_ALIGNMENT_LEFT, POPUP_TEXT, row[1], color)
+		y += POPUP_STEP if row[1] == POPUP_BODY else 32.0

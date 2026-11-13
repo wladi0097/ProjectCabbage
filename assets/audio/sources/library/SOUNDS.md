@@ -332,7 +332,7 @@ Each take came back as one knock (m3Ee as two), not three; the patterns are buil
 | File | Prompt | Length | Peak dB | Peak at | Used in |
 | --- | --- | --- | --- | --- | --- |
 | `desk_lamp_on_EcC6.wav` | (above) | 1.20s | -8.1 dB | 0.06s | — |
-| `desk_lamp_on_FX5I.wav` | (above) | 1.20s | -5.7 dB | 0.01s | lamp_on (click) |
+| `desk_lamp_on_FX5I.wav` | (above) | 1.20s | -5.7 dB | 0.01s | — (was lamp_on click until 2026-11-13) |
 | `desk_lamp_on_XACF.wav` | (above) | 1.20s | -39.5 dB | 0.00s | — (near-silent) |
 | `desk_lamp_on_w3dG.wav` | (above) | 1.20s | -3.6 dB | 0.61s | — |
 
@@ -343,7 +343,7 @@ Each take came back as one knock (m3Ee as two), not three; the patterns are buil
 | --- | --- | --- | --- | --- | --- |
 | `lamp_hum_6bvM.wav` | (above) | 1.20s | -22.8 dB | 0.00s | — |
 | `lamp_hum_6cwN.wav` | (above) | 1.20s | -13.4 dB | 0.06s | — |
-| `lamp_hum_P1L9.wav` | (above) | 1.20s | -17.9 dB | 0.61s | lamp_on (hum, cut at 0.75 s) |
+| `lamp_hum_P1L9.wav` | (above) | 1.20s | -17.9 dB | 0.61s | — (was lamp_on hum until 2026-11-13) |
 | `lamp_hum_Qmci.wav` | (above) | 1.20s | -12.6 dB | 0.20s | — |
 
 ### desk_lamp_off
@@ -527,7 +527,7 @@ True peaks (ffmpeg volumedetect). Most CRT takes came out near-silent, as before
 > A heavy cast-iron lever on an industrial machine thrown hard to its stop, one solid mechanical latch clack, short, close-mic, dry
 | `chute_latch_8mWm.wav` | (above) | 0.48s | -2.5 dB | 0.07s | chute_shut |
 | `chute_latch_JV1W.wav` | (above) | 0.48s | -0.3 dB | 0.10s | chute_lift |
-| `chute_latch_BbbC.wav` | (above) | 0.48s | -2.4 dB | 0.17s | — |
+| `chute_latch_BbbC.wav` | (above) | 0.48s | -2.4 dB | 0.17s | lamp_on (clunk) |
 | `chute_latch_p7l8.wav` | (above) | 0.48s | -4.5 dB | 0.07s | — |
 ### chute_winch (2026-11-12)
 > A heavy steel flap hauled up by a hand-cranked ratchet winch, steady fast metallic ratchet clicking with a low gear grind, continuous, no impact, close-mic, dry
@@ -547,7 +547,7 @@ All four came out steady (no surge); grow_pulse shapes them with `afade=t=in:d=0
 | `grow_hum_SC8S.wav` | (above) | 1.88s | -8.4 dB | 1.47s | grow_pulse_1 |
 | `grow_hum_G9sF.wav` | (above) | 1.88s | -7.0 dB | 0.01s | grow_pulse_2 |
 | `grow_hum_FbOx.wav` | (above) | 1.88s | -1.2 dB | 0.71s | — (loud, flat buzz) |
-| `grow_hum_C9Xt.wav` | (above) | 1.88s | -8.0 dB | 0.29s | — |
+| `grow_hum_C9Xt.wav` | (above) | 1.88s | -8.0 dB | 0.29s | lamp_on (bloom, pitched −20 %, shaped) |
 ### grow_clunk (2026-11-12)
 > A heavy steel ring clamp on an industrial machine engaging around a pipe, one dull deep metallic clunk followed by a short sharp pneumatic hiss, close-mic, dry
 | `grow_clunk_MACS.wav` | (above) | 0.68s | -1.4 dB | 0.02s | grow_pulse_1 |
@@ -612,7 +612,7 @@ All four came out steady (no surge); grow_pulse shapes them with `afade=t=in:d=0
 | File | Prompt | Length | Peak dB | Peak at | Used in |
 | --- | --- | --- | --- | --- | --- |
 | `lever_thunk_KP9p.wav` | (above) | 0.80s | -6.9 dB (true -5.6) | 0.00s | chute_lever_land |
-| `lever_thunk_9Vrx.wav` | (above) | 0.80s | -8.6 dB (true -7.1) | 0.02s | — |
+| `lever_thunk_9Vrx.wav` | (above) | 0.80s | -8.6 dB (true -7.1) | 0.02s | lamp_on (thunk −4) |
 | `lever_thunk_0fcE.wav` | (above) | 0.80s | -9.3 dB (true -8.8) | 0.01s | — |
 | `lever_thunk_WLJv.wav` | (above) | 0.80s | -12.7 dB (true -12.5) | 0.01s | — |
 

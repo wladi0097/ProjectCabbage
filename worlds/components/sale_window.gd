@@ -31,6 +31,8 @@ const FINE := 10
 ## Secret: the street takes a mini this many times as often as a full cabbage at the same price
 ## (clamped to a sure sale). Never shown on the slate's needle or anywhere else.
 const MINI_ACCEPTANCE := 1.35
+## The projector node that lets the golden lamp's Golden Age pay golden units too (boosts_for).
+const GOLD_AGE := "gold_age"
 
 ## A refused cabbage stays out for AWAY_TIME (seconds, min..max), then is thrown from just outside
 ## the window (x follows it) to somewhere in REFUSE_TO, taking REFUSE_TIME. It passes the window wall
@@ -82,6 +84,16 @@ static func payout(price: float, factors: Dictionary) -> int:
 ## What a unit's price is multiplied by: save.golden_sale for a golden one, else 1.
 static func golden_factor(is_golden: bool, save: SaveGame) -> float:
 	return save.golden_sale if is_golden else 1.0
+
+
+## The boosts a unit's sale gets out of `factors`: all of them, except that the golden lamp's Golden
+## Age ("lamp") skips a golden unit until the projector node GOLD_AGE is bought.
+static func boosts_for(is_golden: bool, factors: Dictionary, save: SaveGame) -> Dictionary:
+	if not is_golden or save.tree_bought.has(GOLD_AGE):
+		return factors
+	var out := factors.duplicate()
+	out.erase("lamp")
+	return out
 
 
 ## What a unit's price is multiplied by for managerial work: save.own_sale if the player threw it
@@ -175,7 +187,7 @@ func _judge(cabbage: Cabbage) -> void:
 		cabbage.leave_stock(save)  # A grown mini (growing station) is a full unit but no stock.
 		save.sold += 1
 		save.golden_sold += int(cabbage.golden)
-		paid = payout(price * golden_factor(cabbage.golden, save) * own_factor(cabbage.by_player(), save), boosts)
+		paid = payout(price * golden_factor(cabbage.golden, save) * own_factor(cabbage.by_player(), save), boosts_for(cabbage.golden, boosts, save))
 		save.grown_sold += int(cabbage.grown)
 		if cabbage.golden:
 			cabbage.ring_golden_sale()

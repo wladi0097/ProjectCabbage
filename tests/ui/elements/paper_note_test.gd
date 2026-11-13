@@ -24,7 +24,7 @@ func test_the_paper_of_a_card_in_several_currencies_prints_every_price_in_a_row(
 	var each := 0.0
 	for paid_in: String in bill:
 		each += UpgradeCard.price_width(UpgradeCard.price_text(bill[paid_in], paid_in), paid_in, 34, 1.0)
-	assert_float(UpgradeCard.bill_row_width(bill, 34)).is_greater(each)  # All three, with gaps between.
+	assert_float(UpgradeCard.bill_row_width(bill, 34)).is_greater(each)  # Every price, with gaps between.
 	var paper: PaperNote = auto_free(preload("res://ui/elements/paper_note.tscn").instantiate())
 	paper.set_card(UpgradeDesk.card_data("consolidation"))
 	assert_dict(paper._bill).is_equal(bill)

@@ -12,7 +12,7 @@ const Events := preload("res://globalScripts/game_events.gd")
 const Memo := preload("res://entities/milestone/milestone_memo.gd")
 
 const WELCOME := {re = "WELCOME TO DESK 4",
-	body = "You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Further instructions will follow in writing. Sign below to confirm you have understood."}
+	body = "You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Forms will arrive on your desk. They are orders. Approving them is how the company grows: approve every one you can afford. Sign below to confirm you have understood."}
 ## The demo's last report, Demo.END_AFTER seconds of farming after the family farm (save.farm_seconds).
 ## No signature (`buttons`): WISHLIST opens the store page (STORE_URL), DONE files it.
 const DEMO_END := {re = "END OF THE TRIAL PERIOD", buttons = true,

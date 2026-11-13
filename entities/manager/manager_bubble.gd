@@ -1,15 +1,16 @@
 class_name ManagerBubble
 extends Control
 ## The manager's speech bubble: a paper bubble hanging from the top screen edge over the window,
-## its tail pointing up at him. It says the quota, counts down and fills a bar with the units moved;
+## its tail pointing up at him. It says the quota, counts the cabbages moved against it in big figures
+## and drains a bar with the time left;
 ## at the verdict it pops again with his praise or scorn. Drawn only while he is there; never takes the mouse.
 
 const FONT := preload("res://assets/fonts/Oswald.ttf")
 const PAPER := Color(0.72, 0.73, 0.69)
 const INK := Color(0.13, 0.15, 0.14)
-## The countdown's colour in its last seconds.
+## The time bar's colour in its last seconds.
 const URGENT := Color(0.55, 0.12, 0.1)
-const SIZE := Vector2(480, 150)
+const SIZE := Vector2(480, 136)
 ## The bubble's centre as a fraction of the view's width (top right, over the empty corner by the
 ## lamp), kept EDGE px clear of the right edge on a narrow view.
 const AT_X := 0.875
@@ -57,18 +58,44 @@ func _draw() -> void:
 	var x := box.position.x + 22.0
 	var w := SIZE.x - 44.0
 	draw_string(FONT, Vector2(x, 30), tr("MANAGEMENT  |  CABBAGE QUOTA"), HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color(ink, alpha * 0.6))
-	var secs := ceili(manager.left)
-	var urgent := manager.phase == Manager.Phase.QUOTA and secs <= Manager.TICK_FROM
-	draw_string(FONT, Vector2(x, 38), "0:%02d" % secs, HORIZONTAL_ALIGNMENT_RIGHT, w, 34, Color(URGENT, alpha) if urgent else ink)
-	draw_string(FONT, Vector2(x, 76), manager.line, HORIZONTAL_ALIGNMENT_LEFT, w, 22, ink)
-	# Units moved against the quota: a ruled bar filling in ink.
-	var moved := mini(SaveManager.save.sold - manager.sold_at, manager.quota)
-	var bar := Rect2(x, 96, w - 110.0, 18)
+	# Cabbages moved against the quota, the first thing read.
+	draw_string(FONT, Vector2(x, 42), counter_text(SaveManager.save.sold - manager.sold_at, manager.quota),
+			HORIZONTAL_ALIGNMENT_RIGHT, w, 38, ink)
+	# The ask, set smaller where it runs long (three-digit quotas, German).
+	var ask_size := 22
+	while ask_size > 14 and FONT.get_string_size(manager.line, HORIZONTAL_ALIGNMENT_LEFT, -1, ask_size).x > w:
+		ask_size -= 1
+	draw_string(FONT, Vector2(x, 76), manager.line, HORIZONTAL_ALIGNMENT_LEFT, w, ask_size, ink)
+	# The time left: a ruled bar draining in ink, in the alarm colour once the countdown ticks.
+	var hot := ink
+	if manager.phase == Manager.Phase.QUOTA and urgent(manager.left):
+		hot = Color(URGENT, alpha)
+	var bar := Rect2(x, 96, w - 70.0, 18)
 	draw_rect(bar, Color(ink, alpha * 0.12))
-	draw_rect(Rect2(bar.position, Vector2(bar.size.x * moved / maxf(manager.quota, 1.0), bar.size.y)), Color(ink, alpha * 0.8))
+	draw_rect(Rect2(bar.position, Vector2(bar.size.x * time_fraction(manager.left, SaveManager.save.manager_time), bar.size.y)),
+			Color(hot, alpha * 0.8))
 	draw_rect(bar, ink, false, 1.5)
-	draw_string(FONT, Vector2(bar.end.x + 12, 112), "%d / %d" % [moved, manager.quota], HORIZONTAL_ALIGNMENT_LEFT, 100, 20, ink)
-	# The time left as a thin rule along the bottom edge.
-	var time_left := manager.left / maxf(SaveManager.save.manager_time, 1.0)
-	draw_line(Vector2(x, 132), Vector2(x + w * time_left, 132), Color(ink, alpha * 0.5), 3.0)
+	draw_string(FONT, Vector2(bar.end.x, 112), clock_text(manager.left), HORIZONTAL_ALIGNMENT_RIGHT, x + w - bar.end.x, 20, hot)
 	draw_set_transform(Vector2.ZERO)
+
+
+## The bar's fill: the share of the deadline `total` still `left` (s), 0..1.
+static func time_fraction(left: float, total: float) -> float:
+	return clampf(left / maxf(total, 1.0), 0.0, 1.0)
+
+
+## "12 / 30": cabbages moved since he asked against the quota, never past it.
+static func counter_text(moved: int, quota: int) -> String:
+	return "%d / %d" % [clampi(moved, 0, quota), quota]
+
+
+## "0:23", "1:15": the seconds left, rounded up.
+static func clock_text(left: float) -> String:
+	var secs := ceili(left)
+	@warning_ignore("integer_division")
+	return "%d:%02d" % [secs / 60, secs % 60]
+
+
+## The last Manager.TICK_FROM seconds, as the countdown ticks them.
+static func urgent(left: float) -> bool:
+	return ceili(left) <= Manager.TICK_FROM

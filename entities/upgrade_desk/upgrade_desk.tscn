@@ -8,7 +8,8 @@
 [ext_resource type="PackedScene" uid="uid://dmc0og2ryhoub" path="res://assets/meshes/Props/spike_file.blend" id="6_spike"]
 [ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="7_font"]
 [ext_resource type="PackedScene" path="res://ui/elements/paper_note.tscn" id="8_note"]
-[ext_resource type="Material" path="res://assets/materials/card_paper.tres" id="9_paper"]
+[ext_resource type="Material" uid="uid://bskprm6ttwxpr" path="res://assets/materials/card_paper.tres" id="9_paper"]
+[ext_resource type="Texture2D" uid="uid://bgkvw0g1orfpm" path="res://assets/textures/card_paper/card_paper_albedo.png" id="10_paper_tex"]
 [ext_resource type="AudioStream" uid="uid://wbc8wcvrd8t7" path="res://assets/audio/effects/card_hover_1.wav" id="sfx_card_hover_1"]
 [ext_resource type="AudioStream" uid="uid://caca7dfoh7wp6" path="res://assets/audio/effects/card_hover_2.wav" id="sfx_card_hover_2"]
 [ext_resource type="AudioStream" uid="uid://btjnudu3qy3jm" path="res://assets/audio/effects/card_impale_1.wav" id="sfx_card_impale_1"]
@@ -29,6 +30,21 @@
 [ext_resource type="AudioStream" uid="uid://s0532vmyd6wn" path="res://assets/audio/effects/press_stamp_2.wav" id="sfx_press_stamp_2"]
 [ext_resource type="AudioStream" uid="uid://b0mb32fxtafxh" path="res://assets/audio/effects/tray_drop.wav" id="sfx_tray_drop"]
 
+[sub_resource type="StandardMaterial3D" id="SlipPaper"]
+cull_mode = 2
+albedo_texture = ExtResource("10_paper_tex")
+metallic_specular = 0.1
+roughness = 0.95
+uv1_scale = Vector3(0.62, 0.22, 1)
+uv1_offset = Vector3(0.06, 0.62, 0)
+
+[sub_resource type="PlaneMesh" id="SlipMesh"]
+material = SubResource("SlipPaper")
+size = Vector2(0.27, 0.095)
+
+[sub_resource type="BoxShape3D" id="SlipShape"]
+size = Vector3(0.27, 0.006, 0.095)
+
 [sub_resource type="StandardMaterial3D" id="DustMat"]
 transparency = 1
 shading_mode = 0
@@ -42,6 +58,12 @@ particles_anim_loop = false
 [sub_resource type="QuadMesh" id="DustQuad"]
 material = SubResource("DustMat")
 size = Vector2(0.03, 0.03)
+
+[sub_resource type="Gradient" id="DustFade"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="BoxShape3D" id="PressBase"]
+size = Vector3(0.42, 0.046, 0.28)
 
 [sub_resource type="StandardMaterial3D" id="SpeckMat"]
 transparency = 1
@@ -68,25 +90,11 @@ outer_radius = 0.125
 rings = 48
 ring_segments = 4
 
-[sub_resource type="Gradient" id="DustFade"]
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
-
-[sub_resource type="BoxShape3D" id="PressBase"]
-size = Vector3(0.42, 0.046, 0.28)
-
 [sub_resource type="SphereShape3D" id="HandleShape"]
 radius = 0.07985576
 
 [sub_resource type="BoxShape3D" id="SpikeShape"]
 size = Vector3(0.3, 0.2, 0.3)
-
-[sub_resource type="StyleBoxFlat" id="ScrollTrack"]
-content_margin_left = 7.0
-content_margin_right = 7.0
-bg_color = Color(0.15, 0.16, 0.15, 0.95)
-border_width_left = 1
-border_width_right = 1
-border_color = Color(0.36, 0.42, 0.38, 1)
 
 [sub_resource type="StyleBoxFlat" id="ScrollGrab"]
 bg_color = Color(0.42, 0.5, 0.45, 1)
@@ -99,6 +107,14 @@ bg_color = Color(0.62, 0.68, 0.62, 1)
 border_width_top = 1
 border_width_bottom = 1
 border_color = Color(0.9, 0.89, 0.84, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="ScrollTrack"]
+content_margin_left = 7.0
+content_margin_right = 7.0
+bg_color = Color(0.15, 0.16, 0.15, 0.95)
+border_width_left = 1
+border_width_right = 1
+border_color = Color(0.36, 0.42, 0.38, 1)
 
 [sub_resource type="Theme" id="ListTheme"]
 VScrollBar/styles/grabber = SubResource("ScrollGrab")
@@ -188,6 +204,34 @@ font = ExtResource("7_font")
 font_size = 24
 outline_size = 0
 
+[node name="Slip" type="MeshInstance3D" parent="Tray" unique_id=1934400101]
+transform = Transform3D(0.9999674, -0.0016774316, -0.0024452512, -0.0015950128, 0.3855667, -0.9227247, 0.0025206052, 0.9226928, 0.3854828, -0.060935676, 0.07700002, -0.36831227)
+visible = false
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("SlipMesh")
+
+[node name="Word" type="Label3D" parent="Tray/Slip" unique_id=1934400102]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0008, 0.002)
+pixel_size = 0.0003
+modulate = Color(0.9, 0.89, 0.84, 0.92)
+text = "NOTICE"
+font = ExtResource("7_font")
+font_size = 220
+outline_size = 0
+
+[node name="Hit" type="StaticBody3D" parent="Tray/Slip" unique_id=1934400103]
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Tray/Slip/Hit" unique_id=1934400104]
+shape = SubResource("SlipShape")
+disabled = true
+
+[node name="Interactable" type="Node" parent="Tray/Slip/Hit" unique_id=1934400105]
+script = ExtResource("3_interactable")
+enabled = false
+
 [node name="Dust" type="CPUParticles3D" parent="Tray" unique_id=1164063798]
 emitting = false
 amount = 40
@@ -250,12 +294,12 @@ scale_amount_max = 1.3
 color_ramp = SubResource("DustFade")
 
 [node name="Ring" type="MeshInstance3D" parent="Press" unique_id=1730245519]
-gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 visible = false
-cast_shadow = 0
-mesh = SubResource("RingMesh")
 material_override = SubResource("RingMat")
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("RingMesh")
 
 [node name="Handle" type="StaticBody3D" parent="Press" unique_id=740587006]
 collision_layer = 8
@@ -275,28 +319,28 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0442882, 0.75, -0.33673063)
 
 [node name="Model" parent="Spike" unique_id=380128181 instance=ExtResource("6_spike")]
 
-[node name="Stack" type="MeshInstance3D" parent="Spike"]
-gi_mode = 0
+[node name="Stack" type="MeshInstance3D" parent="Spike" unique_id=1841563050]
 material_override = ExtResource("9_paper")
+gi_mode = 0
 
-[node name="Hit" type="StaticBody3D" parent="Spike"]
+[node name="Hit" type="StaticBody3D" parent="Spike" unique_id=80014444]
 collision_layer = 8
 collision_mask = 0
 
-[node name="Shape" type="CollisionShape3D" parent="Spike/Hit"]
+[node name="Shape" type="CollisionShape3D" parent="Spike/Hit" unique_id=1586367692]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 shape = SubResource("SpikeShape")
 
-[node name="Interactable" type="Node" parent="Spike/Hit"]
+[node name="Interactable" type="Node" parent="Spike/Hit" unique_id=1880511104]
 script = ExtResource("3_interactable")
-tooltip = "Approved cards. Click to read every card you have bought."
 enabled = false
+tooltip = "Approved cards. Click to read every card you have bought."
 pressable = true
 
-[node name="Note" type="CanvasLayer" parent="."]
+[node name="Note" type="CanvasLayer" parent="." unique_id=769600003]
 layer = 5
 
-[node name="Center" type="CenterContainer" parent="Note"]
+[node name="Center" type="CenterContainer" parent="Note" unique_id=2016838030]
 modulate = Color(1, 1, 1, 0)
 anchors_preset = 15
 anchor_right = 1.0
@@ -305,14 +349,14 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Paper" parent="Note/Center" instance=ExtResource("8_note")]
+[node name="Paper" parent="Note/Center" unique_id=445284691 instance=ExtResource("8_note")]
 layout_mode = 2
 
-[node name="Approved" type="CanvasLayer" parent="."]
+[node name="Approved" type="CanvasLayer" parent="." unique_id=1414743955]
 layer = 6
 visible = false
 
-[node name="Shade" type="ColorRect" parent="Approved"]
+[node name="Shade" type="ColorRect" parent="Approved" unique_id=696289515]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -320,8 +364,8 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.16, 0.18, 0.17, 0.72)
 
-[node name="List" type="ScrollContainer" parent="Approved/Shade"]
-anchors_preset = 13
+[node name="List" type="ScrollContainer" parent="Approved/Shade" unique_id=493280861]
+layout_mode = 0
 anchor_left = 0.5
 anchor_right = 0.5
 anchor_bottom = 1.0
@@ -331,12 +375,11 @@ offset_right = 415.0
 offset_bottom = -60.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 1
 theme = SubResource("ListTheme")
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 2
 
-[node name="Papers" type="VBoxContainer" parent="Approved/Shade/List"]
+[node name="Papers" type="VBoxContainer" parent="Approved/Shade/List" unique_id=1952948410]
 layout_mode = 2
 size_flags_horizontal = 0
 mouse_filter = 2
@@ -390,4 +433,3 @@ min_interval = 0.15
 stream = SubResource("Rand_Return")
 bus = &"SFX"
 script = ExtResource("2_cue")
-

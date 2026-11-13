@@ -4,7 +4,9 @@ extends Node3D
 ## through the window across the top of the mat, he raps on the glass, and a speech bubble at the
 ## top edge asks for a unit quota in save.manager_time seconds, with a countdown and the units moved
 ## since. The quota is what was sold in the last QUOTA_WINDOW seconds, scaled to the time given and
-## raised by save.manager_raise. Met: the street throws a bonus of quota × price × manager_reward
+## raised by save.manager_raise, but never more than can reach the street in the time (capped: at most
+## MARGIN of deliverable, what the chute can drop and the stock, packs and farm can supply; with
+## nothing to deliver he doesn't come in yet). Met: the street throws a bonus of quota × price × manager_reward
 ## coins in through the window. Missed: a performance concern memo, nothing else. Nothing about a
 ## visit is saved; quitting mid-quota just ends it.
 
@@ -23,6 +25,13 @@ const QUOTA_WINDOW := 300.0
 ## stamp, would otherwise scale a single 5 s sample into a random quota.
 const MIN_SPAN := 30.0
 const MIN_QUOTA := 3
+## A quota asks for at most this share of what can be delivered in its time. That count already
+## assumes a quick flick of every cabbage the moment it is there and average restock luck, so a
+## tenth is left for a fumble, a refusal or a slow chute.
+const MARGIN := 0.9
+## Seconds from a cabbage landing to its sale for a quick player (the average is about 1.9).
+const QUICK_FLICK := 1.0
+const Feeder := preload("res://worlds/components/cabbage_feeder.gd")
 const ARRIVE_TIME := 1.4
 const LEAVE_TIME := 1.2
 const VERDICT_TIME := 3.0
@@ -124,6 +133,52 @@ static func quota_for(samples: PackedInt32Array, sold: int, time: float, raise: 
 	return maxi(MIN_QUOTA, ceili(recent / span * time * raise))
 
 
+## The quota `asked` held to what `can` arrive (deliverable): at most MARGIN of it, and the MIN_QUOTA
+## floor only as far as that many can.
+static func capped(asked: int, can: int) -> int:
+	return maxi(mini(asked, floori(can * MARGIN)), mini(MIN_QUOTA, can))
+
+
+## The most full cabbages that can reach the street in a quota (the walk-in included) with `on_mat`
+## fresh ones already out: the chute at its best gap with a quick flick, no more than the supply has,
+## less the rotten share. The price, the chute lever and buying packs are the player's to fix inside
+## the time, so the refusals, a shut chute and coins left unspent don't lower it.
+static func deliverable(save: SaveGame, on_mat: int) -> int:
+	var gap := Feeder.best_gap(save.dispense_interval, save.restock_delay, save.desk_capacity, QUICK_FLICK)
+	var drops := (save.manager_time + ARRIVE_TIME - QUICK_FLICK) / gap
+	var fresh := 1.0 - 1.0 / Feeder.ROTTEN_EVERY if save.rotten_unlocked else 1.0
+	return on_mat + floori(minf(drops, maxf(supply(save) - on_mat, 0.0)) * fresh)
+
+
+## Full cabbages there are to sell in a quota: the stock (the mat's included), the farm's harvests in
+## the time, and the packs the tally can pay for (with what the stock will bring): all of them once a
+## pack pays for itself.
+static func supply(save: SaveGame) -> float:
+	var cost := SupplyConsole.pack_cost(save)
+	var money := save.coins + save.stock * save.sale_price
+	var packs := 0.0
+	if save.buy_unlocked and money >= cost:
+		packs = INF if cost <= save.pack_size * save.sale_price else floorf(float(money) / cost)
+	return save.stock + harvests(save, save.manager_time + ARRIVE_TIME) + packs * save.pack_size
+
+
+## Cabbages the farm can bring in within `time` s, pulled by hand: every planted square once it is
+## ripe, and again each grow time after with a seed per replant.
+static func harvests(save: SaveGame, time: float) -> int:
+	if not save.stamped.has("family_farm"):
+		return 0
+	var ripe := FarmScreen.grow_time(save)
+	var first := 0
+	var again := 0
+	for grown in save.farm_growth:
+		if grown >= 0.0 and ripe - grown <= time:
+			first += 1
+			again += floori((time - maxf(ripe - grown, 0.0)) / ripe)
+		elif grown == FarmScreen.EMPTY:
+			again += floori(time / ripe)
+	return (first + mini(again, save.farm_seeds + save.farm_seeds_carried)) * FarmScreen.harvest_yield(save, true)
+
+
 ## Seconds to the first visit: FIRST_VISIT when the card was `stamped` before the load, else CARD_VISIT
 ## (the wait only runs once the card is stamped, so he comes just after it).
 static func first_wait(stamped: bool) -> float:
@@ -136,7 +191,13 @@ static func bonus_for(units: int, price: int, reward: float) -> int:
 
 
 func _arrive(save: SaveGame) -> void:
-	quota = quota_for(_samples, save.sold, save.manager_time, save.manager_raise, _sample_clock)
+	var fresh := get_tree().get_nodes_in_group(&"cabbages").filter(func(c: Cabbage) -> bool:
+		return not c.sold and not c.mini and not c.rotten).size()
+	quota = capped(quota_for(_samples, save.sold, save.manager_time, save.manager_raise, _sample_clock),
+			deliverable(save, fresh))
+	if quota <= 0:
+		_wait = SAMPLE_EVERY  # Nothing to deliver (no stock, no pack he can pay for): he looks in again later.
+		return
 	sold_at = save.sold
 	left = save.manager_time
 	line = tr(ASKS.pick_random()) % [quota, roundi(save.manager_time)]

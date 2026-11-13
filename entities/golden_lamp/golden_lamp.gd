@@ -2,7 +2,8 @@ class_name GoldenLamp
 extends Node3D
 ## A small desk lamp at the back right, there once the "golden_lamp" card is stamped (it drops in).
 ## About every save.lamp_every seconds it turns gold for save.lamp_time seconds; meanwhile every
-## sale pays ×save.lamp_mult (the SaleWindow's "lamp" boost) and the whole desk light warms to
+## sale pays ×save.lamp_mult (the SaleWindow's "lamp" boost; a golden unit only with the projector's
+## GOLD STANDARD, SaleWindow.boosts_for) and the whole desk light warms to
 ## gold. Through its last FADE_LEFT seconds it dims softly, pulsing slowly (PULSE_HZ), before going out:
 ## never a fast flicker (photosensitivity: nothing on screen blinks at 3 Hz or more).
 
@@ -82,9 +83,13 @@ static func next_wait(every: float, roll: float) -> float:
 	return every * (0.6 + 0.8 * roll)
 
 
-## The hover text: what it does, with today's (upgraded) numbers from `save`.
+## The hover text: what it does, with today's (upgraded) numbers from `save`, and that golden units
+## are left out until GOLD STANDARD (SaleWindow.boosts_for).
 static func hint(save: SaveGame) -> String:
-	return TranslationServer.translate("Golden Age lamp. About every %d s a Golden Age dawns for %d s: while it lasts, every sale pays %s×.") % [roundi(save.lamp_every), roundi(save.lamp_time), String.num(save.lamp_mult, 1)]
+	var text := TranslationServer.translate("Golden Age lamp. About every %d s a Golden Age dawns for %d s: while it lasts, every sale pays %s×.") % [roundi(save.lamp_every), roundi(save.lamp_time), String.num(save.lamp_mult, 1)]
+	if not save.tree_bought.has(SaleWindow.GOLD_AGE):
+		text += " " + TranslationServer.translate("Golden cabbages excluded.")
+	return text
 
 
 ## How bright the lamp is with `left` seconds of glow to go at clock `time`: full, then through the

@@ -55,6 +55,14 @@ func test_after_the_shock_a_crate_unit_costs_sixty_percent_of_the_street_price()
 	assert_float(Console.crate_floor(save)).is_equal_approx(0.6 * Slate.ref_price(2.0, 1.0), 0.0001)
 
 
+func test_the_next_pack_costs_the_ticker_price_and_five_times_that_when_overstocked() -> void:
+	var save := SaveGame.new()
+	save.price_factor = 1.5
+	assert_int(Console.pack_cost(save)).is_equal(Console.pack_price(1.5, save.pack_size))
+	save.stock = Console.OVERSTOCK
+	assert_int(Console.pack_cost(save)).is_equal(Console.pack_price(1.5, save.pack_size) * Console.OVERSTOCK_MUL)
+
+
 func test_a_crate_unit_never_costs_less_than_the_textbook_pack_price() -> void:
 	var save := SaveGame.new()
 	save.supply_shock = true
@@ -123,6 +131,53 @@ func test_with_no_stock_and_not_enough_coins_for_a_pack_the_desk_is_broke() -> v
 	assert_bool(Console.is_broke(0, 0, 0)).is_false()
 
 
+## A desk with the console in, `stock` cabbages and `coins` (a pack costs more than that).
+func _broke_console(stock: int, coins: int, stamped := PackedStringArray()) -> SupplyConsole:
+	var save := SaveGame.new()
+	save.buy_unlocked = true
+	save.stock = stock
+	save.coins = coins
+	save.stamped = stamped
+	SaveManager.save = save
+	var console: SupplyConsole = auto_free(load("res://entities/supply_console/supply_console.tscn").instantiate())
+	add_child(console)
+	return console
+
+
+func test_a_player_with_nothing_to_sell_and_no_money_for_a_pack_is_helped_within_two_seconds() -> void:
+	var console := _broke_console(0, 3)
+	assert_int(console._cost()).is_greater(3)
+	for i in 4:
+		console._process(0.5)
+	assert_int(console._cost()).is_equal(3)
+
+
+func test_the_rescue_waits_a_short_beat_so_it_reads_as_an_answer_not_a_glitch() -> void:
+	assert_float(Console.BAILOUT_WAIT).is_between(1.0, 1.5)
+	var console := _broke_console(0, 3)
+	console._process(0.5)
+	assert_int(console._cost()).is_greater(3)
+
+
+func test_once_mini_cabbages_exist_the_rescue_is_retired() -> void:
+	var save := SaveGame.new()
+	save.stamped.append("mini_cabbages")
+	assert_bool(Console.bails_out(save)).is_false()
+	var console := _broke_console(0, 3, PackedStringArray(["mini_cabbages"]))
+	for i in 10:
+		console._process(0.5)
+	assert_int(console._cost()).is_greater(3)
+
+
+func test_the_rescue_cannot_be_triggered_while_a_cabbage_is_still_on_the_mat_or_in_the_air() -> void:
+	# Stock counts every cabbage on the mat, in flight and refused out in the street until it sells.
+	var console := _broke_console(1, 0)
+	var full := console._cost()
+	for i in 10:
+		console._process(0.5)
+	assert_int(console._cost()).is_equal(full)
+
+
 func test_a_pack_is_only_bought_while_it_fits_in_storage() -> void:
 	assert_int(SaveGame.new().storage_cap).is_equal(20)
 	assert_bool(SupplyConsole.fits(10, 10, 20)).is_true()
@@ -172,6 +227,55 @@ func test_the_auto_lamp_and_switch_follow_the_standing_order_when_the_shock_swit
 	assert_that(console._auto.modulate).is_equal(Console.AUTO_OFF)
 	assert_float(console._toggle._pivot.rotation.x).is_equal_approx(LightSwitch.TILT, 0.001)
 
+
+func test_the_auto_switch_lies_on_the_sloped_face_and_its_hit_box_covers_lamp_and_switch() -> void:
+	SaveManager.save = SaveGame.new()
+	var console: SupplyConsole = auto_free(load("res://entities/supply_console/supply_console.tscn").instantiate())
+	add_child(console)
+	var normal: Vector3 = console.get_node("Price").transform.basis.z
+	var auto: Label3D = console.get_node("Auto")
+	assert_vector(auto.transform.basis.z).is_equal_approx(normal, Vector3.ONE * 0.001)
+	# The switch faces out of the same face, turned sideways (its toggle swings across, not uphill).
+	var toggle: Node3D = console.get_node("Auto/Toggle")
+	var toggle_at := toggle.global_transform
+	assert_vector(toggle_at.basis.z.normalized()).is_equal_approx(normal, Vector3.ONE * 0.001)
+	assert_float(absf(toggle_at.basis.y.normalized().x)).is_equal_approx(1.0, 0.001)
+	var hit: Node3D = console.get_node("AutoSwitch")
+	var box: Vector3 = (hit.get_node("Shape") as CollisionShape3D).shape.size
+	for spot: Vector3 in [auto.global_position, toggle_at.origin]:
+		var local := hit.global_transform.affine_inverse() * spot
+		assert_bool(absf(local.x) <= box.x / 2.0 and absf(local.y) <= box.y / 2.0 and absf(local.z) <= box.z / 2.0).is_true()
+
+
+## What the hand's ray (Hand._pick: everything but the play area) finds at `spot` on the console's
+## sloped face, coming down onto it from the camera's side.
+func _pick_at(console: SupplyConsole, spot: Vector3) -> Interactable:
+	var normal: Vector3 = console.get_node("Price").global_transform.basis.z.normalized()
+	var query := PhysicsRayQueryParameters3D.create(spot + normal * 0.5, spot - normal * 0.5, ~Hand.PLAY_AREA_LAYER)
+	return Interactable.of(console.get_world_3d().direct_space_state.intersect_ray(query).get("collider"))
+
+
+func test_hovering_the_auto_buy_switch_shows_its_tooltip_and_a_click_toggles_it() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["auto_procurement"])
+	save.buy_unlocked = true  # The console on the desk, not up waiting to drop in.
+	SaveManager.save = save
+	var console: SupplyConsole = auto_free(load("res://entities/supply_console/supply_console.tscn").instantiate())
+	add_child(console)
+	await await_idle_frame()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var auto: Label3D = console.get_node("Auto")
+	var toggle: Node3D = console.get_node("Auto/Toggle")
+	# The lamp label, the switch, and the pilot lamp over its toggle.
+	for spot: Vector3 in [auto.global_position, toggle.global_position, toggle.get_node("Lamp").global_position]:
+		var picked := _pick_at(console, spot)
+		assert_object(picked).override_failure_message("nothing under %s" % spot).is_not_null()
+		assert_str(picked.tooltip).override_failure_message("%s shows: %s" % [spot, picked.tooltip]).contains("Auto-buy switch")
+		assert_str(picked.tooltip).contains("Left").contains("Right")
+		var was := save.auto_buy
+		picked.grabbed.emit()
+		assert_bool(save.auto_buy).is_equal(not was)
 
 func test_from_130_units_in_stock_a_pack_costs_five_times_as_much_at_once() -> void:
 	assert_int(Console.overstock_price(20, 129)).is_equal(20)

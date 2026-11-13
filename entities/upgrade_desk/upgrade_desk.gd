@@ -46,7 +46,7 @@ const CARDS := [
 	# Manager + pricing consultant: no effect here, entities/manager/ and entities/consultant/ start
 	# once stamped; their small upgrades are projector nodes.
 	{id = "pricing_consultant", price = 15, currency = "findings", title = "RETAIN A PRICING CONSULTANT",
-		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s it moves your price $1 toward the price at which ~90% of cabbages sell. Use the arrows yourself and it leaves for 15 s. Its on/off switch is by the slate."},
+		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s it moves your price $1 toward the price at which your mandate's share of cabbages is refused (10% to start). Use the arrows yourself and it leaves for 15 s. Its switch by the slate opens the mandate."},
 	# Sales events: no effect here, entities/golden_lamp/, catch_combo/ and window_targets/ start
 	# once stamped; their small upgrades are projector nodes. Stamping catch_combo also starts rotten
 	# units and drops the free waste bin (GameEvents "rotten_units", entities/rotten_bin/).
@@ -71,7 +71,7 @@ const CARDS := [
 	{id = "lab_priority", price = 40, currency = "findings", title = "MEMO: LAB PRIORITY", needs = ["research_assistant"],
 		body = "Research cabbages are not for sale.\nLab hands take blue research cabbages first. Other hired hands stop selling them."},
 	{id = "managerial_oversight", price = 30, currency = "findings", title = "REQUEST MANAGERIAL OVERSIGHT",
-		needs = ["performance_review"], body = "Someone will be checking.\nEvery 2.5-4 min a manager knocks on the window with a quota: sell that many cabbages in 45 s (your pace of the last 5 min, plus 25%). Met: you get quota × your price in coins. Missed: only a memo."},
+		needs = ["performance_review"], body = "Someone will be checking.\nEvery 2.5-4 min a manager knocks on the window with a quota: sell that many cabbages in 45 s (your pace of the last 5 min plus 25%, but never more than the chute can drop in time). Met: you get quota × your price in coins. Missed: only a memo."},
 	{id = "window_targets", price = 40, currency = "findings", title = "STREET TARGET PRACTICE",
 		needs = ["catch_combo"], body = "The street is given a target.\nAbout every 60 s a lamp lights a crate in the street for 15 s. Throw a cabbage out of the window in line with it: that sale pays 10× its coins on top."},
 	{id = "research_materials", price = 50, currency = "findings", research = true, title = "RESEARCH: MATERIALS HANDLING",
@@ -87,11 +87,11 @@ const CARDS := [
 		needs = ["coin_collector"], body = "Paper is also money, eventually.\nThe robots also pick up Findings tokens in front of the research lab (each takes up one coin's space in the bag) and bank them as Findings when they dock."},
 	# No effect here: entities/ledger/ shows the ledger once it is stamped.
 	{id = "stats_ledger", price = 120, currency = "findings", title = "REQUISITION A LEDGER",
-		needs = ["managerial_oversight"], body = "Someone may read it.\nA binder on the left of the desk: click it to read your sales, coins over time, staff and approvals. No other effect."},
+		needs = ["managerial_oversight"], body = "Someone may read it.\nA binder on the left of the desk: click it to read your sales, earnings per minute worked, staff and approvals. No other effect."},
 	{id = "research_sentiment", price = 400, currency = "findings", research = true, title = "RESEARCH: CONSUMER SENTIMENT",
 		needs = ["research_materials"], body = "The street is asked how it feels.\nUnlocks Slogan IV and Brassica for the Masses on the projector (each: the street pays 25% more without refusing)."},
 	{id = "golden_lamp", price = 2000, currency = "findings", title = "DECLARE A GOLDEN AGE",
-		needs = ["coin_collector"], body = "Nobody knows why.\nAbout every 150 s a Golden Age dawns for 20 s and the lamp at the back right glows gold. While it lasts, every sale pays 5×."},
+		needs = ["coin_collector"], body = "Nobody knows why.\nAbout every 150 s a Golden Age dawns for 20 s and the lamp at the back right glows gold. While it lasts, every sale pays 5× (golden cabbages excluded)."},
 	# One more unit on the mat now (apply), and the projector's mat chain (Projector.MAT_FIRST..MAT_MAX) for the rest.
 	{id = "mat_allowance", price = 3000, title = "APPLY FOR AN EXTENDED MAT ALLOWANCE",
 		needs = ["coin_collector", "desk_space"], body = "Floor space is a privilege, not a right.\nOne more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells one more space at a time, up to 20, each dearer than the last."},
@@ -124,18 +124,19 @@ const CARDS := [
 	{id = "farm_readout", price = 150, currency = "findings", title = "FARM TELEMETRY PACKAGE", needs = ["family_farm"],
 		body = "What is measured can be reported.\nA status line along the top of channel 1 (the fields): seeds, cabbages in stock against storage, and money, always in view."},
 	# From stage 2 on the next desk cards are paid in cabbages (units from stock): the first farm hand
-	# (110) from CORRIDOR OVERFLOW (Projector stock_125, 125; more than the OFF-SITE LOCKER's 100), then
-	# GREEN THUMB (70, after the hand: `needs`). Paced in tools/pace.py: ~70 and ~72 min, the farm 58.
+	# (110) from CORRIDOR OVERFLOW (Projector stock_125, 125; more than the OFF-SITE LOCKER's 100), so
+	# it waits for OFF-SITE STORAGE, which unlocks those (else the tray can lock up on it), then
+	# GREEN THUMB (70, after the hand: `needs`). Paced in tools/pace.py: ~74 and ~76 min, the farm ~59.
 	# GREEN THUMB rewards the hand farming before the tractors take over: FarmScreen.harvest(by_hand).
-	{id = "seasonal_workforce", price = 110, currency = "stock", title = "AUTHORISE A SEASONAL WORKFORCE", needs = ["farm_terminal", "chute_control"],
+	{id = "seasonal_workforce", price = 110, currency = "stock", title = "AUTHORISE A SEASONAL WORKFORCE", needs = ["farm_terminal", "offsite_storage"],
 		body = "Seasonal. Indefinitely.\nA farm hand walks onto the fields (channel 1) and plants empty squares with your seeds. More hands on channel 2."},
 	{id = "green_thumb", price = 70, currency = "stock", title = "GREEN THUMB COMMENDATION", needs = ["seasonal_workforce"],
 		body = "Manual labour is recognised. Briefly.\nA square you harvest by hand on channel 1 (pull the cabbage out) yields double. Tractors are not commended. More on channel 2."},
 	# Golden units: FarmScreen.sow rolls save.golden_chance, the chute sends save.golden_stock down as
-	# gold units (Cabbage.golden), SaleWindow / QaBay pay golden_sale / golden_lab times. Needs the
-	# 200-unit Basement Annex (`tree`). Stamped, it also starts the clock on GameEvents "overripe" and
-	# deals mechanisation.
-	{id = "golden_cabbage", price = 120, currency = "stock", tree = "storage_2", needs = ["chute_control"],
+	# gold units (Cabbage.golden), SaleWindow / QaBay pay golden_sale / golden_lab times. Dealt after
+	# the farm hand: paying that one's 110 took CORRIDOR OVERFLOW (125), so 120 fits. Stamped, it also
+	# starts the clock on GameEvents "overripe" and deals mechanisation.
+	{id = "golden_cabbage", price = 120, currency = "stock", needs = ["seasonal_workforce"],
 		title = "PILOT SCHEME: PREMIUM CABBAGES",
 		body = "Some cabbages are better than others. Officially.\nAbout 1 square in 40 planted on the farm grows golden. Its cabbages come down the chute gold: sold, each pays 10× your price; flicked into the research lab, 10× the Findings."},
 	# Dealt right after the golden card (no card waits on a timer), ahead of GameEvents "overripe"
@@ -162,24 +163,23 @@ Every cabbage you flick into the research lab yourself gives 20% more Findings. 
 	# its chance raised by the projector's growth chain. Prices are placeholders, not paced yet
 	# (tools/pace.py); micro samples is dear (¶1000) because a tube on RESEARCH floods the lab with minis.
 	{id = "mini_thinning", price = 200, currency = "findings", title = "FIELD THINNING PROGRAMME", needs = ["family_farm"],
-		body = "The field produces waste. Waste is a product.\nEvery harvest on the farm also sends one mini cabbage down the tube (at most 6 minis out at once)."},
+		body = "The field produces waste. Waste is a product.\nEvery harvest on the farm also sends one mini cabbage down the tube (at most 6 of these out at once)."},
 	{id = "micro_samples", price = 1000, currency = "findings", title = "RESEARCH: MICRO-SAMPLE PROTOCOL", needs = ["tube_lever", "family_farm"],
-		body = "Research has established that a sample need not be large. Or whole.\nA mini sent to the research lab yields the Findings of two full cabbages."},
+		body = "Research has established that a sample need not be large. Or whole.\nA mini sent to the research lab yields eight times its usual share of Findings."},
 	{id = "mini_station", price = 500, currency = "findings", title = "INSTALL A CABBAGE GROWING STATION", needs = ["mini_thinning", "mini_tube"],
 		body = "Small cabbages are a temporary condition.\nA growing chamber is bolted over the tube's intake. 1 mini in 20 comes out a full cabbage: no stock, sold at your full price, counted as sold."},
 	# Stage 2's end (`priority`: the oxblood form, like the farm card). Dealt once every other stage-2
 	# card is stamped (these `needs` reach all of them, the mini cards aside; golden_cabbage named too, as
 	# an old save's mechanisation came from migrate_farm without it). Paid in more units than
-	# SALT MINE (Projector stock_3000, 3,000) holds, so it waits on STRATEGIC RESERVE (storage_5,
-	# 4,000) and a nearly full store: below that cap by more than a harvest and a full mat, as a
+	# REGIONAL DEPOT (Projector storage_4, 1,500) holds, so it waits on AIRCRAFT HANGAR (stock_2000,
+	# 2,000) and a nearly full store: below that cap by more than a harvest and a full mat, as a
 	# harvest only goes in whole (FarmScreen.storage_room) and the mat can't pay. The steps past it
-	# (FORMER MINISTRY to ANNEXED PROVINCE) are growth for after the stamp.
-	# Stamped, GameEvents "invest_in_growth" starts (chapter 3). Prices set by playtest (¶4000, $25000:
-	# chapter 2 was over too fast; 3,800 units, as 13,000 took over an hour to fill at real farm speed).
-	# Paced in tools/pace.py storage.
-	{id = "consolidation", price = 3800, currency = "stock", also = {findings = 4000, coins = 25000}, priority = true, title = "CONSOLIDATED GROWTH REQUISITION",
+	# (SALT MINE to ANNEXED PROVINCE) are growth, optional before the stamp.
+	# Stamped, GameEvents "invest_in_growth" starts (chapter 3). Price set by the designer: $20,000
+	# and 1,900 units, no Findings. Paced in tools/pace.py storage.
+	{id = "consolidation", price = 1900, currency = "stock", also = {coins = 20000}, priority = true, title = "CONSOLIDATED GROWTH REQUISITION",
 		needs = ["offsite_storage", "farm_readout", "green_thumb", "seasonal_workforce", "standing_seed_order", "golden_cabbage"],
-		body = "The desk has outgrown the desk.\nPaid in cabbages from stock, more than the salt mine holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future."},
+		body = "The desk has outgrown the desk.\nPaid in cabbages from stock, more than the regional depot holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future."},
 ]
 const OFFERED := 3
 const Events := preload("res://globalScripts/game_events.gd")
@@ -212,6 +212,11 @@ const RIFFLE_LIFT := 0.06
 const RIFFLE_TIP := 0.12
 const STACK_LIFT := 0.015
 const RIFFLE_TIME := 0.2
+## A card landing on the spike makes the pile hop for this long (_file).
+const HOP_TIME := 0.25
+## The memo the first card filed on the spike posts (MilestoneMemo.post: no Steam achievement).
+const SPIKE_MEMO := {re = "FILING PROCEDURE", note = "Every approved card is impaled on the spike, top right.",
+	bonus = "Click the spike to review them."}
 ## Under the top card the spike holds one cheap stack mesh, a few / some / many sheets: up to
 ## STACK_SIZES[i].x papers underneath show STACK_SIZES[i].y sheets.
 const STACK_SIZES: Array[Vector2i] = [Vector2i(3, 2), Vector2i(10, 5), Vector2i(1 << 30, 10)]
@@ -219,6 +224,12 @@ const PAPER_NOTE := preload("res://ui/elements/paper_note.tscn")
 ## Then it lies this long on the pad before it goes on the spike.
 const SHOW_TIME := 0.45
 const SHOCK_CHECK := 0.5
+## The reminder slip's room for its big word (m, width × height) and how far it slides in.
+const SLIP_BOX := Vector2(0.25, 0.08)
+const SLIP_SLIDE := 0.08
+## The reminder slip's paper, hovered: shown like a form's (PaperNote), with no bill.
+const NOTICE := {id = "progress_notice", form = "MEMO 0-0  STANDING NOTICE", title = "NOTICE",
+	body = "Head office reminds you.\nEvery form on this desk must be approved for you to progress. The projector is optional."}
 ## Debug builds only: a double click within this many seconds of dropping a card stamps it free.
 const DEBUG_DOUBLE := 0.6
 
@@ -243,9 +254,17 @@ static var _stacks := {}
 var _fading: Tween
 ## Seconds to the next check whether stage 2's warning or shock starts (Events.warning_due, shock_due).
 var _shock_in := 0.0
+## Seconds played since the last check: what the checks that keep a clock (_tick_progress) count.
+var _since_check := 0.0
 ## The card dropped last and when (Time ticks, s), for the debug double click.
 var _dropped: UpgradeCard
 var _dropped_at := -INF
+## Forms approved when the progress clock last looked (-1: not yet): one more restarts it.
+var _approved_seen := -1
+## The in-game menu: open, the progress clock stops (null outside the main world).
+var _menu: CanvasItem
+## The milestone memo layer (entities/milestone/), which posts SPIKE_MEMO.
+@export var memo: Node
 
 @onready var _tray: Node3D = $Tray
 @onready var _press: Node3D = $Press
@@ -256,6 +275,9 @@ var _dropped_at := -INF
 @onready var _head := _skeleton.find_bone("Head")
 @onready var _lever := _skeleton.find_bone("Lever")
 @onready var _tray_rest := _tray.position
+## The reminder slip jammed under the tray's far rim once head office's progress note is filed.
+@onready var _slip: Node3D = $Tray/Slip
+@onready var _slip_rest := _slip.position
 @onready var _note: Control = $Note/Center
 @onready var _papers: Control = $Approved/Shade/List/Papers
 
@@ -268,7 +290,12 @@ func _ready() -> void:
 	$Spike/Hit/Interactable.hovered.connect(_riffle.bind(true))
 	$Spike/Hit/Interactable.unhovered.connect(_riffle.bind(false))
 	$Approved/Shade.gui_input.connect(_on_shade_input)
+	_menu = get_tree().root.find_child("InGameMenu", true, false) as CanvasItem
 	var save := SaveManager.save
+	var slip_hover: Interactable = $Tray/Slip/Hit/Interactable
+	slip_hover.hovered.connect(_on_slip_hover.bind(true))
+	slip_hover.unhovered.connect(_on_slip_hover.bind(false))
+	_show_slip(slip_shown(save))
 	migrate(save)
 	var approved := Array(save.stamped).filter(func(id: String) -> bool: return not card_data(id).is_empty())
 	if not approved.is_empty():
@@ -294,6 +321,7 @@ func _process(delta: float) -> void:
 		save.tray_unlocked = true
 		_drop_tray()
 	_shock_in -= delta
+	_since_check += delta
 	if _shock_in <= 0.0 and Events.warning_due(save):
 		_start(save, "supply_warning")
 		_make_room()
@@ -309,8 +337,14 @@ func _process(delta: float) -> void:
 			and _offered.size() < OFFERED and next_cards(save.stamped, OFFERED, save).any(func(id: String) -> bool: return not _offered.any(
 				func(card: UpgradeCard) -> bool: return card.id == id)):
 		_deal()  # A `tree` card whose projector node was just bought, into a free slot.
+	if _shock_in <= 0.0 and not _slip.visible and slip_shown(save):
+		_pop_slip()
 	if _shock_in <= 0.0:
-		_shock_in = SHOCK_CHECK
+		_tick_progress(save, _since_check)
+		_since_check = 0.0
+		# The overshoot carries over (a check every SHOCK_CHECK on average), at most one check's worth
+		# so a long hitch never piles up checks; the clocks above get the true time anyway.
+		_shock_in = SHOCK_CHECK + maxf(_shock_in, -SHOCK_CHECK)
 	if _cranking:
 		_crank = move_toward(_crank, _crank_under_mouse(), CRANK_SPEED * delta)
 		if _crank >= BOTTOM and not _bottomed:
@@ -322,12 +356,56 @@ func _process(delta: float) -> void:
 		_shown += delta
 	if _leaving != null and _shown >= SHOW_TIME:
 		_shown = 0.0
-		_leaving.spike_to(_spike_spot(sheets_under(_spiked + 1)), randf_range(-0.5, 0.5)).finished.connect(_land.bind(_leaving))
+		_leaving.spike_to(_spike_spot(sheets_under(_spiked + 1)), randf_range(-0.5, 0.5)).finished.connect(_file.bind(_leaving))
 		_count_spiked(_leaving)
 		_leaving = null
 		if Events.warning_ready(save):
 			_start(save, "supply_warning")  # The stamped card's slot goes to the farm card.
 		_deal()
+
+
+## Head office's progress clock, `delta` play seconds on (GameEvents progress_clock, progress_due): it
+## runs while a form in the tray is affordable and none is approved, also at the farm TV (the form
+## still waits); it stands still while a boss report or the in-game menu is up, and stops for good
+## once warned or after the chapter's last card.
+func _tick_progress(save: SaveGame, delta: float) -> void:
+	if save.progress_warned or Events.chapter_3(save) or BossReport.up or (_menu != null and _menu.visible):
+		return
+	var approved := _approved_seen >= 0 and save.stamped.size() != _approved_seen
+	_approved_seen = save.stamped.size()
+	var bills := _offered.filter(func(card: UpgradeCard) -> bool: return not save.stamped.has(card.id)) \
+			.map(func(card: UpgradeCard) -> Dictionary: return card.costs)
+	var affordable := any_affordable(save, bills, units_out(get_tree().get_nodes_in_group(&"cabbages")))
+	save.progress_wait = Events.progress_clock(save.progress_wait, delta, affordable, approved)
+	if Events.progress_due(save.progress_wait, save.progress_warned, affordable):
+		save.progress_warned = true
+		SaveManager.log_event("event", "progress_required")
+
+
+## Whether the reminder slip is on the tray: once head office's progress note has been signed and filed.
+static func slip_shown(save: SaveGame) -> bool:
+	return save.reports.has("progress_required")
+
+
+## The slip slides in from behind the tray, under its rim, and settles.
+func _pop_slip() -> void:
+	_show_slip(true)
+	_slip.position = _slip_rest + Vector3(0.0, 0.0, -SLIP_SLIDE)
+	var tween := create_tween()
+	tween.tween_property(_slip, "position", _slip_rest, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(func() -> void: $Land.cue(_slip.global_position))
+
+
+## Shows or hides the slip; only a shown one answers hovering (its NOTICE paper), never anything else.
+func _show_slip(on: bool) -> void:
+	_slip.visible = on
+	($Tray/Slip/Hit/Interactable as Interactable).enabled = on
+	($Tray/Slip/Hit/Shape as CollisionShape3D).disabled = not on  # Hidden, it blocks no ray.
+
+
+## Whether the save covers any of `bills` (costs of the forms in the tray; `out`: see affords).
+static func any_affordable(save: SaveGame, bills: Array, out := Vector2i.ZERO) -> bool:
+	return bills.any(func(bill: Dictionary) -> bool: return affords(save, bill, out))
 
 
 ## The next `count` cards in the queue that are not stamped yet and whose `needs` all are. A timed
@@ -507,7 +585,8 @@ static func apply(id: String, save: SaveGame) -> void:
 ## `also`, coins first, then Findings, then units (the order the card prints them).
 static func costs(card: Dictionary) -> Dictionary:
 	var all: Dictionary = card.get("also", {}).duplicate()
-	all[card.get("currency", "coins")] = card.price
+	if card.has("price"):  # The reminder slip's NOTICE has none.
+		all[card.get("currency", "coins")] = card.price
 	var out := {}
 	for paid_in: String in ["coins", "findings", "stock"]:
 		if all.has(paid_in):
@@ -564,6 +643,18 @@ func _on_card_hover(card: UpgradeCard, on: bool, instant: bool) -> void:
 	card.lift(on)
 	if on:
 		$Note/Center/Paper.set_card(card_data(card.id))
+	_fade_note(on, instant)
+
+
+## The reminder slip hovered: its NOTICE on the same paper a form shows, the same way.
+func _on_slip_hover(on: bool) -> void:
+	if on:
+		$Note/Center/Paper.set_card(NOTICE)
+	_fade_note(on, false)
+
+
+## The hovered paper fades in (`on`) or out, or is gone at once (`instant`).
+func _fade_note(on: bool, instant: bool) -> void:
 	if _fading != null:
 		_fading.kill()
 	if instant:
@@ -608,6 +699,28 @@ func _land(card: UpgradeCard) -> void:
 	_top = card
 	_stack.mesh = stack_mesh(sheets_under(_spiked))
 	_stack.position = Vector3.ZERO
+
+
+## A newly approved card has come down on the spike: it lands, and the pile hops and settles so the
+## eye finds it. The first card a save ever files also posts SPIKE_MEMO, saying what the spike is
+## (once: a loaded save's top card lands through _land alone).
+func _file(card: UpgradeCard) -> void:
+	_land(card)
+	if _riffling != null:
+		_riffling.kill()
+	var rest := _spike_spot(sheets_under(_spiked)).y
+	_riffling = create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_riffling.tween_property(_stack, "position:y", STACK_LIFT, HOP_TIME * 0.4)
+	_riffling.tween_property(card, "position:y", rest + RIFFLE_LIFT * 0.5, HOP_TIME * 0.4)
+	_riffling.chain().tween_property(_stack, "position:y", 0.0, HOP_TIME * 0.6).set_trans(Tween.TRANS_BOUNCE)
+	_riffling.tween_property(card, "position:y", rest, HOP_TIME * 0.6).set_trans(Tween.TRANS_BOUNCE)
+	if memo != null and first_filed(SaveManager.save):
+		memo.post(SPIKE_MEMO)
+
+
+## Whether `save` has just approved its very first card (the one now landing on the spike).
+static func first_filed(save: SaveGame) -> bool:
+	return approved_newest_first(save).size() == 1
 
 
 ## How many stack sheets lie under the top paper of a pile of `papers`.
@@ -673,8 +786,14 @@ func _make_room() -> void:
 		var card := _offered[i]
 		if card != _on_press:
 			_offered.remove_at(i)
+			_record_offered()
 			card.fly_to(Vector3(0, -10, 0), false).finished.connect(card.queue_free)
 			return
+
+
+## Keeps save.offered (what the projector's form locks read) equal to the tray.
+func _record_offered() -> void:
+	SaveManager.save.offered = PackedStringArray(_offered.map(func(card: UpgradeCard) -> String: return card.id))
 
 
 ## Fills the free slots from the queue (new cards sail in one after another) and moves the cards
@@ -700,6 +819,7 @@ func _deal(animate := true) -> void:
 		card.position = Vector3(0, -10, 0)
 		get_tree().create_timer(DEAL_STAGGER * dealt).timeout.connect(card.deal_to.bind(slot))
 		dealt += 1
+	_record_offered()
 	for i in _offered.size():
 		var card := _offered[i]
 		if card != _on_press and card.position.y > -1.0 and not card.position.is_equal_approx(_slot(i)):
@@ -775,6 +895,7 @@ func _bottom_out() -> void:
 	_ring()
 	_on_press = null
 	_offered.erase(card)
+	_record_offered()
 	_leaving = card
 	var squash := create_tween()
 	squash.tween_property($Press/Model, "scale", Vector3(1.04, 0.94, 1.04), 0.05)
@@ -803,10 +924,11 @@ func _stamp_free(card: UpgradeCard) -> void:
 	if _on_press == card:
 		_on_press = null
 	_offered.erase(card)
+	_record_offered()
 	_dropped = null
 	card.stamp(false)
 	$Stamp.cue(card.position)
-	card.spike_to(_spike_spot(sheets_under(_spiked + 1)), randf_range(-0.5, 0.5)).finished.connect(_land.bind(card))
+	card.spike_to(_spike_spot(sheets_under(_spiked + 1)), randf_range(-0.5, 0.5)).finished.connect(_file.bind(card))
 	_count_spiked(card)
 	_deal()
 	print("debug: stamped %s free" % card.id)

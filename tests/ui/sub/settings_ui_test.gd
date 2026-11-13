@@ -61,3 +61,16 @@ func test_the_screen_mode_dropdown_lists_the_modes_in_setting_order() -> void:
 	assert_str(items[SettingsResource.ScreenMode.EXCLUSIVE_FULLSCREEN]).is_equal("settings.screenMode.fullscreen")
 	assert_str(items[SettingsResource.ScreenMode.WINDOWED]).is_equal("settings.screenMode.window")
 	assert_str(items[SettingsResource.ScreenMode.BORDERLESS]).is_equal("settings.screenMode.borderless")
+
+
+func test_the_lowest_scaling_preset_is_called_cabbage_not_potato_in_english_and_german() -> void:
+	var key: String = items_of("ScalingQuality")[-1]
+	assert_str(key).is_equal("settings.fidelityFX.potato")  # Saved by index: the key stays.
+	var locale := TranslationServer.get_locale()
+	TranslationServer.set_locale("en")
+	var en := TranslationServer.translate(key)
+	TranslationServer.set_locale("de")
+	var de := TranslationServer.translate(key)
+	TranslationServer.set_locale(locale)
+	assert_str(en).is_equal("Cabbage")
+	assert_str(de).is_equal("Kohlkopf")

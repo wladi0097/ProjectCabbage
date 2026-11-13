@@ -4,7 +4,10 @@ extends Node3D
 ## coin down or up (held, it keeps stepping). The street's hidden demand falls with the price: at
 ## the full-sale price or below every cabbage sells, above it more and more are thrown back in
 ## through the window. The full-sale price is BASE_REF_PRICE times the save's marketing, times a
-## mood that drifts each minute (MOOD_STEP at most) within MOOD_RANGE. A progression item: it drops onto the desk once its upgrade card is stamped;
+## mood that drifts each minute (MOOD_STEP at most) within MOOD_RANGE, and once the street turns
+## volatile (save.street_volatile, after the promotion) jumps up to WILD_STEP within WILD_RANGE. The
+## next move is rolled a minute ahead (save.mood_next, save.mood_clock): with the READS THE ROOM node
+## bought a chalk forecast under the price shows when it comes and which way. A progression item: it drops onto the desk once its upgrade card is stamped;
 ## until then cabbages sell at the save's starting price. With the acceptance meter card stamped, a
 ## gauge clamps onto the slate's corner and its needle shows the chance the street buys at the price.
 
@@ -17,6 +20,13 @@ const BASE_REF_PRICE := 3.0
 const MOOD_RANGE := Vector2(0.75, 1.25)
 const MOOD_STEP := 0.1
 const MOOD_PERIOD := 60.0
+## The volatile street (GameEvents "street_volatility"): its step a minute and its range. Centred on 1
+## so the average full-sale price stays as before; at its floor a price at the normal full-sale price
+## still sells 36% (never a street that buys nothing).
+const WILD_RANGE := Vector2(0.6, 1.4)
+const WILD_STEP := 0.3
+## The projector node that shows the forecast.
+const FORECAST := "consultant_mood"
 ## Sets how fast sales fall above the full-sale price: at 2, a price a third over it sells 56%.
 const ELASTICITY := 2.0
 ## Held on an arrow: the first repeat comes after HOLD_DELAY, then one every HOLD_REPEAT.
@@ -41,18 +51,19 @@ const NEEDLE_REST := 0.001
 const GAUGE_DROP := 0.6
 ## What hovering the slate and the gauge explains; the gauge's dial (its own space) is hoverable.
 const BOARD_TIP := "Your price per cabbage. Click \"<\" or \">\" to change it by $1. Higher pays more per sale, but the street refuses more cabbages."
+const FORECAST_TIP := "Your price per cabbage. Click \"<\" or \">\" to change it by $1. Under it: when the street's mood next moves, and which way."
 const GAUGE_TIP := "Acceptance meter: how likely the street buys a cabbage at your price right now. Left is never, right is always."
 const GAUGE_BOX := AABB(Vector3(-0.068, -0.08, -0.056), Vector3(0.136, 0.148, 0.092))
 ## The pricing consultant's tap lights its arrow this long.
 const NUDGE_LIGHT := 0.15
+const Events := preload("res://globalScripts/game_events.gd")
 
 ## The player stepped the price, by a press or a held arrow's repeat (the pricing consultant backs off
-## for a while and keeps the player's markup).
+## for a while).
 signal player_rewrote
 
 var _step := 0
 var _wait := 0.0
-var _clock := 0.0
 var _needle := 0.0
 var _needle_speed := 0.0
 
@@ -65,6 +76,11 @@ var _needle_speed := 0.0
 @onready var _gauge_size := _gauge.scale
 @onready var _skeleton: Skeleton3D = $Gauge/Armature/Skeleton3D
 @onready var _needle_bone := _skeleton.find_bone("Needle")
+@onready var _forecast: Node3D = $Forecast
+@onready var _forecast_arrow: Label3D = $Forecast/Arrow
+@onready var _forecast_time: Label3D = $Forecast/Time
+@onready var _arrow_basis := _forecast_arrow.basis
+@onready var _board: Interactable = $Board/Interactable
 
 
 func _ready() -> void:
@@ -78,13 +94,13 @@ func _ready() -> void:
 		interactable.released.connect(func() -> void: _step = 0)
 		label.modulate = CHALK
 	_price.text = "$%d" % SaveManager.save.sale_price
-	var board := Interactable.new()
-	board.tooltip = BOARD_TIP
-	$Board.add_child(board)
 	Interactable.hover_box(_gauge, GAUGE_BOX, GAUGE_TIP)
 	_gauge.visible = SaveManager.save.stamped.has("acceptance_meter")
 	_needle = acceptance(SaveManager.save)
 	_pose_needle()
+	if is_zero_approx(SaveManager.save.mood_next):
+		SaveManager.save.mood_next = roll_mood(SaveManager.save.street_volatile)
+	_show_forecast(SaveManager.save)
 	if not SaveManager.save.slate_unlocked:
 		visible = false
 		_set_arrows(false)
@@ -106,10 +122,11 @@ func _process(delta: float) -> void:
 			_needle_speed = 0.0
 		_pose_needle()
 	if save.slate_unlocked:
-		_clock += delta
-		if _clock >= MOOD_PERIOD:
-			_clock -= MOOD_PERIOD
-			save.demand_mood = next_mood(save.demand_mood, randf_range(-MOOD_STEP, MOOD_STEP))
+		tick_mood(save, delta, roll_mood(save.street_volatile))
+	if save.reports.has("promotion") and not save.street_volatile:
+		save.volatile_wait += delta
+		save.street_volatile = Events.volatile_due(save)
+	_show_forecast(save)
 	if _step == 0:
 		return
 	_wait -= delta
@@ -226,6 +243,61 @@ static func ref_price(marketing: float, mood: float) -> float:
 	return BASE_REF_PRICE * marketing * mood
 
 
-## Next minute's mood: a step from the last one, kept within MOOD_RANGE so it never runs away.
-static func next_mood(mood: float, step: float) -> float:
-	return clampf(mood + step, MOOD_RANGE.x, MOOD_RANGE.y)
+## The mood's range: MOOD_RANGE, or WILD_RANGE once the street is `volatile`.
+static func mood_range(volatile: bool) -> Vector2:
+	return WILD_RANGE if volatile else MOOD_RANGE
+
+
+## Next minute's mood: a step from the last one, kept within the range so it never runs away.
+static func next_mood(mood: float, step: float, volatile := false) -> float:
+	var range_ := mood_range(volatile)
+	return clampf(mood + step, range_.x, range_.y)
+
+
+## A random step for the next move: up to MOOD_STEP either way, WILD_STEP once `volatile`.
+static func roll_mood(volatile: bool) -> float:
+	var most := WILD_STEP if volatile else MOOD_STEP
+	return randf_range(-most, most)
+
+
+## Advances the save's mood clock by `delta`: each MOOD_PERIOD the mood takes the step rolled ahead
+## (save.mood_next) and `rolled` becomes the next one. True when the mood moved.
+static func tick_mood(save: SaveGame, delta: float, rolled: float) -> bool:
+	save.mood_clock += delta
+	if save.mood_clock < MOOD_PERIOD:
+		return false
+	save.mood_clock -= MOOD_PERIOD
+	save.demand_mood = next_mood(save.demand_mood, save.mood_next, save.street_volatile)
+	save.mood_next = rolled
+	return true
+
+
+## Which way the street's next move goes, as it will really land: 1 up, -1 down, 0 none (at its edge).
+static func forecast(save: SaveGame) -> int:
+	var change := next_mood(save.demand_mood, save.mood_next, save.street_volatile) - save.demand_mood
+	return 0 if absf(change) < 0.005 else (1 if change > 0.0 else -1)
+
+
+## Whole seconds until the street's next move.
+static func forecast_seconds(save: SaveGame) -> int:
+	return ceili(MOOD_PERIOD - save.mood_clock)
+
+
+## "0:42" for 42 seconds.
+static func clock(seconds: int) -> String:
+	@warning_ignore("integer_division")
+	return "%d:%02d" % [seconds / 60, seconds % 60]
+
+
+## With READS THE ROOM bought, the chalk forecast under the price: a chevron up or down (a dash when
+## the street sits at its edge) and the time to the move.
+func _show_forecast(save: SaveGame) -> void:
+	var on := save.tree_bought.has(FORECAST)
+	_forecast.visible = on
+	_board.tooltip = FORECAST_TIP if on else BOARD_TIP
+	if not on:
+		return
+	var way := forecast(save)
+	_forecast_arrow.text = ">" if way != 0 else "-"
+	_forecast_arrow.basis = _arrow_basis * Basis(Vector3.BACK, way * PI / 2.0)
+	_forecast_time.text = clock(forecast_seconds(save))

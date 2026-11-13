@@ -103,10 +103,10 @@ func test_a_card_in_several_currencies_prints_its_units_in_the_box_and_the_other
 	var price := card.get_node("Look/Price") as Label3D
 	var also := card.get_node("Look/Also") as Label3D
 
-	assert_str(price.text).is_equal("3800")
+	assert_str(price.text).is_equal("1900")
 	assert_bool((card.get_node("Look/PriceIcon") as Sprite3D).visible).is_true()
 	assert_bool(also.visible).is_true()
-	assert_str(also.text).is_equal("$25000 + ¶4000 +")
+	assert_str(also.text).is_equal("$20000 +")
 	assert_float(also.position.x).is_less(UpgradeCard.PRICE_AT.x - UpgradeCard.PRICE_WIDTH * 0.5)
 	var width := UpgradeCard.TITLE_FONT.get_string_size(also.text, HORIZONTAL_ALIGNMENT_LEFT, -1, also.font_size).x * UpgradeCard.PIXEL
 	assert_float(width).is_less_equal(UpgradeCard.ALSO_WIDTH)

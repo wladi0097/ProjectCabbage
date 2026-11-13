@@ -1,0 +1,255 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/consultant/mandate_sheet.gd" id="1_script"]
+[ext_resource type="Theme" path="res://entities/consultant/mandate_theme.tres" id="2_theme"]
+[ext_resource type="AudioStream" uid="uid://bbtc8slom47tj" path="res://assets/audio/ui/keyboard_keystroke.wav" id="3_click"]
+
+[node name="Mandate" type="CanvasLayer" unique_id=2100400001]
+layer = 2
+
+[node name="Sheet" type="Control" parent="." unique_id=2100400002 groups=["blocks_hand"]]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Shade" type="ColorRect" parent="Sheet" unique_id=2100400003]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.03, 0.5)
+
+[node name="Paper" type="PanelContainer" parent="Sheet" unique_id=2100400004]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"MandatePaper"
+
+[node name="Stack" type="VBoxContainer" parent="Sheet/Paper" unique_id=2100400005]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Head" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400006]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Sheet/Paper/Stack/Head" unique_id=2100400007]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MandateTitle"
+text = "PRICING MANDATE"
+
+[node name="Close" type="Button" parent="Sheet/Paper/Stack/Head" unique_id=2100400008]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = "X"
+
+[node name="Sub" type="Label" parent="Sheet/Paper/Stack" unique_id=2100400009]
+layout_mode = 2
+theme_type_variation = &"MandateSmall"
+text = "Standing instructions to the retained pricing consultant, Desk 4. Effective on signature. Signed already."
+autowrap_mode = 3
+
+[node name="Rule" type="HSeparator" parent="Sheet/Paper/Stack" unique_id=2100400010]
+layout_mode = 2
+
+[node name="DutyRow" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400011]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Sheet/Paper/Stack/DutyRow" unique_id=2100400012]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Consultant"
+
+[node name="Duty" type="Button" parent="Sheet/Paper/Stack/DutyRow" unique_id=2100400013]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(156, 36)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+toggle_mode = true
+button_pressed = true
+text = "ON DUTY"
+
+[node name="BounceRow" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400014]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Sheet/Paper/Stack/BounceRow" unique_id=2100400015]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cabbages the street may refuse"
+
+[node name="BounceDown" type="Button" parent="Sheet/Paper/Stack/BounceRow" unique_id=2100400016]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = "<"
+
+[node name="Bounce" type="Label" parent="Sheet/Paper/Stack/BounceRow" unique_id=2100400017]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(76, 0)
+layout_mode = 2
+theme_type_variation = &"MandateValue"
+text = "10%"
+horizontal_alignment = 1
+
+[node name="BounceUp" type="Button" parent="Sheet/Paper/Stack/BounceRow" unique_id=2100400018]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = ">"
+
+[node name="FloorRow" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400019]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Sheet/Paper/Stack/FloorRow" unique_id=2100400020]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lowest price it may chalk"
+
+[node name="FloorDown" type="Button" parent="Sheet/Paper/Stack/FloorRow" unique_id=2100400021]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = "<"
+
+[node name="Floor" type="Label" parent="Sheet/Paper/Stack/FloorRow" unique_id=2100400022]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(76, 0)
+layout_mode = 2
+theme_type_variation = &"MandateValue"
+text = "$1"
+horizontal_alignment = 1
+
+[node name="FloorUp" type="Button" parent="Sheet/Paper/Stack/FloorRow" unique_id=2100400023]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = ">"
+
+[node name="CeilingRow" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400024]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Sheet/Paper/Stack/CeilingRow" unique_id=2100400025]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Highest price it may chalk"
+
+[node name="CeilingDown" type="Button" parent="Sheet/Paper/Stack/CeilingRow" unique_id=2100400026]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = "<"
+
+[node name="Ceiling" type="Label" parent="Sheet/Paper/Stack/CeilingRow" unique_id=2100400027]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(76, 0)
+layout_mode = 2
+theme_type_variation = &"MandateValue"
+text = "NONE"
+horizontal_alignment = 1
+
+[node name="CeilingUp" type="Button" parent="Sheet/Paper/Stack/CeilingRow" unique_id=2100400028]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = ">"
+
+[node name="Rule2" type="HSeparator" parent="Sheet/Paper/Stack" unique_id=2100400029]
+layout_mode = 2
+
+[node name="PriceRow" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400030]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Sheet/Paper/Stack/PriceRow" unique_id=2100400031]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Price on the slate now"
+
+[node name="Price" type="Label" parent="Sheet/Paper/Stack/PriceRow" unique_id=2100400032]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MandateValue"
+text = "$5"
+horizontal_alignment = 2
+
+[node name="RefusedRow" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400033]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Sheet/Paper/Stack/RefusedRow" unique_id=2100400034]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Refused by the street now"
+
+[node name="Refused" type="Label" parent="Sheet/Paper/Stack/RefusedRow" unique_id=2100400035]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MandateValue"
+text = "10%"
+horizontal_alignment = 2
+
+[node name="ForecastRow" type="HBoxContainer" parent="Sheet/Paper/Stack" unique_id=2100400036]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Sheet/Paper/Stack/ForecastRow" unique_id=2100400037]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "The street's next move"
+
+[node name="Forecast" type="Label" parent="Sheet/Paper/Stack/ForecastRow" unique_id=2100400038]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MandateValue"
+text = "UP IN 0:42"
+horizontal_alignment = 2
+
+[node name="Foot" type="Label" parent="Sheet/Paper/Stack" unique_id=2100400039]
+layout_mode = 2
+theme_type_variation = &"MandateSmall"
+text = "The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Touch the slate yourself and it waits 15 s. It is billed either way."
+autowrap_mode = 3
+
+[node name="Click" type="AudioStreamPlayer" parent="." unique_id=2100400040]
+stream = ExtResource("3_click")
+volume_db = -10.0
+bus = &"SFX"
+
+[connection signal="button_down" from="Sheet/Paper/Stack/Head/Close" to="Click" method="play"]
+[connection signal="button_down" from="Sheet/Paper/Stack/DutyRow/Duty" to="Click" method="play"]
+[connection signal="button_down" from="Sheet/Paper/Stack/BounceRow/BounceDown" to="Click" method="play"]
+[connection signal="button_down" from="Sheet/Paper/Stack/BounceRow/BounceUp" to="Click" method="play"]
+[connection signal="button_down" from="Sheet/Paper/Stack/FloorRow/FloorDown" to="Click" method="play"]
+[connection signal="button_down" from="Sheet/Paper/Stack/FloorRow/FloorUp" to="Click" method="play"]
+[connection signal="button_down" from="Sheet/Paper/Stack/CeilingRow/CeilingDown" to="Click" method="play"]
+[connection signal="button_down" from="Sheet/Paper/Stack/CeilingRow/CeilingUp" to="Click" method="play"]

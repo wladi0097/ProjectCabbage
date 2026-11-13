@@ -50,6 +50,6 @@ shape = SubResource("BinderShape")
 
 [node name="Interactable" type="Node" parent="Binder/Hit"]
 script = ExtResource("7_interactable")
-tooltip = "The ledger: your sales, coins over time, staff and approvals. Click to open."
+tooltip = "The ledger: your sales, earnings per minute, staff and approvals. Click to open."
 enabled = false
 pressable = true

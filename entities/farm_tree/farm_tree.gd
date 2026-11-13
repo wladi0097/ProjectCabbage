@@ -75,7 +75,7 @@ The standing seed order buys the 50-seed pack instead of the 10."},
 		body = "Your photograph is on the barn wall.\nA square you pull by hand yields 3× instead of 2×."},
 	{id = "thumb_replant", parent = "thumb_yield", at = Vector2(0.0, -1.45), icon = "sprout", price = 900, currency = "findings",
 		add = {hand_replant = 1}, title = "ONE IN, ONE OUT",
-		body = "The hole is never left empty. It is policy.\nA square you pull by hand is replanted at once with a seed from the crate."},
+		body = "The hole is never left empty. It is policy.\nA square you pull out yourself is replanted at once from the crate. Tractor harvests still wait for a farm hand."},
 	# Golden squares (desk card golden_cabbage): how often one grows golden (save.golden_chance). What a
 	# golden unit pays is the projector's (coins), not this tree's.
 	{id = "gold_chance_1", parent = "", at = Vector2(0.0, 0.95), icon = "sprout", price = 1500, currency = "findings",
@@ -100,15 +100,23 @@ The standing seed order buys the 50-seed pack instead of the 10."},
 		body = "Spoilage has been reclassified as maturing.\nA ripe square rots after 12 min instead of 8."},
 ]
 ## Each theme's heading: [title, spot (as a node's `at`), its first nodes], part of its branch (the
-## edges to its first nodes run through it; spots by tools/_theme_place.gd).
+## edges to its first nodes run through it; spots by tools/_theme_place.gd), and its category's
+## description for the heading's hover popup (a flavour line, then what the branch improves).
 const THEMES := [
-	["FARM HANDS", Vector2(-0.30, -0.21), ["hand_2"]],
-	["TRACTORS", Vector2(0.30, -0.21), ["tractor_2"]],
-	["SOIL", Vector2(-0.30, 0.24), ["fertiliser"]],
-	["SUPPLY", Vector2(0.30, 0.24), ["seed_contract"]],
-	["BY HAND", Vector2(0.0, -0.55), ["thumb_yield"]],
-	["GOLDEN", Vector2(0.0, 0.55), ["gold_chance_1"]],
-	["COLD CHAIN", Vector2(0.77, 0.00), ["cold_frames"]],
+	["FARM HANDS", Vector2(-0.30, -0.21), ["hand_2"],
+		"Seasonal in name only.\nMore farm hands planting empty squares, faster and further per trip."],
+	["TRACTORS", Vector2(0.30, -0.21), ["tractor_2"],
+		"Harvesting, mechanised and leased.\nMore tractors harvesting ripe squares, faster and more squares per trip."],
+	["SOIL", Vector2(-0.30, 0.24), ["fertiliser"],
+		"The ground is held to targets.\nSquares ripen sooner, and every harvest gives more cabbages."],
+	["SUPPLY", Vector2(0.30, 0.24), ["seed_contract"],
+		"Seeds, procured without questions.\nCheaper seed packs, and a standing order that buys sooner and in bulk."],
+	["BY HAND", Vector2(0.0, -0.55), ["thumb_yield"],
+		"Your own work, recognised in writing.\nSquares you pull by hand yield more and are replanted at once."],
+	["GOLDEN", Vector2(0.0, 0.55), ["gold_chance_1"],
+		"Some seeds are more promising than others.\nMore squares grow golden."],
+	["COLD CHAIN", Vector2(0.77, 0.00), ["cold_frames"],
+		"Spoilage is a scheduling issue.\nRipe squares wait longer before they rot."],
 ]
 
 @export var approve_sound: AudioStream
@@ -116,7 +124,9 @@ const THEMES := [
 
 @onready var _tree: UpgradeTree = $Tree
 @onready var _locked: Control = $Locked
-@onready var _budget: Label = $Budget
+## The budget line; its ¶ figure is a label of its own in the Findings counter's Oswald Bold and cream.
+@onready var _budget: Label = $BudgetLine/Budget
+@onready var _findings: Label = $BudgetLine/Findings
 @onready var _sfx: AudioStreamPlayer = $Sfx
 
 
@@ -131,7 +141,8 @@ func _process(_delta: float) -> void:
 	var open := unlocked(save)
 	_locked.visible = not open
 	_tree.visible = open
-	_budget.text = tr("BUDGET  $%d   |   FINDINGS  ¶%d") % [save.coins, save.findings]
+	_budget.text = tr("BUDGET  $%d   |   FINDINGS") % save.coins
+	_findings.text = "¶%d" % save.findings
 
 
 func _approved(id: String, paid: int) -> void:

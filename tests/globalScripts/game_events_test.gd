@@ -354,3 +354,59 @@ func test_an_old_save_that_stamped_mechanisation_gets_the_promotion_paper_once()
 	assert_array(Report.due(save)).contains(["promotion"])
 	save.reports.append("promotion")
 	assert_array(Report.due(save)).not_contains(["promotion"])
+
+
+func test_the_volatility_notice_comes_after_the_promotion_not_with_it() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["mechanisation"])
+	save.reports = PackedStringArray(["welcome"])
+	save.volatile_wait = Events.VOLATILE_AFTER
+	assert_bool(Events.volatile_due(save)).is_false()  # The promotion paper is not signed yet.
+	assert_array(Report.due(save)).not_contains(["street_volatility"])
+
+	save.reports.append("promotion")
+	save.volatile_wait = Events.VOLATILE_AFTER - 1.0
+	assert_bool(Events.volatile_due(save)).is_false()
+	save.volatile_wait = Events.VOLATILE_AFTER
+	assert_bool(Events.volatile_due(save)).is_true()
+	save.street_volatile = true
+	assert_bool(Events.volatile_due(save)).is_false()
+	assert_array(Report.due(save)).is_equal(["street_volatility"])
+
+
+func test_a_form_left_affordable_for_five_minutes_brings_one_warning_that_progress_is_required() -> void:
+	var seconds := 0.0
+	while seconds < Events.PROGRESS_AFTER - 0.5:
+		seconds = Events.progress_clock(seconds, 0.5, true, false)
+		assert_bool(Events.progress_due(seconds, false, true)).is_false()
+	seconds = Events.progress_clock(seconds, 0.5, true, false)
+	assert_bool(Events.progress_due(seconds, false, true)).is_true()
+	var save := SaveGame.new()
+	save.reports = PackedStringArray(["welcome"])
+	save.progress_warned = true
+	assert_array(Report.due(save)).is_equal(["progress_required"])
+
+
+func test_approving_any_form_restarts_the_five_minutes() -> void:
+	assert_float(Events.progress_clock(Events.PROGRESS_AFTER - 1.0, 0.5, true, true)).is_equal(0.0)
+
+
+func test_the_clock_does_not_run_while_no_form_is_affordable() -> void:
+	assert_float(Events.progress_clock(120.0, 0.5, false, false)).is_equal(0.0)
+	assert_bool(Events.progress_due(Events.PROGRESS_AFTER, false, false)).is_false()
+
+
+func test_the_warning_comes_once_and_never_again() -> void:
+	assert_bool(Events.progress_due(Events.PROGRESS_AFTER * 3.0, true, true)).is_false()
+	var save := SaveGame.new()
+	save.progress_warned = true
+	save.reports = PackedStringArray(["welcome", "progress_required"])
+	assert_array(Report.due(save)).is_empty()
+
+
+func test_the_progress_warning_waits_behind_a_story_note_due_at_the_same_moment() -> void:
+	var save := SaveGame.new()
+	save.reports = PackedStringArray(["welcome"])
+	save.progress_warned = true
+	save.slate_unlocked = true
+	assert_array(Report.due(save)).is_equal(["mood_drift", "progress_required"])

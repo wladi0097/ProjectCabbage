@@ -164,6 +164,48 @@ func test_a_miss_counts_only_when_the_player_could_have_caught_it() -> void:
 	assert_bool(Combo.missed_counts(false, false, true)).is_false()
 
 
+func test_holding_a_cabbage_is_no_excuse_but_working_the_desk_is() -> void:
+	var cabbage := preload("res://entities/cabbage/cabbage.tscn").instantiate()
+	var arrow := auto_free(Node3D.new()) as Node3D
+	var arrow_grip := Interactable.new()
+	arrow.add_child(arrow_grip)
+
+	assert_bool(Combo.at_the_desk(null)).is_false()
+	assert_bool(Combo.at_the_desk(cabbage.get_node("Interactable") as Interactable)).is_false()
+	assert_bool(Combo.at_the_desk(arrow_grip)).is_true()
+	var grip := cabbage.get_node("Interactable")
+	cabbage.free()
+	assert_bool(Combo.at_the_desk(grip)).is_false()  # A held cabbage freed (sold) is not desk work.
+
+
+func test_a_cabbage_landing_while_you_hold_another_one_breaks_the_streak() -> void:
+	var combo := spawn()
+	var cabbage := preload("res://entities/cabbage/cabbage.tscn").instantiate()
+	catch_times(combo, 3)
+	var was_held := Hand.held
+	Hand.held = cabbage.get_node("Interactable") as Interactable
+	combo.missed()
+	Hand.held = was_held
+	cabbage.free()
+
+	assert_int(combo.streak).is_equal(0)
+	assert_int(combo.steps).is_equal(0)
+
+
+func test_a_cabbage_landing_while_you_turn_the_price_arrow_keeps_the_streak() -> void:
+	var combo := spawn()
+	var arrow := auto_free(Node3D.new()) as Node3D
+	var grip := Interactable.new()
+	arrow.add_child(grip)
+	catch_times(combo, 3)
+	var was_held := Hand.held
+	Hand.held = grip
+	combo.missed()
+	Hand.held = was_held
+
+	assert_int(combo.streak).is_equal(3)
+
+
 func test_a_unit_landing_while_the_camera_is_at_the_farm_tv_keeps_the_streak() -> void:
 	var combo := spawn()
 	catch_times(combo, 3)

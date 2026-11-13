@@ -41,8 +41,8 @@ func say(price: int, at: Vector3) -> void:
 	_x = clampf(_x, SIZE.x * SCALE / 2.0 + MARGIN, view.x - SIZE.x * SCALE / 2.0 - MARGIN)
 	# The manager's bubble hangs in the same place while he waits: hang below it then.
 	_top = TOP
-	for manager: Manager in get_tree().root.find_children("*", "Manager", true, false):
-		if manager.phase in [Manager.Phase.QUOTA, Manager.Phase.VERDICT]:
+	for manager in get_tree().root.find_children("*", "", true, false):  # `is`, not a class name string (GDMaim).
+		if manager is Manager and manager.phase in [Manager.Phase.QUOTA, Manager.Phase.VERDICT]:
 			_top = TOP + ManagerBubble.SIZE.y * ManagerBubble.SCALE + 12.0
 	_time = 0.0
 

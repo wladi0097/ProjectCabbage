@@ -51,9 +51,9 @@ Adds the RESEARCH LAB section to the projector: faster analysis, more Findings, 
 Der Projektor erhält die Abteilung FORSCHUNGSLABOR: schnellere Prüfung, mehr Befunde, mehr Prüftische."
 RETAIN A PRICING CONSULTANT,RETAIN A PRICING CONSULTANT,PREISBERATER BEAUFTRAGEN
 "Billed by the hour.
-Every 4 s it moves your price $1 toward the price at which ~90% of cabbages sell. Use the arrows yourself and it leaves for 15 s. Its on/off switch is by the slate.","Billed by the hour.
-Every 4 s it moves your price $1 toward the price at which ~90% of cabbages sell. Use the arrows yourself and it leaves for 15 s. Its on/off switch is by the slate.","Wird stundenweise abgerechnet.
-Alle 4 s ändert er Ihren Preis um $1 in Richtung des Preises, zu dem ~90% der Kohlköpfe gekauft werden. Bedienen Sie die Pfeile selbst, geht er für 15 s. Sein Ein/Aus-Schalter ist an der Tafel."
+Every 4 s it moves your price $1 toward the price at which your mandate's share of cabbages is refused (10% to start). Use the arrows yourself and it leaves for 15 s. Its switch by the slate opens the mandate.","Billed by the hour.
+Every 4 s it moves your price $1 toward the price at which your mandate's share of cabbages is refused (10% to start). Use the arrows yourself and it leaves for 15 s. Its switch by the slate opens the mandate.","Wird stundenweise abgerechnet.
+Alle 4 s ändert er Ihren Preis um $1 in Richtung des Preises, zu dem der im Mandat festgelegte Anteil der Kohlköpfe abgelehnt wird (anfangs 10%). Bedienen Sie die Pfeile selbst, geht er für 15 s. Sein Schalter an der Tafel öffnet das Mandat."
 INTERCEPTION INCENTIVE SCHEME,INTERCEPTION INCENTIVE SCHEME,FANGPRÄMIE
 "Initiative is rewarded.
 Catch a cabbage in mid-air: every sale pays +10%, up to +50% after 5 catches. A cabbage you let land ends the bonus.","Initiative is rewarded.
@@ -96,9 +96,9 @@ Lab hands take blue research cabbages first. Other hired hands stop selling them
 Laborkräfte nehmen zuerst blaue Forschungskohlköpfe. Andere Hilfskräfte verkaufen sie nicht mehr."
 REQUEST MANAGERIAL OVERSIGHT,REQUEST MANAGERIAL OVERSIGHT,FÜHRUNGSKRAFT ANFORDERN
 "Someone will be checking.
-Every 2.5-4 min a manager knocks on the window with a quota: sell that many cabbages in 45 s (your pace of the last 5 min, plus 25%). Met: you get quota × your price in coins. Missed: only a memo.","Someone will be checking.
-Every 2.5-4 min a manager knocks on the window with a quota: sell that many cabbages in 45 s (your pace of the last 5 min, plus 25%). Met: you get quota × your price in coins. Missed: only a memo.","Es wird kontrolliert.
-Alle 2,5-4 min klopft ein Manager ans Fenster und setzt eine Vorgabe: so viele Kohlköpfe in 45 s verkaufen (Ihr Tempo der letzten 5 min plus 25%). Erfüllt: Sie erhalten Vorgabe × Ihr Preis in Münzen. Verfehlt: nur eine Aktennotiz."
+Every 2.5-4 min a manager knocks on the window with a quota: sell that many cabbages in 45 s (your pace of the last 5 min plus 25%, but never more than the chute can drop in time). Met: you get quota × your price in coins. Missed: only a memo.","Someone will be checking.
+Every 2.5-4 min a manager knocks on the window with a quota: sell that many cabbages in 45 s (your pace of the last 5 min plus 25%, but never more than the chute can drop in time). Met: you get quota × your price in coins. Missed: only a memo.","Es wird kontrolliert.
+Alle 2,5-4 min klopft ein Manager ans Fenster und setzt eine Vorgabe: so viele Kohlköpfe in 45 s verkaufen (Ihr Tempo der letzten 5 min plus 25%, aber nie mehr, als die Rutsche in der Zeit liefern kann). Erfüllt: Sie erhalten Vorgabe × Ihr Preis in Münzen. Verfehlt: nur eine Aktennotiz."
 STREET TARGET PRACTICE,STREET TARGET PRACTICE,ZIELÜBUNG AUF DER STRASSE
 "The street is given a target.
 About every 60 s a lamp lights a crate in the street for 15 s. Throw a cabbage out of the window in line with it: that sale pays 10× its coins on top.","The street is given a target.
@@ -126,9 +126,9 @@ The robots also collect Findings tokens in front of the research lab. Each takes
 Die Roboter sammeln auch Befundmarken vor dem Forschungslabor ein. Jede belegt im Beutel den Platz einer Münze. Beim Andocken werden sie als Befunde verbucht."
 REQUISITION A LEDGER,REQUISITION A LEDGER,HAUPTBUCH BEANTRAGEN
 "Someone may read it.
-A binder on the left of the desk: click it to read your sales, coins over time, staff and approvals. No other effect.","Someone may read it.
-A binder on the left of the desk. Click it to see your sales, coins over time, staff and approvals. Nothing else.","Vielleicht liest es jemand.
-Ein Ordner links auf dem Tisch. Ein Klick zeigt Verkäufe, Münzen im Zeitverlauf, Personal und Genehmigungen. Sonst nichts."
+A binder on the left of the desk: click it to read your sales, earnings per minute worked, staff and approvals. No other effect.","Someone may read it.
+A binder on the left of the desk. Click it to see your sales, earnings per minute worked, staff and approvals. Nothing else.","Vielleicht liest es jemand.
+Ein Ordner links auf dem Tisch. Ein Klick zeigt Verkäufe, Ertrag je geleisteter Minute, Personal und Genehmigungen. Sonst nichts."
 RESEARCH: CONSUMER SENTIMENT,RESEARCH: CONSUMER SENTIMENT,FORSCHUNG: VERBRAUCHERSTIMMUNG
 "The street is asked how it feels.
 Unlocks Slogan IV and Brassica for the Masses on the projector (each: the street pays 25% more without refusing).","The street is asked how it feels.
@@ -136,9 +136,9 @@ Unlocks Slogan IV and Brassica for the Masses on the projector (each: the street
 Schaltet SLOGAN IV und BRASSICA FÜR DIE MASSEN am Projektor frei (je: Die Straße zahlt 25% mehr, ohne abzulehnen)."
 DECLARE A GOLDEN AGE,DECLARE A GOLDEN AGE,GOLDENES ZEITALTER AUSRUFEN
 "Nobody knows why.
-About every 150 s a Golden Age dawns for 20 s and the lamp at the back right glows gold. While it lasts, every sale pays 5×.","Nobody knows why.
-About every 150 s a Golden Age dawns for 20 s and the lamp at the back right glows gold. While it lasts, every sale pays 5×.","Niemand weiß, warum.
-Etwa alle 150 s bricht für 20 s ein Goldenes Zeitalter an, und die Lampe hinten rechts leuchtet golden. Solange es währt, bringt jeder Verkauf das 5-Fache."
+About every 150 s a Golden Age dawns for 20 s and the lamp at the back right glows gold. While it lasts, every sale pays 5× (golden cabbages excluded).","Nobody knows why.
+About every 150 s a Golden Age dawns for 20 s and the lamp at the back right glows gold. While it lasts, every sale pays 5× (golden cabbages excluded).","Niemand weiß, warum.
+Etwa alle 150 s bricht für 20 s ein Goldenes Zeitalter an, und die Lampe hinten rechts leuchtet golden. Solange es währt, bringt jeder Verkauf das 5-Fache (goldene Kohlköpfe ausgenommen)."
 ACQUIRE THE FAMILY FARM,ACQUIRE THE FAMILY FARM,FAMILIENHOF ÜBERNEHMEN
 MARKETING,MARKETING,MARKETING
 "The street is told what it wants.
@@ -595,6 +595,16 @@ THIRD BENCH,THIRD BENCH,DRITTER PRÜFTISCH
 The research lab analyses 3 cabbages at once, not 2.","The lab is now an institute.
 The research lab analyses 3 cabbages at once, not 2.","Das Labor ist jetzt ein Institut.
 Das Forschungslabor prüft 3 Kohlköpfe zugleich, nicht 2."
+FOURTH BENCH,FOURTH BENCH,VIERTER PRÜFTISCH
+"The institute has applied for a wing.
+The research lab analyses 4 cabbages at once, not 3.","The institute has applied for a wing.
+The research lab analyses 4 cabbages at once, not 3.","Das Institut hat einen Anbau beantragt.
+Das Forschungslabor prüft 4 Kohlköpfe zugleich, nicht 3."
+FIFTH BENCH,FIFTH BENCH,FÜNFTER PRÜFTISCH
+"The wing has a committee for its benches.
+The research lab analyses 5 cabbages at once, not 4.","The wing has a committee for its benches.
+The research lab analyses 5 cabbages at once, not 4.","Der Anbau hat einen Ausschuss für seine Prüftische.
+Das Forschungslabor prüft 5 Kohlköpfe zugleich, nicht 4."
 EXTENDED DEADLINES,EXTENDED DEADLINES,VERLÄNGERTE FRISTEN
 "The manager is shown a calendar.
 Quotas give you 60 s instead of 45 s.","The manager is shown a calendar.
@@ -608,9 +618,15 @@ Erfüllte Vorgaben bringen Vorgabe × Preis × 1,5
 statt × 1."
 REALISTIC TARGETS,REALISTIC TARGETS,REALISTISCHE ZIELE
 "Ambition is capped by memo.
-Quotas ask your pace plus 15%, not plus 25%.","Ambition is capped by memo.
-Quotas ask for your pace plus 15%, not plus 25%.","Ehrgeiz wird per Aktennotiz gedeckelt.
-Vorgaben verlangen Ihr Tempo plus 15% statt plus 25%."
+Quotas ask for at most your pace plus 15%, not plus 25%.
+Pace: full cabbages you sold per quota window,
+averaged over your last 5 minutes. Minis do not count.","Ambition is capped by memo.
+Quotas ask for at most your pace plus 15%, not plus 25%.
+Pace: full cabbages you sold per quota window,
+averaged over your last 5 minutes. Minis do not count.","Ehrgeiz wird per Aktennotiz gedeckelt.
+Vorgaben verlangen höchstens Ihr Tempo plus 15% statt plus 25%.
+Tempo: volle Kohlköpfe, die Sie pro Vorgabefrist verkaufen,
+gemittelt über Ihre letzten 5 Minuten. Minis zählen nicht."
 EMPLOYEE OF THE QUARTER,EMPLOYEE OF THE QUARTER,MITARBEITER DES QUARTALS
 "A frame is purchased. It stays empty.
 Met quotas pay quota × price × 2.25, not × 1.5.","A frame is purchased. It stays empty.
@@ -623,30 +639,7 @@ It taps the slate every 2 s instead of 4 s.","The consultant bills by the tap.
 It changes your price every 2 s, not every 4 s.","Der Berater rechnet pro Antippen ab.
 Er ändert Ihren Preis alle 2 s statt alle 4 s."
 READS THE ROOM,READS THE ROOM,STIMMUNGSGESPÜR
-"The consultant looks out of the window.
-The street's mood moves its prices by up to ±10%
-every minute, never past ±25%. The consultant now follows it,
-so ~90% of cabbages keep selling.","The consultant looks out of the window.
-The street's mood moves its prices by up to ±10%
-every minute, never past ±25%. The consultant now follows it,
-so ~90% of cabbages keep selling.","Der Berater schaut aus dem Fenster.
-Die Laune der Straße verschiebt ihre Preise jede
-Minute um bis zu ±10%, nie über ±25%. Der Berater folgt ihr jetzt,
-sodass weiter ~90% gekauft werden."
 YIELD OPTIMISATION,YIELD OPTIMISATION,ERTRAGSOPTIMIERUNG
-"Some cabbages may now be refused.
-It picks the price with the most profit per cabbage
-(sale minus pack cost). If hired hands find the
-mat empty, it adds $1 per tap (up to 1.6× the
-price at which every cabbage sells).","Some cabbages may now be refused.
-It picks the price with the most profit per cabbage
-(sale minus pack cost). If hired hands find the
-mat empty, it adds $1 per tap (up to 1.6× the
-price at which every cabbage sells).","Einige Kohlköpfe dürfen jetzt abgelehnt werden.
-Er wählt den Preis mit dem meisten Gewinn pro
-Kohlkopf (Verkauf minus Einkauf). Finden die
-Hilfskräfte die Matte leer, erhöht er um $1 pro Tipp
-(bis 1,6× des Preises, zu dem alles gekauft wird)."
 RETAINER,RETAINER,PAUSCHALVERTRAG
 "The consultant no longer leaves.
 It taps the slate every 1 s instead of 2 s.","The consultant no longer leaves.
@@ -850,7 +843,6 @@ FINDINGS  ¶%d,FINDINGS  ¶%d,BEFUNDE  ¶%d
 DRAG TO MOVE   |   WHEEL TO ZOOM,DRAG TO MOVE   |   WHEEL TO ZOOM,ZIEHEN ZUM VERSCHIEBEN   |   RAD ZUM ZOOMEN
 DOUBLE-CLICK TO RECENTRE,DOUBLE-CLICK TO RECENTRE,DOPPELKLICK ZUM ZENTRIEREN
 NEW,NEW,NEU
-DEPARTMENT,DEPARTMENT,ABTEILUNG
 APPROVED,APPROVED,GENEHMIGT
 COST $%d,COST $%d,KOSTEN $%d
 10 CABBAGES MOVED,10 CABBAGES MOVED,10 KOHLKÖPFE VERKAUFT
@@ -970,6 +962,7 @@ PERSONNEL FILE  |  DESK 4,PERSONNEL FILE  |  DESK 4,PERSONALAKTE  |  TISCH 4
 MEMOS,MEMOS,AKTENNOTIZEN
 BOSS NOTES,BOSS NOTES,CHEFNOTIZEN
 "Golden Age lamp. About every %d s a Golden Age dawns for %d s: while it lasts, every sale pays %s×.","Golden Age lamp. About every %d s a Golden Age dawns for %d s: while it lasts, every sale pays %s×.","Lampe des Goldenen Zeitalters. Etwa alle %d s bricht für %d s ein Goldenes Zeitalter an: Solange es währt, zahlt jeder Verkauf %s×."
+Golden cabbages excluded.,Golden cabbages excluded.,Goldene Kohlköpfe ausgenommen.
 Effective: ,Effective: ,Wirkung: 
 ROTTEN CABBAGES IN THE SUPPLY CHAIN,ROTTEN CABBAGES IN THE SUPPLY CHAIN,FAULE KOHLKÖPFE IN DER LIEFERKETTE
 Some suppliers ship rotten cabbages. You can tell them by their colour. Never sell one: the street takes it and fines us 10× your price. Throw them into the waste bin at the bottom of your mat.,Some suppliers ship rotten cabbages. You can tell them by their colour. Never sell one: the street takes it and fines us 10× your price. Throw them into the waste bin at the bottom of your mat.,Einige Lieferanten liefern faule Kohlköpfe. Sie erkennen sie an der Farbe. Verkaufen Sie nie einen: Die Straße beschlagnahmt ihn und berechnet uns das Zehnfache Ihres Preises. Werfen Sie sie in den Abfalleimer unten an Ihrer Matte.
@@ -978,14 +971,14 @@ THE STREET HAS MOODS,THE STREET HAS MOODS,DIE STRASSE HAT LAUNEN
 WHOLESALE PRICES REACT TO YOU,WHOLESALE PRICES REACT TO YOU,DER GROSSHANDEL REAGIERT AUF SIE
 You may now order packs at the supply console. Every pack you order pushes next minute's pack price up. Panic buying will be invoiced accordingly. Spread your orders and watch the ticker.,You may now order packs at the supply console. Each pack you buy raises the pack price for the next minute. Panic buying will be invoiced accordingly. Spread out your orders and watch the ticker.,Sie dürfen jetzt am Bestellpult Lieferungen bestellen. Jede Bestellung erhöht den Preis für die nächste Minute. Panikkäufe werden entsprechend berechnet. Verteilen Sie Ihre Bestellungen und beobachten Sie die Preisanzeige.
 THE RESEARCH LAB TAKES THE WINDOW,THE RESEARCH LAB TAKES THE WINDOW,DAS LABOR BEANSPRUCHT EIN FENSTERDRITTEL
-"The research lab now takes up the left third of the window. Cabbages only sell through the right two thirds. Aim accordingly. Cabbages thrown into the lab are studied, not sold.","The research lab now takes up the left third of the window. Cabbages only sell through the right two thirds. Aim accordingly. Cabbages thrown into the lab are studied, not sold.","Das Forschungslabor belegt ab sofort das linke Drittel des Fensters. Verkauft wird nur noch über die rechten zwei Drittel. Zielen Sie entsprechend. Was im Labor landet, wird geprüft, nicht verkauft."
+"The research lab now takes up the left third of the window. Cabbages only sell through the right two thirds. Aim accordingly. Cabbages thrown into the lab are studied, not sold. A projector requisition will reach your tray. What it shows is discretionary spending. The forms on your desk come first.","The research lab now takes up the left third of the window. Cabbages only sell through the right two thirds. Aim accordingly. Cabbages thrown into the lab are studied, not sold. A projector requisition will reach your tray. What it shows is discretionary spending. The forms on your desk come first.","Das Forschungslabor belegt ab sofort das linke Drittel des Fensters. Verkauft wird nur noch über die rechten zwei Drittel. Zielen Sie entsprechend. Was im Labor landet, wird geprüft, nicht verkauft. Ein Antrag auf einen Projektor wird Ihre Ablage erreichen. Was er zeigt, sind freiwillige Ausgaben. Die Formulare auf Ihrem Tisch haben Vorrang."
 YOU WILL BE MANAGED,YOU WILL BE MANAGED,SIE WERDEN GEFÜHRT
 "As requested, a manager will come to your window every few minutes with a quota: sell that many cabbages in 45 s. Meet it and you get paid. Miss it and it goes in your file.","As requested, a manager will come to your window every few minutes with a quota: sell that many cabbages in 45 s. Meet it and you get paid. Miss it and it goes in your file.","Wie beantragt, kommt alle paar Minuten ein Manager an Ihr Fenster und setzt eine Vorgabe: so viele Kohlköpfe in 45 s verkaufen. Erfüllen Sie sie, werden Sie bezahlt. Verfehlen Sie sie, kommt es in Ihre Akte."
 WHOLESALE PRICES EXPLODE,WHOLESALE PRICES EXPLODE,GROSSHANDELSPREISE EXPLODIEREN
 THE WHOLESALERS RETALIATE,THE WHOLESALERS RETALIATE,DER GROSSHANDEL SCHLÄGT ZURÜCK
 "Word of the farm got out. Crates now cost more than a cabbage sells for. This is not a phase. The standing order will not buy at a loss, and neither should you. Live off the farm: the remote on your desk switches to it.","Word of the farm got out. Crates now cost more than a cabbage sells for. This is not a phase. The standing order will not buy at a loss, and neither should you. Live off the farm: the remote on your desk switches to it.","Das mit dem Hof hat sich herumgesprochen. Ein Kohlkopf aus der Kiste kostet jetzt mehr, als er im Verkauf bringt. Das bleibt so. Die Dauerbestellung kauft nicht mit Verlust, und Sie sollten es auch nicht. Leben Sie vom Hof: Die Fernbedienung auf Ihrem Tisch schaltet dorthin."
 WELCOME TO DESK 4,WELCOME TO DESK 4,WILLKOMMEN AN TISCH 4
-"You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Further instructions will follow in writing. Sign below to confirm you have understood.","You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Further instructions will follow in writing. Sign below to confirm you have understood.","Ihnen wurden ein Tisch, ein Fenster und ein Vorrat an Kohlköpfen zugewiesen. Werfen Sie Kohlköpfe aus dem Fenster, um sie zu verkaufen. Die Straße zahlt in Münzen. Fahren Sie mit der Hand über die Münzen auf der Matte, um sie einzusammeln. Weitere Anweisungen folgen schriftlich. Bestätigen Sie mit Ihrer Unterschrift, dass Sie verstanden haben."
+"You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Forms will arrive on your desk. They are orders. Approving them is how the company grows: approve every one you can afford. Sign below to confirm you have understood.","You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Forms will arrive on your desk. They are orders. Approving them is how the company grows: approve every one you can afford. Sign below to confirm you have understood.","Ihnen wurden ein Tisch, ein Fenster und ein Vorrat an Kohlköpfen zugewiesen. Werfen Sie Kohlköpfe aus dem Fenster, um sie zu verkaufen. Die Straße zahlt in Münzen. Fahren Sie mit der Hand über die Münzen auf der Matte, um sie einzusammeln. Auf Ihrem Tisch werden Formulare eintreffen. Es sind Anweisungen. Mit jeder Genehmigung wächst die Firma: Genehmigen Sie jedes, das Sie sich leisten können. Bestätigen Sie mit Ihrer Unterschrift, dass Sie verstanden haben."
 OFFICE OF THE DIRECTOR,OFFICE OF THE DIRECTOR,BÜRO DES DIREKTORS
 SIGNATURE OF EMPLOYEE,SIGNATURE OF EMPLOYEE,UNTERSCHRIFT DES MITARBEITERS
 Sign here,Sign here,Hier unterschreiben
@@ -1053,7 +1046,7 @@ Deducted from your tally.,Deducted from your coins.,Von Ihren Münzen abgezogen.
 "Rotten cabbages are to be disposed of, not sold.","Rotten cabbages are to be disposed of, not sold.","Faule Kohlköpfe sind zu entsorgen, nicht zu verkaufen."
 OFFER DECLINED,OFFER DECLINED,ANGEBOT ABGELEHNT
 INTERCEPTS %d,INTERCEPTS %d,FÄNGE %d
-"The ledger: your sales, coins over time, staff and approvals. Click to open.","The ledger: your sales, coins over time, staff and approvals. Click to open.","Die Bilanz: Verkäufe, Münzen im Zeitverlauf, Personal und Genehmigungen. Klicken zum Öffnen."
+"The ledger: your sales, earnings per minute, staff and approvals. Click to open.","The ledger: your sales, earnings per minute, staff and approvals. Click to open.","Die Bilanz: Verkäufe, Ertrag je Minute, Personal und Genehmigungen. Klicken zum Öffnen."
 "Your memos: the ones you have earned and the ones still classified, with how to earn them. Click to open.","Your memos: the ones you have earned, and the classified ones with how to earn them. Click to open.","Ihre Aktennotizen: die erhaltenen und die noch geheimen, mit Hinweis, wie man sie erhält. Klicken zum Öffnen."
 FILES,FILES,AKTEN
 "Tube lever. SALES: minis roll out of the window and sell. RESEARCH: they go to the research lab for Findings. SPLIT: every other one. Drag it, or click to step.","Tube lever. SALES: minis roll out of the window and sell. RESEARCH: they go into the research lab for Findings. SPLIT: every second one goes to research. Drag it, or click to switch.",Rohrpost-Weiche. VERKAUF: Minis rollen aus dem Fenster und werden verkauft. FORSCHUNG: Sie gehen ins Forschungslabor und bringen Befunde. TEILEN: jede zweite geht in die Forschung. Ziehen oder klicken zum Umschalten.
@@ -1065,9 +1058,8 @@ PRICE PER CABBAGE,PRICE PER CABBAGE,PREIS PRO KOHLKOPF
 Pull down to open the projector: the upgrade tree. Hold an upgrade there to buy it with coins.,Pull down to open the projector (the upgrade tree). Hold the mouse on an upgrade to buy it with coins.,"Nach unten ziehen: Der Projektor mit dem Upgrade-Baum öffnet sich. Maustaste auf einem Upgrade halten, um es mit Münzen zu kaufen."
 Play or stop the radio.,Play or stop the radio.,Radio an- oder ausschalten.
 Skip to the next song.,Skip to the next song.,Zum nächsten Lied springen.
-Auto-buy switch. Up: a pack is bought by itself whenever stock runs low (and you can pay). Down: you buy by hand.,Auto-buy switch. Up: a pack is bought automatically when stock runs low (if you can pay). Down: you buy by hand.,Autokauf-Schalter. Oben: Bei knappem Bestand wird automatisch eine Lieferung gekauft (sofern Sie zahlen können). Unten: Sie kaufen von Hand.
+Auto-buy switch. Left: a pack is bought by itself whenever stock runs low (and you can pay). Right: you buy by hand.,Auto-buy switch. Left: a pack is bought automatically when stock runs low (if you can pay). Right: you buy by hand.,Autokauf-Schalter. Links: Bei knappem Bestand wird automatisch eine Lieferung gekauft (sofern Sie zahlen können). Rechts: Sie kaufen von Hand.
 "Buy a pack of cabbages at the ticker price, paid from your coins. They roll down the chute. From 130 cabbages in stock, a pack costs 5× as much.","Buy a pack of cabbages at the ticker price, paid from your coins. They roll down the chute. From 130 cabbages in stock, a pack costs 5× as much.","Eine Lieferung Kohlköpfe zum Preis auf der Preisanzeige kaufen, bezahlt mit Ihren Münzen. Sie rollen die Rutsche hinunter. Ab 130 Kohlköpfen im Bestand kostet eine Lieferung das 5-Fache."
-Auto-buy lamp: amber while on. Click it (or the switch beside it) to turn automatic pack buying on or off.,"Auto-buy lamp: amber while on. Click it, or the switch next to it, to turn auto-buy on or off.","Autokauf-Lampe: leuchtet gelb, solange er an ist. Klicken Sie darauf oder auf den Schalter daneben, um den Autokauf ein- oder auszuschalten."
 Findings (¶): research points from the research lab. Cards priced in ¶ are paid from here. Tokens on the desk only count once you sweep them in.,Findings (¶): research points from the research lab. Cards priced in ¶ are paid with them. Tokens on the desk only count once you collect them.,"Befunde (¶): Forschungspunkte aus dem Forschungslabor. Formulare mit ¶-Preis werden damit bezahlt. Befundmarken auf dem Tisch zählen erst, wenn Sie sie eingesammelt haben."
 "Coins: the money you have. Prices in $ (cards, upgrades, packs) are paid from here. Coins on the mat only count once you sweep them in.","Coins: your money. Prices in $ (cards, upgrades, packs) are paid with them. Coins on the mat only count once you collect them.","Münzen: Ihr Geld. Preise in $ (Formulare, Upgrades, Lieferungen) werden damit bezahlt. Münzen auf der Matte zählen erst, wenn Sie sie eingesammelt haben."
 "Approval press. Drag a card from the tray onto the pad, then pull this handle all the way down to pay for and approve it.",Approval press. Drag a card from the tray onto the pad. Then pull this handle all the way down to pay for it and approve it.,Stempelpresse. Ziehen Sie ein Formular aus der Ablage unter den Stempel. Ziehen Sie dann diesen Hebel ganz nach unten: Das Formular wird bezahlt und genehmigt.
@@ -1088,7 +1080,10 @@ TRIP INTERVAL,TRIP INTERVAL,TAKTZEIT
 WALKING SPEED,WALKING SPEED,GEHTEMPO
 QUARTERLY PERFORMANCE SUMMARY,QUARTERLY PERFORMANCE SUMMARY,QUARTALSLEISTUNGSBERICHT
 FORM QP-1,FORM QP-1,FORMULAR QP-1
-LIQUIDITY OVER TIME,LIQUIDITY OVER TIME,LIQUIDITÄT IM ZEITVERLAUF
+EARNINGS PER MINUTE WORKED,EARNINGS PER MINUTE WORKED,ERTRAG JE GELEISTETER MINUTE
+$ PER MINUTE,$ PER MINUTE,$ JE MINUTE
+¶ PER MINUTE,¶ PER MINUTE,¶ JE MINUTE
+MINUTES ON SHIFT,MINUTES ON SHIFT,MINUTEN IM DIENST
 FORM QP-2,FORM QP-2,FORMULAR QP-2
 PERSONNEL,PERSONNEL,PERSONAL
 FORM HR-4,FORM HR-4,FORMULAR HR-4
@@ -1108,19 +1103,105 @@ Disappointing.,Disappointing.,Enttäuschend.
 We'll talk.,We'll talk.,Wir sprechen uns.
 PERFORMANCE CONCERN,PERFORMANCE CONCERN,LEISTUNGSBEDENKEN
 Nothing. This memo is the consequence.,Nothing. This memo is the consequence.,Keine. Diese Aktennotiz ist die Konsequenz.
+FILING PROCEDURE,FILING PROCEDURE,ABLAGEVERFAHREN
+"Every approved card is impaled on the spike, top right.","Every approved card is impaled on the spike, top right.",Jedes genehmigte Formular wird oben rechts aufgespießt.
+Click the spike to review them.,Click the spike to review them.,"Klicken Sie auf den Aktenspieß, um sie einzusehen."
 SALES,SALES,VERKAUF
 SPLIT,SPLIT,TEILEN
+MINI,MINI,MINI
 PULL,PULL,ZIEHEN
 REQUIRES:,REQUIRES:,ERST GENEHMIGEN:
 REQUIRES DESK CARD:,REQUIRES DESK CARD:,ERST AM TISCH GENEHMIGEN:
-REQUIRES RESEARCH:,REQUIRES RESEARCH:,ERST ERFORSCHEN:
+Approve the form %s on your desk.,Approve the form %s on your desk.,Genehmigen Sie das Formular %s auf Ihrem Schreibtisch.
+"Needs the form %s, which has not reached your desk yet.","Needs the form %s, which has not reached your desk yet.","Erfordert das Formular %s, das Ihren Schreibtisch noch nicht erreicht hat."
+"Volume is policy.
+Bigger packs from the supply console, and cheaper ones.","Volume is policy.
+Bigger packs from the supply console, and cheaper ones.","Menge ist Vorschrift.
+Größere Packungen von der Versorgungskonsole, und billigere."
+"Every cupboard is a warehouse in waiting.
+How many cabbages storage holds, and what golden cabbages earn at the window and in the lab.","Every cupboard is a warehouse in waiting.
+How many cabbages storage holds, and what golden cabbages earn at the window and in the lab.","Jeder Schrank ist ein Lager im Wartestand.
+Wie viele Kohlköpfe ins Lager passen, und was goldene Kohlköpfe am Fenster und im Labor einbringen."
+"The mat is leased by the cabbage.
+One more cabbage fits on the mat per step, up to 20.","The mat is leased by the cabbage.
+One more cabbage fits on the mat per step, up to 20.","Die Matte wird pro Kohlkopf gemietet.
+Pro Stufe passt ein Kohlkopf mehr auf die Matte, bis 20."
+"Incidents at the window, monetised.
+The catch combo, the lit crates in the street and what the bin pays for rot.","Incidents at the window, monetised.
+The catch combo, the lit crates in the street and what the bin pays for rot.","Zwischenfälle am Fenster, zu Geld gemacht.
+Die Fangserie, die beleuchteten Kisten auf der Straße und was der Eimer für Fäulnis zahlt."
+"The manager's visits, made survivable.
+Longer and lower quotas, bigger bonuses, and more for cabbages you sell yourself.","The manager's visits, made survivable.
+Longer and lower quotas, bigger bonuses, and more for cabbages you sell yourself.","Die Besuche des Managers, überlebbar gemacht.
+Längere und niedrigere Vorgaben, höhere Prämien und mehr für Kohlköpfe, die Sie selbst verkaufen."
+"Pricing, outsourced and billed by the tap.
+How fast the consultant works the slate, and how far ahead it reads the street.","Pricing, outsourced and billed by the tap.
+How fast the consultant works the slate, and how far ahead it reads the street.","Preisgestaltung, ausgelagert und pro Tippen abgerechnet.
+Wie schnell der Berater die Tafel bearbeitet und wie weit er die Straße vorausliest."
+"Logistics nobody has to think about.
+When and at what price auto-buy orders, and how fast the chute rolls out cabbages.","Logistics nobody has to think about.
+When and at what price auto-buy orders, and how fast the chute rolls out cabbages.","Logistik, über die niemand nachdenken muss.
+Wann und zu welchem Preis der Autokauf bestellt, und wie schnell die Rutsche Kohlköpfe ausgibt."
+"Coins are collected, not picked up.
+More coin robots, faster, with bigger bags, wider nozzles and shorter charging.","Coins are collected, not picked up.
+More coin robots, faster, with bigger bags, wider nozzles and shorter charging.","Münzen werden eingesammelt, nicht aufgehoben.
+Mehr Münzroboter, schneller, mit größeren Beuteln, breiteren Düsen und kürzerem Laden."
+"Productivity, measured in footsteps.
+Hired hands and lab hands walk faster and set off more often.","Productivity, measured in footsteps.
+Hired hands and lab hands walk faster and set off more often.","Produktivität, gemessen in Schritten.
+Angestellte Hände und Laborhände gehen schneller und brechen öfter auf."
+"Staffing is a number, and it goes up.
+More hired hands at the window, and a protocol for the bin.","Staffing is a number, and it goes up.
+More hired hands at the window, and a protocol for the bin.","Personal ist eine Zahl, und sie steigt.
+Mehr angestellte Hände am Fenster und eine Vorschrift für den Eimer."
+"Smaller cabbages, same paperwork.
+Minis drop more often, sell for more and grow into full cabbages in the growing station.","Smaller cabbages, same paperwork.
+Minis drop more often, sell for more and grow into full cabbages in the growing station.","Kleinere Kohlköpfe, gleicher Papierkram.
+Minis fallen öfter, bringen mehr und wachsen in der Zuchtstation zu ganzen Kohlköpfen."
+"The blue ones are special. It says so here.
+More blue research cabbages off the chute, and more Findings from each.","The blue ones are special. It says so here.
+More blue research cabbages off the chute, and more Findings from each.","Die blauen sind besonders. Das steht hier.
+Mehr blaue Forschungskohlköpfe aus der Rutsche und mehr Befunde aus jedem."
+"The lab is staffed, eventually.
+More lab hands throwing cabbages into the research lab.","The lab is staffed, eventually.
+More lab hands throwing cabbages into the research lab.","Das Labor wird besetzt, irgendwann.
+Mehr Laborhände, die Kohlköpfe ins Forschungslabor werfen."
+"Seasonal in name only.
+More farm hands planting empty squares, faster and further per trip.","Seasonal in name only.
+More farm hands planting empty squares, faster and further per trip.","Nur dem Namen nach saisonal.
+Mehr Erntehelfer, die leere Felder bepflanzen, schneller und weiter pro Gang."
+"Harvesting, mechanised and leased.
+More tractors harvesting ripe squares, faster and more squares per trip.","Harvesting, mechanised and leased.
+More tractors harvesting ripe squares, faster and more squares per trip.","Ernte, mechanisiert und geleast.
+Mehr Traktoren, die reife Felder ernten, schneller und mehr Felder pro Fahrt."
+"The ground is held to targets.
+Squares ripen sooner, and every harvest gives more cabbages.","The ground is held to targets.
+Squares ripen sooner, and every harvest gives more cabbages.","Der Boden hat Zielvorgaben.
+Felder reifen schneller, und jede Ernte bringt mehr Kohlköpfe."
+"Seeds, procured without questions.
+Cheaper seed packs, and a standing order that buys sooner and in bulk.","Seeds, procured without questions.
+Cheaper seed packs, and a standing order that buys sooner and in bulk.","Saatgut, beschafft ohne Fragen.
+Billigere Saatpackungen und ein Dauerauftrag, der früher und in großen Mengen kauft."
+"Your own work, recognised in writing.
+Squares you pull by hand yield more and are replanted at once.","Your own work, recognised in writing.
+Squares you pull by hand yield more and are replanted at once.","Ihre eigene Arbeit, schriftlich anerkannt.
+Handernte bringt mehr, das Feld wird sofort neu bepflanzt."
+"Some seeds are more promising than others.
+More squares grow golden.","Some seeds are more promising than others.
+More squares grow golden.","Manche Samen sind vielversprechender als andere.
+Mehr Felder wachsen golden."
+"Spoilage is a scheduling issue.
+Ripe squares wait longer before they rot.","Spoilage is a scheduling issue.
+Ripe squares wait longer before they rot.","Verderb ist eine Terminfrage.
+Reife Felder warten länger, bevor sie faulen."
+CHEAPEST AFFORDABLE:,CHEAPEST AFFORDABLE:,GÜNSTIGSTES BEZAHLBARES:
+"CHEAPEST, NOT AFFORDABLE YET:","CHEAPEST, NOT AFFORDABLE YET:","GÜNSTIGSTES, NOCH ZU TEUER:"
+"CHEAPEST, STILL LOCKED:","CHEAPEST, STILL LOCKED:","GÜNSTIGSTES, NOCH GESPERRT:"
+Every upgrade here is approved. Nothing further to requisition.,Every upgrade here is approved. Nothing further to requisition.,Alles hier ist genehmigt. Es gibt nichts mehr zu beantragen.
+Nothing else here is on file yet.,Nothing else here is on file yet.,Hier liegt sonst noch nichts vor.
 FORM 7-R  RESEARCH DIRECTIVE,FORM 7-R  RESEARCH DIRECTIVE,FORMULAR 7-R  FORSCHUNGSAUFTRAG
 FORM 7-B  REQUISITION,FORM 7-B  REQUISITION,FORMULAR 7-B  ANTRAG
 CLEAR A PLOT,CLEAR A PLOT,FELD RODEN
-INSPECTION METHODOLOGY,INSPECTION METHODOLOGY,PRÜFMETHODIK
-TIME-AND-MOTION STUDY,TIME-AND-MOTION STUDY,ZEITSTUDIE
-MATERIALS HANDLING,MATERIALS HANDLING,MATERIALFLUSS
-CONSUMER SENTIMENT,CONSUMER SENTIMENT,VERBRAUCHERSTIMMUNG
 No action is required. None will be taken.,No action is required. None will be taken.,Es ist nichts zu veranlassen. Es wird nichts veranlasst.
 Click a square to plant a seed (1 seed). Ripe after 30 s: click it to harvest 3 cabbages.,Click a square to plant a seed (costs 1 seed). After 30 s it is ripe: click it to harvest 3 cabbages.,"Feld anklicken, um zu säen (kostet 1 Samen). Nach 30 s ist es reif: anklicken, um 3 Kohlköpfe zu ernten."
 SEED SHOP,SEED SHOP,SAATGUTLADEN
@@ -1140,7 +1221,6 @@ Coin robots no longer tip onto their backs.","Falling over is now a disciplinary
 Coin robots no longer tip onto their backs.","Umfallen ist ab sofort ein Disziplinarvergehen.
 Münzroboter kippen nicht mehr auf den Rücken."
 "Coin robot: it collects the coins resting on the mat. If it falls over, pick it up and set it down.","Coin robot: collects the coins lying on the mat. If it falls over, pick it up and set it back down.","Münzroboter: sammelt die Münzen auf der Matte ein. Fällt er um, heben Sie ihn auf und stellen Sie ihn wieder hin."
-Pricing consultant switch. Up: it keeps moving your price to where about 90% of cabbages sell (or as far above that as you set it). Down: it stays away.,Pricing consultant switch. Up: it keeps moving your price to where about 90% of cabbages sell (or as far above that as you set it). Down: it stays away.,"Schalter des Preisberaters. Oben: Er schiebt Ihren Preis laufend dorthin, wo etwa 90 % der Kohlköpfe verkauft werden (oder so weit darüber, wie Sie ihn einstellen). Unten: Er hält sich heraus."
 "The ramp is motorised.
 The chute rolls out a cabbage every 0.5 s, not every 1 s.","The ramp is motorised.
 The chute rolls out a cabbage every 0.5 s, not every 1 s.","Die Rampe ist motorisiert.
@@ -1335,14 +1415,14 @@ Square cleared.,Square cleared.,Feld gerodet.
 YARD,YARD,HOF
 FIELD THINNING PROGRAMME,FIELD THINNING PROGRAMME,FELDAUSDÜNNUNGSPROGRAMM
 "The field produces waste. Waste is a product.
-Every harvest on the farm also sends one mini cabbage down the tube (at most 6 minis out at once).","The field produces waste. Waste is a product.
-Every harvest on the farm also sends one mini cabbage down the tube (at most 6 minis out at once).","Das Feld produziert Abfall. Abfall ist ein Produkt.
-Jede Ernte auf dem Hof schickt außerdem einen Mini-Kohlkopf durchs Rohr (höchstens 6 Minis gleichzeitig unterwegs)."
+Every harvest on the farm also sends one mini cabbage down the tube (at most 6 of these out at once).","The field produces waste. Waste is a product.
+Every harvest on the farm also sends one mini cabbage down the tube (at most 6 of these out at once).","Das Feld produziert Abfall. Abfall ist ein Produkt.
+Jede Ernte auf dem Hof schickt außerdem einen Mini-Kohlkopf durchs Rohr (höchstens 6 davon gleichzeitig unterwegs)."
 RESEARCH: MICRO-SAMPLE PROTOCOL,RESEARCH: MICRO-SAMPLE PROTOCOL,FORSCHUNG: MIKROPROBEN-PROTOKOLL
 "Research has established that a sample need not be large. Or whole.
-A mini sent to the research lab yields the Findings of two full cabbages.","Research has established that a sample need not be large. Or whole.
-A mini sent to the research lab yields the Findings of two full cabbages.","Die Forschung hat festgestellt, dass eine Probe nicht groß sein muss. Oder ganz.
-Ein Mini im Forschungslabor bringt die Befunde von zwei ganzen Kohlköpfen."
+A mini sent to the research lab yields eight times its usual share of Findings.","Research has established that a sample need not be large. Or whole.
+A mini sent to the research lab yields eight times its usual share of Findings.","Die Forschung hat festgestellt, dass eine Probe nicht groß sein muss. Oder ganz.
+Ein Mini, der ins Forschungslabor geht, bringt das Achtfache seines üblichen Anteils an Befunden."
 INSTALL A CABBAGE GROWING STATION,INSTALL A CABBAGE GROWING STATION,WACHSTUMSSTATION EINBAUEN
 "Small cabbages are a temporary condition.
 A growing chamber is bolted over the tube's intake. 1 mini in 20 comes out a full cabbage: no stock, sold at your full price, counted as sold.","Small cabbages are a temporary condition.
@@ -1434,7 +1514,7 @@ TRACTORS,TRACTORS,TRAKTOREN
 SOIL,SOIL,BODEN
 SUPPLY,SUPPLY,BESCHAFFUNG
 COST ¶%d,COST ¶%d,KOSTEN ¶%d
-BUDGET  $%d   |   FINDINGS  ¶%d,BUDGET  $%d   |   FINDINGS  ¶%d,BUDGET  $%d   |   BEFUNDE  ¶%d
+BUDGET  $%d   |   FINDINGS,BUDGET  $%d   |   FINDINGS,BUDGET  $%d   |   BEFUNDE
 FARM ADMINISTRATION - CH 2,FARM ADMINISTRATION - CH 2,FARMVERWALTUNG - KANAL 2
 FORM FA-2   |   HOLD TO APPROVE,FORM FA-2   |   HOLD TO APPROVE,FORMULAR FA-2   |   HALTEN ZUM GENEHMIGEN
 CHANNEL 2 — SUBSCRIPTION PENDING,CHANNEL 2 — SUBSCRIPTION PENDING,KANAL 2 — ABONNEMENT AUSSTEHEND
@@ -1513,9 +1593,9 @@ A square you pull by hand yields 3× instead of 2×.","Ihr Foto hängt an der Sc
 Ein Feld, das Sie von Hand ziehen, bringt 3× statt 2×."
 "ONE IN, ONE OUT","ONE IN, ONE OUT","EINER RAUS, EINER REIN"
 "The hole is never left empty. It is policy.
-A square you pull by hand is replanted at once with a seed from the crate.","The hole is never left empty. It is policy.
-A square you pull by hand is replanted at once with a seed from the crate.","Das Loch bleibt nie leer. So ist die Vorschrift.
-Ein Feld, das Sie von Hand ziehen, wird sofort mit einem Samen aus der Kiste neu bepflanzt."
+A square you pull out yourself is replanted at once from the crate. Tractor harvests still wait for a farm hand.","The hole is never left empty. It is policy.
+A square you pull out yourself is replanted at once from the crate. Tractor harvests still wait for a farm hand.","Das Loch bleibt nie leer. So ist die Vorschrift.
+Ein Feld, das Sie selbst ziehen, wird sofort aus der Kiste neu bepflanzt. Traktorernten warten weiter auf einen Erntehelfer."
 SELECTIVE BREEDING,SELECTIVE BREEDING,SELEKTIVE ZUCHT
 "Only the promising seeds are spoken to.
 1 square in 25 grows golden, not 1 in 40.","Only the promising seeds are spoken to.
@@ -1543,6 +1623,13 @@ LUXURY CLASSIFICATION,LUXURY CLASSIFICATION,LUXUSEINSTUFUNG
 A golden cabbage sold pays 20× your price, not 15×.","The street is told it cannot afford them.
 A golden cabbage sold pays 20× your price, not 15×.","Der Straße wird gesagt, dass sie sie sich nicht leisten kann.
 Ein verkaufter goldener Kohlkopf bringt das 20-Fache Ihres Preises, nicht das 15-Fache."
+"The Golden Age is extended to the premium range.
+In a Golden Age, golden cabbages get its bonus too.
+Until now they paid only their own premium.","The Golden Age is extended to the premium range.
+In a Golden Age, golden cabbages get its bonus too.
+Until now they paid only their own premium.","Das Goldene Zeitalter wird auf das Premiumsortiment ausgeweitet.
+Im Goldenen Zeitalter erhalten auch goldene Kohlköpfe seinen Bonus.
+Bisher brachten sie nur ihren eigenen Aufschlag."
 ASSAY OFFICE,ASSAY OFFICE,PROBIERAMT
 "Gold is tested. The test is gold.
 A golden cabbage in the research lab gives 15× the
@@ -1576,12 +1663,12 @@ STANDING SEED ORDER,STANDING SEED ORDER,DAUERAUFTRAG SAATGUT
 An AUTO SEED switch in the yard on channel 1. On, a 10-seed pack is bought by itself whenever the crate is down to 5 seeds and the money is there. More on channel 2.","Seeds are a recurring cost. Recurrence has been automated.
 An AUTO SEED switch in the yard on channel 1. On, a 10-seed pack is bought by itself whenever the crate is down to 5 seeds and the money is there. More on channel 2.","Saatgut ist ein wiederkehrender Kostenpunkt. Die Wiederkehr wurde automatisiert.
 Ein Schalter AUTO-SAAT im Hof auf Kanal 1. Eingeschaltet wird von selbst eine 10er-Packung Samen gekauft, sobald nur noch 5 Samen in der Kiste sind und das Geld reicht. Mehr auf Kanal 2."
-SAFETY SEED STOCK,SAFETY SEED STOCK,SICHERHEITSBESTAND SAATGUT
+SAFETY SEED STOCK,SAFETY SEED STOCK,SAATGUT-RESERVE
 "Running out is a planning failure. Planning has been increased.
 The standing seed order buys when the crate is down to 20 seeds, not 5.","Running out is a planning failure. Planning has been increased.
 The standing seed order buys when the crate is down to 20 seeds, not 5.","Ausgehen ist ein Planungsfehler. Die Planung wurde erhöht.
 Der Dauerauftrag kauft, sobald nur noch 20 Samen in der Kiste sind, nicht erst bei 5."
-BULK SEED CONTRACT,BULK SEED CONTRACT,GROSSABNAHMEVERTRAG SAATGUT
+BULK SEED CONTRACT,BULK SEED CONTRACT,SAATGUT-GROSSVERTRAG
 "The supplier prefers fewer, larger invoices.
 The standing seed order buys the 50-seed pack instead of the 10.","The supplier prefers fewer, larger invoices.
 The standing seed order buys the 50-seed pack instead of the 10.","Der Lieferant bevorzugt weniger, dafür größere Rechnungen.
@@ -1591,9 +1678,9 @@ AUTO SEED: OFF,AUTO SEED: OFF,AUTO-SAAT: AUS
 Standing order: %d seeds delivered.,Standing order: %d seeds delivered.,Dauerauftrag: %d Samen geliefert.
 CONSOLIDATED GROWTH REQUISITION,CONSOLIDATED GROWTH REQUISITION,ANFORDERUNG: KONSOLIDIERTES WACHSTUM
 "The desk has outgrown the desk.
-Paid in cabbages from stock, more than the salt mine holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","The desk has outgrown the desk.
-Paid in cabbages from stock, more than the salt mine holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","Der Schreibtisch ist dem Schreibtisch entwachsen.
-Bezahlt in Kohlköpfen aus dem Lager, mehr als das Salzbergwerk fasst: Lager ausbauen, Rutsche schließen, den Hof es füllen lassen. Abgestempelt prüft der Vorstand die Zukunft des Schreibtischs."
+Paid in cabbages from stock, more than the regional depot holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","The desk has outgrown the desk.
+Paid in cabbages from stock, more than the regional depot holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","Der Schreibtisch ist dem Schreibtisch entwachsen.
+Bezahlt in Kohlköpfen aus dem Lager, mehr als das Regionallager fasst: Lager ausbauen, Rutsche schließen, den Hof es füllen lassen. Abgestempelt prüft der Vorstand die Zukunft des Schreibtischs."
 WE SHOULD INVEST IN GROWTH,WE SHOULD INVEST IN GROWTH,WIR SOLLTEN IN WACHSTUM INVESTIEREN
 "The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Cabbages remain cabbages. Some of them will now be shares.","The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Cabbages remain cabbages. Some of them will now be shares.","Der Vorstand hat Ihre Zahlen geprüft. Kohl wächst mit der Geschwindigkeit von Kohl, und so lange kann der Vorstand nicht warten. Ab heute wächst der Schreibtisch durch Übernahmen: Wir kaufen andere Firmen, und wir investieren am Aktienmarkt. Sie bekommen einen Ticker. Kohlköpfe bleiben Kohlköpfe. Einige davon sind ab jetzt Aktien."
 MEMORANDUM · ALPHA BUILD,MEMORANDUM · ALPHA BUILD,MEMORANDUM · ALPHA-VERSION
@@ -1632,7 +1719,7 @@ EXECUTIVE HANDLING,EXECUTIVE HANDLING,BEHANDLUNG DURCH DIE LEITUNG
 Cabbages you sell yourself pay 60% more, not 45%.","Each cabbage is now released, not thrown.
 Cabbages you sell yourself pay 60% more, not 45%.","Jeder Kohlkopf wird nun freigegeben, nicht geworfen.
 Kohlköpfe, die Sie selbst verkaufen, bringen 60% mehr, nicht 45%."
-MANAGERIAL SIGN-OFF,MANAGERIAL SIGN-OFF,FREIGABE DURCH DAS MANAGEMENT
+MANAGERIAL SIGN-OFF,MANAGERIAL SIGN-OFF,MANAGEMENT-FREIGABE
 "A manager has looked at it. That is the finding.
 Cabbages you flick into the research lab yourself
 give 30% more Findings, not 20%.","A manager has looked at it. That is the finding.
@@ -1672,3 +1759,45 @@ SHELF-LIFE REVIEW,SHELF-LIFE REVIEW,HALTBARKEITSPRÜFUNG
 A ripe square rots after 12 min instead of 8.","Spoilage has been reclassified as maturing.
 A ripe square rots after 12 min instead of 8.","Verderb wurde als Reifung neu eingestuft.
 Ein reifes Feld verrottet nach 12 Min. statt nach 8."
+THE STREET HAS BECOME VOLATILE,THE STREET HAS BECOME VOLATILE,DIE STRASSE IST VOLATIL GEWORDEN
+"Analysts report that the street now overreacts. From today its prices jump hard every minute, and the jumps may get wild. A price left alone will soon be refused. A pricing consultant is very useful here: click the switch beside the slate to set its mandate. If none is retained yet, one can still be requisitioned. Panic is not a pricing strategy.","Analysts report that the street now overreacts. From today its prices jump hard every minute, and the jumps may get wild. A price left alone will soon be refused. A pricing consultant is very useful here: click the switch beside the slate to set its mandate. If none is retained yet, one can still be requisitioned. Panic is not a pricing strategy.","Analysten melden, dass die Straße jetzt überreagiert. Ab heute springen ihre Preise jede Minute heftig, und die Sprünge können wild werden. Ein Preis, den niemand anpasst, wird bald abgelehnt. Ein Preisberater ist hier sehr nützlich: Klicken Sie auf den Schalter neben der Tafel, um sein Mandat festzulegen. Wer noch keinen hat, kann ihn weiterhin anfordern. Panik ist keine Preisstrategie."
+"Your price per cabbage. Click ""<"" or "">"" to change it by $1. Under it: when the street's mood next moves, and which way.","Your price per cabbage. Click ""<"" or "">"" to change it by $1. Under it: when the street's mood next moves, and which way.","Ihr Preis pro Kohlkopf. Klicken Sie auf ""<"" oder "">"", um ihn um $1 zu ändern. Darunter: wann sich die Laune der Straße als Nächstes ändert, und in welche Richtung."
+"Pricing consultant switch. Click to open its mandate: on or off, how many cabbages the street may refuse, its lowest and highest price. The lamp is lit while it is on duty.","Pricing consultant switch. Click to open its mandate: on or off, how many cabbages the street may refuse, its lowest and highest price. The lamp is lit while it is on duty.","Schalter des Preisberaters. Klicken öffnet sein Mandat: an oder aus, wie viele Kohlköpfe die Straße ablehnen darf, sein niedrigster und höchster Preis. Die Lampe leuchtet, solange er im Dienst ist."
+"The consultant reads the room in advance.
+The slate and the mandate show when the street
+next moves its prices, and which way.","The consultant reads the room in advance.
+The slate and the mandate show when the street
+next moves its prices, and which way.","Der Berater spürt die Stimmung im Voraus.
+Tafel und Mandat zeigen, wann die Straße ihre
+Preise als Nächstes ändert, und in welche Richtung."
+"Billed per tap, delivered in one.
+The consultant chalks its target price in a single
+tap instead of $1 at a time. Wild streets, met at once.","Billed per tap, delivered in one.
+The consultant chalks its target price in a single
+tap instead of $1 at a time. Wild streets, met at once.","Abgerechnet pro Tipp, geliefert in einem.
+Der Berater schreibt seinen Zielpreis mit einem
+Tipp an statt $1 nach dem anderen. Wilde Straßen, sofort bedient."
+PRICING MANDATE,PRICING MANDATE,PREISMANDAT
+"Standing instructions to the retained pricing consultant, Desk 4. Effective on signature. Signed already.","Standing instructions to the retained pricing consultant, Desk 4. Effective on signature. Signed already.","Dauerweisung an den beauftragten Preisberater, Schreibtisch 4. Gültig ab Unterschrift. Bereits unterschrieben."
+Consultant,Consultant,Berater
+ON DUTY,ON DUTY,IM DIENST
+OFF DUTY,OFF DUTY,AUSSER DIENST
+Cabbages the street may refuse,Cabbages the street may refuse,"Kohlköpfe, die die Straße ablehnen darf"
+Lowest price it may chalk,Lowest price it may chalk,"Niedrigster Preis, den er anschreiben darf"
+Highest price it may chalk,Highest price it may chalk,"Höchster Preis, den er anschreiben darf"
+NONE,NONE,KEINER
+Price on the slate now,Price on the slate now,Preis auf der Tafel jetzt
+Refused by the street now,Refused by the street now,Jetzt von der Straße abgelehnt
+The street's next move,The street's next move,Nächste Bewegung der Straße
+UP IN %s,UP IN %s,HOCH IN %s
+DOWN IN %s,DOWN IN %s,RUNTER IN %s
+NO MOVE IN %s,NO MOVE IN %s,KEINE ÄNDERUNG IN %s
+"The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Touch the slate yourself and it waits 15 s. It is billed either way.","The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Touch the slate yourself and it waits 15 s. It is billed either way.","Der Berater hält den Preis so nah wie möglich an den erlaubten Ablehnungen, innerhalb Ihrer Grenzen, während sich die Straße bewegt. Fassen Sie die Tafel selbst an, wartet er 15 s. Abgerechnet wird so oder so."
+PROGRESS IS REQUIRED,PROGRESS IS REQUIRED,FORTSCHRITT IST ERFORDERLICH
+"Head office notes that a form on your desk could have been approved five minutes ago and was not. Forms are orders. Approving them is how the company advances, and with it your position. The projector is discretionary. Progress is not.","Head office notes that a form on your desk could have been approved five minutes ago and was not. Forms are orders. Approving them is how the company advances, and with it your position. The projector is discretionary. Progress is not.","Die Zentrale stellt fest, dass ein Formular auf Ihrem Schreibtisch seit fünf Minuten genehmigt werden könnte und nicht genehmigt wurde. Formulare sind Anweisungen. Wer sie genehmigt, bringt das Unternehmen voran und mit ihm die eigene Position. Der Projektor ist freiwillig. Fortschritt nicht."
+NOTICE,NOTICE,HINWEIS
+MEMO 0-0  STANDING NOTICE,MEMO 0-0  STANDING NOTICE,MEMO 0-0  STÄNDIGER HINWEIS
+"Head office reminds you.
+Every form on this desk must be approved for you to progress. The projector is optional.","Head office reminds you.
+Every form on this desk must be approved for you to progress. The projector is optional.","Die Zentrale erinnert Sie.
+Jedes Formular auf diesem Schreibtisch muss genehmigt werden, damit Sie vorankommen. Der Projektor ist freiwillig."

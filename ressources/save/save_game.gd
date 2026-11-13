@@ -25,10 +25,25 @@ extends Resource
 ## the cards stamped so far, in order.
 @export var tray_unlocked := false
 @export var stamped := PackedStringArray()
+## The cards in the inbox tray right now (the one on the press included), in slot order: the desk
+## keeps it, the projector reads it (UpgradeTree.form_lock). Refilled from the queue on load.
+@export var offered := PackedStringArray()
 ## Hidden demand: marketing multiplies the full-sale price (upgrades raise it), the mood drifts it
-## each minute within PriceSlate.MOOD_RANGE.
+## each minute within PriceSlate.mood_range.
 @export var marketing := 1.0
 @export var demand_mood := 1.0
+## Seconds since the mood last moved (it moves at PriceSlate.MOOD_PERIOD), and the step already
+## rolled for its next move (what the READS THE ROOM forecast shows).
+@export var mood_clock := 0.0
+@export var mood_next := 0.0
+## The street volatility event (GameEvents "street_volatility"): play seconds counted since the
+## promotion report was signed, and whether the street now jumps heavily (PriceSlate.WILD_STEP).
+@export var volatile_wait := 0.0
+@export var street_volatile := false
+## Head office's progress warning (GameEvents "progress_required"): play seconds a tray form has lain
+## affordable with none approved (UpgradeDesk ticks it), and whether the warning has come (once).
+@export var progress_wait := 0.0
+@export var progress_warned := false
 ## Upgradeable: how many cabbages may sit on the mat, seconds between dispenses, cabbages per pack.
 @export var desk_capacity := 1
 @export var dispense_interval := 1.0
@@ -70,14 +85,15 @@ extends Resource
 @export var manager_raise := 1.25
 @export var quotas_met := 0
 @export var quotas_missed := 0
-## The pricing consultant: seconds between its taps on the slate, and its skill (0 textbook price,
-## 1 reads the mood, 2 best income after pack costs). Upgradeable (projector tree).
+## The pricing consultant: seconds between its taps on the slate. Upgradeable (projector tree).
+## Old saves' consultant_skill and consultant_markup are retired: loaded, read by nothing.
 @export var consultant_interval := 4.0
-@export var consultant_skill := 0
-## The slate's switch: the consultant works (true) or stays away.
+## Its mandate (the sheet its switch opens): on duty or away, the share of cabbages (percent) it may
+## let the street refuse, and the price floor and ceiling it keeps to (0 ceiling: none).
 @export var consultant_on := true
-## How far over its own target the player last left the price (0.2 = 20% over): the consultant keeps it.
-@export var consultant_markup := 0.0
+@export var consultant_bounce := 10
+@export var consultant_floor := 1
+@export var consultant_ceiling := 0
 # Sales events: golden lamp, catch combo, rotten units + bin, window targets (entities/golden_lamp/,
 # entities/catch_combo/, entities/rotten_bin/, entities/window_targets/). All upgradeable (projector tree).
 ## Golden lamp: sale multiplier while it glows, seconds it glows, mean seconds between glows.

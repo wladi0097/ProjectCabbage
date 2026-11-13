@@ -22,33 +22,44 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_2.wav" id="sfx_slip_land_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_3.wav" id="sfx_slip_land_3"]
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Machines/qa_load_gauge.res" id="5_gauge"]
-[ext_resource type="Shader" path="res://assets/shaders/cell_gauge.gdshader" id="5_cells"]
-[ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="5_font"]
 
-[sub_resource type="ShaderMaterial" id="GaugeCells"]
-shader = ExtResource("5_cells")
+[sub_resource type="StandardMaterial3D" id="JewelFree"]
+albedo_color = Color(0.03, 0.055, 0.065, 1)
+roughness = 0.12
+emission_enabled = true
+emission = Color(0.35, 0.9, 1, 1)
+emission_energy_multiplier = 0.04
 
-[sub_resource type="QuadMesh" id="GaugeRow"]
-material = SubResource("GaugeCells")
-size = Vector2(0.104, 0.034)
+[sub_resource type="StandardMaterial3D" id="JewelBusy"]
+albedo_color = Color(0.16, 0.45, 0.52, 1)
+roughness = 0.15
+emission_enabled = true
+emission = Color(0.35, 0.9, 1, 1)
+emission_energy_multiplier = 2.2
+
+[sub_resource type="SphereMesh" id="Jewel"]
+radius = 0.0105
+height = 0.011
+radial_segments = 8
+rings = 3
 
 [sub_resource type="BoxShape3D" id="Panel"]
 size = Vector3(0.3, 0.3, 0.4)
 
 [sub_resource type="BoxShape3D" id="Cheek"]
-size = Vector3(0.04, 0.3, 0.4)
+size = Vector3(0.04, 0.308, 0.422)
 
 [sub_resource type="BoxShape3D" id="Back"]
-size = Vector3(0.46, 0.3, 0.04)
+size = Vector3(0.5, 0.308, 0.04)
 
 [sub_resource type="BoxShape3D" id="Top"]
-size = Vector3(0.46, 0.03, 0.4)
+size = Vector3(0.5, 0.03, 0.405)
 
 [sub_resource type="BoxShape3D" id="Mouth"]
-size = Vector3(0.41, 0.28, 0.03)
+size = Vector3(0.44, 0.28, 0.03)
 
 [sub_resource type="BoxShape3D" id="Inside"]
-size = Vector3(0.36, 0.24, 0.24)
+size = Vector3(0.39, 0.24, 0.24)
 
 [sub_resource type="StandardMaterial3D" id="ScanGlow"]
 transparency = 1
@@ -112,24 +123,40 @@ albedo_texture = ExtResource("4_token_albedo")
 orm_texture = ExtResource("4_token_orm")
 normal_enabled = true
 normal_texture = ExtResource("4_token_normal")
-uv1_scale = Vector3(0.32, 0.96, 1)
-uv1_offset = Vector3(0.0067, 0.02, 0)
+uv1_scale = Vector3(0.192, 0.96, 1)
+uv1_offset = Vector3(0.004, 0.02, 0)
 
 [sub_resource type="ORMMaterial3D" id="Token5"]
 albedo_texture = ExtResource("4_token_albedo")
 orm_texture = ExtResource("4_token_orm")
 normal_enabled = true
 normal_texture = ExtResource("4_token_normal")
-uv1_scale = Vector3(0.32, 0.96, 1)
-uv1_offset = Vector3(0.3400, 0.02, 0)
+uv1_scale = Vector3(0.192, 0.96, 1)
+uv1_offset = Vector3(0.204, 0.02, 0)
 
 [sub_resource type="ORMMaterial3D" id="Token10"]
 albedo_texture = ExtResource("4_token_albedo")
 orm_texture = ExtResource("4_token_orm")
 normal_enabled = true
 normal_texture = ExtResource("4_token_normal")
-uv1_scale = Vector3(0.32, 0.96, 1)
-uv1_offset = Vector3(0.6733, 0.02, 0)
+uv1_scale = Vector3(0.192, 0.96, 1)
+uv1_offset = Vector3(0.404, 0.02, 0)
+
+[sub_resource type="ORMMaterial3D" id="Token50"]
+albedo_texture = ExtResource("4_token_albedo")
+orm_texture = ExtResource("4_token_orm")
+normal_enabled = true
+normal_texture = ExtResource("4_token_normal")
+uv1_scale = Vector3(0.192, 0.96, 1)
+uv1_offset = Vector3(0.604, 0.02, 0)
+
+[sub_resource type="ORMMaterial3D" id="Token100"]
+albedo_texture = ExtResource("4_token_albedo")
+orm_texture = ExtResource("4_token_orm")
+normal_enabled = true
+normal_texture = ExtResource("4_token_normal")
+uv1_scale = Vector3(0.192, 0.96, 1)
+uv1_offset = Vector3(0.804, 0.02, 0)
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_slip_land"]
 random_pitch = 1.08
@@ -147,6 +174,8 @@ stream_1/stream = ExtResource("sfx_slip_filed_2")
 
 [node name="QaBay" type="Node3D"]
 script = ExtResource("1_script")
+lamp_free = SubResource("JewelFree")
+lamp_busy = SubResource("JewelBusy")
 
 [node name="Model" parent="." instance=ExtResource("2_model")]
 
@@ -157,21 +186,21 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0.15, -0.04)
 shape = SubResource("Panel")
 
 [node name="Cheek" type="CollisionShape3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.355, 0.15, -0.04)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.39, 0.154, -0.029)
 shape = SubResource("Cheek")
 
 [node name="Back" type="CollisionShape3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.15, -0.22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.154, -0.22)
 shape = SubResource("Back")
 
 [node name="Top" type="CollisionShape3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.3, -0.04)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.293, -0.0375)
 shape = SubResource("Top")
 
 [node name="Shut" type="StaticBody3D" parent="."]
 
 [node name="Shape" type="CollisionShape3D" parent="Shut"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.135, 0.155, 0.17)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.155, 0.17)
 shape = SubResource("Mouth")
 disabled = true
 
@@ -181,7 +210,7 @@ collision_mask = 4
 monitorable = false
 
 [node name="Shape" type="CollisionShape3D" parent="Chamber"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.135, 0.14, -0.04)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.14, -0.04)
 shape = SubResource("Inside")
 
 [node name="Scan" type="MeshInstance3D" parent="."]
@@ -198,7 +227,7 @@ omni_range = 0.35
 
 [node name="BusyLamp" type="MeshInstance3D" parent="."]
 gi_mode = 0
-transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.13, 0.213, 0.1187)
+transform = Transform3D(1, 0, 0, 0, 0.7615, -0.6481, 0, 0.6481, 0.7615, -0.13, 0.213, 0.1187)
 cast_shadow = 0
 mesh = SubResource("LampDome")
 
@@ -206,21 +235,48 @@ mesh = SubResource("LampDome")
 gi_mode = 0
 mesh = ExtResource("5_gauge")
 
-[node name="Cells" type="MeshInstance3D" parent="Gauge"]
-gi_mode = 0
-transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.297, 0.1946, 0.1372)
-cast_shadow = 0
-mesh = SubResource("GaugeRow")
+[node name="Lamps" type="Node3D" parent="Gauge"]
+transform = Transform3D(1, 0, 0, 0, 0.7615, -0.6481, 0, 0.6481, 0.7615, -0.332, 0.1988, 0.1408)
 
-[node name="Count" type="Label3D" parent="Gauge"]
-transform = Transform3D(1, 0, 0, 0, 0.6481, 0.7615, 0, -0.7615, 0.6481, -0.2065, 0.1946, 0.1372)
-pixel_size = 0.0006
-modulate = Color(0.45, 0.68, 0.74, 1)
-shaded = false
-text = "0/1"
-font = ExtResource("5_font")
-font_size = 64
-outline_size = 0
+[node name="Lamp1" type="MeshInstance3D" parent="Gauge/Lamps"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+visible = true
+cast_shadow = 0
+mesh = SubResource("Jewel")
+surface_material_override/0 = SubResource("JewelFree")
+
+[node name="Lamp2" type="MeshInstance3D" parent="Gauge/Lamps"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.034, 0, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("Jewel")
+surface_material_override/0 = SubResource("JewelFree")
+
+[node name="Lamp3" type="MeshInstance3D" parent="Gauge/Lamps"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.068, 0, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("Jewel")
+surface_material_override/0 = SubResource("JewelFree")
+
+[node name="Lamp4" type="MeshInstance3D" parent="Gauge/Lamps"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.102, 0, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("Jewel")
+surface_material_override/0 = SubResource("JewelFree")
+
+[node name="Lamp5" type="MeshInstance3D" parent="Gauge/Lamps"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.136, 0, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("Jewel")
+surface_material_override/0 = SubResource("JewelFree")
 
 [node name="Thud" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_drop")
@@ -228,13 +284,13 @@ bus = &"SFX"
 script = ExtResource("3_cue")
 
 [node name="FlapShut" type="AudioStreamPlayer3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.135, 0.05, 0.17)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.05, 0.17)
 stream = SubResource("Rand_shut")
 bus = &"SFX"
 script = ExtResource("3_cue")
 
 [node name="FlapOpen" type="AudioStreamPlayer3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.135, 0.05, 0.17)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.05, 0.17)
 stream = SubResource("Rand_open")
 bus = &"SFX"
 script = ExtResource("3_cue")
@@ -275,6 +331,20 @@ transform = Transform3D(1.15, 0, 0, 0, 1.25, 0, 0, 0, 1.15, 0, 0, 0)
 visible = false
 mesh = ExtResource("4_token")
 surface_material_override/0 = SubResource("Token10")
+
+[node name="Slip50" type="MeshInstance3D" parent="."]
+gi_mode = 0
+transform = Transform3D(1.3, 0, 0, 0, 1.45, 0, 0, 0, 1.3, 0, 0, 0)
+visible = false
+mesh = ExtResource("4_token")
+surface_material_override/0 = SubResource("Token50")
+
+[node name="Slip100" type="MeshInstance3D" parent="."]
+gi_mode = 0
+transform = Transform3D(1.48, 0, 0, 0, 1.65, 0, 0, 0, 1.48, 0, 0, 0)
+visible = false
+mesh = ExtResource("4_token")
+surface_material_override/0 = SubResource("Token100")
 
 [node name="SlipLand" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_slip_land")

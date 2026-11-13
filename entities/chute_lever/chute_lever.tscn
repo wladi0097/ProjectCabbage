@@ -46,6 +46,8 @@ gi_mode = 0
 mesh = ExtResource("6_arm")
 
 [node name="Handle" type="StaticBody3D" parent="Arm"]
+collision_layer = 8
+collision_mask = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.222, 0.037)
 
 [node name="Shape" type="CollisionShape3D" parent="Arm/Handle"]

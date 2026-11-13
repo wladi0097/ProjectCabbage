@@ -222,6 +222,8 @@ var _shake := 0.0
 
 
 func _ready() -> void:
+	if SaveManager.save.stamped.has("family_farm"):
+		ensure(SaveManager.save)  # The first draw comes before the first _process.
 	return_carried(SaveManager.save)
 	restart_overdue(SaveManager.save)
 	for i in _seed_buttons.size():
@@ -414,8 +416,9 @@ static func harvest_yield(save: SaveGame, by_hand := false) -> int:
 
 ## Harvests square `i` if ripe and its cabbages fit under save.storage_cap: they go into stock
 ## (into save.golden_stock too from a golden square). Returns how many (0 if not ripe or storage is
-## full; the square stays ripe). Pulled `by_hand` it yields harvest_yield, and with hand_replant a
-## seed from the crate goes straight back in. The first harvest records its farm_seconds
+## full; the square stays ripe). Pulled `by_hand` (the player's pull, never a
+## tractor) it yields harvest_yield, and with hand_replant a seed from the crate goes straight back in.
+## The first harvest records its farm_seconds
 ## (save.farm_first_harvest).
 static func harvest(save: SaveGame, i: int, by_hand := false) -> int:
 	if save.farm_growth[i] < 0.0 or not is_ripe(save, i) or not storage_room(save, by_hand):

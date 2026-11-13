@@ -85,6 +85,17 @@ func test_a_research_mini_yields_two_units_of_findings_with_the_micro_sample_pro
 	assert_int(_bay()._take(_unit(true))).is_equal(6)
 
 
+func test_the_micro_sample_protocol_stacks_with_the_mini_value_upgrades() -> void:
+	_save.findings_per_cabbage = 1
+	_save.stamped.append("micro_samples")
+	_save.mini_value = 0.25
+	assert_float(QaBay.findings_for(_unit(true), _save)).is_equal_approx(2.0, 0.0001)
+	_save.mini_value = 0.33
+	assert_float(QaBay.findings_for(_unit(true), _save)).is_equal_approx(2.64, 0.0001)
+	_save.mini_value = 0.5
+	assert_float(QaBay.findings_for(_unit(true), _save)).is_equal_approx(4.0, 0.0001)
+
+
 func test_a_tally_yields_the_whole_findings_and_keeps_the_fraction() -> void:
 	var counted := QaBay.tally(0.5, 0.75)
 	assert_int(counted[0]).is_equal(1)
@@ -277,39 +288,114 @@ func test_managerial_research_gives_more_findings_only_for_cabbages_the_player_f
 	assert_float(QaBay.findings_for(research, _save)).is_equal_approx(10.0 * _save.research_mult * 1.2, 0.0001)
 
 
-func test_the_load_gauge_reads_cabbages_on_the_benches_out_of_benches() -> void:
-	assert_str(QaBay.load_text(1, 3)).is_equal("1/3")
+## The jewel lamps that show: lit (busy) or dark glass (free); hidden lamps are blanked-off sockets.
+func _lamps(bay: QaBay) -> Array[String]:
+	var out: Array[String] = []
+	for lamp: MeshInstance3D in bay.get_node("Gauge/Lamps").get_children():
+		if lamp.visible:
+			out.append("busy" if lamp.get_surface_override_material(0) == bay.lamp_busy else "free")
+	return out
 
 
-func test_the_load_gauge_shows_a_cell_per_bench_and_lights_one_per_cabbage_in_the_lab() -> void:
-	_save.qa_slots = 2
+func test_the_load_gauge_has_a_jewel_lamp_socket_for_each_of_the_five_benches_the_lab_can_have() -> void:
+	assert_int(_bay_in_tree().get_node("Gauge/Lamps").get_child_count()).is_equal(QaBay.MAX_BENCHES)
+	assert_int(QaBay.MAX_BENCHES).is_equal(5)
+
+
+func test_every_lamp_lens_faces_out_of_the_console_so_it_sits_round_in_its_socket() -> void:
 	var bay := _bay_in_tree()
-	var cells: MeshInstance3D = bay.get_node("Gauge/Cells")
-	var count: Label3D = bay.get_node("Gauge/Count")
-	assert_str(count.text).is_equal("0/2")
+	var lenses: Array[Node] = bay.get_node("Gauge/Lamps").get_children()
+	lenses.append(bay.get_node("BusyLamp"))
+	for lens: MeshInstance3D in lenses:
+		# The lens is a squashed sphere: its flat axis (local y) must be the console face's normal.
+		var sphere := lens.mesh as SphereMesh
+		assert_float(sphere.height).is_less(sphere.radius * 2.0)
+		var flat := (bay.global_basis.inverse() * lens.global_basis.y).normalized()
+		assert_float(flat.dot(QaBay.NEEDLE_AXIS.normalized())).override_failure_message(
+				"%s shows its edge" % lens.name).is_greater(0.999)
+
+
+func test_the_load_gauge_lights_one_jewel_lamp_per_cabbage_on_the_benches() -> void:
+	_save.qa_slots = 3
+	var bay := _bay_in_tree()
+	assert_array(_lamps(bay)).contains_exactly(["free", "free", "free"])
 	bay._admit(_tube_mini())
 	bay._show_load()
-	assert_str(count.text).is_equal("1/2")
-	assert_float(cells.get_instance_shader_parameter(&"filled")).is_equal(1.0)
-	assert_float(cells.get_instance_shader_parameter(&"cells")).is_equal(2.0)
-
-
-func test_the_load_gauge_grows_a_cell_when_a_bench_is_added() -> void:
-	var bay := _bay_in_tree()
-	assert_str(bay.get_node("Gauge/Count").text).is_equal("0/1")
-	_save.qa_slots += 1
-	bay._show_load()
-	assert_str(bay.get_node("Gauge/Count").text).is_equal("0/2")
-	assert_float(bay.get_node("Gauge/Cells").get_instance_shader_parameter(&"cells")).is_equal(2.0)
-
-
-func test_the_load_gauge_count_turns_bright_only_when_every_bench_is_busy() -> void:
-	_save.qa_slots = 2
-	var bay := _bay_in_tree()
-	var count: Label3D = bay.get_node("Gauge/Count")
+	assert_array(_lamps(bay)).contains_exactly(["busy", "free", "free"])
+	bay._admit(_tube_mini())
 	bay._admit(_tube_mini())
 	bay._show_load()
-	assert_that(count.modulate).is_equal(QaBay.GAUGE_FREE)
-	bay._admit(_tube_mini())
+	assert_array(_lamps(bay)).contains_exactly(["busy", "busy", "busy"])
+
+
+func test_a_bench_not_bought_yet_is_a_blanked_off_socket_and_buying_it_fills_the_next_one() -> void:
+	var bay := _bay_in_tree()
+	var lamps := bay.get_node("Gauge/Lamps").get_children()
+	var first: Vector3 = lamps[0].position
+	assert_array(_lamps(bay)).contains_exactly(["free"])
+	_save.qa_slots = 5
 	bay._show_load()
-	assert_that(count.modulate).is_equal(QaBay.GAUGE_FULL)
+	assert_array(_lamps(bay)).contains_exactly(["free", "free", "free", "free", "free"])
+	assert_vector(lamps[0].position).is_equal(first)
+	for i in lamps.size():
+		assert_bool(lamps[i].visible).is_true()
+
+
+## A collision box's extent along world x, with the bay where MainStoryWorld puts it.
+func _world_x(bay: QaBay, path: String) -> Vector2:
+	var node: CollisionShape3D = bay.get_node(path)
+	var half: float = (node.shape as BoxShape3D).size.x / 2.0
+	var x := _bay_world_x() + node.position.x
+	return Vector2(x - half, x + half)
+
+
+func _bay_world_x() -> float:
+	var state := (load("res://worlds/MainStoryWorld.tscn") as PackedScene).get_state()
+	for n in state.get_node_count():
+		if state.get_node_name(n) == &"QaBay":
+			for p in state.get_node_property_count(n):
+				if state.get_node_property_name(n, p) == &"transform":
+					return (state.get_node_property_value(n, p) as Transform3D).origin.x
+	return NAN
+
+
+func test_the_bays_right_wall_ends_where_the_windows_sale_side_begins() -> void:
+	var bay := _bay_in_tree()
+	assert_float(_world_x(bay, "Body/Cheek").y).is_less_equal(SaleWindow.SPLIT_X + 0.0001)
+	assert_float(_world_x(bay, "Body/Cheek").y).is_greater(SaleWindow.SPLIT_X - 0.01)
+
+
+func test_a_whole_cabbage_fits_through_the_mouth_between_the_console_and_the_right_wall() -> void:
+	var bay := _bay_in_tree()
+	var inside := _world_x(bay, "Chamber/Shape")
+	assert_float(_world_x(bay, "Body/Panel").y).is_less_equal(inside.x)
+	assert_float(_world_x(bay, "Body/Cheek").x).is_greater_equal(inside.y)
+	# A full cabbage is shown at 1.5 x its 0.18 m mesh.
+	assert_float(inside.y - inside.x).is_greater(0.27)
+
+
+func test_a_findings_payout_comes_as_the_fewest_tokens_each_drawn_as_its_own_denomination() -> void:
+	var bay := _bay_in_tree()
+	var drawn: Array[String] = []
+	for value in CoinPile.coin_values(166):
+		drawn.append(QaBay.slip_template(value))
+	assert_array(drawn).contains_exactly_in_any_order(["Slip100", "Slip50", "Slip10", "Slip5", "Slip1"])
+	for template in drawn:
+		assert_object(bay.get_node_or_null(template)).is_not_null()
+
+
+func test_a_hundred_findings_payout_ejects_one_hundred_token_bigger_than_a_fifty_and_a_ten() -> void:
+	var bay := _bay_in_tree()
+	bay._eject(100)
+	assert_array(bay._slips).has_size(1)
+	assert_int(bay._slips[0].get_meta(&"value")).is_equal(100)
+	var token := bay._slips[0] as MeshInstance3D
+	var hundred: MeshInstance3D = bay.get_node("Slip100")
+	assert_object(token.get_surface_override_material(0)).is_same(hundred.get_surface_override_material(0))
+	var size := func(template: String) -> float: return (bay.get_node(template) as Node3D).scale.x
+	assert_float(size.call("Slip100")).is_greater(size.call("Slip50"))
+	assert_float(size.call("Slip50")).is_greater(size.call("Slip10"))
+	var look := func(template: String) -> Material: return (bay.get_node(template) as MeshInstance3D).get_surface_override_material(0)
+	assert_object(look.call("Slip100")).is_not_equal(look.call("Slip10"))
+	assert_object(look.call("Slip50")).is_not_equal(look.call("Slip10"))
+	assert_object(look.call("Slip100")).is_not_equal(look.call("Slip50"))

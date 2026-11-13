@@ -6,7 +6,8 @@ extends RigidBody3D
 ## when the street refuses it (`away` meanwhile). Every cabbage is in the "cabbages" group.
 ## A rotten one (set before it enters the tree) is grey and slumped: sold, it is fined (SaleWindow);
 ## binned, it is gone (RottenBin). A mid-air catch calls `caught` on the "catch_combo" group; a
-## chute unit that lands uncaught calls `missed` (a mini falling from upstairs never does).
+## chute unit that lands uncaught (on the desk, or at rest atop something) calls `missed` (a mini
+## falling from upstairs never does).
 
 signal bumped(speed: float)
 
@@ -40,6 +41,13 @@ const GOLD_MATERIAL := preload("res://assets/materials/cabbage_gold.tres")
 const BIN_GRACE := 1.0
 ## With no carry weight (save.carry_weight 0) a held unit keeps up with the hand, up to this speed (m/s).
 const FREE_SPEED := 14.0
+## A flying unit touching something with its centre this high or lower has landed. The desk top is
+## at 0.76, so the biggest unit lies on it at 0.88 (tools/_combo_probe.gd saw desk landings at
+## 0.84-0.90); the chute's lip grazes a unit at 1.06 as it is flung.
+const LANDED_Y := 0.95
+## Slower than this (m/s) for REST_TIME seconds, a flying unit has come to rest wherever it is.
+const REST_SPEED := 0.3
+const REST_TIME := 0.3
 
 ## How hard it is pulled toward the hand per metre of lag.
 @export var follow := 18.0
@@ -70,11 +78,14 @@ var tubed := false
 var away := false
 ## Seconds the SaleWindow has seen it off the mat in a row.
 var stray_time := 0.0
-## Flung off the chute and not yet touching anything: grabbing it now is a catch.
+## Flung off the chute and not landed yet (lands_on, settled): grabbing it now is a catch.
 var in_flight := false:
 	set(flying):
 		in_flight = flying
+		_still = 0.0
 		$Interactable.catchable = flying
+## Seconds in a row a flying unit has been nearly still (settled).
+var _still := 0.0
 var _held := false
 ## It has left save.stock (leave_stock).
 var _left_stock := false
@@ -122,11 +133,9 @@ func _ready() -> void:
 	mass *= size * size * size
 	$Interactable.grabbed.connect(_on_grabbed)
 	$Interactable.released.connect(_on_released)
-	body_entered.connect(func(_body: Node) -> void:
-		if in_flight and not mini:
-			for combo: CatchCombo in get_tree().get_nodes_in_group(&"catch_combo"):
-				combo.missed()
-		in_flight = false
+	body_entered.connect(func(body: Node) -> void:
+		if in_flight and lands_on(body, global_position.y):
+			_land()
 		bumped.emit(linear_velocity.length()))
 	bumped.connect(func(speed: float) -> void: $Bump.cue(global_position, speed))
 	$Interactable.grabbed.connect(func() -> void: $Grab.cue(global_position))
@@ -171,7 +180,32 @@ func grow() -> void:
 	mass *= up * up * up
 
 
+## A flight ends when it lands (lands_on, or settles off the desk): a miss unless it is a mini.
+func _land() -> void:
+	in_flight = false
+	if not mini:
+		for combo: CatchCombo in get_tree().get_nodes_in_group(&"catch_combo"):
+			combo.missed()
+
+
+## Whether touching `body` with its centre at `height` lands a flying unit: anything but another
+## cabbage (flying, held or lying about), down at desk level. Higher up (grazing the ramp's lip, the
+## chute's walls, atop a pile) it is still in the air and catchable; there only coming to rest ends it.
+static func lands_on(body: Node, height: float) -> bool:
+	return not body is Cabbage and height <= LANDED_Y
+
+
+## Whether a flying unit has come to rest: below REST_SPEED for `still` seconds (atop a pile, on a
+## ledge), so no flight stays catchable forever.
+static func settled(still: float) -> bool:
+	return still >= REST_TIME
+
+
 func _physics_process(delta: float) -> void:
+	if in_flight:
+		_still = _still + delta if linear_velocity.length() < REST_SPEED else 0.0
+		if settled(_still):
+			_land()
 	if not _held:
 		return
 	var target := Hand.point_on_height(HOLD_HEIGHT)

@@ -339,6 +339,8 @@ static func fits(shown: String, size: int, box: Vector2) -> bool:
 
 ## The form line printed across the top of card `card` (a CARDS entry).
 static func form_of(card: Dictionary) -> String:
+	if card.has("form"):  # A paper that is no form (the reminder slip's NOTICE) names its own line.
+		return card.form
 	if card.get("priority", false):
 		return "FORM 0-P  PRIORITY ACQUISITION"
 	return "FORM 7-R  RESEARCH DIRECTIVE" if card.get("research", false) else "FORM 7-B  REQUISITION"

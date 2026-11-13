@@ -226,6 +226,20 @@ func test_a_hand_gives_up_when_its_cabbage_is_taken_sold_or_gone() -> void:
 	assert_bool(Associate.gives_up(target, null)).is_true()
 
 
+func test_a_hand_whose_cabbage_is_sold_from_under_it_gives_up_the_reach_without_error() -> void:
+	SaveManager.save.hands = 1
+	var target := _cabbage(Vector3(0.2, 0.87, 0.0))
+	var hand := _hand()
+	hand._set_off()
+	assert_object(hand._target).is_same(target)
+
+	target.free()
+	hand._process(0.016)
+
+	assert_int(hand._phase).is_equal(Associate.Phase.WITHDRAW)
+	assert_object(hand._target).is_null()
+
+
 func test_a_hand_gives_up_on_a_cabbage_that_rolled_off_the_mat() -> void:
 	var target := _cabbage(Vector3(-1.2, 0.87, 0.3))
 

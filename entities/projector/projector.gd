@@ -141,6 +141,14 @@ A golden cabbage sold pays 15× your price, not 10×."},
 		add = {golden_sale = 5.0}, title = "LUXURY CLASSIFICATION",
 		body = "The street is told it cannot afford them.
 A golden cabbage sold pays 20× your price, not 15×."},
+	# Until this, the golden lamp's Golden Age skips golden units (SaleWindow.boosts_for, GOLD_AGE). No
+	# number: the window reads tree_bought. The dearest golden node (slogan_6 and hire_associate_8 cost more;
+	# tools/pace.py: "nogate"), bought after chapter 2's last card in the sim.
+	{id = "gold_age", parent = "gold_sale_1", at = Vector2(3.56, -0.27), icon = "crate", price = 75000,
+		needs = ["golden_cabbage", "golden_lamp"], title = "GOLD STANDARD",
+		body = "The Golden Age is extended to the premium range.
+In a Golden Age, golden cabbages get its bonus too.
+Until now they paid only their own premium."},
 	{id = "gold_lab_1", parent = "storage_2", at = Vector2(4.66, -0.27), icon = "pilcrow", price = 5000,
 		needs = ["golden_cabbage"], add = {golden_lab = 5.0}, title = "ASSAY OFFICE",
 		body = "Gold is tested. The test is gold.
@@ -163,10 +171,10 @@ too. Until now they were left for you."},
 		body = "Lab coats are issued tongs, and a form for the tongs.
 Lab hands toss golden cabbages into the research
 lab too. Until now they were left for you."},
-	# The steps to chapter 2's last card (UpgradeDesk consolidation, 3,800 units): it needs STRATEGIC
-	# RESERVE (4,000), so the chain from the annex to it is chapter 2's, spaced to fill the wait
-	# between the other cards and the stamp (tools/pace.py storage); FORMER MINISTRY to ANNEXED
-	# PROVINCE are growth past the stamp.
+	# The steps to chapter 2's last card (UpgradeDesk consolidation, 1,900 cabbages + $20,000): it
+	# waits on AIRCRAFT HANGAR's 2,000 cap, so the chain from the annex to it is chapter 2's, spaced to
+	# fill the wait between the other cards and the stamp (tools/pace.py storage); SALT MINE and up
+	# are optional growth past it.
 	{id = "storage_3", parent = "storage_2", at = Vector2(4.63, -1.56), icon = "crate", price = 4000,
 		add = {storage_cap = 300}, title = "COLD STORE",
 		body = "Kept at four degrees. So is the staff room.
@@ -405,9 +413,15 @@ Coin robots no longer tip onto their backs."},
 	{id = "qa_slot_2", parent = "qa_time", at = Vector2(-0.15, 1.89), icon = "lens", price = 700,
 		add = {qa_slots = 1}, title = "SECOND BENCH",
 		body = "A second bench in the lab.\nThe research lab analyses 2 cabbages at once, not 1."},
-	{id = "qa_slot_3", parent = "qa_slot_2", at = Vector2(-0.15, 2.45), icon = "lens", price = 35000,
+	{id = "qa_slot_3", parent = "qa_slot_2", at = Vector2(-0.15, 2.45), icon = "lens", price = 1800,
 		add = {qa_slots = 1}, title = "THIRD BENCH",
 		body = "The lab is now an institute.\nThe research lab analyses 3 cabbages at once, not 2."},
+	{id = "qa_slot_4", parent = "qa_slot_3", at = Vector2(-0.15, 3.01), icon = "lens", price = 4500,
+		add = {qa_slots = 1}, title = "FOURTH BENCH",
+		body = "The institute has applied for a wing.\nThe research lab analyses 4 cabbages at once, not 3."},
+	{id = "qa_slot_5", parent = "qa_slot_4", at = Vector2(-0.15, 3.57), icon = "lens", price = 12000,
+		add = {qa_slots = 1}, title = "FIFTH BENCH",
+		body = "The wing has a committee for its benches.\nThe research lab analyses 5 cabbages at once, not 4."},
 	# Manager (down-right) and pricing consultant (up-right): entities/manager/, entities/consultant/.
 	{id = "manager_time", parent = "dept_manual", at = Vector2(1.01, 0.92), icon = "clock", price = 200,
 		needs = ["managerial_oversight"], add = {manager_time = 15.0}, title = "EXTENDED DEADLINES",
@@ -417,7 +431,7 @@ Coin robots no longer tip onto their backs."},
 		body = "Bonuses are now discussed openly.\nMet quotas pay quota × price × 1.5, not × 1."},
 	{id = "manager_raise", parent = "manager_reward_1", at = Vector2(1.21, 2.04), icon = "lens", price = 2000,
 		add = {manager_raise = -0.1}, title = "REALISTIC TARGETS",
-		body = "Ambition is capped by memo.\nQuotas ask your pace plus 15%, not plus 25%."},
+		body = "Ambition is capped by memo.\nQuotas ask for at most your pace plus 15%, not plus 25%.\nPace: full cabbages you sold per quota window,\naveraged over your last 5 minutes. Minis do not count."},
 	{id = "manager_reward_2", parent = "manager_raise", at = Vector2(1.31, 2.60), icon = "crate", price = 6250,
 		mul = {manager_reward = 1.5}, title = "EMPLOYEE OF THE QUARTER",
 		body = "A frame is purchased. It stays empty.\nMet quotas pay quota × price × 2.25, not × 1.5."},
@@ -425,17 +439,17 @@ Coin robots no longer tip onto their backs."},
 		needs = ["pricing_consultant"], mul = {consultant_interval = 0.5}, title = "BILLABLE HOURS",
 		body = "The consultant bills by the tap.\nIt taps the slate every 2 s instead of 4 s."},
 	{id = "consultant_mood", parent = "consultant_speed_1", at = Vector2(-0.94, -1.96), icon = "lens", price = 725,
-		add = {consultant_skill = 1}, title = "READS THE ROOM",
-		body = "The consultant looks out of the window.\nThe street's mood moves its prices by up to ±10%\nevery minute, never past ±25%. The consultant now follows it,\nso ~90% of cabbages keep selling."},
+		title = "READS THE ROOM",
+		body = "The consultant reads the room in advance.\nThe slate and the mandate show when the street\nnext moves its prices, and which way."},
 	{id = "consultant_smart", parent = "consultant_mood", at = Vector2(-1.02, -2.45), icon = "crate", price = 2000,
-		add = {consultant_skill = 1}, title = "YIELD OPTIMISATION",
-		body = "Some cabbages may now be refused.\nIt picks the price with the most profit per cabbage\n(sale minus pack cost). If hired hands find the\nmat empty, it adds $1 per tap (up to 1.6× the\nprice at which every cabbage sells)."},
+		title = "YIELD OPTIMISATION",
+		body = "Billed per tap, delivered in one.\nThe consultant chalks its target price in a single\ntap instead of $1 at a time. Wild streets, met at once."},
 	{id = "consultant_speed_2", parent = "consultant_smart", at = Vector2(-1.11, -2.95), icon = "clock", price = 18000,
 		mul = {consultant_interval = 0.5}, title = "RETAINER",
 		body = "The consultant no longer leaves.\nIt taps the slate every 1 s instead of 2 s."},
 	# Sales events (catch combo far up-left, waste bin down, window targets far right):
 	# entities/catch_combo/, rotten_bin/, window_targets/. The golden lamp's card (entities/golden_lamp/)
-	# is the last of its kind: nothing waits on it. Its old nodes (lamp_mult, lamp_time, lamp_every) are
+	# is the last of its kind: nothing waits on it but the optional GOLD STANDARD (gold_age). Its old nodes (lamp_mult, lamp_time, lamp_every) are
 	# gone; an old save keeps their ids in tree_bought, read by nothing, and their numbers.
 	{id = "combo_window", parent = "dept_manual", at = Vector2(1.74, 0.74), icon = "clock", price = 150,
 		needs = ["catch_combo"], add = {miss_keep = 0.5}, title = "GRACE PERIOD",
@@ -567,21 +581,35 @@ Coin robots no longer tip onto their backs."},
 ## Each theme's heading on the slide, part of its branch: the edges from its first nodes' (the roots,
 ## the last entry) parent run through it to them (UpgradeTree), so it names the branch as it opens
 ## (same units as a node's `at`; spots by tools/_theme_place.gd, on the branch line, clear of every
-## node, edge and other heading in English and German).
+## node, edge and other heading in English and German). Last, its category's description for the
+## heading's hover popup (UpgradeTree: a flavour line, then what the branch improves).
 const THEMES := [
-	["PROCUREMENT", Vector2(1.34, -0.07), ["pack_1"]],
-	["STORAGE", Vector2(1.44, -0.31), ["stock_25"]],
-	["DESK SPACE", Vector2(1.55, -0.79), ["mat_4"]],
-	["SALES EVENTS", Vector2(1.25, 0.46), ["combo_window", "target_size", "bin_mouth"]],
-	["MANAGEMENT", Vector2(0.90, 0.46), ["manager_time"]],
-	["CONSULTANCY", Vector2(-0.69, -0.68), ["consultant_speed_1"]],
-	["SUPPLY CHAIN", Vector2(-0.86, -0.33), ["auto_reserve_1", "conveyor_1"]],
-	["COIN UNITS", Vector2(-1.06, 0.03), ["vacuum_speed_1"]],
-	["ASSOCIATES", Vector2(-1.11, 0.25), ["associate_1"]],
-	["HEADCOUNT", Vector2(-0.71, 0.38), ["hands_bin", "hire_associate_2"]],
-	["MINI CABBAGES", Vector2(0.90, -0.38), ["mini_rate_1"]],
-	["RESEARCH", Vector2(-0.16, 1.05), ["research_mult_1"]],
-	["LAB HANDS", Vector2(0.32, 1.52), ["lab_hand_2"]],
+	["PROCUREMENT", Vector2(1.34, -0.07), ["pack_1"],
+		"Volume is policy.\nBigger packs from the supply console, and cheaper ones."],
+	["STORAGE", Vector2(1.44, -0.31), ["stock_25"],
+		"Every cupboard is a warehouse in waiting.\nHow many cabbages storage holds, and what golden cabbages earn at the window and in the lab."],
+	["DESK SPACE", Vector2(1.55, -0.79), ["mat_4"],
+		"The mat is leased by the cabbage.\nOne more cabbage fits on the mat per step, up to 20."],
+	["SALES EVENTS", Vector2(1.25, 0.46), ["combo_window", "target_size", "bin_mouth"],
+		"Incidents at the window, monetised.\nThe catch combo, the lit crates in the street and what the bin pays for rot."],
+	["MANAGEMENT", Vector2(0.90, 0.46), ["manager_time"],
+		"The manager's visits, made survivable.\nLonger and lower quotas, bigger bonuses, and more for cabbages you sell yourself."],
+	["CONSULTANCY", Vector2(-0.69, -0.68), ["consultant_speed_1"],
+		"Pricing, outsourced and billed by the tap.\nHow fast the consultant works the slate, and how far ahead it reads the street."],
+	["SUPPLY CHAIN", Vector2(-0.86, -0.33), ["auto_reserve_1", "conveyor_1"],
+		"Logistics nobody has to think about.\nWhen and at what price auto-buy orders, and how fast the chute rolls out cabbages."],
+	["COIN UNITS", Vector2(-1.06, 0.03), ["vacuum_speed_1"],
+		"Coins are collected, not picked up.\nMore coin robots, faster, with bigger bags, wider nozzles and shorter charging."],
+	["ASSOCIATES", Vector2(-1.11, 0.25), ["associate_1"],
+		"Productivity, measured in footsteps.\nHired hands and lab hands walk faster and set off more often."],
+	["HEADCOUNT", Vector2(-0.71, 0.38), ["hands_bin", "hire_associate_2"],
+		"Staffing is a number, and it goes up.\nMore hired hands at the window, and a protocol for the bin."],
+	["MINI CABBAGES", Vector2(0.90, -0.38), ["mini_rate_1"],
+		"Smaller cabbages, same paperwork.\nMinis drop more often, sell for more and grow into full cabbages in the growing station."],
+	["RESEARCH", Vector2(-0.16, 1.05), ["research_mult_1"],
+		"The blue ones are special. It says so here.\nMore blue research cabbages off the chute, and more Findings from each."],
+	["LAB HANDS", Vector2(0.32, 1.52), ["lab_hand_2"],
+		"The lab is staffed, eventually.\nMore lab hands throwing cabbages into the research lab."],
 ]
 ## The screen's rect as fractions of the view: centred, 70% wide, unrolled down to 88% of the height.
 const SCREEN := Rect2(0.15, 0.0, 0.7, 0.88)
@@ -991,7 +1019,8 @@ static func can_buy(id: String, save: SaveGame) -> bool:
 
 
 ## What node `id` waits for, as [heading, name] for its popup, or [] if nothing: its parent, then a
-## desk card it needs, then its research. Under a closed department: what the department waits for.
+## desk card it needs (hidden till then, so never seen), then its research or lock card (a form:
+## UpgradeTree.form_lock, a third entry). Under a closed department: what the department waits for.
 static func requirement(id: String, save: SaveGame) -> Array:
 	var node := node_data(id)
 	if node.parent != "" and not is_open(node.parent, save):
@@ -1006,10 +1035,7 @@ static func requirement(id: String, save: SaveGame) -> Array:
 		return []
 	if lock == node.get("after", ""):
 		return ["REQUIRES:", node_data(lock).title]
-	var card := UpgradeDesk.card_data(lock)
-	if card.get("research", false):
-		return ["REQUIRES RESEARCH:", card.title.trim_prefix("RESEARCH: ")]
-	return ["REQUIRES DESK CARD:", card.get("title", lock)]
+	return UpgradeTree.form_lock(lock, save)  # Its `research` or `lock` card: a form to approve.
 
 
 ## Pays for node `id` and applies it; false (and nothing changes) if it can't be bought.

@@ -18,10 +18,13 @@ E, K, H, G, F, P = range(6)            # enamel, bakelite/rubber, chrome, glass,
 COLOURS = {E: (0.15, 0.19, 0.16), K: (0.025, 0.025, 0.024), H: (0.62, 0.63, 0.65), G: (1, 1, 1),
            F: (0.075, 0.095, 0.085), P: (0.78, 0.77, 0.71)}
 SURFACE = {E: 0, K: 0, H: 1, G: 2, F: 0, P: 0}
-X0, X1, XC = -0.37, 0.37, -0.09       # outer x, chamber's left wall (console on the left of it)
+# outer x, chamber's left wall (console on the left of it). X1 puts the right cheek's outer face on the
+# sales split (SaleWindow.SPLIT_X 0.33 = bay x 0.41) and centres the 4 cm cheek under the window's heavy
+# mullion (world x 0.31 = bay x 0.39, room_geo.py COLS[1]).
+X0, X1, XC = -0.37, 0.41, -0.09
 Y0, Y1 = -0.17, 0.24                   # front (room side), back (outside)
 TOP = 0.30
-MOUTH = (XC + 0.02, X1 - 0.03)         # open front of the chamber
+MOUTH = (XC + 0.02, X1 - 0.04)         # open front of the chamber
 
 
 def vc_textured(name, rough, metal, scale):
@@ -95,19 +98,21 @@ for lo, hi in [((MOUTH[0], Y0 + 0.03, 0.02), (MOUTH[0] + 0.006, Y1 - 0.04, TOP -
 PORT = at((MOUTH[0] + MOUTH[1]) / 2, Y1 - 0.046, 0.13) @ Matrix.Rotation(math.pi / 2, 4, "X")   # facing the mouth
 spin(body, [(0, 0), (0.085, 0), (0.085, 0.012), (0.07, 0.016), (0.065, 0.006), (0, 0.006)], H, PORT, 32)
 spin(body, [(0, 0.004), (0.066, 0.004), (0.066, 0.008), (0, 0.008)], K, PORT, 32)
-# Mouth: black rubber gasket inside a chrome lip.
+# Mouth: black rubber gasket inside a chrome lip; on the right the lip faces the whole cheek, so the wall
+# reads as one chrome-edged pilaster under the mullion.
 for lo, hi, m in [((MOUTH[0] - 0.012, Y0 - 0.004, 0.014), (MOUTH[0] + 0.01, Y0 + 0.03, TOP - 0.012), K),
                   ((MOUTH[1] - 0.01, Y0 - 0.004, 0.014), (MOUTH[1] + 0.012, Y0 + 0.03, TOP - 0.012), K),
                   ((MOUTH[0] - 0.012, Y0 - 0.004, TOP - 0.04), (MOUTH[1] + 0.012, Y0 + 0.03, TOP - 0.012), K),
                   ((MOUTH[0] - 0.024, Y0 - 0.012, 0.014), (MOUTH[0] - 0.01, Y0 + 0.01, TOP - 0.004), H),
-                  ((MOUTH[1] + 0.01, Y0 - 0.012, 0.014), (MOUTH[1] + 0.024, Y0 + 0.01, TOP - 0.004), H)]:
+                  ((MOUTH[1] + 0.01, Y0 - 0.012, 0.014), (X1, Y0 + 0.01, TOP - 0.004), H)]:
     part_box(body, lo, hi, 0.002, m)
-# Glass top in a chrome frame over the chamber; its front and back bars are the scan head's rails.
-fx0, fx1, fy0, fy1 = MOUTH[0] - 0.01, MOUTH[1] + 0.01, Y0 + 0.005, Y1 - 0.03
+# Glass top in a chrome frame over the chamber; its front and back bars are the scan head's rails. The
+# right bar caps the whole cheek (no bare enamel strip beside it).
+fx0, fx1, fy0, fy1 = MOUTH[0] - 0.01, X1, Y0 + 0.005, Y1 - 0.03
 for lo, hi in [((fx0, fy0, TOP - 0.012), (fx1, fy0 + 0.025, TOP + 0.008)), ((fx0, fy1 - 0.025, TOP - 0.012), (fx1, fy1, TOP + 0.008)),
-               ((fx0, fy0, TOP - 0.012), (fx0 + 0.02, fy1, TOP + 0.006)), ((fx1 - 0.02, fy0, TOP - 0.012), (fx1, fy1, TOP + 0.006))]:
+               ((fx0, fy0, TOP - 0.012), (fx0 + 0.02, fy1, TOP + 0.006)), ((MOUTH[1] - 0.01, fy0, TOP - 0.012), (fx1, fy1, TOP + 0.006))]:
     part_box(body, lo, hi, 0.003, H)
-part_box(body, (fx0 + 0.02, fy0 + 0.025, TOP - 0.006), (fx1 - 0.02, fy1 - 0.025, TOP - 0.002), 0.0, G)
+part_box(body, (fx0 + 0.02, fy0 + 0.025, TOP - 0.006), (MOUTH[1] - 0.01, fy1 - 0.025, TOP - 0.002), 0.0, G)
 
 flap = bmesh.new()                                                                 # hinged at y = Y0, z = 0.014
 part_box(flap, (MOUTH[0], Y0 - 0.2, 0.0), (MOUTH[1], Y0, 0.012), 0.003, F, at(0, 0, 0.002))
@@ -147,7 +152,7 @@ for poly in me.polygons:
 # Godot placements for the scene (Godot (x, y, z) = Blender (x, z, -y)).
 def g(v): return "(%.4f, %.4f, %.4f)" % (v.x, v.z, -v.y)
 print("GODOT face normal", g(NF), "slope up", g(SD))
-print("GODOT lamp", g(face(LAMP[0], LAMP[1], 0.006)), "scan x0", SCAN0, "run", SCAN_RUN)
+print("GODOT lamp", g(face(LAMP[0], LAMP[1], 0.006)), "scan x0", SCAN0, "run", SCAN_RUN, "mouth", MOUTH, "x1", X1)
 
 
 def pose_bay(bones, flap_up, p, scan):

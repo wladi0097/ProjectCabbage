@@ -1,11 +1,12 @@
 # QA Findings tokens: one bevelled square bakelite chit (corner notch, like a punched card) and a
-# 3-wide texture atlas (¶1 / ¶5 / ¶10), no Blender needed.   python findings_token_gen.py <project dir>
+# 5-wide texture atlas (¶1 / ¶5 / ¶10 / ¶50 / ¶100), no Blender needed.   python findings_token_gen.py <project dir>
 # Writes assets/meshes/Tokens/findings_token.obj and assets/textures/findings_token/*_albedo|normal|orm.png.
 # Mesh: side S, thickness T, origin at its centre, top face +Y, the notch at the far right (-Z, +X).
 # UVs: top projection, the face fills the UV square (image top = far side, -Z). The Godot material
 # picks the column with uv1_offset/uv1_scale (the face is drawn into the middle 96% of each tile).
 # Each face: raised frame, a row of 10 punch slots with the value punched through, a big raised
-# "¶n", an inked "INSPECTED" line under it.
+# "¶n", an inked "INSPECTED" line under it. ¶50 and ¶100 add a second, inner frame line (cold cyan on
+# the ¶100, whose outer frame is cyan too), and the Godot templates step them up in size like the $50/$100 coins.
 import os, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -95,7 +96,13 @@ DENOMS = [
     ("1", (0.50, 0.51, 0.49), (0.57, 0.58, 0.55), (0.12, 0.14, 0.13), (0.30, 0.33, 0.31), (0.5, 0.7), 0.0),
     ("5", (0.34, 0.41, 0.37), (0.40, 0.47, 0.43), (0.80, 0.82, 0.77), (0.72, 0.75, 0.70), (0.45, 0.65), 0.0),
     ("10", (0.07, 0.08, 0.08), (0.52, 0.47, 0.36), (0.62, 0.56, 0.42), (0.45, 0.42, 0.34), (0.4, 0.6), 0.6),
+    # ¶50: dark petrol-slate bakelite, pale cold-steel lettering and frame (no brass: reads apart from ¶10).
+    ("50", (0.10, 0.15, 0.17), (0.55, 0.62, 0.64), (0.70, 0.78, 0.80), (0.42, 0.52, 0.55), (0.4, 0.45), 0.5),
+    # ¶100: pale ivory lab-grade bakelite (kept below 0.6: brighter blew out under the desk lamp), black lettering, a cold cyan inlay frame.
+    ("100", (0.58, 0.59, 0.55), (0.17, 0.42, 0.47), (0.06, 0.07, 0.07), (0.20, 0.30, 0.32), (0.35, 0.5), 0.0),
 ]
+# Denominations with a second, inner frame line (in the frame colour).
+INNER = ("50", "100")
 
 
 def px(p):
@@ -115,9 +122,12 @@ def tile(num, body, frame, letter, ink, rough, metal):
     fr, d = mask()
     d.polygon([px(p) for p in OUTLINE], fill=255)
     d.polygon([px(p) for p in inset(OUTLINE, 0.085)], fill=0)
+    if num in INNER:
+        d.polygon([px(p) for p in inset(OUTLINE, 0.1)], fill=255)
+        d.polygon([px(p) for p in inset(OUTLINE, 0.113)], fill=0)
     let, d = mask()
     # A small ¶ hung at the numeral's cap line (so "¶1" never reads as "11"), the numeral big.
-    big = ImageFont.truetype(FONT, int(SS * (0.52 if len(num) == 1 else 0.46)))
+    big = ImageFont.truetype(FONT, int(SS * {1: 0.52, 2: 0.46, 3: 0.36}[len(num)]))
     big.set_variation_by_name("Bold")
     mark = ImageFont.truetype(FONT, int(SS * 0.24))
     mark.set_variation_by_name("Bold")
@@ -135,7 +145,7 @@ def tile(num, body, frame, letter, ink, rough, metal):
         box = [px((x0, 0.345)), px((x0 + 0.036, 0.28))]
         box = [box[0][0], box[0][1], box[1][0], box[1][1]]
         ds.rounded_rectangle(box, radius=SS * 0.008, outline=255, width=int(SS * 0.006))
-        if k < int(num):
+        if k < min(int(num), 10):
             d.rounded_rectangle(box, radius=SS * 0.008, fill=255)
     txt, d = mask()
     small = ImageFont.truetype(FONT, int(SS * 0.062))

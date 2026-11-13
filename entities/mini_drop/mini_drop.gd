@@ -16,13 +16,15 @@ extends Node3D
 ## left/right, or clicked to step to the next position. FIELD THINNING PROGRAMME (mini_thinning): every
 ## farm harvest (save.farm_harvests going up) also sends one mini, queued THIN_GAP apart; at most
 ## MAX_MINIS wait in the queue (harvests past that are skipped) and the queue waits while MAX_MINIS
-## minis are out. The growing station (mini_station, entities/growing_station/) sits on the intake:
+## thinning minis are out. The timed drop has its own MAX_MINIS, so the two add up (minis_out). The growing station (mini_station, entities/growing_station/) sits on the intake:
 ## out of sight in the tube, a mini passing it may grow into a full-size unit (GrowingStation.grows).
 ## Built in world space: the node stays at the world origin.
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
 const Feeder := preload("res://worlds/components/cabbage_feeder.gd")
 const MAX_MINIS := 6
+## FIELD THINNING minis (one per farm harvest) are in this group and counted apart from the timed ones.
+const THINNED := &"thinned_minis"
 ## Minis fall from this height (just under the PlayArea ceiling) onto a random spot in LANDING.
 const DROP_Y := 2.1
 const LANDING := AABB(Vector3(-0.3, 0.85, -0.3), Vector3(1.7, 0.0, 1.1))
@@ -63,7 +65,6 @@ const SWING := 0.6632
 const LEVER_RATE := 9.0
 const SNAP_TIME := 0.18
 const CLICK := 0.08
-const SLOTS := ["SALES", "SPLIT", "RESEARCH"]
 const LABEL_LIT := Color(0.86, 0.85, 0.8, 0.95)
 const LABEL_DIM := Color(0.5, 0.52, 0.5, 0.6)
 ## Seconds between two thinning minis (a tractor's sweep harvests several at once).
@@ -81,7 +82,6 @@ var _angle := 0.0
 var _held_from := 0.0
 var _dragging := false
 var _snapping: Tween
-var _labels: Array[Label3D] = []
 ## Farm harvests already answered with a thinning mini, the minis still queued, seconds to the next.
 var _harvests_seen := 0
 var _thinned := 0
@@ -94,23 +94,17 @@ var _thin_wait := 0.0
 @onready var _handle: StaticBody3D = $Tube/Handle
 @onready var _tube_rest := _tube.position
 @onready var _station: GrowingStation = $Tube/GrowingStation
+## The lever's slot labels SALES / SPLIT / RESEARCH (on an arc round PIVOT, in the .tscn) and MINI
+## stencilled across its plate (under the arm, which may cover part of it), so the lever reads as
+## the minis' points.
+@onready var _labels: Array[Label3D] = [$Tube/Sales, $Tube/Split, $Tube/Research]
+@onready var _heading: Label3D = $Tube/Heading
 
 
 func _ready() -> void:
 	var save := SaveManager.save
 	_wait = Feeder.restock_wait(save.mini_every, randf())
 	_harvests_seen = save.farm_harvests
-	for i in SLOTS.size():
-		var label := Label3D.new()
-		label.text = SLOTS[i]
-		label.font = preload("res://assets/fonts/Oswald.ttf")
-		label.font_size = 40
-		label.pixel_size = 0.0009
-		label.outline_size = 0
-		label.basis = Basis(RIGHT, ARM, -LEVER_AXIS)
-		label.position = PIVOT + Basis(LEVER_AXIS, lever_angle(i / 2.0)) * ARM * (KNOB.length() + 0.06)
-		_tube.add_child(label)
-		_labels.append(label)
 	var handle: Interactable = $Tube/Handle/Interactable
 	handle.grip_height = 0.03
 	handle.reach = true
@@ -138,16 +132,17 @@ func _process(delta: float) -> void:
 	if _wait > 0.0:
 		return
 	_wait = Feeder.restock_wait(save.mini_every, randf())
-	if minis_out(get_tree().get_nodes_in_group(&"cabbages")) >= MAX_MINIS:
+	if minis_out(get_tree().get_nodes_in_group(&"cabbages"), false) >= MAX_MINIS:
 		return
-	_send_one()
+	_send_one(false)
 
 
-func _send_one() -> void:
+## One mini down the tube (or onto the mat without it); `thinned`: a FIELD THINNING one.
+func _send_one(thinned: bool) -> void:
 	if _tube.visible and _tube.position == _tube_rest:
-		_send_down_tube()
+		_send_down_tube(thinned)
 	else:
-		_drop_on_mat()
+		_drop_on_mat(thinned)
 
 
 ## FIELD THINNING PROGRAMME: new farm harvests queue minis, sent THIN_GAP apart while there is room.
@@ -158,11 +153,11 @@ func _thin(delta: float) -> void:
 	_thin_wait -= delta
 	if _thinned <= 0 or _thin_wait > 0.0:
 		return
-	if minis_out(get_tree().get_nodes_in_group(&"cabbages")) >= MAX_MINIS:
+	if minis_out(get_tree().get_nodes_in_group(&"cabbages"), true) >= MAX_MINIS:
 		return
 	_thinned -= 1
 	_thin_wait = THIN_GAP
-	_send_one()
+	_send_one(true)
 
 
 ## The thinning queue after `harvests` new farm harvests on top of `queued` (`on`: the card is
@@ -171,11 +166,14 @@ static func thinned_after(queued: int, harvests: int, on: bool) -> int:
 	return mini(queued + maxi(harvests, 0), MAX_MINIS) if on else 0
 
 
-## Minis on the desk or on their way (not sold yet).
-static func minis_out(cabbages: Array) -> int:
+## Minis on the desk or on their way (not sold yet), of one pool: the FIELD THINNING ones
+## (`thinned`, group THINNED) or the timed ones. Each pool has its own MAX_MINIS, so the thinning
+## card's harvest minis never crowd out the timed drop the projector's MINIATURISATION and
+## PNEUMATIC PRESSURE nodes speed up: the two stack (at most 2 x MAX_MINIS minis out).
+static func minis_out(cabbages: Array, thinned: bool) -> int:
 	var count := 0
 	for cabbage: Cabbage in cabbages:
-		if cabbage.mini and not cabbage.sold:
+		if cabbage.mini and not cabbage.sold and cabbage.is_in_group(THINNED) == thinned:
 			count += 1
 	return count
 
@@ -183,6 +181,15 @@ static func minis_out(cabbages: Array) -> int:
 ## Whether the next tube mini goes to research, with `owed` on the tally and `split` of each owed.
 static func goes_to_research(owed: float, split: float) -> bool:
 	return owed + split >= 1.0
+
+
+## Whether a tube mini passing the growing station grows (GrowingStation.grows, for `roll`), bound
+## for the lab if `research`. A research mini stays small once the lab pays more for it small than
+## for a full unit (QaBay.findings_for: mini_value times QaBay.MICRO_SAMPLE with MICRO-SAMPLE
+## PROTOCOL), so the station never undoes that card.
+static func grows_in_tube(save: SaveGame, roll: float, research: bool) -> bool:
+	var share := save.mini_value * (QaBay.MICRO_SAMPLE if save.stamped.has("micro_samples") else 1.0)
+	return GrowingStation.grows(save, roll) and not (research and share > 1.0)
 
 
 ## The tally after routing one more mini (`research`: it went to the lab).
@@ -211,15 +218,17 @@ static func zip_at(t: float) -> Vector3:
 	return GLASS_FROM.lerp(GLASS_TO, t) + Vector3.UP * BOUNCE * absf(sin(t * PI * BOUNCES))
 
 
-func _spawn() -> Cabbage:
+func _spawn(thinned: bool) -> Cabbage:
 	var cabbage := CABBAGE.instantiate() as Cabbage
 	cabbage.mini = true
+	if thinned:
+		cabbage.add_to_group(THINNED)
 	get_parent().add_child(cabbage)
 	return cabbage
 
 
-func _drop_on_mat() -> void:
-	var cabbage := _spawn()
+func _drop_on_mat(thinned: bool) -> void:
+	var cabbage := _spawn(thinned)
 	var spot := LANDING.position + Vector3(randf(), 0.0, randf()) * LANDING.size
 	cabbage.global_position = Vector3(spot.x, DROP_Y, spot.z)
 	cabbage.in_flight = true
@@ -228,14 +237,14 @@ func _drop_on_mat() -> void:
 
 
 ## Into the intake, unseen under the desk, then along the glass and out (or to the lab).
-func _send_down_tube() -> void:
+func _send_down_tube(thinned: bool) -> void:
 	var save := SaveManager.save
 	var lab := _lab()
 	# No lab to take them (yet): every mini is sold and the tally waits.
 	var split := save.tube_split if lab != null else 0.0
 	var research := goes_to_research(_owed, split)
 	_owed = owed_after(_owed, split, research)
-	var cabbage := _spawn()
+	var cabbage := _spawn(thinned)
 	cabbage.tubed = true
 	cabbage.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
 	cabbage.freeze = true
@@ -253,7 +262,7 @@ func _send_down_tube() -> void:
 	ride.tween_callback(func() -> void:
 		cabbage.visible = false
 		$Whoosh.cue(INTAKE)
-		if _station.visible and GrowingStation.grows(save, randf()):
+		if _station.visible and grows_in_tube(save, randf(), research):
 			cabbage.grow()
 			_station.pulse())
 	ride.tween_interval(UNDER / speed)
@@ -304,7 +313,7 @@ func _deliver() -> void:
 func _pop_lever() -> void:
 	_show_lever(true)
 	var tween := create_tween().set_parallel()
-	for part: Node3D in [_lever, _lever_base]:
+	for part: Node3D in [_lever, _lever_base, _heading] + _labels:
 		part.scale = Vector3.ONE * 0.01
 		tween.tween_property(part, "scale", Vector3.ONE, POP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.chain()
@@ -318,6 +327,7 @@ func _show_lever(on: bool) -> void:
 	$Tube/Pedestal/Shape.disabled = not on
 	for label in _labels:
 		label.visible = on
+	_heading.visible = on
 	$Tube/Handle/Shape.disabled = not on
 	$Tube/Handle/Interactable.enabled = on
 

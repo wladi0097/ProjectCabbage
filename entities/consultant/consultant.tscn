@@ -2,8 +2,11 @@
 
 [ext_resource type="Script" path="res://entities/consultant/consultant.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://entities/hand/hand_model.tscn" id="2_hand"]
+[ext_resource type="PackedScene" path="res://entities/consultant/mandate_sheet.tscn" id="3_mandate"]
 
 [node name="Consultant" type="Node3D"]
 script = ExtResource("1_script")
 
 [node name="Hand" parent="." instance=ExtResource("2_hand")]
+
+[node name="Mandate" parent="." instance=ExtResource("3_mandate")]

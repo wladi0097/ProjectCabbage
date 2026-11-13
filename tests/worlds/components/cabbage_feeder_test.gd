@@ -39,6 +39,13 @@ func test_the_wait_after_a_sale_spreads_over_half_to_one_and_a_half_times_the_de
 	assert_float(Feeder.restock_wait(2.0, 1.0)).is_equal(3.0)
 
 
+func test_at_best_a_one_slot_mat_gets_a_cabbage_per_restock_roll_flight_and_flick() -> void:
+	# 0.67 restock + 0.4 roll + 0.8 flight + 1 s flick; a big mat is held to the chute's interval or the restock wait.
+	assert_float(Feeder.best_gap(1.0, 0.67, 1, 1.0)).is_equal_approx(2.87, 0.001)
+	assert_float(Feeder.best_gap(1.0, 0.67, 10, 1.0)).is_equal_approx(1.0, 0.001)
+	assert_float(Feeder.best_gap(0.224, 0.67, 10, 1.0)).is_equal_approx(0.67, 0.001)
+
+
 func test_no_unit_comes_down_rotten_before_rotten_units_are_unlocked() -> void:
 	assert_bool(Feeder.is_rotten(false, 0.0)).is_false()
 
@@ -145,6 +152,21 @@ func _fling_one(catchable: bool) -> Cabbage:
 
 func test_a_unit_off_the_chute_is_catchable_in_mid_air() -> void:
 	assert_bool(_fling_one(true).in_flight).is_true()
+
+
+func test_a_cabbage_freed_while_rolling_down_the_ramp_is_simply_not_launched() -> void:
+	var feeder: BareFeeder = auto_free(BareFeeder.new())
+	add_child(feeder)
+	var cabbage := preload("res://entities/cabbage/cabbage.tscn").instantiate() as Cabbage
+	# The grip kept alive to watch: _roll disables it until the launch makes the cabbage grabbable.
+	var grip: Interactable = auto_free(cabbage.get_node("Interactable"))
+	grip.enabled = false
+	cabbage.remove_child(grip)
+	cabbage.free()
+
+	feeder._fling(cabbage, grip, true)  # A script error here fails the test (gdUnit reports them).
+
+	assert_bool(grip.enabled).override_failure_message("nothing is launched").is_false()
 
 
 func test_a_research_unit_owed_by_a_purchase_lands_without_being_a_catch_or_a_miss() -> void:

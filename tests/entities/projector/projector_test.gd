@@ -129,10 +129,44 @@ func test_the_qa_department_waits_for_its_research_then_opens_faster_analysis() 
 	var save := _save(["projector", "quality_assurance"])
 	assert_bool(Projector.is_open("dept_qa", save)).is_false()
 	assert_bool(Projector.is_reachable("qa_time", save)).is_false()
-	assert_str(Projector.requirement("qa_time", save)[0]).is_equal("REQUIRES RESEARCH:")
+	assert_array(Projector.requirement("qa_time", save)).is_equal(["LOCKED", "RESEARCH: INSPECTION METHODOLOGY", UpgradeTree.FORM_NOT_YET])
 	save.stamped.append("research_inspection")
 	assert_bool(Projector.is_open("dept_qa", save)).is_true()
 	assert_bool(Projector.can_hold("qa_time", save)).is_true()
+
+
+func test_the_lab_grows_one_bench_at_a_time_to_five_each_waiting_for_the_one_before() -> void:
+	var save := _save(["projector", "quality_assurance", "research_inspection"], 100000000)
+	assert_bool(Projector.buy("qa_time", save)).is_true()
+	assert_bool(Projector.buy("qa_slot_4", save)).is_false()
+	for bench: int in [2, 3, 4, 5]:
+		assert_bool(Projector.buy("qa_slot_%d" % bench, save)).is_true()
+		assert_int(save.qa_slots).is_equal(bench)
+	assert_bool(Projector.NODES.any(func(node: Dictionary) -> bool: return node.id == "qa_slot_6")).is_false()
+
+
+func test_each_further_bench_costs_more_than_the_last_and_the_fifth_is_the_dearest() -> void:
+	var prices: Array = ["qa_slot_2", "qa_slot_3", "qa_slot_4", "qa_slot_5"].map(
+			func(id: String) -> int: return Projector.node_data(id).price)
+	assert_array(prices).is_equal([700, 1800, 4500, 12000])
+	for i in range(1, prices.size()):
+		assert_int(prices[i]).is_greater(prices[i - 1])
+
+
+func test_a_node_locked_by_a_form_names_the_form_the_player_must_approve() -> void:
+	var save := _save(["projector", "quality_assurance"])
+	save.tray_unlocked = true
+	assert_array(Projector.requirement("qa_time", save)).is_equal(
+			["LOCKED", "RESEARCH: INSPECTION METHODOLOGY", "Needs the form %s, which has not reached your desk yet."])
+	save.offered = PackedStringArray(["research_inspection"])  # Now in the tray.
+	assert_array(Projector.requirement("qa_time", save)).is_equal(
+			["LOCKED", "RESEARCH: INSPECTION METHODOLOGY", "Approve the form %s on your desk."])
+
+
+func test_an_unlocked_node_shows_its_price_as_before() -> void:
+	var save := _save(["projector", "quality_assurance", "research_inspection"])
+	assert_array(Projector.requirement("qa_time", save)).is_empty()  # No lock line: the popup draws COST.
+	assert_int(Projector.price_of("qa_time", save)).is_greater(0)
 
 
 func test_the_associate_upgrades_wait_for_the_junior_associate_card() -> void:
@@ -290,9 +324,9 @@ func test_a_bought_upgrade_is_never_locked_by_research() -> void:
 func test_the_popup_names_what_an_upgrade_waits_for() -> void:
 	var save := _gated()
 	assert_array(Projector.requirement("hire_associate_6", save)).is_equal(["REQUIRES:", "HIRE ASSOCIATE V"])
-	assert_str(Projector.requirement("hire_associate_5", save)[0]).is_equal("REQUIRES RESEARCH:")
+	assert_str(Projector.requirement("hire_associate_5", save)[0]).is_equal("LOCKED")
 	assert_str(Projector.requirement("manager_time", save)[0]).is_equal("REQUIRES DESK CARD:")
-	assert_str(Projector.requirement("conveyor_1", save)[0]).starts_with("REQUIRES")
+	assert_str(Projector.requirement("conveyor_1", save)[0]).is_equal("LOCKED")  # Its research card: a form.
 	assert_array(Projector.requirement("discount_1", save)).is_empty()
 	assert_bool(Projector.can_hold("discount_1", save)).is_true()
 
@@ -308,7 +342,7 @@ func test_everything_bought_fills_the_mat_to_twenty_and_hires_every_visible_hand
 	assert_int(full.desk_capacity).is_equal(20)
 	assert_int(full.hands).is_equal(Associate.MAX_VISIBLE)
 	assert_float(full.hand_output).is_equal_approx(2.25, 0.0001)
-	assert_int(full.qa_slots).is_equal(3)
+	assert_int(full.qa_slots).is_equal(5)
 	assert_int(full.vacuums).is_equal(3)
 	assert_int(full.auto_reserve).is_equal(10)
 
@@ -434,7 +468,7 @@ func test_storage_past_the_stock_room_shows_with_a_padlock_until_the_off_site_st
 	assert_str(Projector.locked_by(next, save)).is_equal("offsite_storage")
 	assert_bool(Projector.can_hold(next, save)).is_false()
 	assert_bool(Projector.buy(next, save)).is_false()
-	assert_array(Projector.requirement(next, save)).is_equal(["REQUIRES DESK CARD:", "REQUISITION OFF-SITE STORAGE"])
+	assert_array(Projector.requirement(next, save)).is_equal(["LOCKED", "REQUISITION OFF-SITE STORAGE", UpgradeTree.FORM_NOT_YET])
 	for id: String in ["storage_2", "storage_6"]:  # The rest of the chain shows too, greyed.
 		assert_bool(Projector.is_shown(id, save)).override_failure_message(id).is_true()
 		assert_bool(Projector.is_reachable(id, save)).override_failure_message(id).is_false()
@@ -451,7 +485,7 @@ func test_the_off_site_lock_sits_between_the_stock_room_and_the_basement_annex()
 	assert_int(chain.find(locked[0])).is_greater(chain.find("storage_1"))
 	assert_int(chain.find(locked[0])).is_less_equal(chain.find("storage_2"))
 	assert_str(UpgradeDesk.card_data("offsite_storage").tree).is_equal("storage_1")
-	assert_str(UpgradeDesk.card_data("golden_cabbage").tree).is_equal("storage_2")
+	assert_bool(UpgradeDesk.card_data("golden_cabbage").has("tree")).is_false()  # It waits for a card, not a node.
 
 
 func test_container_orders_sit_under_procurement_locked_until_storage_holds_a_53_unit_pack_and_more() -> void:
@@ -971,6 +1005,24 @@ func test_the_golden_value_nodes_wait_for_the_golden_card_and_raise_sale_and_lab
 		lab.append(save.golden_lab)
 	assert_array(sale).is_equal([10.0, 15.0, 20.0])
 	assert_array(lab).is_equal([10.0, 15.0, 25.0])
+
+
+func test_gold_standard_only_shows_once_premium_cabbages_and_the_golden_lamp_exist() -> void:
+	var save := _save(["projector", "offsite_storage", "golden_cabbage"], 10000000)
+	save.tree_bought = PackedStringArray(["storage_2", "gold_sale_1"])
+	assert_bool(Projector.is_shown(SaleWindow.GOLD_AGE, save)).is_false()
+	save.stamped.append("golden_lamp")
+	assert_bool(Projector.is_shown(SaleWindow.GOLD_AGE, save)).is_true()
+	assert_bool(Projector.buy(SaleWindow.GOLD_AGE, save)).is_true()
+	assert_bool(save.tree_bought.has(SaleWindow.GOLD_AGE)).is_true()
+
+
+func test_gold_standard_is_the_dearest_golden_node_and_costs_over_three_times_the_capstones_coins() -> void:
+	var price: int = Projector.node_data(SaleWindow.GOLD_AGE).price
+	for node: Dictionary in Projector.NODES:
+		if node.id != SaleWindow.GOLD_AGE and (str(node.id).begins_with("gold_") or node.get("needs", []).has("golden_cabbage")):
+			assert_int(node.price).override_failure_message(node.id).is_less(price)
+	assert_int(price).is_greater(UpgradeDesk.card_data("consolidation").also.coins * 3)
 
 
 func test_the_managerial_chains_wait_for_their_cards_and_raise_own_work_from_a_fifth_to_sixty_percent() -> void:

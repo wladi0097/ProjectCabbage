@@ -17,7 +17,7 @@ const EVENTS := {
 		body = "You may now order packs at the supply console. Every pack you order pushes next minute's pack price up. Panic buying will be invoiced accordingly. Spread your orders and watch the ticker."}},
 	## The window only sells through its right two thirds (worlds/components/sale_window.gd split).
 	window_split = {card = "quality_assurance", report = {re = "THE RESEARCH LAB TAKES THE WINDOW",
-		body = "The research lab now takes up the left third of the window. Cabbages only sell through the right two thirds. Aim accordingly. Cabbages thrown into the lab are studied, not sold."}},
+		body = "The research lab now takes up the left third of the window. Cabbages only sell through the right two thirds. Aim accordingly. Cabbages thrown into the lab are studied, not sold. A projector requisition will reach your tray. What it shows is discretionary spending. The forms on your desk come first."}},
 	## The manager's timed quota (entities/manager/).
 	manager_quota = {card = "managerial_oversight", report = {re = "YOU WILL BE MANAGED",
 		body = "As requested, a manager will come to your window every few minutes with a quota: sell that many cabbages in 45 s. Meet it and you get paid. Miss it and it goes in your file."}},
@@ -44,13 +44,26 @@ const EVENTS := {
 	## reward selling and researching yourself over leaving it all to the helpers.
 	promotion = {card = "mechanisation", report = {re = "YOU ARE NOW A MANAGER",
 		body = "With a tractor on the farm, you now supervise machinery. Your title is changed to Manager, Desk 4. Your salary is not. From today every cabbage you sell or research with your own hands counts as managerial work and will be accounted for as such. The forms are in your tray."}},
+	## Stage 2, VOLATILE_AFTER play seconds after the promotion report is signed (volatile_due): the
+	## street's mood jumps PriceSlate.WILD_STEP a minute within WILD_RANGE (entities/price_slate/).
+	street_volatility = {flag = "street_volatile", report = {re = "THE STREET HAS BECOME VOLATILE",
+		body = "Analysts report that the street now overreacts. From today its prices jump hard every minute, and the jumps may get wild. A price left alone will soon be refused. A pricing consultant is very useful here: click the switch beside the slate to set its mandate. If none is retained yet, one can still be requisitioned. Panic is not a pricing strategy."}},
 	## The end of stage 2 (chapter 2): the CONSOLIDATED GROWTH REQUISITION card is stamped. Chapter 3
 	## (buying other companies, the stock market) starts from here: chapter_3(save).
 	invest_in_growth = {card = "consolidation", report = {re = "WE SHOULD INVEST IN GROWTH",
 		body = "The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Cabbages remain cabbages. Some of them will now be shares."}},
+	## Once per save: a form in the tray has been affordable for PROGRESS_AFTER play seconds with none
+	## approved (progress_due; UpgradeDesk ticks save.progress_wait). Changes nothing but the paperwork.
+	## Last, so it never jumps ahead of a story note due at the same moment.
+	progress_required = {flag = "progress_warned", report = {re = "PROGRESS IS REQUIRED",
+		body = "Head office notes that a form on your desk could have been approved five minutes ago and was not. Forms are orders. Approving them is how the company advances, and with it your position. The projector is discretionary. Progress is not."}},
 }
 ## Farm seconds after the golden_cabbage card until the overripe event starts.
 const OVERRIPE_AFTER := 60.0
+## Play seconds after the promotion report is signed until the street turns volatile.
+const VOLATILE_AFTER := 120.0
+## Play seconds a tray form may lie affordable, none approved, before head office writes.
+const PROGRESS_AFTER := 300.0
 ## Units sold after the warning until wholesale prices explode (tools/pace.py: about 4 min; the
 ## demo: Demo.SHOCK_AFTER), or SHOCK_AFTER_FARM after the family farm card is stamped, whichever
 ## comes first: the farm pays off soon after it is bought (shock_due).
@@ -103,6 +116,24 @@ static func warning_due(save: SaveGame) -> bool:
 ## Whether the overripe event starts now: OVERRIPE_AFTER farm seconds after the golden card.
 static func overripe_due(save: SaveGame) -> bool:
 	return not save.overripe and save.golden_at >= 0.0 and save.farm_seconds >= save.golden_at + OVERRIPE_AFTER
+
+
+## Whether the street turns volatile now: VOLATILE_AFTER play seconds counted since the promotion
+## report was signed (save.volatile_wait, PriceSlate counts it).
+static func volatile_due(save: SaveGame) -> bool:
+	return not save.street_volatile and save.reports.has("promotion") and save.volatile_wait >= VOLATILE_AFTER
+
+
+## The progress clock after `delta` play seconds: it runs while a tray form is `affordable`, and
+## starts again from 0 when a form was `approved` or none is affordable.
+static func progress_clock(seconds: float, delta: float, affordable: bool, approved: bool) -> float:
+	return seconds + delta if affordable and not approved else 0.0
+
+
+## Whether head office's progress warning starts now: not `warned` yet, a form still `affordable`,
+## and the clock at PROGRESS_AFTER.
+static func progress_due(seconds: float, warned: bool, affordable: bool) -> bool:
+	return not warned and affordable and seconds >= PROGRESS_AFTER
 
 
 ## Whether wholesale prices explode now: shock_after() units sold since the warning, or

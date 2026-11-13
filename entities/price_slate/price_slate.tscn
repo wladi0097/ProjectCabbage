@@ -59,6 +59,10 @@ transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, 0, 0.0988, 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.02)
 shape = SubResource("BoardShape")
 
+[node name="Interactable" type="Node" parent="Board"]
+script = ExtResource("2_interactable")
+tooltip = "Your price per cabbage. Click \"<\" or \">\" to change it by $1. Higher pays more per sale, but the street refuses more cabbages."
+
 [node name="Down" type="StaticBody3D" parent="." unique_id=1459940010]
 transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, -0.19, 0.1045, 0.0204)
 
@@ -106,12 +110,34 @@ font = ExtResource("4_font")
 outline_size = 0
 
 [node name="Price" type="Label3D" parent="." unique_id=1874834330]
-transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, 0, 0.0957, 0.0155)
+transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, 0, 0.1015, 0.005)
 pixel_size = 0.0015
 modulate = Color(0.9, 0.89, 0.84, 0.9)
 text = "$2"
 font = ExtResource("4_font")
 font_size = 96
+outline_size = 0
+
+[node name="Forecast" type="Node3D" parent="." unique_id=1730584112]
+transform = Transform3D(1, 0, 0, 0, 0.485, 0.875, 0, -0.875, 0.485, 0, 0.0535, 0.0915)
+visible = false
+
+[node name="Arrow" type="Label3D" parent="Forecast" unique_id=1730584113]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.062, 0, 0)
+pixel_size = 0.0015
+modulate = Color(0.9, 0.89, 0.84, 0.85)
+text = ">"
+font = ExtResource("4_font")
+font_size = 64
+outline_size = 0
+
+[node name="Time" type="Label3D" parent="Forecast" unique_id=1730584114]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.014, 0, 0)
+pixel_size = 0.001
+modulate = Color(0.9, 0.89, 0.84, 0.85)
+text = "0:60"
+font = ExtResource("4_font")
+font_size = 44
 outline_size = 0
 
 [node name="Gauge" parent="." unique_id=1649192029 instance=ExtResource("6_gauge")]
@@ -156,4 +182,4 @@ min_interval = 0.05
 [node name="ConsultantSwitch" parent="." instance=ExtResource("7_switch")]
 transform = Transform3D(2.6, 0, 0, 0, 0, 2.6, 0, -2.6, 0, 0.36, 0.006, 0)
 visible = false
-tooltip = "Pricing consultant switch. Up: it keeps moving your price to where about 90% of cabbages sell (or as far above that as you set it). Down: it stays away."
+tooltip = "Pricing consultant switch. Click to open its mandate: on or off, how many cabbages the street may refuse, its lowest and highest price. The lamp is lit while it is on duty."

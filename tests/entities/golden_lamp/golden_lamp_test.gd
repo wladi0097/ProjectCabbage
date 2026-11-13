@@ -4,15 +4,18 @@ const Lamp := preload("res://entities/golden_lamp/golden_lamp.gd")
 const SCENE := preload("res://entities/golden_lamp/golden_lamp.tscn")
 
 var _save: SaveGame
+var _locale: String
 
 
 func before_test() -> void:
 	_save = SaveManager.save
 	SaveManager.save = SaveGame.new()
+	_locale = TranslationServer.get_locale()
 
 
 func after_test() -> void:
 	SaveManager.save = _save
+	TranslationServer.set_locale(_locale)
 
 
 func spawn() -> GoldenLamp:
@@ -110,6 +113,14 @@ func test_hovering_the_lamp_explains_it_with_the_current_upgraded_numbers() -> v
 	assert_str(text).contains("90 s").contains("25 s").contains("7.5×")
 
 
+func test_hovering_the_lamp_says_golden_cabbages_are_excluded_until_gold_standard() -> void:
+	TranslationServer.set_locale("en")
+	var save := SaveGame.new()
+	assert_str(Lamp.hint(save)).contains("Golden cabbages excluded.")
+	save.tree_bought.append(SaleWindow.GOLD_AGE)
+	assert_str(Lamp.hint(save)).not_contains("Golden cabbages excluded.")
+
+
 func test_the_lamp_has_a_hover_box_for_its_explanation() -> void:
 	var lamp: Node = auto_free(load("res://entities/golden_lamp/golden_lamp.tscn").instantiate())
 	assert_object(lamp.get_node("Hit/Interactable")).is_not_null()
@@ -124,3 +135,39 @@ func test_the_hidden_lamp_does_not_block_clicks_until_its_card_brings_it_in() ->
 	lamp._process(0.0)
 
 	assert_bool((lamp.get_node("Hit/Shape") as CollisionShape3D).disabled).is_false()
+
+
+func test_the_golden_lamp_sounds_when_the_golden_age_begins() -> void:
+	stamp()
+	var lamp := spawn()
+	var on := lamp.get_node("On") as AudioStreamPlayer3D
+	assert_object(on.stream).is_not_null()
+	lamp._process(Lamp.FIRST_WAIT - 0.1)
+
+	assert_bool(on.playing).is_false()
+
+	lamp._process(0.2)
+
+	assert_bool(on.playing).is_true()
+
+
+func test_a_lamp_that_is_already_on_does_not_sound_again() -> void:
+	stamp()
+	var lamp := spawn()
+	var on := lamp.get_node("On") as AudioStreamPlayer3D
+	lamp._process(Lamp.FIRST_WAIT + 0.01)
+	on.stop()
+	lamp._process(1.0)
+	lamp._process(1.0)
+
+	assert_bool(lamp.glowing).is_true()
+	assert_bool(on.playing).is_false()
+
+
+func test_a_lamp_loaded_from_a_save_starts_dark_and_silent() -> void:
+	stamp()
+	var lamp := spawn()
+	lamp._process(0.0)
+
+	assert_bool(lamp.glowing).is_false()
+	assert_bool((lamp.get_node("On") as AudioStreamPlayer3D).playing).is_false()

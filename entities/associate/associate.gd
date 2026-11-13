@@ -242,15 +242,19 @@ static func pick_target(cabbages: Array, from: Vector3, held: Interactable, clai
 	return best
 
 
-## The player has the cabbage this hand is after or carrying.
-static func snatched(target: Cabbage, held: Interactable) -> bool:
-	return is_instance_valid(target) and held != null and held == target.get_node("Interactable")
+## The player has the cabbage this hand is after or carrying. `target` is untyped: it may have been
+## freed mid-reach (sold, binned), and a freed object passed into a typed parameter is a script error.
+static func snatched(target: Variant, held: Interactable) -> bool:
+	return is_instance_valid(target) and held != null and held == (target as Cabbage).get_node("Interactable")
 
 
-## The player took it, it left, or it is no longer on the mat.
-static func gives_up(target: Cabbage, held: Interactable) -> bool:
-	return not is_instance_valid(target) or target.sold or target.away or target.freeze \
-			or held == target.get_node("Interactable") or SaleWindow.is_stray(target.global_position)
+## The player took it, it left (or was freed), or it is no longer on the mat.
+static func gives_up(target: Variant, held: Interactable) -> bool:
+	if not is_instance_valid(target):
+		return true
+	var cabbage := target as Cabbage
+	return cabbage.sold or cabbage.away or cabbage.freeze \
+			or held == cabbage.get_node("Interactable") or SaleWindow.is_stray(cabbage.global_position)
 
 
 ## The bin a hand throws `target` into: only a rotten unit, once hands_bin is bought and the bin is

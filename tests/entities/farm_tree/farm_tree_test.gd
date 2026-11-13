@@ -166,6 +166,32 @@ func test_the_farm_tree_is_drawn_in_the_screens_green_phosphor() -> void:
 	assert_object(tree.ground).is_equal(Color(0.05, 0.07, 0.06))
 
 
+## Oswald at weight 700: the face the Findings counter's drums are printed in.
+func _is_counter_face(font: Font) -> bool:
+	var face := font as FontVariation
+	return face != null and face.base_font.resource_path == "res://assets/fonts/Oswald.ttf" \
+			and face.variation_opentype.get(TextServerManager.get_primary_interface().name_to_tag("wght")) == 700
+
+
+func test_findings_on_channel_two_read_in_the_findings_counters_face_while_the_rest_stays_terminal() -> void:
+	var save := SaveGame.new()
+	save.coins = 120
+	save.findings = 345
+	SaveManager.save = save
+	var screen: FarmTree = auto_free(SCENE.instantiate())
+	add_child(screen)
+	screen._process(0.0)
+	var figure: Label = screen.get_node("BudgetLine/Findings")
+	var budget: Label = screen.get_node("BudgetLine/Budget")
+	assert_str(figure.text).is_equal("¶345")
+	assert_bool(_is_counter_face(figure.get_theme_font("font"))).is_true()
+	assert_bool(budget.text.contains("¶")).is_false()
+	assert_bool(_is_counter_face(budget.get_theme_font("font"))).is_false()
+	var tree: UpgradeTree = screen.get_node("Tree")
+	assert_bool(_is_counter_face(tree.price_font)).is_true()
+	assert_bool(_is_counter_face(tree.font)).is_false()
+
+
 func test_each_farm_heading_sits_on_its_branch_between_the_hub_and_its_first_node() -> void:
 	for heading: Array in FarmTree.THEMES:
 		assert_float(UpgradeTree.heading_bend(FarmTree, heading)).override_failure_message(heading[0]).is_less_equal(30.5)

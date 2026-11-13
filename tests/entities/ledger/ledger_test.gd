@@ -93,14 +93,94 @@ func test_a_purchase_of_an_unknown_id_is_filed_under_its_id_in_capitals() -> voi
 	assert_array(Ledger.requisitions(save)[0]).is_equal(["T+0:00:01", "RETIRED_CARD", "$3", "coins"])
 
 
-func test_the_coin_chart_plots_every_log_entry_then_now() -> void:
+## A save earning `per_minute` coins steadily, logged on the minute, with purchases in between that
+## spend most of what is held.
+func _earning(per_minute: int, minutes: int) -> SaveGame:
 	var save := SaveGame.new()
-	save.coins = 40
-	save.playtest_log.append(save.log_entry(30, "snapshot"))
-	save.coins = 120
-	save.playtest_log.append(save.log_entry(65, "card", "price_slate", 12, "coins"))
-	var points := Ledger.coin_points(save, 1000)
-	assert_array(Array(points)).is_equal([Vector2(30, 40), Vector2(65, 120), Vector2(1000, 120)])
+	for m in minutes + 1:
+		save.coins_earned = m * per_minute
+		save.coins = 10
+		save.playtest_log.append(save.log_entry(m * 60, "minute"))
+	return save
+
+
+func _rates(points: PackedVector2Array) -> Array:
+	return Array(points).map(func(p: Vector2) -> float: return p.y)
+
+
+func test_the_income_line_plots_coins_earned_per_minute() -> void:
+	var save := _earning(100, 3)
+	var points := Ledger.rate_points(save.playtest_log, "coins_earned", 180, save.coins_earned, 60)
+	assert_array(Array(points)).is_equal([Vector2(60, 100), Vector2(120, 100), Vector2(180, 100)])
+
+
+func test_a_purchase_does_not_dent_the_income_line() -> void:
+	var save := _earning(100, 3)
+	# Mid-minute purchases (one card in two currencies: two rows, same second) spend the coins held.
+	save.coins_earned = 150
+	save.coins = 0
+	save.playtest_log.insert(2, save.log_entry(90, "card", "consolidation", 140, "coins"))
+	save.playtest_log.insert(3, save.log_entry(90, "card", "consolidation", 20, "findings"))
+	save.coins_earned = 300
+	var points := Ledger.rate_points(save.playtest_log, "coins_earned", 180, save.coins_earned, 60)
+	assert_array(_rates(points)).is_equal([100.0, 100.0, 100.0])
+
+
+func test_minute_rows_landing_a_second_late_do_not_spike_the_line() -> void:
+	var entries := [{t = 0, coins_earned = 0}, {t = 61, coins_earned = 61}, {t = 122, coins_earned = 122},
+			{t = 150, coins_earned = 150}]
+	var points := Ledger.rate_points(entries, "coins_earned", 185, 185, 60)
+	assert_array(Array(points).map(func(p: Vector2) -> float: return p.x)).is_equal([60.0, 120.0, 180.0])
+	for rate: float in _rates(points):
+		assert_float(rate).is_equal_approx(60.0, 0.01)
+
+
+func test_the_unfinished_minute_is_not_plotted() -> void:
+	var save := _earning(100, 2)
+	var points := Ledger.rate_points(save.playtest_log, "coins_earned", 170, save.coins_earned + 10, 60)
+	assert_array(Array(points).map(func(p: Vector2) -> float: return p.x)).is_equal([60.0, 120.0])
+
+
+func test_a_long_shift_is_bucketed_into_wider_intervals_still_read_per_minute() -> void:
+	assert_int(Ledger.chart_step(30 * 60)).is_equal(60)
+	assert_int(Ledger.chart_step(61 * 60)).is_equal(120)
+	assert_int(Ledger.chart_step(5 * 3600)).is_equal(300)
+	for hours in [1, 3, 10, 40]:
+		assert_float(hours * 3600.0 / Ledger.chart_step(hours * 3600)).is_less_equal(Ledger.CHART_POINTS)
+	var save := _earning(100, 4)
+	assert_array(_rates(Ledger.rate_points(save.playtest_log, "coins_earned", 240, save.coins_earned, 120))).is_equal([100.0, 100.0])
+
+
+func test_the_findings_line_stays_hidden_until_findings_were_earned() -> void:
+	var save := _earning(100, 3)
+	var none := Ledger.rate_points(save.playtest_log, "findings_earned", 180, 0, 60)
+	assert_bool(Ledger.shows_line(none)).is_false()
+	save.playtest_log[2].findings_earned = 4
+	save.playtest_log[3].findings_earned = 4
+	var some := Ledger.rate_points(save.playtest_log, "findings_earned", 180, 4, 60)
+	assert_bool(Ledger.shows_line(some)).is_true()
+	assert_array(_rates(some)).is_equal([0.0, 4.0, 0.0])
+
+
+func test_a_log_from_an_older_build_without_the_earned_columns_gives_no_line_instead_of_a_crash() -> void:
+	var old := [{t = 10, kind = "session", coins = 0}, {t = 30, kind = "snapshot", coins = 40}, {t = 60, kind = "snapshot"}]
+	assert_array(Array(Ledger.rate_points(old, "coins_earned", 200, 500, 60))).is_empty()
+	assert_array(Array(Ledger.rate_points([], "coins_earned", 0, 0, 60))).is_empty()
+	# Once the column turns up the line starts there, without a spike for what came before.
+	old.append({t = 120, kind = "minute", coins_earned = 400})
+	assert_array(_rates(Ledger.rate_points(old, "coins_earned", 240, 600, 60))).is_equal([100.0, 100.0])
+
+
+func test_chart_scales_round_up_to_one_two_or_five_steps() -> void:
+	for pair: Array in [[0.0, 1.0], [0.3, 0.5], [3.0, 5.0], [5.0, 5.0], [7.0, 10.0], [12.0, 20.0], [150.0, 200.0], [2001.0, 5000.0]]:
+		assert_float(Ledger.nice_step(pair[0])).override_failure_message(str(pair)).is_equal_approx(pair[1], 0.0001)
+
+
+func test_chart_ticks_carry_their_sign_and_thousands_separators() -> void:
+	assert_str(Ledger.tick_text(1200.0, 200.0, "$")).is_equal("$1,200")
+	assert_str(Ledger.tick_text(0.0, 200.0, "$")).is_equal("$0")
+	assert_str(Ledger.tick_text(1.5, 0.5, "¶")).is_equal("¶1.5")
+	assert_str(Ledger.tick_text(0.6000001, 0.2, "¶")).is_equal("¶0.6")
 
 
 func test_a_fresh_ledger_has_summary_chart_personnel_and_one_empty_requisitions_page() -> void:

@@ -71,6 +71,34 @@ func test_dictionary_keys_are_found_in_both_spellings_and_only_inside_braces() -
 	assert_array(keys).contains_exactly_in_any_order(["id", "body", "n", "flag"])
 
 
+## A script class named in a string (find_children's type, is_class) is renamed in the export while the
+## string is not: such lookups never match there. Use `is` instead.
+const CLASS_IN_STRING := r'(?:find_children\([^,]+,\s*|is_class\(\s*|get_class\(\)\s*==\s*)&?"(\w+)"'
+
+
+func test_no_script_class_is_looked_up_by_its_name_in_a_string() -> void:
+	var classes := {}
+	for entry: Dictionary in ProjectSettings.get_global_class_list():
+		classes[entry["class"]] = true
+	var scripts: Array[String] = []
+	for dir in SOURCE_DIRS:
+		collect_scripts(dir, scripts)
+	var found: Array[String] = []
+	for path in scripts:
+		for hit in RegEx.create_from_string(CLASS_IN_STRING).search_all(FileAccess.get_file_as_string(path)):
+			if classes.has(hit.get_string(1)):
+				found.append("%s: %s" % [path, hit.get_string(1)])
+	assert_array(found).is_empty()
+
+
+func test_a_class_name_given_to_find_children_or_is_class_counts_as_a_string_lookup() -> void:
+	var found: Array[String] = []
+	for hit in RegEx.create_from_string(CLASS_IN_STRING).search_all(
+			'root.find_children("*", "Manager", true, false)\nnode.is_class(&"Cabbage")\nnode.get_class() == "Hand"'):
+		found.append(hit.get_string(1))
+	assert_array(found).contains_exactly(["Manager", "Cabbage", "Hand"])
+
+
 static func required_names() -> Array[String]:
 	var names := {}
 	for resource: Resource in [SaveGame.new(), SettingsResource.new()]:

@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://b8vly5jskxxs3" path="res://entities/components/interactable.gd" id="3_interactable"]
 [ext_resource type="Script" uid="uid://s7bovuudwem5" path="res://entities/components/sound_cue.gd" id="4_cue"]
 [ext_resource type="PackedScene" path="res://entities/growing_station/growing_station.tscn" id="6_station"]
+[ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="7_font"]
 [ext_resource type="AudioStream" uid="uid://b0mb32fxtafxh" path="res://assets/audio/effects/tray_drop.wav" id="sfx_tray_drop"]
 [ext_resource type="AudioStream" uid="uid://bg7f15vdlfa0q" path="res://assets/audio/effects/press_lever_1.wav" id="sfx_press_lever_1"]
 [ext_resource type="AudioStream" uid="uid://c0h6xlxy48ea" path="res://assets/audio/effects/press_lever_2.wav" id="sfx_press_lever_2"]
@@ -74,6 +75,48 @@ shape = SubResource("HandleShape")
 [node name="Interactable" type="Node" parent="Tube/Handle"]
 script = ExtResource("3_interactable")
 tooltip = "Tube lever. SALES: minis roll out of the window and sell. RESEARCH: they go to the research lab for Findings. SPLIT: every other one. Drag it, or click to step."
+
+[node name="Heading" type="Label3D" parent="Tube"]
+transform = Transform3D(0.9898, 0.0442, -0.1354, 0.1248, 0.1879, 0.9742, 0.0688, -0.9812, 0.1805, 0.58538646, 0.8413895, 1.0522912)
+visible = false
+cast_shadow = 0
+pixel_size = 0.00076
+shaded = true
+modulate = Color(0.17, 0.19, 0.17, 0.92)
+text = "MINI"
+font = ExtResource("7_font")
+font_size = 96
+outline_size = 0
+
+[node name="Sales" type="Label3D" parent="Tube"]
+transform = Transform3D(0.9898, 0.0442, -0.1354, 0.1248, 0.1879, 0.9742, 0.0688, -0.9812, 0.1805, 0.71578044, 0.8724121, 1.0059146)
+visible = false
+pixel_size = 0.0009
+modulate = Color(0.5, 0.52, 0.5, 0.6)
+text = "SALES"
+font = ExtResource("7_font")
+font_size = 40
+outline_size = 0
+
+[node name="Split" type="Label3D" parent="Tube"]
+transform = Transform3D(0.9898, 0.0442, -0.1354, 0.1248, 0.1879, 0.9742, 0.0688, -0.9812, 0.1805, 0.58931625, 0.8646047, 0.95318705)
+visible = false
+pixel_size = 0.0009
+modulate = Color(0.5, 0.52, 0.5, 0.6)
+text = "SPLIT"
+font = ExtResource("7_font")
+font_size = 40
+outline_size = 0
+
+[node name="Research" type="Label3D" parent="Tube"]
+transform = Transform3D(0.9898, 0.0442, -0.1354, 0.1248, 0.1879, 0.9742, 0.0688, -0.9812, 0.1805, 0.45890296, 0.8400036, 0.98813677)
+visible = false
+pixel_size = 0.0009
+modulate = Color(0.5, 0.52, 0.5, 0.6)
+text = "RESEARCH"
+font = ExtResource("7_font")
+font_size = 40
+outline_size = 0
 
 [node name="Thud" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_Thud")
