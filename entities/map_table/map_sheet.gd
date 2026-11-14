@@ -11,8 +11,18 @@ extends Node3D
 ## holds what stands on the sheet (buildings, markers): they tuck away before it rolls up and pop back
 ## up once it lies flat. `Core` is the steel tube the paper is wound on (props/roll_core.tscn): it
 ## stays at the top edge, inside the roll while rolled (its label `Band` round the roll shows then)
-## and lying there like a scroll rod on its end caps while the sheet is open. The sheets (country_sheet.tscn, world_sheet.tscn, district_sheet.tscn,
-## farm_sheet.tscn) are written by tools/make_map_sheets.py from reports/maps/labels.json.
+## and lying there like a scroll rod on its end caps while the sheet is open; rolled, the roll also
+## wears its name tag (`Core/Tag`: tag_name, "WORLD", a country's name), which is how the roll in the
+## table's holder is labelled. The sheets (world_sheet.tscn, war_sheet.tscn, countries/<id>.tscn)
+## are written by tools/make_map_sheets.py from reports/maps/labels.json.
+## The sheets are nested (WORLD > a country > the WAR on one of its farms): a sheet asks the table
+## for another one with `sheet_wanted`.
+
+## Asks the table (MapTable) to roll out sheet `sheet` (a MapSheet.id): a country's from the world
+## sheet, "war" for the war on `farm` from a country's sheet, the country's again from a war won
+## (`farm`: the farm just taken).
+@warning_ignore("unused_signal")
+signal sheet_wanted(sheet: StringName, farm: StringName)
 
 ## The paper (m): map-right along X, top to bottom along Z.
 const SIZE := Vector2(3.2, 1.8)
@@ -27,10 +37,16 @@ const CAP := 0.055
 const BAND_UNTIL := 0.02
 ## Where the hint slip for a spot of the open sheet lies (hint_pixel): top left, in the sea.
 const HINT_PIXEL := Vector2(110.0, 300.0)
+## The name tag's lettering is set this big (Label3D font size), and smaller for a name longer than
+## TAG_CHARS, so it stays on the card.
+const TAG_FONT := 140
+const TAG_CHARS := 16
 
-## Which sheet this is (MapTable.show_sheet) and its name on the hint slip over its roll.
+## Which sheet this is (MapTable.show_sheet), its name on the hint slip over its roll, and the name
+## on its roll's tag (roll_name; "": the title; tag_name).
 @export var id: StringName
 @export var title := ""
+@export var roll_name := ""
 
 ## 1 lies flat, 0 is all rolled up at the top edge.
 var open := 0.0:
@@ -39,6 +55,7 @@ var open := 0.0:
 		_paper.set_shader_parameter(&"open", value)
 		_core.position.y = core_height(value)
 		_band.visible = value < BAND_UNTIL
+		_roll_tag.visible = value < BAND_UNTIL
 ## How far the free edge stands up (0..1): paper memory, until the weights pin it down.
 var lift := 0.0:
 	set(value):
@@ -54,21 +71,27 @@ var _stand_scale: Array[Vector3] = []
 @onready var _paper: ShaderMaterial = $Paper.material_override
 @onready var _core: Node3D = $Core
 @onready var _band: Node3D = $Core/Band
+@onready var _roll_tag: Node3D = $Core/Tag
+@onready var _roll_tag_text: Label3D = $Core/Tag/Name
 
 
 func _ready() -> void:
 	_paper.set_shader_parameter(&"sheet_tex", _page.get_texture())
+	open = open  # The paper, the core and the roll's tag as `open` has them (rolled up), before anyone sets it.
+	lift = lift
 	for child in $Things.get_children():
 		_standing.append(child as Node3D)
 	_standing.sort_custom(func(a: Node3D, b: Node3D) -> bool: return a.position.x < b.position.x)
 	for thing in _standing:
 		_stand_scale.append(thing.scale)
 		thing.hide()
+	_print_tag()
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
 		reprint()  # The lettering changed.
+		_print_tag()
 
 
 ## Prints the page onto the paper again: after a layer or a label changed.
@@ -90,6 +113,22 @@ func point_at(pixel: Vector2) -> Vector3:
 
 static func on_paper(pixel: Vector2) -> bool:
 	return Rect2(Vector2.ZERO, SIZE * PIXELS_PER_METRE).has_point(pixel)
+
+
+## The sheet's name on the hint slip over its roll.
+func hint_title() -> String:
+	return tr(title)
+
+
+## The name on its roll's tag, in capitals: `roll_name`, or its title.
+func tag_name() -> String:
+	return tr(roll_name if roll_name != "" else title).to_upper()
+
+
+func _print_tag() -> void:
+	_roll_tag_text.text = tag_name()
+	var letters := maxi(_roll_tag_text.text.length(), 1)
+	_roll_tag_text.font_size = roundi(TAG_FONT * minf(TAG_CHARS, letters) / letters)
 
 
 ## What can be pointed at on the open sheet at art pixel `pixel` (a farm site's id), or nothing.

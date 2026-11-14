@@ -522,16 +522,26 @@ func test_a_condensed_golden_cabbage_takes_two_golden_cabbages_from_stock() -> v
 	assert_int(save.golden_stock).is_equal(3)
 
 
-func test_a_condensed_cabbage_is_a_little_bigger_and_twice_as_heavy_as_a_plain_one() -> void:
-	var dense := spawn(func(c: Cabbage) -> void: c.units = 2)
-	var grow := CabbageScript.condensed_size(2)
-	assert_float(grow).is_between(1.1, 1.2)  # Denser, not much bigger: the mat must not clog.
-	assert_float(CabbageScript.condensed_size(4)).is_less(1.35)
-	assert_float(CabbageScript.condensed_size(1)).is_equal(1.0)
-	assert_float(radius_of(dense)).is_between(base_radius() * (1.0 - CabbageScript.SIZE_SPREAD) * grow - 0.0001,
-			base_radius() * (1.0 + CabbageScript.SIZE_SPREAD) * grow + 0.0001)
-	# Twice the mass of a plain cabbage of its base size (its collider without the condensed growth).
-	assert_float(dense.mass / base_mass()).is_equal_approx(2.0 * pow(radius_of(dense) / grow / base_radius(), 3.0), 0.0001)
+func test_a_condensed_cabbage_is_no_bigger_than_a_plain_one_and_twice_as_heavy() -> void:
+	for units: int in [2, 8, 16, 32]:
+		var dense := spawn(func(c: Cabbage) -> void: c.units = units)
+		# The same size spread as a plain one, whatever it holds: only its count tells.
+		assert_float(radius_of(dense)).override_failure_message("x%d" % units).is_between(
+				base_radius() * (1.0 - CabbageScript.SIZE_SPREAD) - 0.0001, base_radius() * (1.0 + CabbageScript.SIZE_SPREAD) + 0.0001)
+		assert_float((dense.get_node("Mesh") as MeshInstance3D).basis.get_scale().x).is_less_equal(1.5 * (1.0 + CabbageScript.SIZE_SPREAD) + 0.0001)
+	var two := spawn(func(c: Cabbage) -> void: c.units = 2)
+	assert_float(two.mass / base_mass()).is_equal_approx(2.0 * pow(radius_of(two) / base_radius(), 3.0), 0.0001)
+
+
+func test_past_eight_cabbages_in_one_it_gets_no_heavier_to_carry_and_sounds_no_lower() -> void:
+	assert_int(CabbageScript.heft(1)).is_equal(1)
+	assert_int(CabbageScript.heft(8)).is_equal(8)
+	assert_int(CabbageScript.heft(32)).is_equal(8)
+	assert_float(CabbageScript.heavy_pitch(32)).is_equal(CabbageScript.heavy_pitch(8))
+	var eight := spawn(func(c: Cabbage) -> void: c.units = 8)
+	var many := spawn(func(c: Cabbage) -> void: c.units = 32)
+	assert_float(many.max_accel).is_equal_approx(eight.max_accel, 0.0001)
+	assert_float(many.mass / pow(radius_of(many), 3.0)).is_equal_approx(eight.mass / pow(radius_of(eight), 3.0), 0.001)
 
 
 func test_a_condensed_cabbage_drags_behind_the_hand_but_still_reaches_the_window_speed() -> void:
@@ -542,11 +552,183 @@ func test_a_condensed_cabbage_drags_behind_the_hand_but_still_reaches_the_window
 	assert_float(dense.max_speed).is_equal(plain.max_speed)  # The throw itself is as fast.
 
 
-func test_a_condensed_cabbage_shows_how_many_it_holds_and_a_plain_one_shows_nothing() -> void:
-	var count := spawn(func(c: Cabbage) -> void: c.units = 3).get_node("Count") as Label3D
-	assert_bool(count.visible).is_true()
-	assert_str(count.text).is_equal("×3")
-	assert_bool((spawn().get_node("Count") as Label3D).visible).is_false()
+func test_a_condensed_cabbage_wears_a_belt_printed_with_what_it_holds() -> void:
+	var dense := spawn(func(c: Cabbage) -> void: c.units = 3)
+	dense._process(0.0)
+	var belt := dense.get_node("Belt") as MeshInstance3D
+	assert_bool(belt.visible).is_true()
+	assert_bool(dense.is_processing()).is_true()
+	assert_float((belt.get_instance_shader_parameter(&"to_mesh_z") as Vector4).w).is_equal(3.0)
+
+
+func test_every_count_up_to_thirty_two_has_its_own_print_on_the_belt() -> void:
+	for count in range(2, 33):
+		assert_int(CabbageScript.belt_row(count)).is_equal(count)
+	var atlas := load("res://assets/textures/cabbage_belt/cabbage_belt_print.png") as Texture2D
+	assert_int(atlas.get_height() % (CabbageScript.BELT_MOST + 1)).is_equal(0)
+
+
+func test_a_single_cabbage_wears_no_belt() -> void:
+	var plain := spawn()
+	assert_bool((plain.get_node("Belt") as MeshInstance3D).visible).is_false()
+	assert_bool(plain.is_processing()).is_false()
+
+
+func test_the_belt_stays_level_while_the_cabbage_rolls() -> void:
+	var dense := spawn(func(c: Cabbage) -> void: c.units = 4)
+	var belt := dense.get_node("Belt") as MeshInstance3D
+	dense.global_basis = Basis.from_euler(Vector3(0.3, 1.1, -0.7))
+	dense._process(0.0)
+	var level := belt.global_basis
+	var told: Vector4 = belt.get_instance_shader_parameter(&"to_mesh_x")
+	dense.global_basis = Basis.from_euler(Vector3(2.4, -0.5, 1.9))
+	dense.global_position = Vector3(0.4, 0.9, 0.2)
+	dense._process(0.0)
+	assert_bool(belt.global_basis.is_equal_approx(level)).is_true()
+	assert_vector(belt.global_position).is_equal_approx(dense.global_position, Vector3.ONE * 0.0001)
+	# The paper keeps still; only the shader learns how the cabbage turned inside it.
+	assert_bool((belt.get_instance_shader_parameter(&"to_mesh_x") as Vector4).is_equal_approx(told)).is_false()
+
+
+func test_the_belt_faces_the_camera_upright() -> void:
+	var up := Vector3(0.0, 0.48, -0.88).normalized()
+	var level := CabbageScript.belt_basis(up, Vector3(0.1, 0.9, 0.5).normalized())
+	assert_vector(level.y).is_equal_approx(up, Vector3.ONE * 0.0001)
+	assert_float(level.z.dot(Vector3(0.1, 0.9, 0.5))).is_greater(0.0)
+	assert_float(level.determinant()).is_equal_approx(1.0, 0.0001)
+
+
+func test_the_belt_adds_nothing_to_the_cabbages_collision() -> void:
+	var dense := spawn(func(c: Cabbage) -> void: c.units = 8)
+	assert_int(dense.find_children("*", "CollisionShape3D", true, false).size()).is_equal(1)
+	assert_int(dense.find_children("*", "CollisionObject3D", true, false).size()).is_equal(0)
+	assert_object(dense.get_node("Belt")).is_not_instanceof(CollisionObject3D)
+
+
+## The belt shader's sums (assets/shaders/cabbage_belt.gdshader), ported: how far out the paper sits
+## in belt-space direction `d` for a mesh turned by `turn` (belt to mesh space) at `scale`.
+const BELT_REACH := 0.11
+const BELT_CLEAR := 0.002
+const BELT_HALF := 0.038
+const BELT_FADE := 0.01
+const BELT_SPAN := 1
+const BELT_STEP := 0.07
+const BELT_BEND := 1.0
+const BELT_ELEVS := 6
+const BELT_ELEV := 0.07
+
+
+func belt_reach_at(reach: Image, shape: int, turn: Basis, scale: float, d: Vector3) -> float:
+	var m := turn * d
+	# Bilinear, clamped at the edges, like the shader's filter_linear read.
+	var fx := (atan2(m.z, m.x) / TAU + 0.5) * 128.0 - 0.5
+	var fy := clampf(acos(clampf(m.y, -1.0, 1.0)) / PI * 64.0, 0.5, 63.5) - 0.5
+	var x0 := floori(fx)
+	var y0 := floori(fy)
+	var texel := func(x: int, y: int) -> float: return reach.get_pixel(clampi(x, 0, 127), clampi(y, 0, 63) + shape * 64).r
+	var top: float = lerpf(texel.call(x0, y0), texel.call(x0 + 1, y0), fx - x0)
+	var bottom: float = lerpf(texel.call(x0, y0 + 1), texel.call(x0 + 1, y0 + 1), fx - x0)
+	return lerpf(top, bottom, fy - y0) * BELT_REACH * scale
+
+
+func belt_hug(reach: Image, shape: int, turn: Basis, scale: float, dir: Vector2) -> float:
+	var hug := 0.0
+	for j in range(-BELT_SPAN, BELT_SPAN + 1):
+		var turned := dir.rotated(j * BELT_STEP)
+		for k in range(-BELT_ELEVS, BELT_ELEVS + 1):
+			var e := k * BELT_ELEV
+			var far := belt_reach_at(reach, shape, turn, scale, Vector3(turned.x * cos(e), sin(e), turned.y * cos(e)))
+			var let_go := 1.0 - 0.25 * smoothstep(BELT_HALF, BELT_HALF + BELT_FADE, absf(far * sin(e)))
+			hug = maxf(hug, far * cos(e) * cos(BELT_BEND * j * BELT_STEP) * let_go)
+	return hug + BELT_CLEAR
+
+
+## The belt mesh (examples/cabbage_belt_geo.py): an arc BELT_ARC either side of its front, BELT_SEG
+## segments across.
+const BELT_ARC := deg_to_rad(60.0)
+const BELT_SEG := 32
+
+
+## The paper's inner face at each of the belt mesh's vertex angles (from +Z toward +X), for a cabbage
+## mesh `shape` turned by `turn` (mesh to belt space) at `scale`.
+func belt_ring(reach: Image, shape: int, turn: Basis, scale: float) -> Array[Vector2]:
+	var ring: Array[Vector2] = []
+	for i in BELT_SEG + 1:
+		var angle := -BELT_ARC + 2.0 * BELT_ARC * i / BELT_SEG
+		var dir := Vector2(sin(angle), cos(angle))
+		ring.append(dir * belt_hug(reach, shape, turn.inverse(), scale, dir))
+	return ring
+
+
+## Every leaf point of mesh `shape` (corners and centres of its faces), in mesh space.
+func leaf_points(shape: int) -> PackedVector3Array:
+	var faces := CabbageScript.MESHES[shape].get_faces()
+	var leaves := PackedVector3Array()
+	for t in range(0, faces.size(), 3):
+		leaves.append_array([faces[t], faces[t + 1], faces[t + 2], (faces[t] + faces[t + 1] + faces[t + 2]) / 3.0])
+	return leaves
+
+
+func test_no_leaf_of_any_cabbage_pokes_through_its_belt_however_it_rolls_and_the_paper_rests_on_the_leaves() -> void:
+	var reach := (load("res://assets/textures/cabbage_belt/cabbage_belt_reach.png") as Texture2D).get_image()
+	var half := (load("res://assets/meshes/Props/cabbage_belt.res") as Mesh).get_aabb().size.y / 2.0
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	var scale := 1.5 * (1.0 + CabbageScript.SIZE_SPREAD)
+	for shape in CabbageScript.MESHES.size():
+		var leaves := leaf_points(shape)
+		for roll in 24:
+			var turn := Basis.from_euler(Vector3(rng.randf(), rng.randf(), rng.randf()) * TAU)
+			var ring := belt_ring(reach, shape, turn, scale)
+			var through := 0
+			var resting := 0
+			for leaf in leaves:
+				var p := turn * leaf * scale
+				var angle := atan2(p.x, p.z)
+				if absf(p.y) > half or absf(angle) >= BELT_ARC:
+					continue  # Above, below or past the ends of the paper.
+				var i := mini(floori((angle + BELT_ARC) / (2.0 * BELT_ARC) * BELT_SEG), BELT_SEG - 1)
+				var a := ring[i]
+				var b := ring[i + 1]
+				var flat := Vector2(p.x, p.z)
+				# Outside the chord between the two vertices round it: through the paper.
+				var inside := -(b - a).cross(flat - a) / (b - a).length()
+				if inside < 0.0:
+					through += 1
+				elif inside < 0.01:
+					resting += 1
+			assert_int(through).override_failure_message("cabbage %d, roll %d: %d leaf points through the belt" % [shape, roll, through]).is_equal(0)
+			# Snug, not a loose hoop: some leaves come within a centimetre of the paper.
+			assert_int(resting).override_failure_message("cabbage %d, roll %d: the belt floats off the leaves" % [shape, roll]).is_greater(0)
+
+
+func test_the_belts_ends_tuck_in_round_the_cabbages_sides() -> void:
+	var reach := (load("res://assets/textures/cabbage_belt/cabbage_belt_reach.png") as Texture2D).get_image()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var scale := 1.5
+	var tucked := 0
+	var ends := 0
+	var furthest := -INF
+	for shape in CabbageScript.MESHES.size():
+		var leaves := leaf_points(shape)
+		for roll in 12:
+			var turn := Basis.from_euler(Vector3(rng.randf(), rng.randf(), rng.randf()) * TAU)
+			var ring := belt_ring(reach, shape, turn, scale)
+			var outline := Vector2(INF, -INF)  # The cabbage's sides as the camera sees them (belt x).
+			for leaf in leaves:
+				var x := (turn * leaf * scale).x
+				outline = Vector2(minf(outline.x, x), maxf(outline.y, x))
+			var paper := Vector2(INF, -INF)
+			for point in ring:
+				paper = Vector2(minf(paper.x, point.x), maxf(paper.y, point.x))
+			tucked += int(paper.x >= outline.x) + int(paper.y <= outline.y)
+			ends += 2
+			furthest = maxf(furthest, maxf(outline.x - paper.x, paper.y - outline.y))
+	# Most ends stop inside the outline; none stands out past it by a centimetre (a full ring with a
+	# wide sample window stood up to 3 cm out).
+	assert_float(float(tucked) / ends).is_greater_equal(0.8)
+	assert_float(furthest).is_less(0.01)
 
 
 func test_a_condensed_cabbage_sounds_lower_the_more_cabbages_it_holds() -> void:

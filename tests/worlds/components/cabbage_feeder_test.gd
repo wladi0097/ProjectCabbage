@@ -272,6 +272,15 @@ func test_a_condensed_cabbage_on_the_mat_counts_as_the_stock_it_holds_so_the_chu
 	assert_bool(Feeder.should_dispense(1, 2, 3, 3)).is_true()
 
 
+func test_the_mat_never_holds_more_than_ten_cabbages() -> void:
+	var save := SaveGame.new()
+	for case: Array in [[1, 1], [7, 7], [10, 10], [11, 10], [20, 10]]:
+		save.desk_capacity = case[0]
+		assert_int(Feeder.mat_room(save)).is_equal(case[1])
+	# A full mat of ten: nothing more comes down, whatever the save says it holds.
+	assert_bool(Feeder.should_dispense(10, 10, Feeder.mat_room(save), 100)).is_false()
+
+
 func test_the_condense_nodes_raise_what_a_condensed_cabbage_holds_to_three_then_four() -> void:
 	var save := _condensing()
 	save.stamped = PackedStringArray(["projector", "big_ideas", "condense"])

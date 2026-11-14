@@ -7,7 +7,7 @@ extends Node
 ## 5 gives the company one more farm for free (save.farms_owned, up to GameEvents.FARMS), the home
 ## sites not yet bought on the map first: the first brings the "first_farm" paper, the fifth
 ## "no_more_sellers", the eighth (every home site) "home_country"; then the farms abroad, nearest
-## country first (WorldRegister.next_farm: a country shows as taken on the world sheet with its first).
+## country first (WorldRegister.next_farm: a country turns green on the world sheet with its last).
 
 const SALES := {KEY_1: 10, KEY_2: 100}
 const STOCK_KEY := KEY_3
@@ -39,7 +39,7 @@ static func press(keycode: Key, save: SaveGame) -> void:
 		print("debug: stock now %d" % save.stock)
 	if keycode == FARM_KEY and save.farms_owned.size() < Events.FARMS and WorldRegister.next_farm(save) != "":
 		# The home sites' real ids first (K-1..K-8, the ones not bought on the map yet), then the
-		# farms abroad, nearest country first ("ostrevia-1": a country counts as taken with its first).
+		# farms abroad, nearest country first ("veldmark-1").
 		save.farms_owned.append(WorldRegister.next_farm(save))
 		print("debug: farms owned %d" % save.farms_owned.size())
 	if not SALES.has(keycode):

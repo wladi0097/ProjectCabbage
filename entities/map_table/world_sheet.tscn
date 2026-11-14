@@ -5,54 +5,53 @@
 [ext_resource type="PackedScene" path="res://entities/map_table/props/site_token.tscn" id="3_thing"]
 [ext_resource type="Texture2D" path="res://assets/sprites/maps/world_owned/kohlmark.svg" id="layer_kohlmark"]
 [ext_resource type="Script" path="res://entities/map_table/world_register.gd" id="4_register"]
-[ext_resource type="PackedScene" path="res://entities/map_table/map_flash.tscn" id="5_flash"]
 [ext_resource type="Shader" path="res://assets/shaders/country_spread.gdshader" id="6_spread"]
-[ext_resource type="PackedScene" path="res://entities/map_table/farm_deed.tscn" id="7_deed"]
 
 [sub_resource type="ShaderMaterial" id="Spread_ostrevia"]
 shader = ExtResource("6_spread")
-shader_parameter/from = Vector2(492, 679)
+shader_parameter/from = Vector2(568, 512)
 shader_parameter/reach = 0.0
 
 [sub_resource type="ShaderMaterial" id="Spread_veldmark"]
 shader = ExtResource("6_spread")
-shader_parameter/from = Vector2(400, 1100)
+shader_parameter/from = Vector2(504, 837)
 shader_parameter/reach = 0.0
 
 [sub_resource type="ShaderMaterial" id="Spread_sulvania"]
 shader = ExtResource("6_spread")
-shader_parameter/from = Vector2(1126, 1113)
+shader_parameter/from = Vector2(659, 1227)
 shader_parameter/reach = 0.0
 
 [sub_resource type="ShaderMaterial" id="Spread_grauland"]
 shader = ExtResource("6_spread")
-shader_parameter/from = Vector2(1887, 850)
+shader_parameter/from = Vector2(2123, 584)
 shader_parameter/reach = 0.0
 
 [sub_resource type="ShaderMaterial" id="Spread_nordhal"]
 shader = ExtResource("6_spread")
-shader_parameter/from = Vector2(2528, 650)
+shader_parameter/from = Vector2(2524, 647)
 shader_parameter/reach = 0.0
 
 [sub_resource type="ShaderMaterial" id="Spread_morrow"]
 shader = ExtResource("6_spread")
-shader_parameter/from = Vector2(2335, 976)
+shader_parameter/from = Vector2(2457, 949)
 shader_parameter/reach = 0.0
 
 [sub_resource type="ShaderMaterial" id="Spread_lower_provinces"]
 shader = ExtResource("6_spread")
-shader_parameter/from = Vector2(1572, 1366)
+shader_parameter/from = Vector2(1796, 1377)
 shader_parameter/reach = 0.0
 
 [sub_resource type="ShaderMaterial" id="Spread_endmark"]
 shader = ExtResource("6_spread")
-shader_parameter/from = Vector2(2831, 221)
+shader_parameter/from = Vector2(2819, 221)
 shader_parameter/reach = 0.0
 
 [node name="WorldSheet" instance=ExtResource("1_sheet")]
 script = ExtResource("4_register")
 id = &"world"
 title = "World markets chart"
+roll_name = "WORLD"
 
 [node name="Art" parent="Page/Sheet" index="0"]
 texture = ExtResource("2_art")
@@ -132,7 +131,7 @@ mouse_filter = 2
 
 [node name="kohlmark" type="Line2D" parent="Page/Sheet/Outlines"]
 visible = false
-points = PackedVector2Array(994, 414, 1010, 355, 1029, 341, 1050, 353, 1083, 343, 1089, 353, 1126, 337, 1177, 336, 1187, 353, 1151, 421, 1157, 458, 1212, 501, 1261, 486, 1272, 473, 1269, 506, 1279, 551, 1264, 580, 1270, 605, 1290, 614, 1286, 626, 1258, 649, 1254, 696, 1197, 732, 1158, 741, 1151, 794, 1158, 822, 1181, 840, 1172, 860, 1121, 878, 1089, 874, 1084, 907, 1064, 934, 1018, 927, 978, 903, 960, 912, 961, 964, 992, 1007, 947, 998, 904, 1014, 921, 1078, 911, 1095, 873, 1090, 842, 1101, 805, 1147, 757, 1137, 719, 1155, 700, 1114, 710, 1077, 664, 1069, 643, 1051, 632, 989, 583, 989, 546, 1018, 502, 973, 445, 942, 515, 883, 528, 857, 524, 816, 538, 778, 531, 747, 600, 720, 621, 696, 697, 702, 695, 658, 719, 622, 767, 611, 797, 562, 830, 552, 774, 450, 797, 447, 812, 429, 848, 462, 872, 452, 885, 428, 910, 413, 934, 417, 952, 435, 969, 417)
+points = PackedVector2Array(767, 611, 807, 555, 875, 543, 893, 559, 890, 606, 901, 622, 918, 625, 927, 640, 954, 627, 982, 638, 1003, 616, 1021, 622, 1057, 604, 1056, 586, 1088, 550, 1119, 542, 1152, 559, 1153, 576, 1175, 592, 1181, 613, 1215, 577, 1241, 570, 1265, 583, 1270, 605, 1320, 615, 1329, 629, 1352, 638, 1358, 687, 1378, 711, 1467, 710, 1472, 716, 1430, 742, 1427, 767, 1434, 792, 1394, 819, 1364, 813, 1347, 845, 1371, 931, 1355, 956, 1355, 979, 1328, 1003, 1303, 1011, 1279, 1002, 1275, 1013, 1220, 1027, 1198, 1018, 1174, 1025, 1176, 984, 1156, 969, 1093, 951, 1071, 956, 1034, 1012, 1010, 1018, 946, 987, 904, 1014, 862, 988, 833, 1000, 796, 992, 761, 1005, 747, 985, 725, 973, 735, 947, 723, 892, 747, 856, 748, 813, 713, 784, 644, 810, 600, 720, 615, 712, 621, 696, 697, 702, 695, 658, 719, 622)
 closed = true
 width = 12.0
 default_color = Color(0.416, 0.169, 0.157, 1)
@@ -140,7 +139,7 @@ joint_mode = 2
 
 [node name="ostrevia" type="Line2D" parent="Page/Sheet/Outlines"]
 visible = false
-points = PackedVector2Array(616, 513, 631, 487, 625, 463, 638, 435, 673, 431, 684, 440, 708, 432, 733, 457, 755, 460, 774, 450, 791, 490, 820, 524, 830, 552, 807, 555, 797, 562, 783, 594, 767, 611, 719, 622, 695, 658, 697, 702, 621, 696, 615, 712, 600, 720, 531, 747, 538, 778, 524, 816, 530, 836, 528, 857, 515, 883, 449, 936, 446, 949, 440, 952, 357, 927, 332, 968, 292, 996, 278, 995, 266, 984, 221, 976, 178, 958, 125, 958, 74, 973, 74, 899, 91, 910, 110, 909, 159, 854, 157, 819, 134, 789, 149, 725, 176, 707, 192, 704, 240, 709, 253, 682, 257, 616, 286, 619, 297, 609, 313, 611, 328, 617, 340, 648, 354, 656, 393, 659, 399, 657, 405, 635, 427, 612, 435, 588, 431, 563, 416, 543, 426, 529, 460, 521, 467, 506, 550, 540, 559, 534, 570, 538, 575, 524, 588, 516)
+points = PackedVector2Array(239, 423, 230, 347, 238, 334, 234, 319, 254, 310, 289, 305, 336, 330, 347, 355, 374, 341, 387, 321, 405, 339, 430, 338, 450, 354, 473, 351, 485, 337, 501, 349, 546, 347, 571, 367, 586, 362, 601, 327, 627, 311, 653, 328, 683, 329, 713, 352, 753, 309, 798, 323, 812, 352, 811, 375, 795, 391, 798, 413, 831, 440, 838, 460, 858, 459, 876, 449, 894, 464, 892, 499, 902, 530, 889, 550, 859, 541, 807, 555, 793, 566, 783, 594, 767, 611, 719, 622, 695, 658, 697, 702, 621, 696, 615, 712, 600, 720, 531, 747, 495, 709, 475, 708, 441, 722, 362, 696, 352, 689, 358, 668, 354, 656, 340, 648, 328, 617, 313, 611, 297, 609, 286, 619, 257, 616, 242, 626, 225, 628, 207, 629, 191, 620, 200, 587, 197, 575, 158, 553, 180, 524, 166, 502, 151, 494, 148, 452, 165, 444, 202, 457, 216, 455, 229, 448)
 closed = true
 width = 12.0
 default_color = Color(0.416, 0.169, 0.157, 1)
@@ -148,7 +147,7 @@ joint_mode = 2
 
 [node name="veldmark" type="Line2D" parent="Page/Sheet/Outlines"]
 visible = false
-points = PackedVector2Array(292, 996, 332, 968, 357, 927, 440, 952, 446, 949, 502, 973, 546, 1018, 583, 989, 606, 986, 632, 989, 635, 1031, 643, 1051, 664, 1069, 710, 1077, 700, 1114, 711, 1152, 719, 1155, 737, 1143, 757, 1137, 778, 1144, 803, 1145, 811, 1153, 809, 1174, 788, 1206, 773, 1255, 793, 1282, 788, 1309, 792, 1335, 820, 1366, 818, 1380, 823, 1423, 811, 1423, 807, 1435, 790, 1424, 765, 1425, 736, 1442, 704, 1421, 682, 1438, 661, 1437, 649, 1442, 624, 1490, 613, 1469, 566, 1444, 549, 1444, 555, 1429, 555, 1404, 543, 1383, 504, 1372, 494, 1385, 467, 1389, 459, 1361, 437, 1341, 404, 1356, 377, 1349, 356, 1333, 354, 1321, 360, 1266, 357, 1261, 334, 1276, 315, 1267, 300, 1239, 302, 1215, 262, 1189, 212, 1199, 199, 1210, 159, 1191, 152, 1098, 137, 1088, 116, 1062, 74, 1078, 74, 973, 125, 958, 178, 958, 201, 963, 221, 976, 266, 984, 278, 995)
+points = PackedVector2Array(249, 811, 265, 790, 275, 765, 257, 745, 252, 718, 267, 720, 293, 716, 313, 707, 334, 713, 352, 689, 441, 722, 475, 708, 495, 709, 516, 725, 531, 747, 600, 720, 612, 756, 644, 810, 663, 808, 713, 784, 728, 801, 748, 813, 747, 856, 723, 892, 730, 904, 735, 947, 725, 973, 747, 985, 761, 1005, 761, 1017, 748, 1050, 721, 1063, 710, 1077, 664, 1069, 643, 1051, 635, 1031, 633, 989, 594, 986, 583, 989, 546, 1018, 533, 1048, 528, 1081, 503, 1085, 482, 1099, 464, 1087, 451, 1095, 436, 1096, 411, 1080, 384, 1075, 357, 1080, 346, 1054, 350, 1041, 313, 1029, 306, 1010, 286, 991, 256, 1018, 247, 1051, 250, 1064, 231, 1084, 211, 1088, 193, 1078, 186, 1085, 156, 1088, 180, 1072, 193, 1046, 175, 976, 178, 958, 165, 941, 168, 919, 177, 908, 174, 895, 163, 888, 152, 865, 159, 854, 155, 816, 178, 825, 203, 825, 223, 808, 237, 806)
 closed = true
 width = 12.0
 default_color = Color(0.416, 0.169, 0.157, 1)
@@ -156,7 +155,7 @@ joint_mode = 2
 
 [node name="sulvania" type="Line2D" parent="Page/Sheet/Outlines"]
 visible = false
-points = PackedVector2Array(1151, 794, 1158, 741, 1197, 732, 1241, 701, 1288, 691, 1324, 695, 1335, 709, 1337, 737, 1319, 751, 1323, 773, 1340, 788, 1310, 783, 1293, 759, 1249, 791, 1243, 813, 1223, 822, 1247, 868, 1295, 888, 1255, 891, 1238, 929, 1246, 972, 1279, 1002, 1303, 1011, 1343, 994, 1375, 1069, 1393, 1080, 1413, 1139, 1376, 1193, 1339, 1181, 1325, 1193, 1306, 1192, 1287, 1209, 1275, 1225, 1273, 1247, 1253, 1263, 1245, 1314, 1256, 1335, 1199, 1350, 1183, 1390, 1110, 1385, 1100, 1426, 1034, 1467, 997, 1455, 995, 1466, 970, 1442, 953, 1441, 902, 1446, 881, 1473, 859, 1461, 846, 1420, 823, 1423, 820, 1366, 792, 1335, 793, 1282, 773, 1255, 809, 1174, 805, 1147, 842, 1101, 873, 1090, 905, 1098, 917, 1087, 904, 1014, 947, 998, 992, 1007, 961, 964, 960, 912, 978, 903, 1018, 927, 1064, 934, 1084, 907, 1089, 874, 1121, 878, 1172, 860, 1181, 840, 1158, 822)
+points = PackedVector2Array(528, 1081, 546, 1018, 594, 986, 632, 989, 643, 1051, 658, 1066, 683, 1073, 710, 1077, 748, 1050, 761, 1005, 796, 992, 833, 1000, 862, 988, 907, 1017, 914, 1029, 909, 1047, 921, 1078, 988, 1073, 1012, 1093, 1026, 1084, 1071, 1092, 1117, 1078, 1126, 1064, 1154, 1064, 1168, 1080, 1188, 1086, 1178, 1105, 1176, 1159, 1154, 1174, 1158, 1195, 1174, 1206, 1163, 1224, 1166, 1234, 1170, 1244, 1196, 1247, 1217, 1231, 1241, 1249, 1253, 1263, 1245, 1314, 1256, 1335, 1216, 1339, 1199, 1350, 1183, 1390, 1110, 1385, 1079, 1356, 1063, 1356, 1015, 1378, 984, 1359, 942, 1413, 892, 1432, 857, 1436, 844, 1419, 811, 1423, 807, 1435, 790, 1424, 765, 1425, 736, 1442, 704, 1421, 691, 1434, 667, 1439, 628, 1415, 616, 1399, 614, 1379, 553, 1375, 534, 1363, 522, 1335, 544, 1292, 528, 1274, 512, 1283, 498, 1272, 509, 1236, 492, 1201, 463, 1179, 427, 1175, 437, 1155, 481, 1129, 482, 1099, 503, 1085)
 closed = true
 width = 12.0
 default_color = Color(0.416, 0.169, 0.157, 1)
@@ -164,7 +163,7 @@ joint_mode = 2
 
 [node name="grauland" type="Line2D" parent="Page/Sheet/Outlines"]
 visible = false
-points = PackedVector2Array(2174, 516, 2207, 494, 2209, 455, 2226, 456, 2240, 446, 2256, 452, 2264, 461, 2275, 487, 2274, 526, 2287, 545, 2287, 567, 2278, 587, 2247, 617, 2297, 667, 2297, 689, 2305, 710, 2275, 747, 2275, 780, 2225, 797, 2182, 828, 2152, 811, 2123, 821, 2101, 843, 2103, 911, 2085, 940, 2047, 927, 2008, 924, 1969, 1000, 1922, 982, 1839, 1022, 1832, 1014, 1833, 1003, 1813, 1000, 1803, 991, 1776, 1002, 1754, 999, 1730, 973, 1728, 957, 1733, 942, 1729, 931, 1733, 905, 1750, 895, 1746, 862, 1764, 836, 1752, 831, 1741, 782, 1756, 765, 1758, 751, 1774, 754, 1787, 745, 1810, 744, 1831, 713, 1838, 684, 1836, 669, 1820, 643, 1809, 634, 1819, 636, 1843, 623, 1873, 639, 1890, 639, 1913, 623, 1925, 606, 1934, 571, 1926, 559, 1926, 544, 1947, 551, 1986, 532, 2002, 533, 2023, 542, 2046, 560, 2060, 564, 2074, 546, 2106, 528, 2116, 514, 2146, 517, 2164, 526)
+points = PackedVector2Array(1711, 532, 1695, 514, 1694, 466, 1712, 441, 1739, 462, 1759, 463, 1779, 443, 1808, 446, 1816, 438, 1817, 427, 1828, 425, 1835, 417, 1844, 434, 1866, 442, 1881, 445, 1912, 426, 1937, 439, 1955, 459, 1976, 454, 1997, 458, 2009, 466, 2064, 411, 2115, 433, 2120, 424, 2136, 426, 2162, 408, 2178, 408, 2184, 422, 2198, 428, 2207, 440, 2209, 455, 2226, 456, 2240, 446, 2256, 452, 2281, 486, 2274, 526, 2285, 532, 2287, 545, 2303, 552, 2330, 544, 2329, 567, 2345, 583, 2354, 589, 2387, 588, 2389, 620, 2364, 667, 2329, 708, 2305, 710, 2275, 747, 2228, 744, 2206, 735, 2189, 718, 2172, 731, 2151, 798, 2107, 781, 2077, 744, 2061, 754, 2029, 755, 2025, 737, 1990, 726, 1973, 730, 1965, 740, 1922, 740, 1912, 731, 1889, 735, 1871, 757, 1843, 755, 1821, 738, 1766, 754, 1758, 751, 1759, 731, 1746, 716, 1711, 702, 1712, 674, 1735, 658, 1742, 641, 1775, 628, 1754, 601, 1739, 546, 1721, 546)
 closed = true
 width = 12.0
 default_color = Color(0.416, 0.169, 0.157, 1)
@@ -172,7 +171,7 @@ joint_mode = 2
 
 [node name="nordhal" type="Line2D" parent="Page/Sheet/Outlines"]
 visible = false
-points = PackedVector2Array(2274, 526, 2275, 487, 2267, 465, 2276, 451, 2273, 435, 2317, 407, 2350, 407, 2365, 424, 2367, 436, 2383, 446, 2391, 472, 2411, 479, 2450, 466, 2448, 435, 2467, 421, 2503, 428, 2523, 448, 2567, 417, 2571, 427, 2615, 445, 2635, 444, 2648, 429, 2652, 449, 2664, 459, 2710, 452, 2737, 477, 2743, 498, 2755, 509, 2752, 526, 2741, 538, 2745, 554, 2773, 556, 2792, 537, 2812, 560, 2830, 567, 2854, 622, 2852, 633, 2833, 647, 2821, 679, 2835, 705, 2830, 749, 2858, 788, 2850, 799, 2848, 823, 2835, 827, 2841, 862, 2863, 888, 2851, 944, 2784, 969, 2773, 961, 2763, 977, 2766, 995, 2748, 996, 2734, 1008, 2659, 983, 2646, 959, 2632, 956, 2590, 957, 2543, 987, 2534, 940, 2511, 898, 2468, 881, 2466, 816, 2451, 804, 2447, 785, 2412, 797, 2375, 793, 2360, 811, 2309, 785, 2275, 780, 2275, 747, 2305, 710, 2297, 689, 2297, 667, 2247, 617, 2278, 587, 2287, 567, 2287, 545)
+points = PackedVector2Array(2628, 534, 2645, 513, 2669, 460, 2678, 454, 2710, 452, 2723, 468, 2740, 481, 2747, 481, 2754, 478, 2759, 464, 2780, 473, 2811, 460, 2844, 457, 2864, 442, 2882, 447, 2888, 458, 2908, 475, 2913, 501, 2977, 535, 3000, 522, 3011, 527, 3028, 550, 3026, 573, 3032, 589, 3020, 602, 3019, 620, 3015, 627, 2995, 640, 2983, 682, 2973, 694, 2978, 715, 2972, 720, 2949, 721, 2947, 730, 2922, 760, 2913, 788, 2886, 805, 2858, 788, 2850, 799, 2853, 811, 2848, 823, 2835, 827, 2809, 792, 2795, 787, 2775, 797, 2739, 800, 2733, 788, 2647, 797, 2637, 809, 2637, 819, 2578, 837, 2571, 806, 2550, 782, 2514, 814, 2490, 819, 2466, 816, 2451, 804, 2447, 785, 2412, 797, 2375, 793, 2361, 737, 2350, 721, 2329, 708, 2379, 644, 2389, 620, 2387, 588, 2394, 575, 2419, 562, 2435, 538, 2447, 530, 2475, 522, 2496, 526, 2512, 515, 2539, 538, 2553, 529, 2568, 547, 2589, 556)
 closed = true
 width = 12.0
 default_color = Color(0.416, 0.169, 0.157, 1)
@@ -180,7 +179,7 @@ joint_mode = 2
 
 [node name="morrow" type="Line2D" parent="Page/Sheet/Outlines"]
 visible = false
-points = PackedVector2Array(2103, 911, 2101, 843, 2137, 813, 2152, 811, 2182, 828, 2225, 797, 2275, 780, 2309, 785, 2360, 811, 2375, 793, 2412, 797, 2447, 785, 2451, 804, 2466, 816, 2468, 881, 2511, 898, 2534, 940, 2543, 987, 2590, 957, 2646, 959, 2659, 983, 2734, 1008, 2736, 1053, 2751, 1076, 2749, 1098, 2726, 1113, 2707, 1106, 2678, 1114, 2637, 1093, 2633, 1077, 2607, 1060, 2595, 1070, 2579, 1070, 2570, 1104, 2578, 1137, 2555, 1162, 2542, 1193, 2505, 1175, 2489, 1179, 2444, 1153, 2416, 1156, 2398, 1178, 2395, 1154, 2354, 1136, 2335, 1145, 2306, 1148, 2284, 1170, 2264, 1171, 2244, 1154, 2229, 1175, 2208, 1188, 2184, 1188, 2171, 1167, 2141, 1171, 2119, 1207, 2078, 1157, 2045, 1145, 2028, 1147, 2013, 1156, 2012, 1171, 2001, 1180, 1990, 1173, 1941, 1171, 1905, 1160, 1895, 1135, 1906, 1102, 1893, 1095, 1871, 1103, 1855, 1085, 1842, 1051, 1845, 1036, 1839, 1022, 1922, 982, 1969, 1000, 2008, 924, 2047, 927, 2085, 940)
+points = PackedVector2Array(2033, 824, 2027, 807, 2032, 790, 2026, 773, 2029, 755, 2061, 754, 2077, 744, 2107, 781, 2151, 798, 2172, 731, 2189, 718, 2206, 735, 2228, 744, 2275, 747, 2305, 710, 2332, 709, 2361, 737, 2375, 793, 2412, 797, 2447, 785, 2451, 804, 2466, 816, 2490, 819, 2514, 814, 2550, 782, 2571, 806, 2578, 837, 2637, 819, 2647, 849, 2640, 867, 2664, 878, 2674, 901, 2669, 920, 2651, 927, 2643, 942, 2659, 983, 2650, 1010, 2665, 1035, 2645, 1053, 2633, 1077, 2607, 1060, 2595, 1070, 2579, 1070, 2570, 1063, 2570, 1051, 2549, 1049, 2530, 1072, 2474, 1105, 2428, 1093, 2395, 1106, 2384, 1093, 2368, 1092, 2375, 1077, 2370, 1061, 2346, 1054, 2320, 1052, 2295, 1060, 2276, 1077, 2260, 1066, 2241, 1063, 2214, 1076, 2182, 1075, 2171, 1062, 2170, 1046, 2144, 1072, 2102, 1094, 2082, 1118, 2039, 1129, 2016, 1115, 2033, 1094, 2032, 1068, 2013, 1051, 1992, 1002, 1969, 1000, 1973, 976, 1993, 964, 2007, 935, 2008, 924, 1990, 910, 1988, 867)
 closed = true
 width = 12.0
 default_color = Color(0.416, 0.169, 0.157, 1)
@@ -188,7 +187,7 @@ joint_mode = 2
 
 [node name="lower_provinces" type="Line2D" parent="Page/Sheet/Outlines"]
 visible = false
-points = PackedVector2Array(1459, 1258, 1455, 1242, 1464, 1229, 1452, 1203, 1473, 1198, 1473, 1181, 1508, 1146, 1531, 1146, 1562, 1168, 1601, 1180, 1597, 1197, 1606, 1219, 1627, 1232, 1650, 1219, 1663, 1220, 1713, 1253, 1723, 1247, 1762, 1290, 1792, 1293, 1834, 1275, 1843, 1263, 1895, 1282, 1921, 1284, 1923, 1299, 1915, 1316, 1929, 1341, 1913, 1376, 1901, 1384, 1913, 1400, 1903, 1422, 1936, 1444, 1912, 1479, 1926, 1519, 1887, 1526, 1858, 1506, 1840, 1509, 1825, 1552, 1811, 1561, 1822, 1567, 1826, 1588, 1820, 1602, 1800, 1608, 1795, 1638, 1747, 1631, 1723, 1655, 1706, 1647, 1666, 1649, 1649, 1611, 1654, 1594, 1646, 1578, 1629, 1582, 1596, 1570, 1557, 1579, 1538, 1605, 1542, 1624, 1513, 1596, 1494, 1605, 1474, 1600, 1464, 1587, 1463, 1564, 1443, 1541, 1430, 1555, 1412, 1557, 1378, 1537, 1377, 1507, 1360, 1501, 1347, 1471, 1350, 1460, 1365, 1447, 1365, 1431, 1326, 1417, 1330, 1385, 1322, 1369, 1337, 1359, 1362, 1362, 1409, 1389, 1446, 1375, 1452, 1324, 1416, 1297, 1443, 1290)
+points = PackedVector2Array(1539, 1343, 1543, 1316, 1567, 1291, 1589, 1291, 1625, 1268, 1635, 1248, 1627, 1232, 1650, 1219, 1686, 1230, 1713, 1253, 1720, 1253, 1723, 1247, 1762, 1290, 1792, 1293, 1834, 1275, 1843, 1263, 1914, 1285, 1931, 1271, 2007, 1240, 2030, 1253, 2033, 1266, 2054, 1264, 2071, 1251, 2079, 1271, 2105, 1285, 2112, 1303, 2090, 1332, 2088, 1353, 2078, 1359, 2106, 1390, 2116, 1417, 2119, 1458, 2095, 1468, 2027, 1472, 2021, 1487, 2007, 1495, 2012, 1525, 1987, 1541, 1970, 1602, 1934, 1600, 1907, 1627, 1894, 1602, 1870, 1590, 1833, 1605, 1820, 1602, 1828, 1579, 1822, 1567, 1811, 1561, 1784, 1577, 1767, 1577, 1723, 1560, 1711, 1549, 1705, 1533, 1689, 1529, 1673, 1544, 1651, 1550, 1646, 1578, 1629, 1582, 1596, 1570, 1579, 1572, 1572, 1568, 1560, 1549, 1557, 1520, 1529, 1527, 1494, 1522, 1456, 1552, 1447, 1549, 1443, 1526, 1461, 1500, 1460, 1445, 1457, 1440, 1436, 1435, 1419, 1420, 1422, 1405, 1440, 1379, 1459, 1367, 1481, 1359, 1498, 1360, 1508, 1373, 1512, 1362)
 closed = true
 width = 12.0
 default_color = Color(0.416, 0.169, 0.157, 1)
@@ -196,7 +195,7 @@ joint_mode = 2
 
 [node name="endmark" type="Line2D" parent="Page/Sheet/Outlines"]
 visible = false
-points = PackedVector2Array(2757, 229, 2754, 222, 2764, 195, 2764, 186, 2774, 174, 2777, 165, 2783, 159, 2803, 155, 2811, 149, 2824, 151, 2829, 159, 2845, 160, 2858, 155, 2884, 157, 2895, 165, 2903, 178, 2931, 178, 2938, 173, 2947, 174, 2951, 166, 2958, 162, 2966, 174, 3005, 179, 2989, 211, 2989, 223, 2997, 239, 3000, 257, 3012, 275, 3013, 295, 2989, 335, 2990, 347, 2968, 357, 2951, 373, 2938, 368, 2926, 374, 2925, 367, 2916, 358, 2900, 358, 2864, 371, 2854, 383, 2850, 397, 2852, 381, 2842, 355, 2831, 354, 2812, 344, 2801, 344, 2798, 353, 2792, 359, 2783, 362, 2774, 362, 2760, 354, 2751, 355, 2731, 348, 2733, 327, 2728, 306, 2729, 283, 2722, 273, 2712, 267, 2728, 241, 2741, 230)
+points = PackedVector2Array(2526, 257, 2532, 248, 2533, 238, 2550, 228, 2542, 209, 2552, 184, 2563, 177, 2565, 170, 2584, 171, 2611, 156, 2644, 191, 2658, 181, 2669, 180, 2676, 167, 2672, 153, 2682, 161, 2707, 169, 2728, 184, 2736, 194, 2761, 202, 2764, 186, 2783, 159, 2803, 155, 2811, 149, 2824, 151, 2829, 159, 2845, 160, 2858, 155, 2884, 157, 2895, 165, 2903, 178, 2931, 178, 2938, 173, 2947, 174, 2958, 162, 2966, 174, 3005, 179, 2989, 211, 2989, 223, 3000, 257, 3012, 275, 3014, 290, 2989, 335, 2990, 347, 2968, 357, 2951, 373, 2938, 368, 2926, 374, 2916, 358, 2900, 358, 2864, 371, 2854, 383, 2850, 397, 2852, 381, 2846, 360, 2812, 344, 2801, 344, 2798, 353, 2783, 362, 2731, 348, 2724, 365, 2709, 375, 2687, 370, 2671, 372, 2666, 379, 2624, 337, 2607, 338, 2592, 346, 2565, 328, 2560, 317, 2562, 293, 2536, 273)
 closed = true
 width = 12.0
 default_color = Color(0.416, 0.169, 0.157, 1)
@@ -204,10 +203,10 @@ joint_mode = 2
 
 [node name="L00" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 78.0
-offset_top = 892.0
-offset_right = 1478.0
-offset_bottom = 1012.0
+offset_left = 418.0
+offset_top = 760.0
+offset_right = 1818.0
+offset_bottom = 880.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -221,10 +220,10 @@ vertical_alignment = 1
 
 [node name="L01" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = -308.0
-offset_top = 757.0
-offset_right = 1092.0
-offset_bottom = 877.0
+offset_left = -225.0
+offset_top = 582.0
+offset_right = 1175.0
+offset_bottom = 702.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -238,10 +237,10 @@ vertical_alignment = 1
 
 [node name="L02" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = -182.0
-offset_top = 1176.0
-offset_right = 1218.0
-offset_bottom = 1296.0
+offset_left = -305.0
+offset_top = 898.0
+offset_right = 1095.0
+offset_bottom = 1018.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -255,10 +254,10 @@ vertical_alignment = 1
 
 [node name="L03" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 401.0
-offset_top = 1232.0
-offset_right = 1801.0
-offset_bottom = 1352.0
+offset_left = 127.0
+offset_top = 1244.0
+offset_right = 1527.0
+offset_bottom = 1364.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -272,10 +271,10 @@ vertical_alignment = 1
 
 [node name="L04" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 1366.0
-offset_top = 716.0
-offset_right = 2766.0
-offset_bottom = 836.0
+offset_left = 1254.0
+offset_top = 609.0
+offset_right = 2654.0
+offset_bottom = 729.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -289,10 +288,10 @@ vertical_alignment = 1
 
 [node name="L05" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 1934.0
-offset_top = 703.0
-offset_right = 3334.0
-offset_bottom = 823.0
+offset_left = 2089.0
+offset_top = 616.0
+offset_right = 3489.0
+offset_bottom = 736.0
 pivot_offset = Vector2(700, 60)
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
@@ -305,10 +304,10 @@ vertical_alignment = 1
 
 [node name="L06" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 1518.0
-offset_top = 1027.0
-offset_right = 2918.0
-offset_bottom = 1147.0
+offset_left = 1533.0
+offset_top = 926.0
+offset_right = 2933.0
+offset_bottom = 1046.0
 pivot_offset = Vector2(700, 60)
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
@@ -337,10 +336,10 @@ vertical_alignment = 1
 
 [node name="L08" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 2170.0
-offset_top = 266.0
-offset_right = 3570.0
-offset_bottom = 386.0
+offset_left = 2082.0
+offset_top = 268.0
+offset_right = 3482.0
+offset_bottom = 388.0
 pivot_offset = Vector2(700, 60)
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
@@ -353,10 +352,10 @@ vertical_alignment = 1
 
 [node name="Count_kohlmark" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 102.0
-offset_top = 656.0
-offset_right = 1502.0
-offset_bottom = 776.0
+offset_left = 154.0
+offset_top = 741.0
+offset_right = 1554.0
+offset_bottom = 861.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -368,10 +367,10 @@ vertical_alignment = 1
 
 [node name="Count_ostrevia" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = -299.0
-offset_top = 619.0
-offset_right = 1101.0
-offset_bottom = 739.0
+offset_left = -41.0
+offset_top = 452.0
+offset_right = 1359.0
+offset_bottom = 572.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -383,10 +382,10 @@ vertical_alignment = 1
 
 [node name="Count_veldmark" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = -209.0
-offset_top = 1040.0
-offset_right = 1191.0
-offset_bottom = 1160.0
+offset_left = -105.0
+offset_top = 777.0
+offset_right = 1295.0
+offset_bottom = 897.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -398,10 +397,10 @@ vertical_alignment = 1
 
 [node name="Count_sulvania" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 517.0
-offset_top = 1053.0
-offset_right = 1917.0
-offset_bottom = 1173.0
+offset_left = -132.0
+offset_top = 1167.0
+offset_right = 1268.0
+offset_bottom = 1287.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -413,10 +412,10 @@ vertical_alignment = 1
 
 [node name="Count_grauland" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 1096.0
-offset_top = 790.0
-offset_right = 2496.0
-offset_bottom = 910.0
+offset_left = 1514.0
+offset_top = 524.0
+offset_right = 2914.0
+offset_bottom = 644.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -428,10 +427,10 @@ vertical_alignment = 1
 
 [node name="Count_nordhal" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 1919.0
-offset_top = 590.0
-offset_right = 3319.0
-offset_bottom = 710.0
+offset_left = 1733.0
+offset_top = 587.0
+offset_right = 3133.0
+offset_bottom = 707.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -443,10 +442,10 @@ vertical_alignment = 1
 
 [node name="Count_morrow" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 1726.0
-offset_top = 916.0
-offset_right = 3126.0
-offset_bottom = 1036.0
+offset_left = 1848.0
+offset_top = 889.0
+offset_right = 3248.0
+offset_bottom = 1009.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -458,10 +457,10 @@ vertical_alignment = 1
 
 [node name="Count_lower_provinces" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 963.0
-offset_top = 1306.0
-offset_right = 2363.0
-offset_bottom = 1426.0
+offset_left = 1187.0
+offset_top = 1317.0
+offset_right = 2587.0
+offset_bottom = 1437.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -473,9 +472,9 @@ vertical_alignment = 1
 
 [node name="Count_endmark" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 2222.0
+offset_left = 2210.0
 offset_top = 161.0
-offset_right = 3622.0
+offset_right = 3610.0
 offset_bottom = 281.0
 pivot_offset = Vector2(700, 60)
 auto_translate_mode = 2
@@ -517,10 +516,10 @@ vertical_alignment = 1
 
 [node name="L20" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 1700.0
-offset_top = 115.0
-offset_right = 3100.0
-offset_bottom = 235.0
+offset_left = 1430.0
+offset_top = 130.0
+offset_right = 2830.0
+offset_bottom = 250.0
 rotation = 0.06981
 pivot_offset = Vector2(700, 60)
 theme_type_variation = &"FormLabel"
@@ -553,7 +552,7 @@ offset_bottom = 1486.0
 pivot_offset = Vector2(700, 60)
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 52
+theme_override_font_sizes/font_size = 44
 text = "WORLD MARKETS - GENERAL CHART"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -567,7 +566,7 @@ offset_bottom = 1588.0
 pivot_offset = Vector2(700, 60)
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 19
 text = "Territories pending cabbage distribution. Not to be removed from the office."
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -596,7 +595,7 @@ pivot_offset = Vector2(700, 60)
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 34
-text = "2 of 3"
+text = "Index"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -1091,51 +1090,46 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="T01" parent="Things" instance=ExtResource("3_thing")]
-transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, -0.707, 0.002, 0.716)
+transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, -0.655, 0.002, 0.801)
 site = &"kohlmark"
 title = "Kohlmark"
 
 [node name="T02" parent="Things" instance=ExtResource("3_thing")]
-transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, -1.108, 0.002, 0.679)
+transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, -1.032, 0.002, 0.512)
 site = &"ostrevia"
 title = "Ostrevia"
 
 [node name="T03" parent="Things" instance=ExtResource("3_thing")]
-transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, -1.200, 0.002, 1.100)
+transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, -1.096, 0.002, 0.837)
 site = &"veldmark"
 title = "Veldmark"
 
 [node name="T04" parent="Things" instance=ExtResource("3_thing")]
-transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, -0.474, 0.002, 1.113)
+transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, -0.941, 0.002, 1.227)
 site = &"sulvania"
 title = "Sulvania"
 
 [node name="T05" parent="Things" instance=ExtResource("3_thing")]
-transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 0.287, 0.002, 0.850)
+transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 0.523, 0.002, 0.584)
 site = &"grauland"
 title = "Grauland"
 
 [node name="T06" parent="Things" instance=ExtResource("3_thing")]
-transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 0.928, 0.002, 0.650)
+transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 0.924, 0.002, 0.647)
 site = &"nordhal"
 title = "Nordhal Protectorate"
 
 [node name="T07" parent="Things" instance=ExtResource("3_thing")]
-transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 0.735, 0.002, 0.976)
+transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 0.857, 0.002, 0.949)
 site = &"morrow"
 title = "Federated Morrow"
 
 [node name="T08" parent="Things" instance=ExtResource("3_thing")]
-transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, -0.028, 0.002, 1.366)
+transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 0.196, 0.002, 1.377)
 site = &"lower_provinces"
 title = "The Lower Provinces"
 
 [node name="T09" parent="Things" instance=ExtResource("3_thing")]
-transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 1.231, 0.002, 0.221)
+transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 1.219, 0.002, 0.221)
 site = &"endmark"
 title = "Endmark Isle"
-
-[node name="Flash" parent="." instance=ExtResource("5_flash")]
-visible = false
-
-[node name="Deed" parent="." instance=ExtResource("7_deed")]

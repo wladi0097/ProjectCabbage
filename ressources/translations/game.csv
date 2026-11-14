@@ -1132,9 +1132,9 @@ How many cabbages storage holds, and what golden cabbages earn at the window and
 How many cabbages storage holds, and what golden cabbages earn at the window and in the lab.","Jeder Schrank ist ein Lager im Wartestand.
 Wie viele Kohlköpfe ins Lager passen, und was goldene Kohlköpfe am Fenster und im Labor einbringen."
 "The mat is leased by the cabbage.
-One more cabbage fits on the mat per step, later three, up to 20.","The mat is leased by the cabbage.
-One more cabbage fits on the mat per step, later three, up to 20.","Die Matte wird pro Kohlkopf gemietet.
-Pro Stufe passt ein Kohlkopf mehr auf die Matte, später drei, bis 20."
+One more cabbage fits on the mat per step, up to 10.","The mat is leased by the cabbage.
+One more cabbage fits on the mat per step, up to 10.","Die Matte wird pro Kohlkopf gemietet.
+Pro Stufe passt ein Kohlkopf mehr auf die Matte, bis 10."
 "Incidents at the window, monetised.
 The catch combo, the lit crates in the street and what the bin pays for rot.","Incidents at the window, monetised.
 The catch combo, the lit crates in the street and what the bin pays for rot.","Zwischenfälle am Fenster, zu Geld gemacht.
@@ -1235,13 +1235,19 @@ The chute rolls out a cabbage every 0.5 s, not every 1 s.","The ramp is motorise
 The chute rolls out a cabbage every 0.5 s, not every 1 s.","Die Rampe ist motorisiert.
 Die Rutsche schickt alle 0,5 s einen Kohlkopf statt jede Sekunde."
 "A second motor, same belt.
-The chute rolls out a cabbage every 0.33 s, not every 0.5 s.","A second motor, same belt.
-The chute rolls out a cabbage every 0.33 s, not every 0.5 s.","Ein zweiter Motor, dasselbe Band.
-Die Rutsche schickt alle 0,33 s einen Kohlkopf statt alle 0,5 s."
+The chute rolls out a cabbage every 0.33 s, not every 0.5 s,
+and waits half as long after a cabbage leaves the mat.","A second motor, same belt.
+The chute rolls out a cabbage every 0.33 s, not every 0.5 s,
+and waits half as long after a cabbage leaves the mat.","Ein zweiter Motor, dasselbe Band.
+Die Rutsche schickt alle 0,33 s einen Kohlkopf statt alle 0,5 s
+und wartet nur halb so lange, wenn ein Kohlkopf die Matte verlässt."
 "Safety guards removed.
-The chute rolls out a cabbage every 0.22 s, not every 0.33 s.","Safety guards removed.
-The chute rolls out a cabbage every 0.22 s, not every 0.33 s.","Schutzgitter entfernt.
-Die Rutsche schickt alle 0,22 s einen Kohlkopf statt alle 0,33 s."
+The chute rolls out a cabbage every 0.22 s, not every 0.33 s,
+and waits half as long after a cabbage leaves the mat.","Safety guards removed.
+The chute rolls out a cabbage every 0.22 s, not every 0.33 s,
+and waits half as long after a cabbage leaves the mat.","Schutzgitter entfernt.
+Die Rutsche schickt alle 0,22 s einen Kohlkopf statt alle 0,33 s
+und wartet nur halb so lange, wenn ein Kohlkopf die Matte verlässt."
 MAT ALLOWANCE,MAT ALLOWANCE,MATTENKONTINGENT
 APPLY FOR AN EXTENDED MAT ALLOWANCE,APPLY FOR AN EXTENDED MAT ALLOWANCE,ERWEITERTES MATTENKONTINGENT BEANTRAGEN
 "Your uncle is selling. Family rates apply.
@@ -1258,10 +1264,6 @@ I have it from a reliable source that wholesale prices will spike soon. Crates s
 8-CABBAGE MAT,8-CABBAGE MAT,MATTE FÜR 8
 9-CABBAGE MAT,9-CABBAGE MAT,MATTE FÜR 9
 10-CABBAGE MAT,10-CABBAGE MAT,MATTE FÜR 10
-11-CABBAGE MAT,11-CABBAGE MAT,MATTE FÜR 11
-MAT ANNEXATION,MAT ANNEXATION,MATTENANNEXION
-DESK REZONING,DESK REZONING,TISCHUMWIDMUNG
-TOTAL MAT,TOTAL MAT,TOTALMATTE
 "Floor space is leased by the cabbage.
 One more cabbage fits on the mat
 (the chute keeps it full): 4 instead of 3.","Floor space is leased by the cabbage.
@@ -1311,43 +1313,15 @@ One more cabbage fits on the mat
 (the chute keeps it full): 10 instead of 9.","Unter die erste Matte wird eine zweite geklebt.
 Ein Kohlkopf mehr passt auf die Matte
 (die Rutsche hält sie voll): 10 statt 9."
-"Coffee is no longer permitted on the mat.
-One more cabbage fits on the mat
-(the chute keeps it full): 11 instead of 10.","Coffee is no longer permitted on the mat.
-One more cabbage fits on the mat
-(the chute keeps it full): 11 instead of 10.","Kaffee ist auf der Matte nicht mehr gestattet.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 11 statt 10."
-"The in-tray and the desk lamp are relocated.
-Three more cabbages fit on the mat
-(the chute keeps it full): 14 instead of 11.","The in-tray and the desk lamp are relocated.
-Three more cabbages fit on the mat
-(the chute keeps it full): 14 instead of 11.","Eingangsablage und Tischlampe werden versetzt.
-Drei Kohlköpfe mehr passen auf die Matte
-(die Rutsche hält sie voll): 14 statt 11."
-"Personal items and the telephone are removed.
-Three more cabbages fit on the mat
-(the chute keeps it full): 17 instead of 14.","Personal items and the telephone are removed.
-Three more cabbages fit on the mat
-(the chute keeps it full): 17 instead of 14.","Persönliches und das Telefon werden entfernt.
-Drei Kohlköpfe mehr passen auf die Matte
-(die Rutsche hält sie voll): 17 statt 14."
-"There is no more desk. There is only the mat.
-Three more cabbages fit on the mat
-(the chute keeps it full): 20 instead of 17.","There is no more desk. There is only the mat.
-Three more cabbages fit on the mat
-(the chute keeps it full): 20 instead of 17.","Es gibt keinen Tisch mehr. Nur noch die Matte.
-Drei Kohlköpfe mehr passen auf die Matte
-(die Rutsche hält sie voll): 20 statt 17."
 "UNIT INVERTED
 PLEASE ASSIST","UNIT INVERTED
 PLEASE ASSIST","GERÄT UMGEKIPPT
 BITTE HELFEN"
 FORM 0-P  PRIORITY ACQUISITION,FORM 0-P  PRIORITY ACQUISITION,FORMULAR 0-P  VORRANGIGER ERWERB
 "Floor space is a privilege, not a right.
-One more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells more space a step at a time, up to 20, each dearer than the last.","Floor space is a privilege, not a right.
-One more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells more space a step at a time, up to 20, each dearer than the last.","Stellfläche ist ein Privileg, kein Recht.
-Sofort passt ein Kohlkopf mehr auf die Matte (3 statt 2). Danach verkauft der Projektor Stufe um Stufe mehr Platz, bis 20, jede teurer als die letzte."
+One more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells more space a step at a time, up to 10, each dearer than the last.","Floor space is a privilege, not a right.
+One more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells more space a step at a time, up to 10, each dearer than the last.","Stellfläche ist ein Privileg, kein Recht.
+Sofort passt ein Kohlkopf mehr auf die Matte (3 statt 2). Danach verkauft der Projektor Stufe um Stufe mehr Platz, bis 10, jede teurer als die letzte."
 "The supplier is reminded of alternatives.
 Packs cost 30% less. The ticker shows the cut price.","The supplier is reminded of alternatives.
 Packs cost 30% less. The ticker shows the cut price.","Der Lieferant wird an Alternativen erinnert.
@@ -1786,10 +1760,14 @@ SHEET,SHEET,BLATT
 SCALE,SCALE,MASSSTAB
 The Board,The Board,Vorstand
 FILED,FILED,ABLAGE
-District 7 cadastre,District 7 cadastre,Kataster Bezirk 7
 Nordhal Protectorate,Nordhal Protectorate,Protektorat Nordhal
 Federated Morrow,Federated Morrow,Föderiertes Morrow
 The Lower Provinces,The Lower Provinces,Die Unteren Provinzen
+Kohlmark,Kohlmark,Kohlmark
+Ostrevia,Ostrevia,Ostrevia
+Veldmark,Veldmark,Veldmark
+Sulvania,Sulvania,Sulvania
+Grauland,Grauland,Grauland
 Grey Sea,Grey Sea,Graues Meer
 Sea of Quarterly Returns,Sea of Quarterly Returns,Meer der Quartalserträge
 Survey Pole 0,Survey Pole 0,Vermessungspol 0
@@ -1822,7 +1800,6 @@ Standard cabbage holding. Layout per Directive 14 (Yield).,Standard cabbage hold
 PLOTS,PLOTS,FELDER
 DRAWN,DRAWN,GEZEICHNET
 Survey Office,Survey Office,Vermessungsamt
-Farm site plan,Farm site plan,Hoflageplan
 "Field line.
 Lift the handset to be put through to the maps. One lamp for every farm the company holds.","Field line.
 Lift the handset to be put through to the maps. One lamp for every farm the company holds.","Feldleitung.
@@ -1838,7 +1815,6 @@ Domestic farm sites eligible for acquisition. Prices per Schedule C.,Domestic fa
 1A of 3,1A of 3,1A von 3
 FARM SITES,FARM SITES,HOFSTANDORTE
 Domestic,Domestic,Inland
-Kohlmark farm register,Kohlmark farm register,Hofregister Kohlmark
 A farm is waiting for its field: click a square under a green arrow.,A farm is waiting for its field: click a square under a green arrow.,Ein Hof wartet auf sein Feld: Klicke auf ein Feld unter einem grünen Pfeil.
 Farm established on this field: %d× its cabbages.,Farm established on this field: %d× its cabbages.,Hof auf diesem Feld eingerichtet: %d× so viele Kohlköpfe.
 FARM OUTPUT,FARM OUTPUT,HOFERTRAG
@@ -1866,7 +1842,7 @@ YOU ARE PROMOTED AGAIN,YOU ARE PROMOTED AGAIN,SIE WERDEN ERNEUT BEFÖRDERT
 A FARM HAS BEEN ACQUIRED,A FARM HAS BEEN ACQUIRED,EIN HOF WURDE ERWORBEN
 "The company now owns a farm it has never seen. To keep a clean overview, check the TV, channel 1: green arrows mark your fields. Click one to upgrade it to a farm. It will produce accordingly. One field for every farm we own. Head office likes to see on a screen what is ours.","The company now owns a farm it has never seen. To keep a clean overview, check the TV, channel 1: green arrows mark your fields. Click one to upgrade it to a farm. It will produce accordingly. One field for every farm we own. Head office likes to see on a screen what is ours.","Die Firma besitzt nun einen Hof, den sie nie gesehen hat. Für einen sauberen Überblick sehen Sie auf dem Fernseher nach, Kanal 1: Grüne Pfeile markieren Ihre Felder. Klicken Sie eines an, um es zu einem Hof aufzuwerten. Es wird entsprechend liefern. Ein Feld für jeden Hof, den wir besitzen. Die Zentrale sieht gern auf einem Bildschirm, was uns gehört."
 THEY WILL NOT SELL ANY MORE,THEY WILL NOT SELL ANY MORE,SIE VERKAUFEN NICHT MEHR
-"The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. Head office is making the necessary arrangements. Your maps will be extended beyond the border. Stand by.","The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. Head office is making the necessary arrangements. Your maps will be extended beyond the border. Stand by.","Die übrigen Eigentümer beantworten unsere Angebote nicht mehr. Fünf Höfe, und sie nennen es genug. Es ist nicht genug. Sie verkaufen nicht mehr, also nehmen wir uns, was uns zusteht. Die Zentrale trifft die nötigen Vorkehrungen. Ihre Karten werden über die Grenze hinaus erweitert. Halten Sie sich bereit."
+"The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. The authorisation is in your tray. Your maps will be extended beyond the border in due course.","The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. The authorisation is in your tray. Your maps will be extended beyond the border in due course.","Die übrigen Eigentümer beantworten unsere Angebote nicht mehr. Fünf Höfe, und sie nennen es genug. Es ist nicht genug. Sie verkaufen nicht mehr, also nehmen wir uns, was uns zusteht. Die Genehmigung liegt in Ihrer Ablage. Ihre Karten werden zu gegebener Zeit über die Grenze hinaus erweitert."
 PROCURE MARKET INTELLIGENCE,PROCURE MARKET INTELLIGENCE,MARKTINFORMATIONEN BESCHAFFEN
 "We no longer buy cabbages. We buy what is known about those who grow them.
 The supply console is removed for good: no more crates. A field line takes its place: its lamps count the farms you own, of 24. Lift the handset to go to the map table.","We no longer buy cabbages. We buy what is known about those who grow them.
@@ -1877,7 +1853,6 @@ WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS,WE OWN THE WORLD. WE MUST CONTIN
 Needs all 24 farms: the field line counts them. Stamped, the board looks up.","There is nothing left to buy down here.
 Needs all 24 farms: the field line counts them. Stamped, the board looks up.","Hier unten gibt es nichts mehr zu kaufen.
 Erfordert alle 24 Höfe: Die Feldleitung zählt sie. Gestempelt, blickt der Vorstand nach oben."
-%d FARMS,%d FARMS,%d HÖFE
 ACQUIRED,ACQUIRED,ERWORBEN
 NOT FOR SALE,NOT FOR SALE,UNVERKÄUFLICH
 %s cabbages,%s cabbages,%s Kohlköpfe
@@ -1892,9 +1867,9 @@ The projector gets a much wider screen, with new and dearer upgrades around its 
 Der Projektor bekommt eine viel breitere Leinwand, mit neuen und teureren Verbesserungen an ihrem Rand. Ziehen Sie sie herunter, um nachzusehen."
 CONDENSE CABBAGES,CONDENSE CABBAGES,KOHLKÖPFE VERDICHTEN
 "Two cabbages now occupy the space of one. Physics has been informed.
-Every plain cabbage from the chute is condensed: it takes 2 cabbages from stock and counts as 2 wherever it goes (sold, paid, researched). Research and golden cabbages follow on the projector.","Two cabbages now occupy the space of one. Physics has been informed.
-Every plain cabbage from the chute is condensed: it takes 2 cabbages from stock and counts as 2 wherever it goes (sold, paid, researched). Research and golden cabbages follow on the projector.","Zwei Kohlköpfe nehmen jetzt den Platz von einem ein. Die Physik wurde informiert.
-Jeder gewöhnliche Kohlkopf aus der Rutsche ist verdichtet: Er nimmt 2 Kohlköpfe aus dem Lager und zählt überall als 2 (verkauft, bezahlt, erforscht). Forschungs- und goldene Kohlköpfe folgen am Projektor."
+Needs 1 farm. Every plain cabbage from the chute is condensed: it takes 2 cabbages from stock and counts as 2 wherever it goes (sold, paid, researched). Research and golden cabbages follow on the projector.","Two cabbages now occupy the space of one. Physics has been informed.
+Needs 1 farm. Every plain cabbage from the chute is condensed: it takes 2 cabbages from stock and counts as 2 wherever it goes (sold, paid, researched). Research and golden cabbages follow on the projector.","Zwei Kohlköpfe nehmen jetzt den Platz von einem ein. Die Physik wurde informiert.
+Braucht 1 Hof. Jeder gewöhnliche Kohlkopf aus der Rutsche ist verdichtet: Er nimmt 2 Kohlköpfe aus dem Lager und zählt überall als 2 (verkauft, bezahlt, erforscht). Forschungs- und goldene Kohlköpfe folgen am Projektor."
 BOARD-APPROVED SLOGAN,BOARD-APPROVED SLOGAN,GENEHMIGTER SLOGAN
 NATIONAL CAMPAIGN,NATIONAL CAMPAIGN,LANDESWEITE KAMPAGNE
 MANDATORY CONSUMPTION,MANDATORY CONSUMPTION,VERZEHRPFLICHT
@@ -1973,7 +1948,6 @@ it takes 4 from stock and counts as 4.","Der Kohlkopf besteht nun vor allem aus 
 Ein verdichteter Kohlkopf fasst 4 statt 3:
 Er nimmt 4 aus dem Lager und zählt als 4."
 WORLD,WORLD,WELT
-DISTRICT,DISTRICT,BEZIRK
 NEGOTIATION,NEGOTIATION,VERHANDLUNG
 "The owners said no. No is an opening position.
 Needs 1 farm. The next three farms on the country map are for sale again. Their deeds take offers of cabbages: enough and the price drops, too few and it rises. Cabbages offered are gone either way.","The owners said no. No is an opening position.
@@ -1991,9 +1965,9 @@ Needs 4 farms. The fifth farm on the country map is for sale. Its owner does not
 Braucht 4 Höfe. Der fünfte Hof auf der Landeskarte steht zum Verkauf. Sein Eigentümer isst keinen Kohl: Seine Urkunde nimmt Münzen im Umschlag an. Gleiche Regeln."
 EXTEND THE MAPS BEYOND THE BORDER,EXTEND THE MAPS BEYOND THE BORDER,KARTEN ÜBER DIE GRENZE HINAUS ERWEITERN
 "The home market is settled. Abroad has not been consulted.
-Needs 5 farms. The cartographers are paid in cabbages. A chart of the world's markets is delivered to the rack at your map table: click its roll to lay it out. The three farms left in Kohlmark can now be seized on the country map.","The home market is settled. Abroad has not been consulted.
-Needs 5 farms. The cartographers are paid in cabbages. A chart of the world's markets is delivered to the rack at your map table: click its roll to lay it out. The three farms left in Kohlmark can now be seized on the country map.","Der Heimatmarkt ist geregelt. Das Ausland wurde nicht gefragt.
-Braucht 5 Höfe. Die Kartografen werden in Kohlköpfen bezahlt. Eine Karte der Weltmärkte wird in das Regal an Ihrem Kartentisch geliefert: Klicken Sie auf die Rolle, um sie auszulegen. Die drei übrigen Höfe in Kohlmark können jetzt auf der Landeskarte enteignet werden."
+Needs 5 farms. The cartographers are paid in cabbages. A chart of the world's markets is delivered to the holder at your map table: click its roll to lay it out, then click a country for its own map. Every farm abroad is taken by war.","The home market is settled. Abroad has not been consulted.
+Needs 5 farms. The cartographers are paid in cabbages. A chart of the world's markets is delivered to the holder at your map table: click its roll to lay it out, then click a country for its own map. Every farm abroad is taken by war.","Der Heimatmarkt ist geregelt. Das Ausland wurde nicht gefragt.
+Braucht 5 Höfe. Die Kartografen werden in Kohlköpfen bezahlt. Eine Karte der Weltmärkte wird in die Halterung an Ihrem Kartentisch geliefert: Klicken Sie auf die Rolle, um sie auszulegen, dann auf ein Land für dessen eigene Karte. Jeder Hof im Ausland wird durch Krieg genommen."
 THE COUNTRY IS OURS,THE COUNTRY IS OURS,DAS LAND GEHÖRT UNS
 "Every farm in Kohlmark now belongs to the company. A country that grows nothing but our cabbages is, for practical purposes, ours. The board has reviewed the constitution and found it amendable. From today we write the laws. The first one is on your desk.","Every farm in Kohlmark now belongs to the company. A country that grows nothing but our cabbages is, for practical purposes, ours. The board has reviewed the constitution and found it amendable. From today we write the laws. The first one is on your desk.","Jeder Hof in Kohlmark gehört nun dem Unternehmen. Ein Land, das nur noch unsere Kohlköpfe anbaut, gehört praktisch uns. Der Vorstand hat die Verfassung geprüft und für änderbar befunden. Ab heute schreiben wir die Gesetze. Das erste liegt auf Ihrem Tisch."
 NO MORE TAXES ON CABBAGES,NO MORE TAXES ON CABBAGES,KEINE STEUERN MEHR AUF KOHLKÖPFE
@@ -2001,7 +1975,6 @@ NO MORE TAXES ON CABBAGES,NO MORE TAXES ON CABBAGES,KEINE STEUERN MEHR AUF KOHLK
 Needs every farm in Kohlmark (8). The 19% tax on cabbages is abolished and the company keeps it: every cabbage sells for 19% more.","Taxing cabbages was found to be an oversight. It has been corrected.
 Needs every farm in Kohlmark (8). The 19% tax on cabbages is abolished and the company keeps it: every cabbage sells for 19% more.","Die Besteuerung von Kohlköpfen hat sich als Versehen erwiesen. Es wurde korrigiert.
 Braucht jeden Hof in Kohlmark (8). Die 19 % Steuer auf Kohlköpfe wird abgeschafft, und das Unternehmen behält sie: Jeder Kohlkopf verkauft sich für 19 % mehr."
-1 FARM,1 FARM,1 HOF
 Endmark Isle,Endmark Isle,Insel Endmark
 FORM 3-D  DEED OF TRANSFER,FORM 3-D  DEED OF TRANSFER,FORMULAR 3-D  ÜBERTRAGUNGSURKUNDE
 FARM SITE %s,FARM SITE %s,HOFSTELLE %s
@@ -2033,9 +2006,9 @@ Envelopes are not returned.,Envelopes are not returned.,Umschläge werden nicht 
 Half of a refused offer is returned.,Half of a refused offer is returned.,Von einem abgelehnten Angebot wird die Hälfte erstattet.
 HANDLING ASSIGNMENT SCHEDULE,HANDLING ASSIGNMENT SCHEDULE,ZUTEILUNGSPLAN HANDHABUNG
 "Every cabbage has a rightful hand. This is now on file.
-A switch right of the price slate opens a schedule: lab hands left, hired hands right. Click a cabbage there and that kind of hand no longer touches it. Plain cabbages to start; more kinds on the projector.","Every cabbage has a rightful hand. This is now on file.
-A switch right of the price slate opens a schedule: lab hands left, hired hands right. Click a cabbage there and that kind of hand no longer touches it. Plain cabbages to start; more kinds on the projector.","Jeder Kohlkopf hat eine zuständige Hand. Das ist jetzt aktenkundig.
-Ein Schalter rechts neben der Preistafel öffnet einen Plan: links Laborkräfte, rechts Hilfskräfte. Klicken Sie dort einen Kohlkopf an, und diese Kräfte fassen die Sorte nicht mehr an. Zunächst nur normale Kohlköpfe, weitere Sorten am Projektor."
+Needs 2 farms. A switch at the bottom of the desk, between the lab hands and the hired hands, opens a schedule: lab hands left, hired hands right. Click a cabbage there and that kind of hand no longer touches it. Plain cabbages to start; more kinds on the projector.","Every cabbage has a rightful hand. This is now on file.
+Needs 2 farms. A switch at the bottom of the desk, between the lab hands and the hired hands, opens a schedule: lab hands left, hired hands right. Click a cabbage there and that kind of hand no longer touches it. Plain cabbages to start; more kinds on the projector.","Jeder Kohlkopf hat eine zuständige Hand. Das ist jetzt aktenkundig.
+Braucht 2 Höfe. Ein Schalter am unteren Rand des Schreibtischs, zwischen den Laborkräften und den Hilfskräften, öffnet einen Plan: links Laborkräfte, rechts Hilfskräfte. Klicken Sie dort einen Kohlkopf an, und diese Kräfte fassen die Sorte nicht mehr an. Zunächst nur normale Kohlköpfe, weitere Sorten am Projektor."
 ANNEX: BLUE,ANNEX: BLUE,ANHANG: BLAU
 "Blue is a jurisdiction.
 The handling schedule also lists blue research
@@ -2185,25 +2158,124 @@ A condensed cabbage holds 8 cabbages, not 6:
 it takes 8 from stock and counts as 8.","Schwerer, als er aussieht. Der Papierkram auch.
 Ein verdichteter Kohlkopf fasst 8 statt 6:
 Er nimmt 8 aus dem Lager und zählt als 8."
-FORM 3-S  SEIZURE ORDER,FORM 3-S  SEIZURE ORDER,FORMULAR 3-S  ENTEIGNUNGSBESCHEID
-FORM 7-A  ANNEXATION ORDER,FORM 7-A  ANNEXATION ORDER,FORMULAR 7-A  ANNEXIONSBESCHEID
-COST OF THE OPERATION,COST OF THE OPERATION,KOSTEN DER MASSNAHME
+CONDENSE VI,CONDENSE VI,VERDICHTEN VI
+"A dozen is now a unit of one.
+A condensed cabbage holds 12 cabbages, not 8:
+it takes 12 from stock and counts as 12.","A dozen is now a unit of one.
+A condensed cabbage holds 12 cabbages, not 8:
+it takes 12 from stock and counts as 12.","Ein Dutzend ist jetzt eine Einheit von eins.
+Ein verdichteter Kohlkopf fasst 12 statt 8:
+Er nimmt 12 aus dem Lager und zählt als 12."
+CONDENSE VII,CONDENSE VII,VERDICHTEN VII
+"The cabbage has been asked not to expand.
+A condensed cabbage holds 16 cabbages, not 12:
+it takes 16 from stock and counts as 16.","The cabbage has been asked not to expand.
+A condensed cabbage holds 16 cabbages, not 12:
+it takes 16 from stock and counts as 16.","Der Kohlkopf wurde gebeten, sich nicht auszudehnen.
+Ein verdichteter Kohlkopf fasst 16 statt 12:
+Er nimmt 16 aus dem Lager und zählt als 16."
+CONDENSE VIII,CONDENSE VIII,VERDICHTEN VIII
+"Scales are no longer issued. They kept breaking.
+A condensed cabbage holds 24 cabbages, not 16:
+it takes 24 from stock and counts as 24.","Scales are no longer issued. They kept breaking.
+A condensed cabbage holds 24 cabbages, not 16:
+it takes 24 from stock and counts as 24.","Waagen werden nicht mehr ausgegeben. Sie gingen ständig kaputt.
+Ein verdichteter Kohlkopf fasst 24 statt 16:
+Er nimmt 24 aus dem Lager und zählt als 24."
+CONDENSE IX,CONDENSE IX,VERDICHTEN IX
+"It is a crate. It has the shape of a cabbage.
+A condensed cabbage holds 32 cabbages, not 24:
+it takes 32 from stock and counts as 32.","It is a crate. It has the shape of a cabbage.
+A condensed cabbage holds 32 cabbages, not 24:
+it takes 32 from stock and counts as 32.","Es ist eine Kiste. Sie hat die Form eines Kohlkopfs.
+Ein verdichteter Kohlkopf fasst 32 statt 24:
+Er nimmt 32 aus dem Lager und zählt als 32."
 The owner's signature is not required.,The owner's signature is not required.,Die Unterschrift des Eigentümers ist nicht erforderlich.
-The population has been informed in writing.,The population has been informed in writing.,Die Bevölkerung wurde schriftlich informiert.
-SEIZED,SEIZED,ENTEIGNET
-ANNEXED,ANNEXED,ANNEKTIERT
-NOT ADJACENT,NOT ADJACENT,NICHT ANGRENZEND
+NOT ADJACENT,NOT ADJACENT,UNERREICHBAR
 NO SEA LANES,NO SEA LANES,KEINE SEEWEGE
-NOT YET,NOT YET,NOCH NICHT
-We do not border this country. Yet.,We do not border this country. Yet.,Wir grenzen nicht an dieses Land. Noch nicht.
 The sea is not ours to cross yet.,The sea is not ours to cross yet.,Das Meer dürfen wir noch nicht überqueren.
-Head office has scheduled the island for last.,Head office has scheduled the island for last.,Die Zentrale hat die Insel für zuletzt eingeplant.
-FARMS x%d,FARMS x%d,HÖFE x%d
-%s. Farms: %d. %s,%s. Farms: %d. %s,%s. Höfe: %d. %s
-%s. Farms: %d. Cost: %s. Click for the order.,%s. Farms: %d. Cost: %s. Click for the order.,%s. Höfe: %d. Kosten: %s. Klicken für den Bescheid.
-%s. Farms: %d. Cost: %s. Short: %s.,%s. Farms: %d. Cost: %s. Short: %s.,%s. Höfe: %d. Kosten: %s. Es fehlen: %s.
 SEA LANES,SEA LANES,SEEWEGE
 "Water is not a border. It is a delay.
-Needs 13 farms. The sea lanes drawn on the world chart are opened: a country across a lane from one of ours can be taken.","Water is not a border. It is a delay.
-Needs 13 farms. The sea lanes drawn on the world chart are opened: a country across a lane from one of ours can be taken.","Wasser ist keine Grenze. Es ist eine Verzögerung.
-Braucht 13 Höfe. Die auf der Weltkarte eingezeichneten Seewege werden geöffnet: Ein Land, das über einen Seeweg an eines unserer Länder grenzt, kann eingenommen werden."
+Needs 13 farms. The sea lanes drawn on the world chart are opened: farms in a country across a lane from one that is wholly ours can be attacked.","Water is not a border. It is a delay.
+Needs 13 farms. The sea lanes drawn on the world chart are opened: farms in a country across a lane from one that is wholly ours can be attacked.","Wasser ist keine Grenze. Es ist eine Verzögerung.
+Braucht 13 Höfe. Die auf der Weltkarte eingezeichneten Seewege werden geöffnet: Höfe in einem Land, das über einen Seeweg an ein Land grenzt, das ganz uns gehört, können angegriffen werden."
+REQUISITION A HOLDINGS INDICATOR,REQUISITION A HOLDINGS INDICATOR,BESTANDSANZEIGER ANFORDERN
+"Holdings were counted by walking back to the desk. Walking has been discontinued.
+A tally machine is bolted to the edge of the map table: your coins, cabbages in stock, Findings and farms owned, in view while you read the maps.","Holdings were counted by walking back to the desk. Walking has been discontinued.
+A tally machine is bolted to the edge of the map table: your coins, cabbages in stock, Findings and farms owned, in view while you read the maps.","Bestände wurden bisher durch den Gang zurück zum Schreibtisch gezählt. Der Gang wurde eingestellt.
+Ein Zählwerk wird an die Kante des Kartentischs geschraubt: Ihre Münzen, Kohlköpfe im Lager, Befunde und Höfe, im Blick, während Sie die Karten lesen."
+Index,Index,Übersicht
+WAR,WAR,KRIEG
+Plan of battle to follow.,Plan of battle to follow.,Schlachtplan folgt.
+FORM 9-T  THEATRE OF OPERATIONS,FORM 9-T  THEATRE OF OPERATIONS,FORMULAR 9-T  OPERATIONSGEBIET
+FIELD DISPATCH,FIELD DISPATCH,FELDDEPESCHE
+COST OF VICTORY (PROVISIONAL),COST OF VICTORY (PROVISIONAL),KOSTEN DES SIEGES (VORLÄUFIG)
+Resistance is not anticipated.,Resistance is not anticipated.,Mit Widerstand wird nicht gerechnet.
+DECLARE VICTORY,DECLARE VICTORY,SIEG ERKLÄREN
+(provisional),(provisional),(vorläufig)
+VICTORY,VICTORY,SIEG
+THEATRE OF OPERATIONS - FARM SITE,THEATRE OF OPERATIONS - FARM SITE,OPERATIONSGEBIET - HOFSTANDORT
+1 of 1,1 of 1,1 von 1
+LOSSES,LOSSES,VERLUSTE
+Not counted,Not counted,Nicht gezählt
+Provisional,Provisional,Vorläufig
+War sheet,War sheet,Kriegskarte
+State Railway 2,State Railway 2,Staatsbahn 2
+1 of 9,1 of 9,1 von 9
+River Ostra,River Ostra,Fluss Ostra
+Trunk Road B-3,Trunk Road B-3,Fernstraße B-3
+Port Altenfurt,Port Altenfurt,Hafen Altenfurt
+OSTREVIA - NATIONAL FARM REGISTER,OSTREVIA - NATIONAL FARM REGISTER,OSTREVIA - NATIONALES HOFREGISTER
+Foreign farm sites scheduled for acquisition. Owners not consulted.,Foreign farm sites scheduled for acquisition. Owners not consulted.,"Ausländische Hofstandorte, zur Übernahme vorgesehen. Eigentümer nicht befragt."
+2 of 9,2 of 9,2 von 9
+Foreign,Foreign,Ausland
+River Veld,River Veld,Fluss Veld
+Trunk Road B-7,Trunk Road B-7,Fernstraße B-7
+Port Flachsen,Port Flachsen,Hafen Flachsen
+VELDMARK - NATIONAL FARM REGISTER,VELDMARK - NATIONAL FARM REGISTER,VELDMARK - NATIONALES HOFREGISTER
+3 of 9,3 of 9,3 von 9
+River Sul,River Sul,Fluss Sul
+Trunk Road B-9,Trunk Road B-9,Fernstraße B-9
+Port Salzgrund,Port Salzgrund,Hafen Salzgrund
+SULVANIA - NATIONAL FARM REGISTER,SULVANIA - NATIONAL FARM REGISTER,SULVANIA - NATIONALES HOFREGISTER
+4 of 9,4 of 9,4 von 9
+River Asch,River Asch,Fluss Asch
+Trunk Road C-1,Trunk Road C-1,Fernstraße C-1
+Port Steinbruck,Port Steinbruck,Hafen Steinbruck
+NORDHAL PROTECTORATE,NORDHAL PROTECTORATE,PROTEKTORAT NORDHAL
+FEDERATED MORROW,FEDERATED MORROW,FÖDERIERTES MORROW
+GRAULAND - NATIONAL FARM REGISTER,GRAULAND - NATIONAL FARM REGISTER,GRAULAND - NATIONALES HOFREGISTER
+5 of 9,5 of 9,5 von 9
+River Hal,River Hal,Fluss Hal
+Trunk Road C-4,Trunk Road C-4,Fernstraße C-4
+Port Eiswick,Port Eiswick,Hafen Eiswick
+NORDHAL PROTECTORATE - NATIONAL FARM REGISTER,NORDHAL PROTECTORATE - NATIONAL FARM REGISTER,PROTEKTORAT NORDHAL - NATIONALES HOFREGISTER
+6 of 9,6 of 9,6 von 9
+River Mor,River Mor,Fluss Mor
+Trunk Road C-2,Trunk Road C-2,Fernstraße C-2
+Port Zweckau,Port Zweckau,Hafen Zweckau
+FEDERATED MORROW - NATIONAL FARM REGISTER,FEDERATED MORROW - NATIONAL FARM REGISTER,FÖDERIERTES MORROW - NATIONALES HOFREGISTER
+7 of 9,7 of 9,7 von 9
+Lower River,Lower River,Unterer Fluss
+The Drain,The Drain,Der Abfluss
+Port Unterburg,Port Unterburg,Hafen Unterburg
+THE LOWER PROVINCES - NATIONAL FARM REGISTER,THE LOWER PROVINCES - NATIONAL FARM REGISTER,DIE UNTEREN PROVINZEN - NATIONALES HOFREGISTER
+8 of 9,8 of 9,8 von 9
+Last Water,Last Water,Letztes Wasser
+Port Endhaven,Port Endhaven,Hafen Endhaven
+ENDMARK ISLE - NATIONAL FARM REGISTER,ENDMARK ISLE - NATIONAL FARM REGISTER,INSEL ENDMARK - NATIONALES HOFREGISTER
+9 of 9,9 of 9,9 von 9
+AUTHORISE HOSTILE ACQUISITIONS,AUTHORISE HOSTILE ACQUISITIONS,FEINDLICHE ÜBERNAHMEN GENEHMIGEN
+"They will not sell. Selling was a courtesy.
+Needs 5 farms. A farm that is not for sale can be taken by war: click it on its country's map for the war order. Stamp the order and the war sheet for that farm is rolled out. In Kohlmark that is the last three farms.","They will not sell. Selling was a courtesy.
+Needs 5 farms. A farm that is not for sale can be taken by war: click it on its country's map for the war order. Stamp the order and the war sheet for that farm is rolled out. In Kohlmark that is the last three farms.","Sie verkaufen nicht. Verkaufen war eine Höflichkeit.
+Braucht 5 Höfe. Ein unverkäuflicher Hof kann durch Krieg genommen werden: Klicken Sie ihn auf der Karte seines Landes an, um den Kriegsbefehl zu erhalten. Stempeln Sie den Befehl, und die Kriegskarte für diesen Hof wird ausgerollt. In Kohlmark sind das die letzten drei Höfe."
+FORM 9-W  WAR ORDER,FORM 9-W  WAR ORDER,FORMULAR 9-W  KRIEGSBEFEHL
+ESTIMATED COST OF VICTORY,ESTIMATED COST OF VICTORY,GESCHÄTZTE KOSTEN DES SIEGES
+No country next to this one is wholly ours. Yet.,No country next to this one is wholly ours. Yet.,Kein Nachbarland gehört uns ganz. Noch nicht.
+%s. Farms: %d of %d. Click for its farm register.,%s. Farms: %d of %d. Click for its farm register.,%s. Höfe: %d von %d. Klicken für das Hofregister.
+%s. Not for sale. Expected cost of war: %s. Click for the war order.,%s. Not for sale. Expected cost of war: %s. Click for the war order.,%s. Unverkäuflich. Erwartete Kriegskosten: %s. Klicken für den Kriegsbefehl.
+%s farm register,%s farm register,Hofregister %s
+Declare victory. Cost: %s.,Declare victory. Cost: %s.,Sieg erklären. Kosten: %s.
+Declare victory. Cost: %s. Short: %s.,Declare victory. Cost: %s. Short: %s.,Sieg erklären. Kosten: %s. Es fehlen: %s.
+Hostile acquisition in progress. Owners notified by other means.,Hostile acquisition in progress. Owners notified by other means.,Feindliche Übernahme läuft. Eigentümer anderweitig benachrichtigt.

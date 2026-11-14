@@ -1,28 +1,45 @@
 extends GdUnitTestSuite
 
-const SHEETS := ["country", "world", "district", "farm"]
 const WorldRegister := preload("res://entities/map_table/world_register.gd")
+## Every sheet: the world's, the war's and each country's own.
+const SHEETS := ["world", "war", "kohlmark", "ostrevia", "veldmark", "sulvania", "grauland", "nordhal", "morrow", "lower_provinces", "endmark"]
+
+var _locale: String
 
 
-func _sheet(stem: String) -> MapSheet:
-	var sheet: MapSheet = auto_free(load("res://entities/map_table/%s_sheet.tscn" % stem).instantiate())
+func before_test() -> void:
+	_locale = TranslationServer.get_locale()
+	TranslationServer.set_locale("en")
+
+
+func after_test() -> void:
+	TranslationServer.set_locale(_locale)
+
+
+func _sheet(id: String) -> MapSheet:
+	var path := "res://entities/map_table/%s_sheet.tscn" % id if id in ["world", "war"] else MapTable.COUNTRY_SCENE % id
+	var sheet: MapSheet = auto_free(load(path).instantiate())
 	add_child(sheet)
 	return sheet
 
 
-## The home country's farm sites as the sheet was generated from them (tools/make_map_sheets.py).
-func _farm_sites() -> Array:
-	return JSON.parse_string(FileAccess.get_file_as_string("res://reports/maps/labels.json")).country_map.farm_sites
+func _labels_json() -> Dictionary:
+	return JSON.parse_string(FileAccess.get_file_as_string("res://reports/maps/labels.json"))
+
+
+## A country's farm sites as its sheet was generated from them (tools/make_map_sheets.py).
+func _farm_sites(country: String) -> Array:
+	return _labels_json().country_maps[country].farm_sites
 
 
 ## The world sheet's holding points, one per country, as the sheet was generated from them.
 func _holdings() -> Array:
-	return JSON.parse_string(FileAccess.get_file_as_string("res://reports/maps/labels.json")).world_map.farm_sites
+	return _labels_json().world_map.farm_sites
 
 
 ## The world sheet's countries (their neighbours, click outlines, distance from home) and its drawn sea lanes.
 func _world() -> Dictionary:
-	return JSON.parse_string(FileAccess.get_file_as_string("res://reports/maps/labels.json")).world_map
+	return _labels_json().world_map
 
 
 func _country(id: String) -> Dictionary:
@@ -50,11 +67,11 @@ func test_a_roll_grows_thicker_as_it_takes_up_paper_from_the_bare_core() -> void
 	assert_float(MapSheet.roll_radius(1.0)).is_equal_approx(MapSheet.CORE, 0.0001)
 	assert_float(MapSheet.roll_radius(0.5)).is_greater(MapSheet.roll_radius(1.0))
 	assert_float(MapSheet.roll_radius(0.0)).is_greater(MapSheet.roll_radius(0.5))
-	assert_float(MapSheet.roll_radius(0.0)).is_between(0.05, 0.09)  # Chunky, and it fits its rack slot.
+	assert_float(MapSheet.roll_radius(0.0)).is_between(0.05, 0.09)  # Chunky, and it fits the holder's saddle.
 
 
 func test_the_shader_rolls_the_paper_with_the_scripts_core_pitch_and_length() -> void:
-	var paper: ShaderMaterial = _sheet("district").get_node("Paper").material_override
+	var paper: ShaderMaterial = _sheet("war").get_node("Paper").material_override
 	assert_float(paper.get_shader_parameter("core")).is_equal_approx(MapSheet.CORE, 0.0001)
 	assert_float(paper.get_shader_parameter("pitch")).is_equal_approx(MapSheet.PITCH, 0.0001)
 	assert_float(paper.get_shader_parameter("sheet_length")).is_equal_approx(MapSheet.SIZE.y, 0.0001)
@@ -62,60 +79,71 @@ func test_the_shader_rolls_the_paper_with_the_scripts_core_pitch_and_length() ->
 
 func test_every_sheet_has_its_art_its_own_paper_and_a_name() -> void:
 	var papers := []
-	for stem: String in SHEETS:
-		var sheet := _sheet(stem)
-		assert_str(sheet.id).is_equal(stem)
+	for id: String in SHEETS:
+		var sheet := _sheet(id)
+		assert_str(sheet.id).is_equal(id)
 		assert_str(sheet.title).is_not_empty()
-		assert_object((sheet.get_node("Page/Sheet/Art") as TextureRect).texture).is_not_null()
+		assert_object((sheet.get_node("Page/Sheet/Art") as TextureRect).texture).override_failure_message(id).is_not_null()
 		var paper: Material = sheet.get_node("Paper").material_override
 		assert_bool(papers.has(paper)).is_false()  # Each sheet rolls by itself.
 		papers.append(paper)
 
 
+func test_a_countrys_sheet_is_its_farm_register_and_wears_its_name() -> void:
+	for id: String in SHEETS.slice(2):
+		var sheet := _sheet(id)
+		assert_object(sheet as FarmRegister).override_failure_message(id).is_not_null()
+		assert_str(sheet.title).is_equal(_country(id).country)
+		assert_str(sheet.tag_name()).is_equal(_country(id).country.to_upper())
+		assert_bool((sheet as FarmRegister).head_office != Vector3.ZERO).override_failure_message(id).is_equal(id == "kohlmark")  # Only home has the head office.
+	assert_str(_sheet("world").tag_name()).is_equal("WORLD")
+	assert_str(_sheet("war").tag_name()).is_equal("WAR")
+
+
 func test_the_lettering_is_printed_on_the_paper_so_it_rolls_up_with_it() -> void:
-	for stem: String in SHEETS:
-		var sheet := _sheet(stem)
-		assert_int(_labels(sheet).size()).is_greater(20)
-		assert_array(sheet.find_children("*", "Label3D", true, false)).is_empty()
+	for id: String in SHEETS:
+		var sheet := _sheet(id)
+		assert_int(_labels(sheet).size()).override_failure_message(id).is_greater(20)
+		# The only lettering off the paper is the name tag on its roll.
+		assert_array(sheet.find_children("*", "Label3D", true, false)).is_equal([sheet.get_node("Core/Tag/Name")])
 		var paper: ShaderMaterial = sheet.get_node("Paper").material_override
 		assert_object(paper.get_shader_parameter("sheet_tex")).is_not_null()
 
 
-func test_the_sheets_carry_their_title_blocks_farm_tags_parcel_numbers_and_country_names() -> void:
-	var country := _texts(_sheet("country"))
-	assert_array(country).contains(["KOHLMARK - NATIONAL FARM REGISTER", "KOHLBURG"])
-	for site: Dictionary in _farm_sites():
-		assert_array(country).contains([site.name])  # Its name tag; the price tag is FarmRegister's.
-	assert_array(_texts(_sheet("district"))).contains(
-			["DISTRICT 7 - AGRICULTURAL CADASTRE", "P-101", "P-178", "Trunk Road B-12", "HEAD OFFICE"])
+func test_the_sheets_carry_their_title_blocks_farm_names_and_country_names() -> void:
+	for id: String in SHEETS.slice(2):
+		var texts := _texts(_sheet(id))
+		assert_array(texts).override_failure_message(id).contains([_labels_json().country_maps[id].capital.name])
+		for site: Dictionary in _farm_sites(id):
+			assert_array(texts).contains([site.name])  # Its name tag; the price tag is FarmRegister's.
+	assert_array(_texts(_sheet("kohlmark"))).contains(["KOHLMARK - NATIONAL FARM REGISTER", "KOHLBURG"])
 	assert_array(_texts(_sheet("world"))).contains(
 			["WORLD MARKETS - GENERAL CHART", "Kohlmark", "The Lower Provinces", "Endmark Isle", "Grey Sea"])
-	assert_array(_texts(_sheet("farm"))).contains(
-			["FARM SITE PLAN - PARCEL ___", "A1", "C3", "Barn", "Cabbage plot"])
+	assert_array(_texts(_sheet("war"))).contains(["WAR", "FIELD DISPATCH", "DECLARE VICTORY", "FORM 9-T  THEATRE OF OPERATIONS"])
 
 
 func test_lettering_too_small_to_read_from_the_map_camera_is_left_off_outside_the_title_block() -> void:
 	# 1 px of the art is 1 mm of the desk. The title blocks sit in the sheets' bottom right.
-	for stem: String in SHEETS:
-		for label in _labels(_sheet(stem)):
+	for id: String in SHEETS:
+		for label in _labels(_sheet(id)):
 			var centre := label.position + label.size / 2.0
 			if label.get_theme_font_size(&"font_size") < 19:
 				assert_bool(centre.x > 2200.0 and centre.y > 1300.0) \
-						.override_failure_message("%s is too small to read" % label.text).is_true()
+						.override_failure_message("%s: %s is too small to read" % [id, label.text]).is_true()
 
 
 func test_the_product_is_called_cabbage_on_every_sheet_never_unit() -> void:
-	for stem: String in SHEETS:
-		for text in _texts(_sheet(stem)):
+	for id: String in SHEETS:
+		for text in _texts(_sheet(id)):
 			assert_bool(text.to_lower().contains("unit")).override_failure_message(text).is_false()
 
 
 func test_names_and_numbers_are_left_as_they_are_in_every_language() -> void:
-	for label in _labels(_sheet("district")):
-		if label.text in ["P-101", "21 ha", "A", "1000 m", "N"]:
-			assert_int(label.auto_translate_mode).is_equal(Node.AUTO_TRANSLATE_MODE_DISABLED)
-		if label.text in ["HEAD OFFICE", "SHEET", "Trunk Road B-12"]:
-			assert_int(label.auto_translate_mode).is_not_equal(Node.AUTO_TRANSLATE_MODE_DISABLED)
+	for label in _labels(_sheet("kohlmark")):
+		if label.text in ["Brasswold Holding", "KOHLBURG", "N", "20 km", "1 : 240 000"]:
+			assert_int(label.auto_translate_mode).override_failure_message(label.text).is_equal(Node.AUTO_TRANSLATE_MODE_DISABLED)
+		if label.text in ["KOHLMARK - NATIONAL FARM REGISTER", "SHEET", "Trunk Road B-12"]:
+			assert_int(label.auto_translate_mode).override_failure_message(label.text).is_not_equal(Node.AUTO_TRANSLATE_MODE_DISABLED)
 
 
 func test_every_translated_piece_of_lettering_is_in_the_translation_table() -> void:
@@ -125,16 +153,18 @@ func test_every_translated_piece_of_lettering_is_in_the_translation_table() -> v
 		var row := table.get_csv_line()
 		if row.size() >= 3 and not row[2].is_empty():
 			keys[row[0]] = true
-	for stem: String in SHEETS:
-		var sheet := _sheet(stem)
+	for id: String in SHEETS:
+		var sheet := _sheet(id)
 		assert_bool(keys.has(sheet.title)).override_failure_message("no German for %s" % sheet.title).is_true()
+		if sheet.roll_name != "":
+			assert_bool(keys.has(sheet.roll_name)).override_failure_message("no German for %s" % sheet.roll_name).is_true()
 		for label in _labels(sheet):
 			if label.auto_translate_mode != Node.AUTO_TRANSLATE_MODE_DISABLED:
-				assert_bool(keys.has(label.text)).override_failure_message("no German for %s" % label.text).is_true()
+				assert_bool(keys.has(label.text)).override_failure_message("%s: no German for %s" % [id, label.text]).is_true()
 
 
 func test_a_point_on_the_desk_maps_to_the_arts_pixels_from_the_top_left_a_millimetre_each() -> void:
-	var sheet := _sheet("country")
+	var sheet := _sheet("kohlmark")
 	# Lying as on the map table: top edge towards the wall (+X), map-right along +Z.
 	sheet.global_transform = Transform3D(Basis(Vector3.UP, -PI / 2.0), Vector3(5.4, 0.752, 1.75))
 	assert_bool(sheet.pixel_at(Vector3(5.4, 0.752, 0.15)).is_equal_approx(Vector2.ZERO)).is_true()
@@ -151,30 +181,33 @@ func test_only_pixels_inside_the_viewbox_are_on_the_paper() -> void:
 	assert_bool(MapSheet.on_paper(Vector2(1600, 1801))).is_false()
 
 
-func test_a_farm_building_stands_on_its_farm_sites_pixel() -> void:
-	var sheet := _sheet("country")
-	for site: Dictionary in _farm_sites():
-		var nearest := INF
-		for thing: Node3D in sheet.get_node("Things").get_children():
-			nearest = minf(nearest, sheet.pixel_at(thing.global_position).distance_to(Vector2(site.x, site.y)))
-		assert_float(nearest).override_failure_message("no building on %s" % site.id).is_less(1.0)
+func test_a_farm_token_stands_on_its_farm_sites_pixel_in_every_country() -> void:
+	for id: String in SHEETS.slice(2):
+		var sheet := _sheet(id)
+		assert_int(sheet.thing_count()).is_equal(WorldRegister.COUNTRIES[StringName(id)].farms)
+		for site: Dictionary in _farm_sites(id):
+			var nearest := INF
+			for thing: Node3D in sheet.get_node("Things").get_children():
+				nearest = minf(nearest, sheet.pixel_at(thing.global_position).distance_to(Vector2(site.x, site.y)))
+			assert_float(nearest).override_failure_message("no token on %s" % site.id).is_less(1.0)
 
 
 func test_a_farm_sites_name_fits_its_name_tag_without_being_set_smaller_than_it_needs() -> void:
-	var by_text := {}
-	for label in _labels(_sheet("country")):
-		by_text[label.text] = label
-	for site: Dictionary in _farm_sites():
-		var label: Label = by_text[site.name]
-		var size := label.get_theme_font_size(&"font_size")
-		var width := label.get_theme_font(&"font").get_string_size(site.name, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
-		assert_float(width).override_failure_message("%s overflows its tag" % site.name).is_less(site.name_tag.w)
-		assert_int(size).override_failure_message("%s is set too small" % site.name).is_greater_equal(24)
+	for id: String in SHEETS.slice(2):
+		var by_text := {}
+		for label in _labels(_sheet(id)):
+			by_text[label.text] = label
+		for site: Dictionary in _farm_sites(id):
+			var label: Label = by_text[site.name]
+			var size := label.get_theme_font_size(&"font_size")
+			var width := label.get_theme_font(&"font").get_string_size(site.name, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+			assert_float(width).override_failure_message("%s overflows its tag" % site.name).is_less(site.name_tag.w)
+			assert_int(size).override_failure_message("%s is set too small" % site.name).is_greater_equal(24)
 
 
 func test_more_art_can_be_laid_over_a_sheets_base_under_its_lettering() -> void:
-	for stem: String in SHEETS:
-		var sheet := _sheet(stem)
+	for id: String in SHEETS:
+		var sheet := _sheet(id)
 		var page := sheet.get_node("Page/Sheet")
 		assert_int(page.get_node("Art").get_index()).is_equal(0)
 		assert_int(page.get_node("Layers").get_index()).is_equal(1)
@@ -193,19 +226,26 @@ func test_a_sheet_is_printed_again_when_the_language_changes() -> void:
 	assert_int(page.render_target_update_mode).is_equal(SubViewport.UPDATE_ONCE)
 
 
-func test_a_building_stands_on_each_farm_site_at_home_and_parcel_and_one_marker_on_each_country_of_the_world() -> void:
-	var district := _sheet("district")
-	assert_int(district.thing_count()).is_equal(12)
-	assert_int(_sheet("country").thing_count()).is_equal(8)
+func test_a_rolled_sheet_wears_its_name_tag_and_an_open_one_does_not() -> void:
+	var sheet := _sheet("sulvania")
+	sheet.open = 0.0
+	assert_bool(sheet.get_node("Core/Tag").visible).is_true()
+	assert_str((sheet.get_node("Core/Tag/Name") as Label3D).text).is_equal("SULVANIA")
+	sheet.open = 1.0
+	assert_bool(sheet.get_node("Core/Tag").visible).is_false()
+
+
+func test_a_token_stands_on_each_farm_site_and_one_on_each_country_of_the_world() -> void:
+	assert_int(_sheet("kohlmark").thing_count()).is_equal(8)
 	assert_int(_sheet("world").thing_count()).is_equal(9)
-	assert_int(_sheet("farm").thing_count()).is_equal(0)
-	for thing: Node3D in district.get_node("Things").get_children():
+	assert_int(_sheet("war").thing_count()).is_equal(0)
+	for thing: Node3D in _sheet("sulvania").get_node("Things").get_children():
 		assert_float(thing.position.x).is_between(-MapSheet.SIZE.x / 2.0, MapSheet.SIZE.x / 2.0)
 		assert_float(thing.position.z).is_between(0.0, MapSheet.SIZE.y)
 
 
 func test_the_things_on_a_sheet_pop_up_from_map_left_to_map_right() -> void:
-	var sheet := _sheet("district")
+	var sheet := _sheet("kohlmark")
 	var last := -INF
 	for i in sheet.thing_count():
 		assert_float(sheet._standing[i].position.x).is_greater_equal(last)
@@ -225,7 +265,7 @@ func test_a_tucked_thing_is_hidden_and_a_raised_one_stands_at_its_own_size() -> 
 func test_the_props_are_in_the_shared_machine_paint_and_metal_and_only_an_owned_look_is_cabbage_green() -> void:
 	var shared := ["res://assets/materials/machine_paint_matte.tres", "res://assets/materials/machine_metal.tres"]
 	var greens := 0
-	for scene: String in ["drafting_weight", "chart_rack", "roll_core", "farm_token", "site_token", "desk_button"]:
+	for scene: String in ["drafting_weight", "chart_holder", "roll_core", "farm_token", "site_token", "desk_button"]:
 		var node: Node = auto_free(load("res://entities/map_table/props/%s.tscn" % scene).instantiate())
 		for mesh: MeshInstance3D in node.find_children("*", "MeshInstance3D", true, false):
 			for surface in mesh.mesh.get_surface_count():
@@ -265,9 +305,9 @@ func test_an_open_sheets_core_lies_on_its_end_caps_and_a_rolled_ones_in_the_roll
 
 
 func test_the_things_on_a_sheet_stay_small_and_leave_the_tags_below_them_clear() -> void:
-	# What a thing stands in, by its sheet: a farm site's disc at home (r 100 mm at least), a country's
-	# holding ring on the world map (r 45 mm), a parcel (r 168 mm). The name tag sits 120 mm below a farm site.
-	for entry: Array in [["country", 0.2], ["world", 0.09], ["district", 0.2]]:
+	# What a thing stands in, by its sheet: a farm site's disc on a country's sheet (r 100 mm at
+	# least), a country's holding ring on the world map (r 45 mm). The name tag sits 120 mm below a farm site.
+	for entry: Array in [["kohlmark", 0.2], ["sulvania", 0.2], ["world", 0.09]]:
 		var sheet := _sheet(entry[0])
 		for i in sheet.thing_count():
 			sheet.raise_thing(1.0, i)

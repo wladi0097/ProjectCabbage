@@ -338,6 +338,8 @@ func pending_findings() -> int:
 func _eject(amount: int) -> void:
 	var fits := CoinPile.fitting(amount, SaveManager.save.room(&"findings"), pending_findings())
 	var machine := counter as TallyMachine
+	if fits < amount:  # Less fits than was due: the slip jams at the slot (rate-limited on the cue).
+		$SlipJam.cue(to_global(Vector3(0.15, 0.08, 0.15)))
 	if fits < amount and machine != null:
 		machine.refuse()
 	_backlog += fits

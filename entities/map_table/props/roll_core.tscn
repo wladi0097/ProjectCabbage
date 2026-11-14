@@ -2,6 +2,8 @@
 
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_roll_core.res" id="1_core"]
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_roll_band.res" id="2_band"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_roll_tag.res" id="3_tag"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="4_font"]
 
 [node name="RollCore" type="Node3D"]
 
@@ -12,3 +14,17 @@ mesh = ExtResource("1_core")
 [node name="Band" type="MeshInstance3D" parent="."]
 gi_mode = 0
 mesh = ExtResource("2_band")
+
+[node name="Tag" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("3_tag")
+
+[node name="Name" type="Label3D" parent="Tag"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0798, 0)
+pixel_size = 0.0005
+modulate = Color(0.1, 0.11, 0.1, 1)
+auto_translate_mode = 2
+text = "KOHLMARK"
+font = ExtResource("4_font")
+font_size = 140
+outline_size = 0

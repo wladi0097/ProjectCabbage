@@ -103,12 +103,17 @@ func _physics_process(delta: float) -> void:
 		_cooldown = 0.0
 	_research_share = share
 	# A research unit owed comes down even onto a full mat (one over desk_capacity).
-	var capacity := save.desk_capacity + (1 if _research_due else 0)
-	clock(save, delta, _on_desk.size() - _rotten_on_desk >= save.desk_capacity)
+	var capacity := mat_room(save) + (1 if _research_due else 0)
+	clock(save, delta, _on_desk.size() - _rotten_on_desk >= mat_room(save))
 	if _cooldown > 0.0 or not should_dispense(_on_desk.size() - _rotten_on_desk, _units_on_desk, capacity, save.stock, save.chute_blocked):
 		return
 	_cooldown = save.dispense_interval
 	_roll()
+
+
+## How many fresh cabbages the chute keeps on the mat: save.desk_capacity, never more than Projector.MAT_MAX.
+static func mat_room(save: SaveGame) -> int:
+	return mini(save.desk_capacity, Projector.MAT_MAX)
 
 
 ## The playtest clocks, `delta` seconds on: no stock at all, the mat `full` of fresh units, the chute shut.

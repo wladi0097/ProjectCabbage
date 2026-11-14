@@ -4,10 +4,18 @@
 [ext_resource type="Theme" path="res://entities/consultant/mandate_theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" path="res://entities/hand_schedule/schedule_cell.tscn" id="3_cell"]
 [ext_resource type="AudioStream" path="res://assets/audio/ui/keyboard_keystroke.wav" id="4_click"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/card_pickup_1.wav" id="5_open"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_2.wav" id="6_close"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/projector_approve.wav" id="7_stamp"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_1.wav" id="8_clear"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/schedule_sheet_out.wav" id="5_open"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/schedule_sheet_back.wav" id="6_close"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/schedule_stamp_1.wav" id="7_stamp"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/schedule_stamp_2.wav" id="7_stamp_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/schedule_clear.wav" id="8_clear"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_stamp"]
+random_pitch = 1.05
+random_volume_offset_db = 1.0
+streams_count = 2
+stream_0/stream = ExtResource("7_stamp")
+stream_1/stream = ExtResource("7_stamp_2")
 
 [sub_resource type="StyleBoxLine" id="Divide"]
 color = Color(0.13, 0.14, 0.14, 0.55)
@@ -214,7 +222,7 @@ volume_db = -8.0
 bus = &"SFX"
 
 [node name="Stamp" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("7_stamp")
+stream = SubResource("Rand_stamp")
 volume_db = -6.0
 bus = &"SFX"
 

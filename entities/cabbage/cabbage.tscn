@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
 [ext_resource type="Material" path="res://assets/materials/cabbage.tres" id="3_mat"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="4_cue"]
-[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="5_font"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_belt.res" id="5_belt"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_1.wav" id="sfx_cabbage_bump_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_2.wav" id="sfx_cabbage_bump_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_3.wav" id="sfx_cabbage_bump_3"]
@@ -64,19 +64,12 @@ material_override = ExtResource("3_mat")
 [node name="Shape" type="CollisionShape3D" parent="."]
 shape = SubResource("Ball")
 
-[node name="Count" type="Label3D" parent="."]
+[node name="Belt" type="MeshInstance3D" parent="."]
 top_level = true
 visible = false
-pixel_size = 0.0011
-billboard = 1
-render_priority = 2
-outline_render_priority = 1
-modulate = Color(0.9, 0.89, 0.84, 1)
-outline_modulate = Color(0.07, 0.08, 0.08, 1)
-text = "×2"
-font = ExtResource("5_font")
-font_size = 72
-outline_size = 22
+gi_mode = 0
+extra_cull_margin = 0.05
+mesh = ExtResource("5_belt")
 
 [node name="Interactable" type="Node" parent="."]
 script = ExtResource("2_interactable")

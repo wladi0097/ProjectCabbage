@@ -12,7 +12,9 @@ extends Control
 ## "findings"); held for HOLD_TIME, it is bought (`bought`; can't pay: `denied`). Like a phone map, a
 ## held press dragged across the tree pans it (kept in view) and the wheel zooms it; a double-click
 ## recentres. Nodes and edges are drawn once on Layer, around its own origin, and only redrawn when
-## they change; panning just moves it. Hover, hold and the popup go on Top, redrawn each frame.
+## they change; panning just moves it, and while the view zooms or its rect resizes the picture it
+## has is stretched, drawn sharp again once that has held still for SETTLE (a redraw of the whole
+## tree costs several frames). Hover, hold and the popup go on Top, redrawn each frame.
 ## Layer is a Node2D, not a Control: a Control is culled by its own (here empty) rect, so the whole
 ## tree vanished once the hub was panned out of view.
 
@@ -40,6 +42,9 @@ const FLAVOUR_ALPHA := 0.6
 const BODY_ALPHA := 1.0
 const POPUP_STEP := 27.0
 const POPUP_TEXT := POPUP_WIDTH - 32.0
+## Seconds the tree's scale must hold still (the wheel at rest, the sheet done widening) before the
+## stretched picture is drawn sharp again.
+const SETTLE := 0.12
 ## A point off every view: hovering it hovers nothing.
 const OFF := Vector2(-1e9, -1e9)
 
@@ -82,6 +87,11 @@ var _panned := false
 var _pan_press := Vector2.ZERO
 var _pan_start := Vector2.ZERO
 var _layer_key := []
+## The wheel scale (px per unit, zoomed) the layer's picture was drawn at (zero: not drawn yet), the
+## scale last frame, and the seconds it has held still.
+var _drawn_unit := Vector2.ZERO
+var _last_unit := Vector2.ZERO
+var _still := 0.0
 ## Nodes showing for the first time since the tree lit up (marked NEW until close).
 var _fresh: Array[String] = []
 ## THEMES that have a node showing (headings drawn), by index, and the ids showing (is_shown),
@@ -89,6 +99,8 @@ var _fresh: Array[String] = []
 var _themes_shown: Array[bool] = []
 var _shown := {}
 static var _plate_style: StyleBoxFlat
+## The unit circle ring() scales and moves.
+static var _ring := PackedVector2Array()
 
 @onready var _layer: Node2D = $Layer
 @onready var _top: Control = $Top
@@ -117,12 +129,19 @@ func _process(delta: float) -> void:
 			denied.emit()
 	if not is_visible_in_tree():
 		return
-	_layer.position = _wheel()[0]
+	var wheel := _wheel()
+	var unit: Vector2 = wheel[1]
+	_layer.position = wheel[0]
 	_layer.modulate.a = light * (pulse(Time.get_ticks_msec() / 1000.0) if shimmer else 1.0)
 	_top.size = size
-	var key: Array = [_zoom, size, save.get_instance_id(), TranslationServer.get_locale()] + rules.drawn_key(save)
-	if key != _layer_key:
+	_still = _still + delta if unit == _last_unit else 0.0
+	_last_unit = unit
+	var key: Array = [save.get_instance_id(), TranslationServer.get_locale()] + rules.drawn_key(save)
+	# What the tree shows changed, or nothing sharp is drawn yet: drawn now. Only its scale changed
+	# (zoom, the rect): the picture is stretched (below) until the scale has held still.
+	if key != _layer_key or _drawn_unit.x <= 0.0 or _drawn_unit.y <= 0.0 or (unit != _drawn_unit and _still >= SETTLE):
 		_layer_key = key
+		_drawn_unit = unit
 		_themes_shown = rules.themes_shown(save)
 		_shown.clear()
 		for node: Dictionary in rules.NODES:
@@ -133,6 +152,7 @@ func _process(delta: float) -> void:
 				if not _fresh.has(id):
 					_fresh.append(id)
 		_layer.queue_redraw()
+	_layer.scale = stretch(_drawn_unit, unit)
 	_top.queue_redraw()
 
 
@@ -141,10 +161,16 @@ func close() -> PackedStringArray:
 	var seen := PackedStringArray(_fresh)
 	_fresh.clear()
 	_layer_key = []
+	_drawn_unit = Vector2.ZERO
 	_hovered = ""
 	_hovered_theme = -1
 	_holding = ""
 	return seen
+
+
+## How far a picture drawn at wheel scale `drawn` is stretched to show at scale `now` (1, 1: sharp).
+static func stretch(drawn: Vector2, now: Vector2) -> Vector2:
+	return now / drawn if drawn.x > 0.0 and drawn.y > 0.0 else Vector2.ONE
 
 
 ## The lamp's slow, gentle shimmer (about 0.95..1): two slow waves, never a per-frame flicker.
@@ -275,6 +301,7 @@ func home(zoom: float, time: float) -> void:
 	if time <= 0.0:
 		_pan = Vector2.ZERO
 		_zoom = zoom
+		_drawn_unit = Vector2.ZERO  # A jump, not a motion: drawn sharp at once.
 		return
 	var tween := create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, "_pan", Vector2.ZERO, time)
@@ -322,6 +349,10 @@ func _draw_layer() -> void:
 	var wheel := _wheel()
 	var unit: Vector2 = wheel[1]
 	var r: float = wheel[2]
+	# Whatever asked for this redraw (Godot draws again whenever the tree is shown): this is the scale
+	# of the picture now.
+	_drawn_unit = unit
+	_layer.scale = Vector2.ONE
 	var faint := PackedVector2Array()
 	var locked := PackedVector2Array()
 	for node: Dictionary in rules.NODES:
@@ -427,18 +458,23 @@ func _draw_top() -> void:
 		elif _hold > 0.0:
 			_top.draw_arc(at, r + 6.0, -PI / 2.0, -PI / 2.0 + TAU * _hold, 40, Color(ink, light), 5.0, true)
 	# NEW: a ring pulsing out from each node showing for the first time.
+	# The circles' rings go out in one call: a ring each (an antialiased arc) cost a whole frame
+	# once a new ring of the tree had a hundred nodes marked NEW.
 	var beat := fmod(Time.get_ticks_msec() / 1000.0, NEW_PULSE) / NEW_PULSE
+	var fade := Color(ink, light * 0.7 * (1.0 - beat))
+	var rings := PackedVector2Array()
 	for id in _fresh:
 		var at: Vector2 = wheel[0] + rules.node_data(id).at * wheel[1]
-		var fade := Color(ink, light * 0.7 * (1.0 - beat))
 		var corner := Vector2(r * 0.8, r * 1.05)
 		if rules.is_dept(id):
 			var box := _plate(id, at, r)
 			_draw_plate(_top, box.grow(r * 0.35 * beat), Color.TRANSPARENT, fade, 3.0)
 			corner = box.end - at + Vector2(4.0, 0.0)
 		else:
-			_top.draw_arc(at, r * (1.15 + 0.35 * beat), 0.0, TAU, 40, fade, 3.0, true)
+			rings.append_array(ring(at, r * (1.15 + 0.35 * beat)))
 		_top.draw_string(font, at + corner, tr("NEW"), HORIZONTAL_ALIGNMENT_LEFT, -1, int(clampf(r * 0.6, 14.0, 28.0)), Color(ink, light))
+	if not rings.is_empty():
+		_top.draw_multiline(rings, fade, 3.0, true)
 	if _hovered != "":
 		var at: Vector2 = wheel[0] + rules.node_data(_hovered).at * wheel[1]
 		var lit := Color(glow, glow.a * light)
@@ -457,6 +493,15 @@ func _draw_top() -> void:
 		_draw_plate(_top, box, Color(glow, glow.a * light), Color.TRANSPARENT, 0.0)
 		_draw_category(heading[0], heading[3], theme_members(rules, _hovered_theme), box.get_center(), box.size.x / 2.0,
 				save, light, area)
+
+
+## A circle of `radius` round `at` as line segments (pairs of points), to batch into one draw_multiline.
+static func ring(at: Vector2, radius: float) -> PackedVector2Array:
+	if _ring.is_empty():
+		for i in 40:
+			_ring.append(Vector2.from_angle(TAU * i / 40.0))
+			_ring.append(Vector2.from_angle(TAU * (i + 1) / 40.0))
+	return Transform2D(0.0, Vector2(radius, radius), 0.0, at) * _ring
 
 
 ## Where an edge stops short of node `id`: its circle's rim, or (under a department's plate) nowhere.

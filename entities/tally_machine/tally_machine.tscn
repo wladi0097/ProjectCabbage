@@ -8,8 +8,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_3.wav" id="sfx_tally_tick_3"]
 
 [ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="4_font"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/console_denied_1.wav" id="sfx_console_denied_1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/console_denied_2.wav" id="sfx_console_denied_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/limit_full.wav" id="sfx_limit_full"]
 
 [ext_resource type="Material" path="res://assets/materials/machine_metal.tres" id="5_metal"]
 
@@ -26,10 +25,9 @@ material = SubResource("Mat_limit_enamel")
 size = Vector3(0.176, 0.003, 0.036)
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_refuse"]
-random_pitch = 1.05
-streams_count = 2
-stream_0/stream = ExtResource("sfx_console_denied_1")
-stream_1/stream = ExtResource("sfx_console_denied_2")
+random_pitch = 1.03
+streams_count = 1
+stream_0/stream = ExtResource("sfx_limit_full")
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_tally_tick"]
 random_pitch = 1.06

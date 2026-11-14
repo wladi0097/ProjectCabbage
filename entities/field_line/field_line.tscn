@@ -47,7 +47,7 @@ stream_0/stream = ExtResource("sfx_console_drop")
 size = Vector3(0.41, 0.1, 0.23)
 
 [sub_resource type="BoxShape3D" id="HandsetShape"]
-size = Vector3(0.26, 0.05, 0.075)
+size = Vector3(0.28, 0.055, 0.085)
 
 [node name="FieldLine" type="Node3D"]
 script = ExtResource("1_script")
@@ -78,7 +78,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 shape = SubResource("BodyShape")
 
 [node name="Count" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.4413, 0.8974, 0, -0.8974, 0.4413, 0.113, 0.117, -0.0285)
+transform = Transform3D(1, 0, 0, 0, 0.4416, 0.8972, 0, -0.8972, 0.4416, 0.113, 0.0785, 0.0505)
 pixel_size = 0.00062
 modulate = Color(1, 0.62, 0.18, 1)
 shaded = false

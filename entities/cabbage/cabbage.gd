@@ -36,16 +36,18 @@ const RESEARCH_MATERIAL := preload("res://assets/materials/cabbage_research.tres
 const RESEARCH_LIGHT := Color(0.45, 0.9, 1.0)
 ## A golden unit (desk card golden_cabbage): cold metallic gold, the one exception to the palette.
 const GOLD_MATERIAL := preload("res://assets/materials/cabbage_gold.tres")
-## A condensed cabbage (`units` over 1) is denser, not much bigger, so the mat does not clog: its
-## size is units ^ CONDENSED_SIZE (2: ×1.15, 4: ×1.32), its mass units times, and it drags behind
+## A condensed cabbage (`units` over 1) is denser, never bigger (decision 2026-11-14: one holding 16
+## is the size of a plain one; only its count tells): its mass is units times, and it drags behind
 ## the hand: its carry acceleration is divided by units ^ CONDENSED_WEIGHT (2: ×0.8, 4: ×0.63).
 ## It also sounds heavier: its bump, grab, chute roll and sale play units ^ -CONDENSED_PITCH lower
-## (2: ×0.87, 4: ×0.76).
-const CONDENSED_SIZE := 0.2
+## (2: ×0.87, 4: ×0.76). Weight and pitch stop growing at HEFT_MAX cabbages in one (×0.5, ×0.66).
+const HEFT_MAX := 8
 const CONDENSED_WEIGHT := 0.33
 const CONDENSED_PITCH := 0.2
-## Its stencilled count (×2) floats this many radii from its centre, toward the camera.
-const COUNT_OUT := 1.1
+## It wears a paper belt round its middle printed with what it holds (×4), counts up to BELT_MOST
+## (rows of the print atlas). The belt stays upright to the camera while the cabbage rolls inside it,
+## and its paper hugs the leaves turned into it (assets/shaders/cabbage_belt.gdshader).
+const BELT_MOST := 32
 ## Let go by the hand near the bin (RottenBin.let_go_over), it may drop in for this long (a drop or
 ## a short toss lands by then).
 const BIN_GRACE := 1.0
@@ -82,7 +84,7 @@ var research := false
 var golden := false
 ## How many cabbages from stock it holds: 1, or more for a condensed one (desk card condense,
 ## CabbageFeeder.condensed): it leaves the stock, sells, is analysed and is counted as that many, and
-## carries a stencilled ×2. Set before it enters the tree, like rotten. Minis and rotten ones: always 1.
+## wears a paper belt printed ×2. Set before it enters the tree, like rotten. Minis and rotten ones: always 1.
 var units := 1
 ## Last thrown by a hired hand (Associate._throw), not the player: SaleWindow counts its sale as the hand's.
 var lobbed := false
@@ -117,23 +119,24 @@ var _spin := 0.0:
 		_spin = angle
 		_pose()
 var _spinning: Tween
+## Which of MESHES it wears (the belt's shader reads that mesh's reach).
+var _shape := 0
 
 
-## A condensed cabbage's stencilled count (top level: it keeps facing the camera while the body rolls).
-@onready var _count: Label3D = $Count
+## A condensed cabbage's paper belt (top level: placed every frame, it never rolls with the body).
+@onready var _belt: MeshInstance3D = $Belt
 @onready var _layer := collision_layer
 @onready var _mask := collision_mask
 
 
 func _ready() -> void:
 	add_to_group(&"cabbages")
-	$Mesh.mesh = MESHES.pick_random()
+	_shape = randi() % MESHES.size()
+	$Mesh.mesh = MESHES[_shape]
 	var size := randf_range(1.0 - SIZE_SPREAD, 1.0 + SIZE_SPREAD) * (MINI_SCALE if mini else 1.0)
-	mass *= size * size * size * units
-	size *= condensed_size(units)
-	max_accel /= pow(units, CONDENSED_WEIGHT)
-	_count.visible = units > 1
-	_count.text = "×%d" % units
+	mass *= size * size * size * heft(units)
+	max_accel /= pow(heft(units), CONDENSED_WEIGHT)
+	_belt.visible = units > 1
 	set_process(units > 1)
 	_look = Basis.from_euler(Vector3(randf(), randf(), randf()) * TAU).scaled(Vector3.ONE * 1.5 * size)
 	if rotten:
@@ -164,22 +167,38 @@ func _ready() -> void:
 	$Interactable.grabbed.connect(func() -> void: $Grab.cue(global_position))
 
 
-## How much bigger across a cabbage holding `count` cabbages is than a plain one.
-static func condensed_size(count: int) -> float:
-	return pow(count, CONDENSED_SIZE)
+## The cabbages a cabbage holding `count` weighs and sounds like: `count`, at most HEFT_MAX.
+static func heft(count: int) -> int:
+	return clampi(count, 1, HEFT_MAX)
 
 
 ## How much lower a cabbage holding `count` cabbages sounds than a plain one (a pitch scale).
 static func heavy_pitch(count: int) -> float:
-	return pow(maxi(count, 1), -CONDENSED_PITCH)
+	return pow(heft(count), -CONDENSED_PITCH)
 
 
-## A condensed cabbage's count stays on the side the camera sees, just off its skin.
+## The printed count on a condensed cabbage's belt: its row of the print atlas.
+static func belt_row(count: int) -> int:
+	return clampi(count, 0, BELT_MOST)
+
+
+## The belt's turn: its axis along the camera's `up`, its front (a printed count) turned `toward` the camera.
+static func belt_basis(up: Vector3, toward: Vector3) -> Basis:
+	var front := (toward - up * toward.dot(up)).normalized()
+	return Basis(up.cross(front), up, front)
+
+
+## A condensed cabbage's belt, every frame after the physics: round its centre, upright to the camera,
+## squashed with it in a grab; the shader learns how the cabbage is turned inside it.
 func _process(_delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
-	if camera != null:
-		var radius: float = ($Shape.shape as SphereShape3D).radius
-		_count.global_position = global_position + global_position.direction_to(camera.global_position) * radius * COUNT_OUT
+	var level := Basis.IDENTITY if camera == null else 			belt_basis(camera.global_basis.y, global_position.direction_to(camera.global_position))
+	_belt.global_transform = Transform3D(Basis.from_scale(squish_scale(_squish)) * level, global_position)
+	var turn := Basis(Vector3.UP, _spin) * global_basis.orthonormalized() * _look.orthonormalized()
+	var rows := (turn.inverse() * level).transposed()
+	_belt.set_instance_shader_parameter(&"to_mesh_x", Vector4(rows.x.x, rows.x.y, rows.x.z, _look.get_scale().x))
+	_belt.set_instance_shader_parameter(&"to_mesh_y", Vector4(rows.y.x, rows.y.y, rows.y.z, _shape))
+	_belt.set_instance_shader_parameter(&"to_mesh_z", Vector4(rows.z.x, rows.z.y, rows.z.z, belt_row(units)))
 
 
 ## Whether it came out of the stock (and so leaves it when sold, binned or analysed): minis and

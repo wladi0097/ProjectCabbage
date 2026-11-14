@@ -83,19 +83,21 @@ func test_the_consolidated_growth_start_point_opens_on_the_promotion_paper_alone
 	assert_bool(AlphaEnd.due(save)).is_false()
 
 
-func test_the_five_farms_start_point_has_the_world_map_card_in_the_tray_ready_to_stamp() -> void:
+func test_the_five_farms_start_point_has_the_war_card_in_the_tray_ready_to_stamp() -> void:
 	var path := DebugStarts.START_DIR.path_join("60_five_farms_owned.tres")
 	assert_array(Array(DebugStarts.entries())).contains([path])
 	assert_str(DebugStarts.label_of(path)).is_equal("60  Five Farms Owned")
 	var save := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as SaveGame
 	assert_int(save.farms_owned.size()).is_equal(UpgradeDesk.Events.HOME_SELLERS)
 	assert_array(Array(save.stamped)).contains(["negotiation", "bribery"])  # The cards its farms were bought behind.
-	assert_array(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)).is_equal(["world_map"])
-	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(UpgradeDesk.card_data("world_map")))).is_true()
+	assert_array(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)).is_equal([FarmRegister.WAR_CARD])
+	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(UpgradeDesk.card_data(FarmRegister.WAR_CARD)))).is_true()
 	assert_int(save.stock).is_less_equal(save.storage_cap)
 	assert_array(BossReport.due(save)).is_empty()  # Every paper is signed: nothing in the way.
-	# The world sheet is still locked: stamping the card is what this start is for.
+	# No war yet, and the world sheet is still locked: stamping the card is what this start is for.
+	assert_bool(FarmRegister.war_ready(save, &"K-6")).is_false()
 	assert_bool(MapTable.sheet_unlocked(&"world", save)).is_false()
+	assert_str(MapTable.start_sheet(save)).is_equal(&"kohlmark")
 
 
 func test_the_home_country_start_point_opens_in_the_world_phase_with_the_first_law_in_the_tray() -> void:
@@ -104,16 +106,20 @@ func test_the_home_country_start_point_opens_in_the_world_phase_with_the_first_l
 	assert_str(DebugStarts.label_of(path)).is_equal("70  Home Country Owned")
 	var save := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as SaveGame
 	var world: GDScript = load("res://entities/map_table/world_register.gd")
-	# Every home farm and nothing abroad; the world sheet is in the rack.
+	# Every home farm and nothing abroad; the world sheet is in the holder over the home sheet.
 	assert_int(UpgradeDesk.Events.home_farms(save)).is_equal(UpgradeDesk.Events.HOME_SITES)
 	assert_int(save.farms_owned.size()).is_equal(UpgradeDesk.Events.HOME_SITES)
 	assert_int(save.farm_squares.size()).is_equal(save.farms_owned.size())  # Each farm has its square.
+	assert_array(Array(save.stamped)).contains([FarmRegister.WAR_CARD, MapTable.WORLD_CARD])
 	assert_bool(MapTable.sheet_unlocked(&"world", save)).is_true()
+	assert_str(MapTable.start_sheet(save)).is_equal(&"kohlmark")
 	assert_array(BossReport.due(save)).is_empty()  # Every paper is signed, THE COUNTRY IS OURS too.
 	assert_array(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)).is_equal(["no_taxes"])
 	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(UpgradeDesk.card_data("no_taxes")))).is_true()
-	# A neighbour can be taken at once; the sea is still closed.
-	assert_bool(world.take(save.duplicate(true), &"ostrevia")).is_true()
+	# A neighbour's farm can be attacked at once; the sea is still closed.
+	var war := FarmRegister.war_bill(save, &"ostrevia-1")
+	assert_dict(war).is_not_empty()
+	assert_bool(UpgradeDesk.affords(save, war)).is_true()
 	assert_str(world.reach(save, &"grauland")).is_equal(world.NOT_ADJACENT)
 	assert_bool(save.stamped.has(world.SEA_CARD)).is_false()
 

@@ -5,6 +5,7 @@ const MATS := {
 	"machine_paint": "res://assets/materials/machine_paint_matte.tres",
 	"machine_metal": "res://assets/materials/machine_metal.tres",
 	"ramp_steel": "res://assets/materials/ramp_steel.tres",
+	"cabbage_belt": "res://entities/cabbage/cabbage_belt.tres",
 }
 
 func _initialize() -> void:

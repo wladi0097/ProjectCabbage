@@ -473,8 +473,8 @@ func test_owning_every_farm_of_the_home_country_brings_the_notice_that_we_make_t
 	assert_array(Report.due(save)).is_empty()
 
 
-func test_the_home_countrys_farm_sites_are_the_ones_on_the_country_sheet() -> void:
-	var sheet: Node = auto_free(load("res://entities/map_table/country_sheet.tscn").instantiate())
+func test_the_home_countrys_farm_sites_are_the_ones_on_its_own_sheet() -> void:
+	var sheet: Node = auto_free(load("res://entities/map_table/countries/kohlmark.tscn").instantiate())
 	var sites: Array[String] = []
 	for thing in sheet.get_node("Things").get_children():
 		if thing is MapBuilding:

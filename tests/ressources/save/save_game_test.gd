@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
 
 const WorldRegister := preload("res://entities/map_table/world_register.gd")
+const WarSheet := preload("res://entities/map_table/war_sheet.gd")
 const ROUND_TRIP_PATH := "user://save_game_test_round_trip.tres"
 const LOG_PATH := "user://save_game_test_log.csv"
 
@@ -175,6 +176,12 @@ func _another_value(save: SaveGame, field: String) -> Variant:
 		TYPE_PACKED_INT32_ARRAY:
 			return PackedInt32Array([3, 7])
 		TYPE_ARRAY:
+			if field == "farm_seed_clocks":
+				var clocks: Array[PackedFloat32Array] = [PackedFloat32Array([12.5, 3.0]), PackedFloat32Array()]
+				return clocks
+			if field == "farm_seed_golden":
+				var golden: Array[PackedByteArray] = [PackedByteArray([0, 1]), PackedByteArray()]
+				return golden
 			var log_lines: Array[Dictionary] = [save.log_entry(95, "card", "price_slate", 12, "coins")]
 			return log_lines
 	fail("no round-trip value for %s (type %d)" % [field, typeof(value)])
@@ -292,10 +299,9 @@ func test_nothing_in_the_game_costs_more_than_the_highest_limit_of_its_currency(
 		bills[node.id] = {UpgradeTree.currency_of(node): node.price}
 	for nth in FarmRegister.PRICES.size():
 		bills["farm %d" % (nth + 1)] = FarmRegister.PRICES[nth]
-	for nth in FarmRegister.SEIZURES.size():
-		bills["seizure %d" % (nth + 1)] = FarmRegister.SEIZURES[nth]
 	for country: StringName in WorldRegister.COUNTRIES:
-		bills[String(country)] = WorldRegister.price(country)
+		for nth in WorldRegister.COUNTRIES[country].wars.size():
+			bills["war %d in %s" % [nth + 1, country]] = WorldRegister.COUNTRIES[country].wars[nth]
 	bills["the last farm square"] = {coins = FarmScreen.plot_price_of(FarmScreen.MAX_PLOTS - 1)}
 	for id: String in bills:
 		for currency: String in top:
@@ -322,19 +328,27 @@ func test_everything_needed_before_chapter_3_is_affordable_under_the_starting_li
 
 
 func test_chapter_3_never_asks_for_more_than_the_limit_its_cards_so_far_allow() -> void:
-	# The cash card comes right after the card that opens chapter 3, before the wide sheet and the
-	# first farm ($60,000); the archive card before CONDENSE and CH2's dearer nodes.
+	# The cash card comes right after the card that opens chapter 3, with the wide sheet's card and
+	# the archive card (each fits the starting limits, so they are stamped in any order), before the
+	# first farm ($60,000); CONDENSE, STRUCTURED FARM and all that follows wait for both limit cards.
 	var ids: Array = UpgradeDesk.CARDS.map(func(card: Dictionary) -> String: return card.id)
 	assert_int(ids.find("cash_holding")).is_equal(ids.find("market_intelligence") + 1)
-	assert_array(UpgradeDesk.card_data("big_ideas").needs).contains(["cash_holding"])
-	assert_array(UpgradeDesk.card_data("archive_capacity").needs).contains(["big_ideas"])
-	assert_array(UpgradeDesk.card_data("condense").needs).contains(["archive_capacity"])
+	for id: String in ["cash_holding", "big_ideas", "archive_capacity"]:
+		assert_array(UpgradeDesk.card_data(id).needs).override_failure_message(id).is_equal(["market_intelligence"])
+	for id: String in ["condense", "structured_farm"]:
+		assert_array(UpgradeDesk.card_data(id).needs).override_failure_message(id).contains(["cash_holding", "big_ideas", "archive_capacity"])
 	var start := SaveGame.new()
 	assert_int(FarmRegister.PRICES[0].coins).is_greater(start.coin_limit)
 	assert_int(FarmRegister.PRICES[0].coins).is_less_equal(start.coin_limit * UpgradeDesk.LIMIT_RAISE)
 	# The projector's steps wait for the wide sheet, CH2's for the archive card.
-	assert_array(Projector.node_data("coin_limit_1").needs).contains(["big_ideas"])
+	assert_array(Projector.node_data("coin_limit_1").needs).contains(["big_ideas", "cash_holding"])
 	assert_array(FarmTree.node_data("archive_1").needs).contains(["archive_capacity"])
+	# The four cards that can lie in the tray before either limit is raised fit the starting limits.
+	var start_ids := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout"]
+	for id: String in start_ids:
+		var first := UpgradeDesk.costs(UpgradeDesk.card_data(id))
+		assert_int(first.get("coins", 0)).override_failure_message(id).is_less_equal(start.coin_limit)
+		assert_int(first.get("findings", 0)).override_failure_message(id).is_less_equal(start.findings_limit)
 	# Every card of the chapter is covered by the limit the chain has reached when it is dealt: the
 	# cards' own x5, then (from the wide sheet on) every projector and CH2 step, each affordable in turn.
 	var save := SaveGame.new()
@@ -348,10 +362,10 @@ func test_chapter_3_never_asks_for_more_than_the_limit_its_cards_so_far_allow() 
 		UpgradeDesk.apply(card.id, save)
 
 
-func test_every_farm_of_the_world_can_be_owned_and_stars_is_reachable() -> void:
+func test_every_farm_of_the_world_can_be_owned_and_the_last_card_is_reachable_under_the_limits() -> void:
 	# From the world map card on, under the top limits and the biggest store: whatever can be paid
 	# with a full purse, a full archive and a full store (less a full mat of condensed cabbages) is
-	# taken, until nothing more can be. The whole chain has to come out of that.
+	# taken, a war at a time, until nothing more can be. The whole chain has to come out of that.
 	var save := _climb("coin_limit")
 	save.findings_limit = _climb("findings_limit").findings_limit
 	save.storage_cap = SaveGame.new().storage_cap
@@ -363,6 +377,8 @@ func test_every_farm_of_the_world_can_be_owned_and_stars_is_reachable() -> void:
 	var ids: Array = UpgradeDesk.CARDS.map(func(card: Dictionary) -> String: return card.id)
 	save.stamped = PackedStringArray(ids.slice(0, ids.find("world_map") + 1))
 	save.farms_owned = PackedStringArray(["K-1", "K-2", "K-3", "K-4", "K-5"])
+	var by_rank := WorldRegister.COUNTRIES.keys()
+	by_rank.sort_custom(func(a: StringName, b: StringName) -> bool: return WorldRegister.COUNTRIES[a].rank < WorldRegister.COUNTRIES[b].rank)
 	var order := []  # What happened, in order.
 	var moved := true
 	while moved:
@@ -370,10 +386,6 @@ func test_every_farm_of_the_world_can_be_owned_and_stars_is_reachable() -> void:
 		save.coins = save.coin_limit
 		save.findings = save.findings_limit
 		save.stock = save.storage_cap
-		for site: String in WorldRegister.farm_ids(WorldRegister.HOME):
-			if not moved and FarmRegister.buy(save, StringName(site), out):
-				order.append(site)
-				moved = true
 		for id: String in UpgradeDesk.next_cards(save.stamped, 1, save):
 			var bill := UpgradeDesk.costs(UpgradeDesk.card_data(id))
 			if not moved and UpgradeDesk.affords(save, bill, out):
@@ -383,17 +395,20 @@ func test_every_farm_of_the_world_can_be_owned_and_stars_is_reachable() -> void:
 				UpgradeDesk.apply(id, save)
 				order.append(id)
 				moved = true
-		for country: StringName in WorldRegister.COUNTRIES:
-			if not moved and WorldRegister.take(save, country, out):
-				order.append(String(country))
-				moved = true
+		for country: StringName in by_rank:
+			for farm in WorldRegister.farm_ids(country):
+				if not moved and not FarmRegister.war_bill(save, StringName(farm)).is_empty() and WarSheet.win(save, StringName(farm), out):
+					order.append(farm)
+					moved = true
 	assert_int(save.farms_owned.size()).is_equal(UpgradeDesk.Events.FARMS)
 	assert_bool(UpgradeDesk.Events.chapter_3_done(save)).is_true()
 	assert_array(order.slice(0, 4)).is_equal(["K-6", "K-7", "K-8", "no_taxes"])  # The country, then its first law.
 	assert_str(order[-1]).is_equal("stars")
-	assert_str(order[-2]).is_equal("endmark")  # The final island falls last.
+	assert_str(order[-2]).is_equal("endmark-1")  # The final island falls last.
 	# Nothing across the water before the sea lanes.
-	for country: String in ["grauland", "lower_provinces", "morrow", "nordhal", "endmark"]:
-		assert_int(order.find(country)).override_failure_message(country).is_greater(order.find("sea_lanes"))
-	for country: String in ["ostrevia", "veldmark", "sulvania"]:
-		assert_int(order.find(country)).override_failure_message(country).is_between(0, order.find("grauland"))
+	for country: StringName in [&"grauland", &"lower_provinces", &"morrow", &"nordhal", &"endmark"]:
+		for farm in WorldRegister.farm_ids(country):
+			assert_int(order.find(farm)).override_failure_message(farm).is_greater(order.find("sea_lanes"))
+	for country: StringName in [&"ostrevia", &"veldmark", &"sulvania"]:
+		for farm in WorldRegister.farm_ids(country):
+			assert_int(order.find(farm)).override_failure_message(farm).is_between(0, order.find("grauland-1"))

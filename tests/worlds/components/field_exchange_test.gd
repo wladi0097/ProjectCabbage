@@ -91,7 +91,7 @@ func test_a_farm_bought_at_the_map_gets_its_lamp_only_when_its_moment_there_has_
 	SaveManager.save.coins = 1000000
 	SaveManager.save.storage_cap = 5000
 	SaveManager.save.stock = 5000
-	var country := _map.sheet_of(&"country") as FarmRegister
+	var country := _map.sheet_of(&"kohlmark") as FarmRegister
 	country.open = 1.0
 	country.press(&"K-1")
 	country.press(FarmRegister.STAMP)

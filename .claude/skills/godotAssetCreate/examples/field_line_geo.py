@@ -1,8 +1,10 @@
 # Project Cabbage FIELD LINE (chapter 3, replaces the supply console on its 0.42 x 0.24 m plinth):
-# a switchboard box. On the slope a black bakelite panel with 24 jewel lamp sockets (3 x 8, one per
-# farm) and a count window ("n/24" is a Label3D in Godot); across the front deck a telephone handset
-# lying in two chrome cradle rings over a hook switch, with a coiled cord to a grommet on the deck.
-# Lifting the handset is the "go to the maps" control.
+# a switchboard box. On the front slope (near the player, low) a black bakelite panel with 24 jewel
+# lamp sockets (3 x 8, one per farm) and a count window ("n/24" is a Label3D in Godot); across the
+# raised back deck (far side, up the screen: nearer the middle of the desk, where the hand is) a
+# telephone handset lying in two chrome cradle rings over a hook switch, with a coiled cord to a
+# grommet on the deck. Lifting the handset is the "go to the maps" control. (Until 2026-11-14 the
+# handset lay in front and the lamps behind: the user wanted the phone on top, "natural to reach".)
 # Prepend blender_lib.py + desk_vc_common.py. Blender Z-up, front = -Y (Godot +Z). Origin: floor centre.
 # Objects: field_line (skinned: bones Body, Receiver; the cord's weights blend from Body to Receiver
 # along its length, so it follows the lifted handset) and Lamps (24 lenses, one surface
@@ -65,8 +67,9 @@ def coil(guide, radius, turns, per_turn=10):
 
 body = bmesh.new()
 part_box(body, (-0.21, -0.12, 0), (0.21, 0.12, 0.022), 0.01, K)                     # plinth
-prism(body, [(-0.112, 0.02), (0.112, 0.02), (0.112, 0.142), (0.092, 0.142), (-0.03, 0.082), (-0.112, 0.082)], -0.2, 0.2, E, 0.012, 4)
-FM = slope_frame((-0.03, 0.082), (0.092, 0.142))
+SLO, SHI, TOP = (-0.112, 0.042), (0.016, 0.105), 0.105                              # the lamp slope (front), the handset deck behind it
+prism(body, [(-0.112, 0.02), (0.112, 0.02), (0.112, TOP), SHI, SLO], -0.2, 0.2, E, 0.012, 4)
+FM = slope_frame(SLO, SHI)
 part_box(body, (-0.186, -0.05, -0.002), (0.186, 0.05, 0.003), 0.002, K, FM)       # bakelite panel
 LR, LAMPS = 0.0088, [(-0.168 + 0.0275 * k, s) for s in (0.031, 0.0, -0.031) for k in range(8)]
 for x, s in LAMPS:
@@ -76,7 +79,7 @@ part_box(body, (WX - WW, -WS, 0.002), (WX + WW, WS, 0.005), 0.0, G, FM)
 for lo, hi in [((WX - WW - 0.008, -WS - 0.008, 0.002), (WX + WW + 0.008, -WS, 0.01)), ((WX - WW - 0.008, WS, 0.002), (WX + WW + 0.008, WS + 0.008, 0.01)),
                ((WX - WW - 0.008, -WS, 0.002), (WX - WW, WS, 0.01)), ((WX + WW, -WS, 0.002), (WX + WW + 0.008, WS, 0.01))]:
     part_box(body, lo, hi, 0.003, H, FM)
-HY, DZ, CUP = -0.07, 0.082, 0.09
+HY, DZ, CUP = 0.064, TOP, 0.09
 for x in (-CUP, CUP):                                                               # cradle rings
     ring(body, 0.037, 0.045, DZ - 0.002, DZ + 0.01, H, at(x, HY, 0), 32)
     spin(body, [(0, DZ), (0.037, DZ), (0.037, DZ + 0.003), (0, DZ + 0.003)], F, at(x, HY, 0), 32)   # dark felt in the ring
@@ -85,12 +88,12 @@ for x in (-0.17, 0.17):                                                         
     for y in (-0.085, 0.085):
         spin(body, [(0, 0), (0.016, 0), (0.018, 0.006), (0, 0.006)], K, at(x, y, -0.004), 16)
 part_box(body, (-0.203, 0.105, 0.05), (0.203, 0.116, 0.06), 0.003, H)               # chrome trim on the back
-part_box(body, (-0.203, -0.116, 0.04), (0.203, -0.109, 0.048), 0.003, H)            # and the front
+part_box(body, (-0.203, -0.116, 0.027), (0.203, -0.109, 0.035), 0.003, H)            # and the front
 # The cord: from a grommet on the deck's back-left corner in a C over the deck into the left cup.
-GROM = Vector((-0.178, -0.044, DZ))
+GROM = Vector((-0.178, HY + 0.026, DZ))
 ring(body, 0.004, 0.011, DZ - 0.001, DZ + 0.005, H, at(GROM.x, GROM.y, 0), 16)
 ENTRY = Vector((-CUP - 0.034 * 0.7071, HY - 0.034 * 0.7071, DZ + 0.026))
-CORD = coil([GROM + Vector((0, 0, -0.004)), GROM + Vector((0, 0, 0.02)), (-0.187, -0.074, 0.112), (-0.164, -0.099, 0.112), ENTRY], 0.006, 11)
+CORD = coil([GROM + Vector((0, 0, -0.004)), GROM + Vector((0, 0, 0.02)), (-0.187, HY - 0.004, DZ + 0.03), (-0.164, HY - 0.029, DZ + 0.03), ENTRY], 0.006, 11)
 merge(body, tube(CORD, 0.004, 6), I, C)
 
 hand = bmesh.new()

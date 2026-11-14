@@ -17,10 +17,11 @@ extends Node3D
 ## line reprints with every offer, ASKED beside its head once it has moved, and the small print
 ## gives way to the list of offers made, each with its mood. A bribe is the same band in coins.
 ## The stamp (`Stamp`: a cast-iron head on a knob) comes down on the box (strike), prints ACQUIRED
-## (imprint: the desk press's thunk, a ring, the paper gives) and lifts away (lift_stamp).
+## (imprint: its own heavy slam, a ring, the paper gives) and lifts away (lift_stamp).
 ## Sound moments, one cue each: Slide (it slides in or away), Strike (the stamp lands), Denied (the
-## stamp refused, an offer that missed: the desk press's dry thud), Roll (it rolls itself up), Dial
-## (the dial turned a notch), MoodStamp (the mood stamped), Agreed (an offer that landed).
+## stamp refused, an offer that missed: a jammed lever's dead clunk), Roll (it rolls itself up), Dial
+## (the dial turned a notch), MoodStamp (the mood stamped), Agreed (an offer that landed), PriceUp
+## (an offer that missed: the price retyped upward), Envelope (a bribe passed across).
 
 const SIZE := Vector2(0.82, 1.04)
 const PIXELS_PER_METRE := 1000.0
@@ -35,12 +36,13 @@ const BOXES := {&"deed_stamp": STAMP_BOX, &"deed_less": LESS_BOX, &"deed_more": 
 const MOOD_AT := Vector2(638, 682)
 ## The small print of a deed nobody haggles over.
 const SMALL_PRINT := "The seller confirms that the transfer is voluntary."
-## The paper's other forms (letter; translation keys): a home farm nobody sells is taken by a
-## SEIZURE ORDER (FarmRegister.seizure), a country by an ANNEXATION ORDER (WorldRegister). Each has
-## its form line, the head over its price, its small print and what the stamp prints.
+## The paper's forms (letter; translation keys): the deed of transfer, and the WAR ORDER for a farm
+## nobody sells (FarmRegister.war_ready: its stamp starts the war, nothing is paid on it; the price
+## it prints is what the war is expected to cost). Each has its form line, the head over its price,
+## its small print, what the stamp prints and what the strip of one that cannot be stamped says.
 const FORMS := {
-	&"seizure": {form = "FORM 3-S  SEIZURE ORDER", head = "COST OF THE OPERATION", note = "The owner's signature is not required.", seal = "SEIZED"},
-	&"annexation": {form = "FORM 7-A  ANNEXATION ORDER", head = "COST OF THE OPERATION", note = "The population has been informed in writing.", seal = "ANNEXED"},
+	&"deed": {form = "FORM 3-D  DEED OF TRANSFER", head = "PURCHASE PRICE", note = SMALL_PRINT, seal = "ACQUIRED", strip = "NOT FOR SALE"},
+	&"war": {form = "FORM 9-W  WAR ORDER", head = "ESTIMATED COST OF VICTORY", note = "The owner's signature is not required.", seal = "WAR", strip = "NOT FOR SALE"},
 }
 ## The owner's five moods as stamped (FarmRegister.Mood, worst first), by what is offered: cabbages
 ## from stock, or coins in an envelope.
@@ -116,6 +118,8 @@ var _blinking: Tween
 @onready var _dial_sound: SoundCue = $Dial
 @onready var _mood_sound: SoundCue = $MoodStamp
 @onready var _agreed_sound: SoundCue = $Agreed
+@onready var _envelope_sound: SoundCue = $Envelope
+@onready var _price_up_sound: SoundCue = $PriceUp
 
 
 func _ready() -> void:
@@ -145,6 +149,11 @@ static func box_at(pixel: Vector2) -> StringName:
 	return &""
 
 
+## Farm `at` as a form prints it: "K-3" at home, the country's initial abroad ("ostrevia-1": "O-1").
+static func code(at: String) -> String:
+	return at if at.rfind("-") <= 1 else at.left(1).to_upper() + at.substr(at.rfind("-"))
+
+
 ## `amount` of what an offer is made in, as the form types it: "250", "$150,000".
 static func amount_text(paid_in: String, amount: int) -> String:
 	return ("$" if paid_in == "coins" else "") + FarmScreen._thousands(amount)
@@ -157,7 +166,7 @@ func fill(called: String, at: StringName, price: Dictionary, lacks := {}, reason
 	site = at
 	stamped = false
 	_title.text = called
-	_site.text = tr("FARM SITE %s") % at
+	_site.text = tr("FARM SITE %s") % code(at)
 	_imprint.hide()
 	_strip.visible = price.is_empty()
 	_reason.visible = price.is_empty()
@@ -170,19 +179,15 @@ func fill(called: String, at: StringName, price: Dictionary, lacks := {}, reason
 	print_haggle()
 
 
-## Letters the filled paper as another form (`kind`: FORMS) instead of the deed of transfer: its form
-## line, price head, small print and stamp; `strip` is what the strip of one that cannot be stamped
-## says (a key; "": as it is), `line` replaces the site line under the name ("": as fill set it).
-func letter(kind: StringName, strip := "", line := "") -> void:
+## Letters the filled paper as form `kind` (FORMS): its form line, price head, small print and
+## stamp; `strip` is what the strip of one that cannot be stamped says (a key; "": the form's own).
+func letter(kind: StringName, strip := "") -> void:
 	var form: Dictionary = FORMS[kind]
 	($Page/Form/FormLine as Label).text = form.form
 	($Page/Form/PriceHead as Label).text = form.head
 	($Page/Form/Imprint/Word as Label).text = form.seal
 	_small_print.text = form.note
-	if strip != "":
-		($Page/Form/Strip/Word as Label).text = strip
-	if line != "":
-		_site.text = line
+	($Page/Form/Strip/Word as Label).text = strip if strip != "" else form.strip
 	reprint()
 
 
@@ -243,7 +248,7 @@ func tick() -> void:
 	_dial_sound.cue(global_position)
 
 
-## The stamp refused: what is short flashes red twice, to the desk press's dry thud.
+## The stamp refused: what is short flashes red twice, to a jammed lever's dead clunk.
 func blink() -> void:
 	_denied_sound.cue(global_position)
 	if _blinking != null:
@@ -295,11 +300,16 @@ func imprint() -> void:
 
 
 ## The stamp has landed on the mood (print_haggle has it on the paper): its thump, and whether the
-## offer `landed` (the coins saved rattle) or missed (the dry thud).
+## offer `landed` (the coins saved rattle) or missed (the price is typed over, upward).
 func stamp_mood(landed: bool) -> void:
 	_mood_sound.cue(_stamp.global_position)
-	(_agreed_sound if landed else _denied_sound).cue(_stamp.global_position)
+	(_agreed_sound if landed else _price_up_sound).cue(_stamp.global_position)
 	_hit()
+
+
+## An envelope is passed across (a bribe offered).
+func envelope() -> void:
+	_envelope_sound.cue(global_position)
 
 
 ## The stamp's hit: the head squashed, a ring from under it.

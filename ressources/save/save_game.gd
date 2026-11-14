@@ -51,10 +51,11 @@ extends Resource
 ## affordable with none approved (UpgradeDesk ticks it), and whether the warning has come (once).
 @export var progress_wait := 0.0
 @export var progress_warned := false
-## Upgradeable: how many cabbages may sit on the mat, seconds between dispenses, cabbages per pack.
+## Upgradeable: how many cabbages may sit on the mat (10 at most, Projector.MAT_MAX), seconds between dispenses, cabbages per pack.
 @export var desk_capacity := 1
 @export var dispense_interval := 1.0
-## Mean seconds after a sale before the next cabbage rolls (each wait is 0.5..1.5 of it). Upgradeable.
+## Mean seconds after a sale before the next cabbage rolls (each wait is 0.5..1.5 of it). Upgradeable
+## (projector: PROMPT REPLENISHMENT and CONVEYOR III halve it).
 @export var restock_delay := 0.67
 @export var pack_size := 10
 ## Quality Assurance's output: each cabbage analysed in the QA bay adds findings_per_cabbage.
@@ -242,7 +243,7 @@ extends Resource
 @export var own_lab := 1.0
 ## CONDENSE CABBAGES (desk card condense, chapter 3): how many cabbages from stock one condensed
 ## cabbage off the chute holds (Cabbage.units, CabbageFeeder.condensed): 1 before the card, 2 with it;
-## the projector's CONDENSE II to V raise it to 8. It counts that many times wherever it goes.
+## the projector's CONDENSE II to IX raise it to 32. It counts that many times wherever it goes.
 @export var condense := 1
 ## Cabbages a hired hand throws out of the window per trip before it goes back to its spot
 ## (projector node TWO-HANDED POLICY: 2).
@@ -266,13 +267,21 @@ extends Resource
 ## `created` and the farms owned, so reloading cannot change it.
 @export var haggle_offers := PackedInt32Array()
 @export var haggle_price := 0
+## The map sheet that lay open last at the map table (MapTable: "world", or a country's id; "": the
+## home country's). A war sheet is not kept: its country's is.
+@export var map_sheet := ""
 ## The CH1 squares made farm squares, one per farm owned, picked by the player (FarmScreen.place_farm),
 ## and how many times a plain square's cabbages each farm square harvests (CH2's FARM OUTPUT raises it).
 @export var farm_squares := PackedInt32Array()
 @export var farm_square_mult := 10.0
-## Seeds a farm square holds (2; CH2's SEED BEDS behind STRUCTURED FARM raise it), and the seeds in
-## each farm square now, in farm_squares' order (FarmScreen.seeds_in): each grows its own batch.
+## Seeds a farm square holds (2; CH2's SEED BEDS behind STRUCTURED FARM raise it). Each farm square's
+## seeds, in farm_squares' order, oldest first: every seed's own seconds grown (it ripens and is
+## harvested as its own batch) and whether it grows golden (1). farm_growth / farm_golden hold the
+## oldest seed of a farm square (FarmScreen._sync). farm_square_seeds is the old count per farm square
+## from when a square had one clock: only read to migrate (FarmScreen.ensure).
 @export var farm_slots := 2
+@export var farm_seed_clocks: Array[PackedFloat32Array] = []
+@export var farm_seed_golden: Array[PackedByteArray] = []
 @export var farm_square_seeds := PackedInt32Array()
 ## STRUCTURED FARM (desk card structured_farm): CH2's tree has been shown opening up once (FarmTree).
 @export var farm_tree_wide := false
@@ -315,7 +324,7 @@ extends Resource
 ## Saves from before that kept it here; loading one fills this, and SaveManager moves it to the file.
 var playtest_log: Array[Dictionary] = []
 
-const MIGRATION := 4
+const MIGRATION := 6
 ## The save field that caps each capped one (room, earn).
 const LIMITS := {&"coins": &"coin_limit", &"findings": &"findings_limit"}
 
@@ -335,8 +344,9 @@ func earn(field: StringName, amount: int) -> int:
 ## The playtest log (SaveManager.LOG_PATH, a CSV appended one line per entry; tools/pace.py reads it).
 ## A line starting "t,kind," is a header: a build with other columns appends a new one, and every
 ## line after it follows that header. Rows: "session" (id = seconds away), "minute" (every
-## SaveManager.LOG_MINUTE s of play), "card"/"node"/"farm" (a purchase: id, price, currency), "farm_bought"/"seizure"/"annexation"
-## (the map table: a row per currency) and "offer" (a haggle: id = which farm, price = what was offered),
+## SaveManager.LOG_MINUTE s of play), "card"/"node"/"farm" (a purchase: id, price, currency), "farm_bought"/"war_won"
+## (the map table: a row per currency; older builds also wrote "seizure"/"annexation"), "war" (a war
+## order stamped: id = the farm) and "offer" (a haggle: id = which farm, price = what was offered),
 ## "milestone", "event", "quota_met"/"quota_missed", and "snapshot" (old builds, every 30 s).
 ## Every row carries the state right after it. Columns:
 ##   t: play seconds. kind, id, price, currency: what happened (above).

@@ -352,10 +352,11 @@ haggle_price
 high
 least
 low
+farm_seed_clocks
+farm_seed_golden
 farm_slots
 farm_square_seeds
 farm_tree_wide
-annexation
 endmark
 grauland
 head
@@ -368,6 +369,10 @@ ostrevia
 rank
 sea
 seal
-seizure
 sulvania
 veldmark
+deed
+map_sheet
+strip
+war
+wars

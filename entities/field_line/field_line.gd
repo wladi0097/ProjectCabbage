@@ -2,7 +2,8 @@ class_name FieldLine
 extends Node3D
 ## The FIELD LINE (chapter 3, on the supply console's plinth): a switchboard box with a jewel lamp
 ## for every farm of the district (LAMPS, lit dull oxblood for the farms the company holds), a
-## count window ("7/24") and a telephone handset in a cradle. Lifting the handset opens the line
+## count window ("7/24") on the front slope, and a telephone handset in a cradle on the deck behind
+## them (the far side, up the screen: where the hand comes from). Lifting the handset opens the line
 ## (line_opened: the game goes to the maps); the game hangs it up again (hang_up) when it is back.
 ## It only shows and reports: it knows nothing of the save, the camera or the map table.
 ## Sound moments, one cue each (streams in the scene): Lift (the handset leaves the cradle),
@@ -15,9 +16,10 @@ signal line_opened
 const LAMPS := 24
 ## Seconds between two lamps lighting when the count rises: a relay clicking through.
 const RELAY_STEP := 0.09
-## The lifted handset, from its cradle (Godot space, m and rad about up): it rises, comes a little
-## toward the player and swings its left end forward, baring the rings and the hook switch.
-const LIFT := Vector3(-0.012, 0.05, 0.022)
+## The lifted handset, from its cradle (Godot space, m and rad about up): it rises straight up and
+## swings its left end forward, baring the rings and the hook switch. It does not come toward the
+## player: the lamps lie in front of it and it would hang over them.
+const LIFT := Vector3(-0.012, 0.05, 0.0)
 const SWING := 0.35
 ## How much of the lift a hovering hand already gives it (it stirs in the cradle, and half as much of the swing).
 const HOVER := 0.4

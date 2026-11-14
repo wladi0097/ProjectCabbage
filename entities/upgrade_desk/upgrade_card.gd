@@ -51,7 +51,8 @@ const PINCH_AT := Vector3(-0.165, 0.0, 0.085)
 ## The price sits in the ruled box at the bottom right (the texture's box: x 0.096-0.168, z 0.047-0.088),
 ## in PRICE_SIZE print, smaller when it would not fit PRICE_WIDTH. A card in several currencies
 ## (UpgradeDesk.costs) prints the others left of the box on its line (Look/Also: "$15000 + ¶2000 +"),
-## ending ALSO_GAP before it, in ALSO_SIZE print or smaller to fit ALSO_WIDTH.
+## ending ALSO_GAP before it, in ALSO_SIZE print or smaller to fit ALSO_WIDTH. Farms it needs stand
+## first on that line as their count and the FARM_ICON (Look/Farms, Look/FarmIcon): "5 [farm] + $2500000 +".
 const PRICE_AT := Vector3(0.1316, 0.002, 0.0672)
 const PRICE_WIDTH := 0.064
 const PRICE_SIZE := 110
@@ -65,6 +66,12 @@ const BILL_GAP := 0.6
 const ICON := preload("res://assets/sprites/icons/cabbage_icon.svg")
 const ICON_EM := 0.9
 const ICON_GAP := 0.12
+## Farms a card needs (UpgradeDesk.costs "farms", "home_farms") print as their count with FARM_ICON
+## after it, the same gap: no word, in any language. FARM_EM of the font size high, taller than the
+## digits: a barn has more to show than a cabbage, and in the tray the line is only some 10 px high.
+const FARM_ICON := preload("res://assets/sprites/icons/farm_icon.svg")
+const FARM_EM := 1.25
+const FARM_SIGNS: Array[String] = ["farms", "home_farms"]
 ## The heading wraps in HEADING_BOX (width, height in metres) under the form line, printed in
 ## HEADING_SIZE or smaller (fit_size, never under MIN_SIZE). The form line keeps to one line in FORM_BOX.
 const HEADING_BOX := Vector2(0.33, 0.11)
@@ -129,27 +136,58 @@ func _fill(card: Dictionary) -> void:
 	label.position.x = left + price_width(shown, currency, label.font_size) - text * 0.5
 	icon.pixel_size = em * ICON_EM / ICON.get_height()
 	icon.position = Vector3(left + em * ICON_EM * 0.5, PRICE_AT.y, PRICE_AT.z)
+	# Left of the box, right to left: the other prices, then the farm icon and the farms' count.
 	var also := $Look/Also as Label3D
+	var farms := farms_of(costs)
 	also.text = also_text(costs, currency)
 	also.visible = also.text != ""
-	also.font_size = also_size(also.text)
+	also.font_size = also_size(also.text, farms)
 	also.position.x = PRICE_AT.x - PRICE_WIDTH * 0.5 - ALSO_GAP
+	var count := $Look/Farms as Label3D
+	var farm_icon := $Look/FarmIcon as Sprite3D
+	count.visible = farms > 0
+	farm_icon.visible = farms > 0
+	var side := also.font_size * PIXEL * FARM_EM
+	var icon_right := also.position.x - TITLE_FONT.get_string_size(also.text + " ", HORIZONTAL_ALIGNMENT_LEFT, -1, also.font_size).x * PIXEL
+	farm_icon.pixel_size = side / FARM_ICON.get_height()
+	farm_icon.position = Vector3(icon_right - side * 0.5, PRICE_AT.y, PRICE_AT.z)
+	count.text = str(farms)
+	count.font_size = also.font_size
+	count.position.x = icon_right - side * (1.0 + ICON_GAP)
 
 
 ## What a card costs besides `price` in `paid_in`, as printed left of its price box: "$15000 + ¶2000 +"
 ## (`bill`: UpgradeDesk.costs; "" for a card in one currency). Never units: they are always the box's.
+## Farms the card needs are not in it: their count and icon stand before it, and it starts with
+## their "+" ("+ $2500000 +", or "+" alone).
 static func also_text(bill: Dictionary, paid_in: String) -> String:
 	var parts := PackedStringArray()
+	if farms_of(bill) > 0:
+		parts.append("+")
 	for other: String in bill:
-		if other != paid_in:
+		if other != paid_in and other not in FARM_SIGNS:
 			parts.append(price_text(bill[other], other) + " +")
 	return " ".join(parts)
 
 
-## The font size that fits `shown` (also_text) into ALSO_WIDTH: ALSO_SIZE, or smaller.
-static func also_size(shown: String) -> int:
+## The farms `bill` (UpgradeDesk.costs) needs owned (its "farms" or "home_farms"; 0 for none).
+static func farms_of(bill: Dictionary) -> int:
+	return bill.get("farms", bill.get("home_farms", 0))
+
+
+## How wide the line left of the price box prints at font size `size` (m): `shown` (also_text) and,
+## with `farms`, their count, the farm icon and a space before it.
+static func also_width(shown: String, size: int, farms := 0) -> float:
+	if farms > 0:
+		return (TITLE_FONT.get_string_size(shown + " ", HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * PIXEL
+				+ price_width(str(farms), "farms", size))
+	return TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * PIXEL
+
+
+## The font size that fits `shown` (also_text) and the `farms` before it into ALSO_WIDTH: ALSO_SIZE, or smaller.
+static func also_size(shown: String, farms := 0) -> int:
 	var size := ALSO_SIZE
-	while size > MIN_SIZE and TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * PIXEL > ALSO_WIDTH:
+	while size > MIN_SIZE and also_width(shown, size, farms) > ALSO_WIDTH:
 		size -= 2
 	return size
 
@@ -271,7 +309,7 @@ func blink() -> void:
 	if _blinking != null:
 		_blinking.kill()
 	_blinking = create_tween()
-	var labels: Array[Node3D] = [_heading, _price, _price_icon, $Look/Also]
+	var labels: Array[Node3D] = [_heading, _price, _price_icon, $Look/Also, $Look/Farms, $Look/FarmIcon]
 	for colour: Color in [DENIED_RED, INK, DENIED_RED, INK]:
 		_blinking.tween_callback(func() -> void:
 			for label in labels:
@@ -290,27 +328,41 @@ func _cue(sound: StringName) -> void:
 
 
 ## "$130", "¶10" or "60" (paid from stock: the cabbage ICON is its sign, see shows_icon): the price
-## with its currency's sign, as on the tally machine's plates. "24 FARMS" for farms that must be owned
-## (UpgradeDesk.costs "farms"), in the language of the moment.
+## with its currency's sign, as on the tally machine's plates. "24" for farms that must be owned
+## (UpgradeDesk.costs "farms", "home_farms"): the FARM_ICON after it is their sign, see icon_of.
 static func price_text(amount: int, paid_in: String) -> String:
-	if paid_in in ["farms", "home_farms"]:
-		if amount == 1:
-			return TranslationServer.translate("1 FARM")
-		return TranslationServer.translate("%d FARMS") % amount
-	if paid_in == "stock":
+	if paid_in == "stock" or paid_in in FARM_SIGNS:
 		return str(amount)
 	return ("¶%d" if paid_in == "findings" else "$%d") % amount
 
 
-## A price in `paid_in` is printed with the cabbage ICON before its number (paid in cabbages).
+## A price in `paid_in` is printed with an icon (icon_of) for its sign: cabbages and farms.
 static func shows_icon(paid_in: String) -> bool:
-	return paid_in == "stock"
+	return icon_of(paid_in) != null
+
+
+## The icon that is the sign of a price in `paid_in`: the cabbage ICON before the number of a price
+## paid in cabbages, the FARM_ICON after the count of farms needed (icon_follows); null for coins and Findings.
+static func icon_of(paid_in: String) -> Texture2D:
+	if paid_in == "stock":
+		return ICON
+	return FARM_ICON if paid_in in FARM_SIGNS else null
+
+
+## How high `paid_in`'s icon prints, in font sizes.
+static func icon_em(paid_in: String) -> float:
+	return FARM_EM if paid_in in FARM_SIGNS else ICON_EM
+
+
+## Whether `paid_in`'s icon stands after its number ("5 [farm]") instead of before it ("[cabbage] 60").
+static func icon_follows(paid_in: String) -> bool:
+	return paid_in in FARM_SIGNS
 
 
 ## How wide price text `shown` in `paid_in` prints in TITLE_FONT at font size `size` (ICON
 ## included), times `unit` (PIXEL on the card, 1 in 2D).
 static func price_width(shown: String, paid_in: String, size: int, unit := PIXEL) -> float:
-	var icon := size * ICON_EM * (1.0 + ICON_GAP) if shows_icon(paid_in) else 0.0
+	var icon := size * icon_em(paid_in) * (1.0 + ICON_GAP) if shows_icon(paid_in) else 0.0
 	return (TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x + icon) * unit
 
 
@@ -341,15 +393,16 @@ static func draw_bill(item: CanvasItem, font: Font, right: Vector2, bill: Dictio
 
 
 ## Draws price text `shown` in `paid_in` on `item` in `font` at `size`, ending at `right` (its
-## baseline), the cabbage ICON before it when it has one, all inked `ink`.
+## baseline), its icon (icon_of) before it or, for farms, after it, all inked `ink`.
 static func draw_price(item: CanvasItem, font: Font, right: Vector2, shown: String, paid_in: String, size: int, ink: Color) -> void:
 	var text := font.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
-	item.draw_string(font, Vector2(right.x - text, right.y), shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size, ink)
+	var side := size * icon_em(paid_in) if shows_icon(paid_in) else 0.0
+	var after := side * (1.0 + ICON_GAP) if icon_follows(paid_in) else 0.0  # Room the icon takes right of the number.
+	item.draw_string(font, Vector2(right.x - after - text, right.y), shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size, ink)
 	if shows_icon(paid_in):
-		var side := size * ICON_EM
 		# Centred on the digits' height (about 0.7 of the font size above the baseline).
-		var at := Vector2(right.x - text - side * ICON_GAP - side, right.y - size * 0.37 - side * 0.5)
-		item.draw_texture_rect(ICON, Rect2(at, Vector2(side, side)), false, ink)
+		var x := right.x - side if icon_follows(paid_in) else right.x - text - side * ICON_GAP - side
+		item.draw_texture_rect(icon_of(paid_in), Rect2(Vector2(x, right.y - size * 0.37 - side * 0.5), Vector2(side, side)), false, ink)
 
 
 ## The biggest font size from `size` down (in steps of 4, not under MIN_SIZE) at which `shown`,

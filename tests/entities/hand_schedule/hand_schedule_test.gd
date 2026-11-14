@@ -111,25 +111,63 @@ func test_a_condensed_or_grown_cabbage_counts_as_a_plain_one() -> void:
 	assert_str(HandSchedule.kind_of(grown)).is_equal("regular")
 
 
-func test_the_schedule_is_an_optional_card_dealt_once_a_lab_hand_and_a_hired_hand_are_on_the_desk() -> void:
+func test_the_handling_schedule_is_offered_in_chapter_3_and_asks_for_two_farms() -> void:
 	var card := UpgradeDesk.card_data(HandSchedule.CARD)
-	assert_array(card.needs).contains_exactly(["research_assistant"])
-	assert_array(UpgradeDesk.Events.DRY_LEFT).override_failure_message("left unstamped it must not hold stage 2 back").contains([HandSchedule.CARD])
-	assert_str(card.get("currency", "coins")).is_equal("coins")
+	var ids: Array = UpgradeDesk.CARDS.map(func(each: Dictionary) -> String: return each.id)
+	assert_int(ids.find(HandSchedule.CARD)).is_greater(ids.find("market_intelligence"))
+	# Dealt once NEGOTIATION is stamped: from then on a second farm can be bought.
+	assert_array(card.needs).contains_exactly(["negotiation"])
+	assert_str(FarmRegister.GATES[1]).is_equal("negotiation")
+	assert_dict(UpgradeDesk.costs(card)).is_equal({farms = 2, coins = int(card.price)})
+	var save := SaveGame.new()
+	save.coins = int(card.price)
+	save.farms_owned = PackedStringArray(["K-1"])
+	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(card))).is_false()
+	save.farms_owned.append("K-2")
+	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(card))).is_true()
+	# Priced for chapter 3, within the purse the cash card gives.
+	assert_int(card.price).is_greater(SaveGame.new().coin_limit)
+	assert_int(card.price).is_less_equal(SaveGame.new().coin_limit * UpgradeDesk.LIMIT_RAISE)
+
+
+func test_nothing_waits_on_the_handling_schedule() -> void:
+	assert_array(UpgradeDesk.Events.DRY_LEFT).contains([HandSchedule.CARD])
 	for other: Dictionary in UpgradeDesk.CARDS:
 		assert_bool(other.get("needs", []).has(HandSchedule.CARD)).override_failure_message(other.id + " waits for it").is_false()
-	# By the time it can be dealt both kinds of hand are hired.
+	# Only its own annexes on the projector name it.
+	for node: Dictionary in Projector.NODES:
+		if node.get("needs", []).has(HandSchedule.CARD):
+			assert_array(HandSchedule.NODES.values()).override_failure_message(node.id).contains([node.id])
+
+
+func test_an_old_save_that_stamped_the_schedule_before_chapter_3_keeps_it() -> void:
 	var save := SaveGame.new()
-	var stamped := PackedStringArray()
-	var todo: Array = card.needs.duplicate()
-	while not todo.is_empty():
-		var id: String = todo.pop_back()
-		if not stamped.has(id):
-			stamped.append(id)
-			UpgradeDesk.apply(id, save)
-			todo.append_array(UpgradeDesk.card_data(id).get("needs", []))
-	assert_int(save.hands).is_greater_equal(1)
-	assert_int(save.research_hands).is_greater_equal(1)
+	save.stamped = PackedStringArray(["research_assistant", HandSchedule.CARD])
+	UpgradeDesk.migrate(save)
+	assert_bool(save.stamped.has(HandSchedule.CARD)).is_true()
+	assert_bool(HandSchedule.listed(save, "regular")).is_true()
+
+
+func test_no_annex_is_on_show_or_for_sale_before_the_schedule_is_stamped() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(UpgradeDesk.CARDS.map(func(each: Dictionary) -> String: return each.id))
+	save.stamped.remove_at(save.stamped.find(HandSchedule.CARD))
+	save.tree_bought.append(Associate.GOLD_SALE)
+	save.coins = 100000000
+	for kind: String in ["research", "mini", "golden"]:
+		assert_bool(Projector.is_shown(HandSchedule.NODES[kind], save)).override_failure_message(kind).is_false()
+		assert_bool(Projector.buy(HandSchedule.NODES[kind], save)).override_failure_message(kind).is_false()
+	save.stamped.append(HandSchedule.CARD)
+	assert_bool(Projector.is_shown(HandSchedule.NODES.research, save)).is_true()
+	assert_bool(Projector.buy(HandSchedule.NODES.research, save)).is_true()
+
+
+func test_the_annexes_are_priced_for_chapter_3_and_fit_the_purse_the_cash_card_gives() -> void:
+	var purse := SaveGame.new().coin_limit * UpgradeDesk.LIMIT_RAISE
+	for kind: String in ["research", "mini", "golden"]:
+		var price := int(Projector.node_data(HandSchedule.NODES[kind]).price)
+		assert_int(price).override_failure_message(kind).is_greater_equal(10000)  # Chapter 1 sold them for $120 to $6,000.
+		assert_int(price).override_failure_message(kind).is_less_equal(purse)
 
 
 func test_every_kind_past_the_plain_one_has_one_projector_node_in_a_chain_under_the_research_lab() -> void:

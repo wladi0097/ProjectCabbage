@@ -20,6 +20,15 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/farm_clear_1.wav" id="cl1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/farm_clear_2.wav" id="cl2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/farm_place.wav" id="pl1"]
+[ext_resource type="AudioStream" uid="uid://or6jc2voq8j5" path="res://assets/audio/effects/farm_batch_1.wav" id="fb1"]
+[ext_resource type="AudioStream" uid="uid://b4w7x1m7xxb7g" path="res://assets/audio/effects/farm_batch_2.wav" id="fb2"]
+[ext_resource type="AudioStream" uid="uid://rhs7fuq1ytc7" path="res://assets/audio/effects/farm_seed_tick.wav" id="st1"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_Batch"]
+random_pitch = 1.06
+streams_count = 2
+stream_0/stream = ExtResource("fb1")
+stream_1/stream = ExtResource("fb2")
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_GoldHarvest"]
 random_pitch = 1.05
@@ -156,6 +165,14 @@ script = ExtResource("1_script")
 [node name="Plant" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_plant")
 volume_db = -8.0
+bus = &"SFX"
+
+[node name="SeedTick" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("st1")
+bus = &"SFX"
+
+[node name="Batch" type="AudioStreamPlayer" parent="."]
+stream = SubResource("Rand_Batch")
 bus = &"SFX"
 
 [node name="Place" type="AudioStreamPlayer" parent="."]

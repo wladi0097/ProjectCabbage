@@ -1,0 +1,1239 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://entities/map_table/map_sheet.tscn" id="1_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/maps/countries/kohlmark.svg" id="2_art"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/farm_token.tscn" id="3_thing"]
+[ext_resource type="Script" path="res://entities/map_table/farm_register.gd" id="4_register"]
+[ext_resource type="PackedScene" path="res://entities/map_table/map_flash.tscn" id="5_flash"]
+[ext_resource type="Shader" path="res://assets/shaders/farm_parcels.gdshader" id="6_parcels"]
+[ext_resource type="PackedScene" path="res://entities/map_table/farm_deed.tscn" id="7_deed"]
+
+[sub_resource type="ShaderMaterial" id="ParcelInk"]
+shader = ExtResource("6_parcels")
+
+[node name="KohlmarkSheet" instance=ExtResource("1_sheet")]
+script = ExtResource("4_register")
+id = &"kohlmark"
+title = "Kohlmark"
+head_office = Vector3(1726, 792, 170)
+
+[node name="Art" parent="Page/Sheet" index="0"]
+texture = ExtResource("2_art")
+
+[node name="Parcels" type="TextureRect" parent="Page/Sheet/Layers"]
+material = SubResource("ParcelInk")
+layout_mode = 0
+offset_right = 3200.0
+offset_bottom = 1800.0
+mouse_filter = 2
+texture = ExtResource("2_art")
+
+[node name="L00" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1074.0
+offset_top = 1144.0
+offset_right = 2474.0
+offset_bottom = 1264.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Brasswold Holding"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Price_K-1" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1084.0
+offset_top = 1193.0
+offset_right = 2484.0
+offset_bottom = 1313.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 27
+text = "Price: ____"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L02" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1254.0
+offset_top = 634.0
+offset_right = 2654.0
+offset_bottom = 754.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Mittelfeld Holding"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Price_K-2" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1264.0
+offset_top = 683.0
+offset_right = 2664.0
+offset_bottom = 803.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 27
+text = "Price: ____"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L04" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 894.0
+offset_top = 544.0
+offset_right = 2294.0
+offset_bottom = 664.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Brasswold Farm"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Price_K-3" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 904.0
+offset_top = 593.0
+offset_right = 2304.0
+offset_bottom = 713.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 27
+text = "Price: ____"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L06" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 564.0
+offset_top = 964.0
+offset_right = 1964.0
+offset_bottom = 1084.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Ostfurt Holding"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Price_K-4" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 574.0
+offset_top = 1013.0
+offset_right = 1974.0
+offset_bottom = 1133.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 27
+text = "Price: ____"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L08" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1524.0
+offset_top = 1174.0
+offset_right = 2924.0
+offset_bottom = 1294.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Grauhaven Holding"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Price_K-5" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1534.0
+offset_top = 1223.0
+offset_right = 2934.0
+offset_bottom = 1343.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 27
+text = "Price: ____"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L10" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 534.0
+offset_top = 1384.0
+offset_right = 1934.0
+offset_bottom = 1504.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Ostfurt Farm"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Price_K-6" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 544.0
+offset_top = 1433.0
+offset_right = 1944.0
+offset_bottom = 1553.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 27
+text = "Price: ____"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L12" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 234.0
+offset_top = 814.0
+offset_right = 1634.0
+offset_bottom = 934.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Sennick Holding"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Price_K-7" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 244.0
+offset_top = 863.0
+offset_right = 1644.0
+offset_bottom = 983.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 27
+text = "Price: ____"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L14" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 144.0
+offset_top = 1234.0
+offset_right = 1544.0
+offset_bottom = 1354.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Ostfurt Estate"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Price_K-8" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 154.0
+offset_top = 1283.0
+offset_right = 1554.0
+offset_bottom = 1403.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 27
+text = "Price: ____"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L16" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 848.0
+offset_top = 852.0
+offset_right = 2248.0
+offset_bottom = 972.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 47
+text = "KOHLBURG"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L17" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 77.0
+offset_top = 331.0
+offset_right = 1477.0
+offset_bottom = 451.0
+rotation = 0.15708
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "River Grau"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L18" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1519.0
+offset_top = 1347.0
+offset_right = 2919.0
+offset_bottom = 1467.0
+rotation = 0.83776
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "River Kohl"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L19" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1405.0
+offset_top = 799.0
+offset_right = 2805.0
+offset_bottom = 919.0
+rotation = 0.13963
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "The Sennick"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L20" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 327.0
+offset_top = 481.0
+offset_right = 1727.0
+offset_bottom = 601.0
+rotation = 0.34907
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "Trunk Road B-12"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L21" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1106.0
+offset_top = 523.0
+offset_right = 2506.0
+offset_bottom = 643.0
+rotation = -1.11701
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "State Railway 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L22" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 464.0
+offset_top = 1080.0
+offset_right = 1864.0
+offset_bottom = 1200.0
+rotation = -0.12217
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "State Railway 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L23" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1380.0
+offset_top = 356.0
+offset_right = 2780.0
+offset_bottom = 476.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "Port Weisskohl"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L24" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 664.0
+offset_top = 469.0
+offset_right = 2064.0
+offset_bottom = 589.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "I. Brasswold"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L25" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -236.0
+offset_top = 719.0
+offset_right = 1164.0
+offset_bottom = 839.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "II. Kalden"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L26" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 214.0
+offset_top = 1394.0
+offset_right = 1614.0
+offset_bottom = 1514.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "III. Ostfurt"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L27" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1839.0
+offset_top = 744.0
+offset_right = 3239.0
+offset_bottom = 864.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "IV. Weiler Marsh"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L28" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1264.0
+offset_top = 1294.0
+offset_right = 2664.0
+offset_bottom = 1414.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "V. Grauhaven"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L29" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 519.0
+offset_right = 1414.0
+offset_bottom = 639.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "VI. Sennick"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L30" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1514.0
+offset_top = 594.0
+offset_right = 2914.0
+offset_bottom = 714.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "VII. Mittelfeld"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L31" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -386.0
+offset_top = 244.0
+offset_right = 1014.0
+offset_bottom = 364.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_colors/font_outline_color = Color(0.875, 0.886, 0.851, 1)
+theme_override_constants/outline_size = 12
+theme_override_font_sizes/font_size = 41
+text = "OSTREVIA"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L32" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -336.0
+offset_top = 1144.0
+offset_right = 1064.0
+offset_bottom = 1264.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_colors/font_outline_color = Color(0.875, 0.886, 0.851, 1)
+theme_override_constants/outline_size = 12
+theme_override_font_sizes/font_size = 41
+text = "VELDMARK"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L33" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1439.0
+offset_top = 94.0
+offset_right = 2839.0
+offset_bottom = 214.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 50
+text = "Sea of Quarterly Returns"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L34" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2314.0
+offset_top = 394.0
+offset_right = 3714.0
+offset_bottom = 514.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 50
+text = "Grey Sea"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L35" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2194.0
+offset_top = 58.0
+offset_right = 3594.0
+offset_bottom = 178.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 47
+text = "N"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L36" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -510.0
+offset_top = 1595.0
+offset_right = 890.0
+offset_bottom = 1715.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L37" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -387.0
+offset_top = 1595.0
+offset_right = 1013.0
+offset_bottom = 1715.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L38" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -263.0
+offset_top = 1595.0
+offset_right = 1137.0
+offset_bottom = 1715.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "10"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L39" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -140.0
+offset_top = 1595.0
+offset_right = 1260.0
+offset_bottom = 1715.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "15"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L40" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -16.0
+offset_top = 1595.0
+offset_right = 1384.0
+offset_bottom = 1715.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "20 km"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L41" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1919.0
+offset_top = 1366.0
+offset_right = 3319.0
+offset_bottom = 1486.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 36
+text = "KOHLMARK - NATIONAL FARM REGISTER"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L42" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1919.0
+offset_top = 1468.0
+offset_right = 3319.0
+offset_bottom = 1588.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 20
+text = "Domestic farm sites eligible for acquisition. Prices per Schedule C."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L43" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1698.0
+offset_top = 1540.0
+offset_right = 3098.0
+offset_bottom = 1660.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 19
+text = "SHEET"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L44" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1698.0
+offset_top = 1586.0
+offset_right = 3098.0
+offset_bottom = 1706.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "1 of 9"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L45" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1892.0
+offset_top = 1540.0
+offset_right = 3292.0
+offset_bottom = 1660.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 19
+text = "SCALE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L46" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1892.0
+offset_top = 1586.0
+offset_right = 3292.0
+offset_bottom = 1706.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "1 : 240 000"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L47" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2088.0
+offset_top = 1540.0
+offset_right = 3488.0
+offset_bottom = 1660.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 19
+text = "FARM SITES"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L48" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2088.0
+offset_top = 1586.0
+offset_right = 3488.0
+offset_bottom = 1706.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "8"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L49" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2282.0
+offset_top = 1540.0
+offset_right = 3682.0
+offset_bottom = 1660.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 19
+text = "STATUS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L50" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2282.0
+offset_top = 1586.0
+offset_right = 3682.0
+offset_bottom = 1706.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "Domestic"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L51" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2309.0
+offset_top = 1407.0
+offset_right = 3709.0
+offset_bottom = 1527.0
+rotation = -0.24435
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 31
+text = "FILED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L52" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -435.0
+offset_top = -6.0
+offset_right = 965.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "A"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L53" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -435.0
+offset_top = 1686.0
+offset_right = 965.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "A"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L54" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -54.0
+offset_top = -6.0
+offset_right = 1346.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "B"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L55" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -54.0
+offset_top = 1686.0
+offset_right = 1346.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "B"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L56" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 328.0
+offset_top = -6.0
+offset_right = 1728.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "C"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L57" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 328.0
+offset_top = 1686.0
+offset_right = 1728.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "C"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L58" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 709.0
+offset_top = -6.0
+offset_right = 2109.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "D"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L59" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 709.0
+offset_top = 1686.0
+offset_right = 2109.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "D"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L60" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1091.0
+offset_top = -6.0
+offset_right = 2491.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "E"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L61" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1091.0
+offset_top = 1686.0
+offset_right = 2491.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "E"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L62" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1472.0
+offset_top = -6.0
+offset_right = 2872.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "F"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L63" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1472.0
+offset_top = 1686.0
+offset_right = 2872.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "F"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L64" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1854.0
+offset_top = -6.0
+offset_right = 3254.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "G"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L65" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1854.0
+offset_top = 1686.0
+offset_right = 3254.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "G"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L66" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2235.0
+offset_top = -6.0
+offset_right = 3635.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "H"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L67" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2235.0
+offset_top = 1686.0
+offset_right = 3635.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "H"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L68" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 179.0
+offset_right = 754.0
+offset_bottom = 299.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L69" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 179.0
+offset_right = 3846.0
+offset_bottom = 299.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L70" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 510.0
+offset_right = 754.0
+offset_bottom = 630.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L71" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 510.0
+offset_right = 3846.0
+offset_bottom = 630.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L72" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 840.0
+offset_right = 754.0
+offset_bottom = 960.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L73" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 840.0
+offset_right = 3846.0
+offset_bottom = 960.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L74" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 1170.0
+offset_right = 754.0
+offset_bottom = 1290.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L75" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 1170.0
+offset_right = 3846.0
+offset_bottom = 1290.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L76" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 1501.0
+offset_right = 754.0
+offset_bottom = 1621.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L77" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 1501.0
+offset_right = 3846.0
+offset_bottom = 1621.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="T01" parent="Things" instance=ExtResource("3_thing")]
+transform = Transform3D(0.8519, 0, -0.3973, 0, 0.9400, 0, 0.3973, 0, 0.8519, 0.174, 0.002, 1.084)
+site = &"K-1"
+title = "Brasswold Holding"
+
+[node name="T02" parent="Things" instance=ExtResource("3_thing")]
+transform = Transform3D(0.9781, 0, 0.2079, 0, 1.0000, 0, -0.2079, 0, 0.9781, 0.354, 0.002, 0.574)
+site = &"K-2"
+title = "Mittelfeld Holding"
+
+[node name="T03" parent="Things" instance=ExtResource("3_thing")]
+transform = Transform3D(1.0598, 0, -0.0185, 0, 1.0600, 0, 0.0185, 0, 1.0598, -0.006, 0.002, 0.484)
+site = &"K-3"
+title = "Brasswold Farm"
+
+[node name="T04" parent="Things" instance=ExtResource("3_thing")]
+transform = Transform3D(0.9412, 0, -0.2347, 0, 0.9700, 0, 0.2347, 0, 0.9412, -0.336, 0.002, 0.904)
+site = &"K-4"
+title = "Ostfurt Holding"
+
+[node name="T05" parent="Things" instance=ExtResource("3_thing")]
+transform = Transform3D(0.9481, 0, 0.4025, 0, 1.0300, 0, -0.4025, 0, 0.9481, 0.624, 0.002, 1.114)
+site = &"K-5"
+title = "Grauhaven Holding"
+
+[node name="T06" parent="Things" instance=ExtResource("3_thing")]
+transform = Transform3D(0.9257, 0, 0.1632, 0, 0.9400, 0, -0.1632, 0, 0.9257, -0.366, 0.002, 1.324)
+site = &"K-6"
+title = "Ostfurt Farm"
+
+[node name="T07" parent="Things" instance=ExtResource("3_thing")]
+transform = Transform3D(0.9986, 0, -0.0523, 0, 1.0000, 0, 0.0523, 0, 0.9986, -0.666, 0.002, 0.754)
+site = &"K-7"
+title = "Sennick Holding"
+
+[node name="T08" parent="Things" instance=ExtResource("3_thing")]
+transform = Transform3D(1.0189, 0, -0.2922, 0, 1.0600, 0, 0.2922, 0, 1.0189, -0.756, 0.002, 1.174)
+site = &"K-8"
+title = "Ostfurt Estate"
+
+[node name="Flash" parent="." instance=ExtResource("5_flash")]
+visible = false
+
+[node name="Deed" parent="." instance=ExtResource("7_deed")]

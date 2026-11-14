@@ -1,7 +1,8 @@
 class_name HandSchedule
 extends Node3D
-## The HANDLING ASSIGNMENT SCHEDULE (desk card CARD): a light switch on the desk under the pricing
-## consultant's, there once the card is stamped. Clicked, it opens the schedule (handling_sheet.tscn):
+## The HANDLING ASSIGNMENT SCHEDULE (desk card CARD, chapter 3): a light switch at the bottom of the
+## desk, between the lab hands' and the hired hands' parking piles (Associate.park_spot), there once
+## the card is stamped. Clicked, it opens the schedule (handling_sheet.tscn):
 ## a form split in two, lab hands left and hired hands right, a picture per cabbage kind (KINDS) under
 ## each. A struck kind is in that half's list in the save (hands_forbidden, lab_hands_forbidden) and
 ## no hand of that kind takes it (Associate.pick_target, given `forbidden`).

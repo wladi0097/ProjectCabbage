@@ -264,7 +264,7 @@ func test_research_lab_and_mini_upgrades_wait_for_their_desk_cards() -> void:
 
 
 func test_each_hire_adds_one_hand_and_costs_over_thirty_percent_more_than_the_last() -> void:
-	var save := _save(["projector", "junior_associate", "performance_review", "big_ideas"], 10000000)
+	var save := _save(["projector", "junior_associate", "performance_review", "big_ideas", "cash_holding"], 10000000)
 	var last := 0
 	for n in range(2, 11):
 		var id := "hire_associate_%d" % n
@@ -331,7 +331,7 @@ func test_the_popup_names_what_an_upgrade_waits_for() -> void:
 	assert_bool(Projector.can_hold("discount_1", save)).is_true()
 
 
-func test_everything_bought_fills_the_mat_to_twenty_and_hires_two_hands_more_than_the_desk_shows() -> void:
+func test_everything_bought_fills_the_mat_to_ten_and_hires_two_hands_more_than_the_desk_shows() -> void:
 	var full := SaveGame.new()
 	UpgradeDesk.apply("desk_space", full)
 	UpgradeDesk.apply("junior_associate", full)
@@ -339,10 +339,11 @@ func test_everything_bought_fills_the_mat_to_twenty_and_hires_two_hands_more_tha
 	UpgradeDesk.apply("mat_allowance", full)
 	for node: Dictionary in Projector.NODES:
 		Projector.apply(node.id, full)
-	assert_int(full.desk_capacity).is_equal(20)
+	assert_int(full.desk_capacity).is_equal(10)
 	assert_int(full.hands).is_equal(Associate.MAX_VISIBLE + 2)  # DEPARTMENTAL HEADCOUNT's two speed up the visible ten.
 	assert_int(full.hand_trip).is_equal(2)
-	assert_int(full.condense).is_equal(7)  # CONDENSE II to V on a save without the card's own step.
+	assert_int(full.condense).is_equal(31)  # CONDENSE II to IX on a save without the card's own step.
+	assert_float(full.restock_delay).is_equal_approx(SaveGame.new().restock_delay / 4.0, 0.0001)  # CONVEYOR II and III.
 	assert_float(full.hand_output).is_equal_approx(2.25, 0.0001)
 	assert_int(full.qa_slots).is_equal(5)
 	assert_int(full.vacuums).is_equal(3)
@@ -381,35 +382,52 @@ func _mat_chain() -> Array[String]:
 	return ids
 
 
-func test_the_mat_chain_is_one_node_per_unit_to_the_eleventh_then_three_units_a_step_to_the_twentieth() -> void:
+func test_the_mat_chain_is_one_node_per_unit_to_the_tenth_and_stops_there() -> void:
 	var sizes: Array[int] = []
 	for id in _mat_chain():
 		sizes.append(id.trim_prefix("mat_").to_int())
-	assert_array(sizes).is_equal([4, 5, 6, 7, 8, 9, 10, 11, 14, 17, 20])
+	assert_array(sizes).is_equal([4, 5, 6, 7, 8, 9, 10])
 	var last := ""
 	for id in _mat_chain():
 		var node := Projector.node_data(id)
 		assert_str(node.parent).override_failure_message(id).is_equal("dept_manual" if last == "" else last)
-		var step := id.trim_prefix("mat_").to_int() - (last.trim_prefix("mat_").to_int() if last != "" else Projector.MAT_FIRST - 1)
-		assert_dict(node.add).override_failure_message(id).is_equal({desk_capacity = step})
+		assert_dict(node.add).override_failure_message(id).is_equal({desk_capacity = 1})
 		last = id
-	assert_int(Projector.MAT_SINGLES).is_equal(11)
+	assert_int(Projector.MAT_MAX).is_equal(10)
 
 
-func test_each_late_mat_step_adds_three_cabbages_and_lifts_the_mat_by_at_least_a_sixth() -> void:
-	var save := _save(["projector", "mat_allowance", "big_ideas"], 1000000000)  # The three-unit steps wait for the wide sheet.
-	save.desk_capacity = Projector.MAT_SINGLES
-	Projector.migrate_mat(save)
-	for id: String in _mat_chain().filter(func(i: String) -> bool: return i.trim_prefix("mat_").to_int() > Projector.MAT_SINGLES):
-		var was := save.desk_capacity
-		assert_bool(Projector.buy(id, save)).override_failure_message(id).is_true()
-		assert_int(save.desk_capacity).is_equal(was + 3)
-		assert_float(float(save.desk_capacity) / was).is_greater_equal(7.0 / 6.0)
-	assert_int(save.desk_capacity).is_equal(Projector.MAT_MAX)
+func test_no_projector_step_raises_the_mat_past_ten() -> void:
+	for node: Dictionary in Projector.NODES:
+		assert_int(int(node.get("add", {}).get("desk_capacity", 0))).override_failure_message(node.id).is_less_equal(1)
+		assert_bool(node.get("mul", {}).has("desk_capacity")).override_failure_message(node.id).is_false()
+	# Everything bought, twice over, on a mat that is already full.
+	var save := _save(["projector", "mat_allowance"])
+	save.desk_capacity = Projector.MAT_MAX
+	for round_ in 2:
+		for node: Dictionary in Projector.NODES:
+			Projector.apply(node.id, save)
+			assert_int(save.desk_capacity).override_failure_message(node.id).is_less_equal(Projector.MAT_MAX)
+	assert_int(save.desk_capacity).is_equal(10)
+
+
+func test_conveyor_ii_and_iii_each_also_halve_the_chutes_wait_after_a_sale() -> void:
+	var save := SaveGame.new()
+	var base := SaveGame.new()
+	Projector.apply("conveyor_1", save)
+	assert_float(save.restock_delay).is_equal(base.restock_delay)
+	Projector.apply("conveyor_2", save)
+	assert_float(save.restock_delay).is_equal_approx(base.restock_delay * 0.5, 0.0001)
+	Projector.apply("conveyor_3", save)
+	assert_float(save.restock_delay).is_equal_approx(base.restock_delay * 0.25, 0.0001)
+	assert_float(save.dispense_interval).is_equal_approx(base.dispense_interval * 0.5 * 0.67 * 0.67, 0.0001)
+
+
+func test_conveyor_ii_costs_less_than_the_mats_sixth_cabbage_so_the_cabbages_past_it_are_felt() -> void:
+	assert_int(Projector.node_data("conveyor_2").price).is_less(Projector.node_data("mat_6").price)
 
 
 func test_each_mat_step_costs_more_than_the_last_starting_at_the_old_fourth_unit_price() -> void:
-	var save := _save(["projector", "mat_allowance", "big_ideas"], 1000000000)
+	var save := _save(["projector", "mat_allowance", "big_ideas", "cash_holding"], 1000000000)
 	save.desk_capacity = 3
 	var last := 0
 	for id in _mat_chain():
@@ -419,9 +437,7 @@ func test_each_mat_step_costs_more_than_the_last_starting_at_the_old_fourth_unit
 		assert_int(save.desk_capacity).is_equal(id.trim_prefix("mat_").to_int())
 		last = price
 	assert_int(Projector.price_of("mat_4", save)).is_equal(2100)
-	assert_int(Projector.price_of("mat_14", save)).is_equal(100000)
-	assert_int(Projector.price_of("mat_17", save)).is_equal(300000)
-	assert_int(Projector.price_of("mat_20", save)).is_equal(700000)
+	assert_int(Projector.price_of("mat_10", save)).is_equal(15800)
 
 
 func test_a_bought_mat_step_is_never_bought_again() -> void:
@@ -618,41 +634,51 @@ func test_an_old_save_with_the_allowance_card_and_no_units_gets_the_free_third_u
 	assert_int(plain.desk_capacity).is_equal(2)
 
 
-func test_a_save_that_bought_old_single_mat_units_keeps_them_and_pays_the_next_three_unit_step_in_full() -> void:
-	var save := _save(["projector", "mat_allowance"], 1000000000)
-	save.desk_capacity = 16  # Bought the old single steps 12 to 16.
-	for unit in range(Projector.MAT_FIRST, 17):
-		save.tree_bought.append("mat_%d" % unit)
+func test_an_old_save_with_a_bigger_mat_is_brought_down_to_ten_and_loses_nothing_it_paid_for() -> void:
+	var save := _save(["projector", "mat_allowance", "big_ideas", "cash_holding"], 5)
+	save.desk_capacity = 20
+	save.coin_limit = 1000
+	save.tree_bought = PackedStringArray(["mat_4", "mat_5", "mat_6", "mat_7", "mat_8", "mat_9", "mat_10", "mat_11", "mat_14", "mat_17", "mat_20"])
 	UpgradeDesk.migrate(save)
-	assert_int(save.desk_capacity).is_equal(16)
-	assert_bool(Projector.is_bought("mat_14", save)).is_true()
-	assert_bool(Projector.is_bought("mat_17", save)).is_false()
-	assert_bool(Projector.can_hold("mat_17", save)).is_true()
-	var coins := save.coins
-	assert_bool(Projector.buy("mat_17", save)).is_true()
-	assert_int(coins - save.coins).is_equal(300000)
-	assert_int(save.desk_capacity).is_equal(17)
+	assert_int(save.desk_capacity).is_equal(10)
+	# The 11th cabbage and the three steps to 14, 17 and 20 come back in coins, past the coin limit.
+	assert_int(save.coins).is_equal(5 + 22150 + 100000 + 300000 + 700000)
+	for id in _mat_chain():
+		assert_bool(Projector.is_bought(id, save)).override_failure_message(id).is_true()
+	UpgradeDesk.migrate(save)  # Again: nothing more.
+	assert_int(save.coins).is_equal(5 + 1122150)
+	assert_int(save.desk_capacity).is_equal(10)
 
 
-func test_an_old_mat_between_late_steps_never_loses_a_slot_to_the_migration() -> void:
-	for units in range(Projector.MAT_SINGLES, Projector.MAT_MAX + 1):
+func test_an_old_mat_between_the_old_steps_gets_a_third_of_a_step_back_for_each_cabbage_past_the_eleventh() -> void:
+	for case: Array in [[11, 22150], [12, 55483], [13, 88817], [14, 122150], [16, 322150], [17, 422150], [19, 888817], [20, 1122150]]:
 		var save := _save(["projector", "mat_allowance"])
+		save.desk_capacity = case[0]
+		Projector.migrate_mat(save)
+		assert_int(save.coins).override_failure_message("%d cabbages" % case[0]).is_equal(case[1])
+		assert_int(save.desk_capacity).is_equal(10)
+	assert_int(Projector.mat_refund(10)).is_equal(0)
+
+
+func test_a_mat_of_ten_or_less_is_left_alone_by_the_migration() -> void:
+	for units in range(1, 11):
+		var save := _save(["projector"], 7)
 		save.desk_capacity = units
 		Projector.migrate_mat(save)
-		Projector.migrate_mat(save)
-		assert_int(save.desk_capacity).override_failure_message("%d units" % units).is_equal(units)
-		for id in _mat_chain():
-			var reached := id.trim_prefix("mat_").to_int() <= units
-			assert_bool(Projector.is_bought(id, save)).override_failure_message("%s at %d" % [id, units]).is_equal(reached)
-			assert_int(save.tree_bought.count(id)).is_less_equal(1)
+		assert_int(save.desk_capacity).is_equal(units)
+		assert_int(save.coins).is_equal(7)
+		assert_float(save.restock_delay).is_equal(SaveGame.new().restock_delay)
 
 
-func test_an_old_full_mat_keeps_twenty_and_has_nothing_left_to_buy() -> void:
-	var save := _save(["projector", "mat_allowance"], 1000000000)
-	save.desk_capacity = 20
-	Projector.migrate_mat(save)
-	assert_int(save.desk_capacity).is_equal(20)
-	assert_bool(Projector.can_hold("mat_20", save)).is_false()
+func test_an_old_save_that_bought_conveyor_ii_and_iii_gets_the_halved_waits_they_now_give() -> void:
+	var save := _save(["projector", "big_ideas", "cash_holding"])
+	save.tree_bought = PackedStringArray(["conveyor_1", "conveyor_2"])
+	UpgradeDesk.migrate(save)
+	assert_float(save.restock_delay).is_equal_approx(SaveGame.new().restock_delay * 0.5, 0.0001)
+	save.tree_bought.append("conveyor_3")
+	UpgradeDesk.migrate(save)
+	UpgradeDesk.migrate(save)
+	assert_float(save.restock_delay).is_equal_approx(SaveGame.new().restock_delay * 0.25, 0.0001)
 
 
 func test_an_old_save_tops_up_merged_chains_to_what_the_kept_nodes_now_give() -> void:
@@ -998,8 +1024,8 @@ func test_the_pull_word_fits_its_pennant_in_english_and_german() -> void:
 	assert_int(Projector.pull_size("PULL")).is_equal(Projector.PULL_SIZE)
 
 
-func test_an_old_mat_of_four_stamping_the_allowance_keeps_its_units_and_tops_out_at_twenty() -> void:
-	var save := _save(["projector", "coin_collector", "desk_space", "big_ideas"], 1000000000)
+func test_an_old_mat_of_four_stamping_the_allowance_keeps_its_units_and_tops_out_at_ten() -> void:
+	var save := _save(["projector", "coin_collector", "desk_space", "big_ideas", "cash_holding"], 1000000000)
 	save.desk_capacity = 4
 	save.stamped.append("mat_allowance")
 	UpgradeDesk.apply("mat_allowance", save)
@@ -1068,7 +1094,7 @@ func test_the_golden_value_nodes_wait_for_the_golden_card_and_raise_sale_and_lab
 
 
 func test_gold_standard_only_shows_once_premium_cabbages_and_the_golden_lamp_exist() -> void:
-	var save := _save(["projector", "offsite_storage", "golden_cabbage", "big_ideas"], 10000000)
+	var save := _save(["projector", "offsite_storage", "golden_cabbage", "big_ideas", "cash_holding"], 10000000)
 	save.tree_bought = PackedStringArray(["storage_2", "gold_sale_1"])
 	assert_bool(Projector.is_shown(SaleWindow.GOLD_AGE, save)).is_false()
 	save.stamped.append("golden_lamp")
@@ -1196,7 +1222,8 @@ func test_an_old_save_with_the_third_robot_gets_both_bag_steps_and_never_less_th
 const LATE: Array[String] = ["slogan_6", "hire_associate_7", "conveyor_3", "gold_age", "bin_rebate_5", "research_mult_4",
 		"own_sale_3", "own_lab_3", "research_chance_3", "grow_4", "double_findings", "gold_sale_2", "gold_lab_2", "stock_3000"]
 const WIDE_ONLY: Array[String] = ["slogan_7", "slogan_8", "mandatory_consumption", "headcount_2", "two_handed",
-		"condense_research", "condense_gold", "condense_2", "condense_3", "condense_4", "condense_5"]
+		"condense_research", "condense_gold", "condense_2", "condense_3", "condense_4", "condense_5",
+		"condense_6", "condense_7", "condense_8", "condense_9"]
 
 
 ## Every desk card stamped but `missing`.
@@ -1396,7 +1423,7 @@ func test_departmental_headcount_adds_two_hands_at_once_over_a_quarter_more_than
 	assert_str(Projector.node_data("two_handed").parent).is_equal("headcount_2")
 
 
-func test_the_condensation_branch_opens_with_condensed_samples_and_climbs_to_eight_cabbages_in_one() -> void:
+func test_the_condensation_branch_opens_with_condensed_samples_and_climbs_to_thirty_two_cabbages_in_one() -> void:
 	var save := _stamped_but(["stars"])
 	save.coins = 100000000
 	UpgradeDesk.apply("condense", save)
@@ -1406,8 +1433,8 @@ func test_the_condensation_branch_opens_with_condensed_samples_and_climbs_to_eig
 	assert_int(save.condense).is_equal(4)
 	# Each of II and III is felt: +50%, then +33% on what a condensed cabbage holds.
 	assert_float(4.0 / 3.0).is_greater_equal(1.25)
-	# IV and V (the desk's answer to the farm's seed beds): 6, then 8, again +50% and +33%.
-	for step: Array in [["condense_4", 6], ["condense_5", 8]]:
+	# IV to IX (the mat stops at ten, so what follows the farm is what a cabbage holds): +50% and +33% in turn.
+	for step: Array in [["condense_4", 6], ["condense_5", 8], ["condense_6", 12], ["condense_7", 16], ["condense_8", 24], ["condense_9", 32]]:
 		var was := save.condense
 		assert_bool(Projector.buy(step[0], save)).override_failure_message(step[0]).is_true()
 		assert_int(save.condense).is_equal(step[1])

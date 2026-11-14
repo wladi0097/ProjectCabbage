@@ -81,3 +81,11 @@ func test_the_warm_up_draws_the_field_lines_lamps_and_the_map_sheets_shader() ->
 			shaders.append((pair[1] as ShaderMaterial).shader)
 	assert_bool(used.has(load("res://entities/field_line/field_line_lamps.tres"))).is_true()
 	assert_bool(shaders.has(load("res://assets/shaders/map_sheet.gdshader"))).is_true()
+
+
+func test_the_warm_up_draws_the_condensed_cabbages_belt() -> void:
+	var warmup: Node3D = auto_free(SCENE.instantiate())
+	var used := []
+	for pair: Array in _drawn(warmup):
+		used.append(pair[1])
+	assert_bool(used.has(load("res://entities/cabbage/cabbage_belt.tres"))).is_true()

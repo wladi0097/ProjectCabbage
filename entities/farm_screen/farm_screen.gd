@@ -31,9 +31,13 @@ extends Control
 ## (choosing) green arrows hang over the squares that can take it, and a press on one places the
 ## farm and does nothing else (no harvest, no clearing); everything else works as usual.
 ## A farm square holds save.farm_slots seeds (2; CH2's SEED BEDS raise it), one planted per drop or per
-## farm hand's visit (seeds_in, can_sow), and each seed grows its own batch: a harvest takes one batch
-## (one pull by hand each; a tractor stays FARM_STAY times as long and loads them one by one). The
-## square shows its count (seed_label: "1/2"), which counts down as the batches leave.
+## farm hand's visit (seeds_in, can_sow), at any time while a slot is free. Every seed has its own
+## clock (save.farm_seed_clocks, oldest first; golden or not on its own, save.farm_seed_golden) and
+## ripens as its own batch: a harvest takes the oldest ripe batch (one pull by hand each; a tractor
+## comes as soon as one is ripe, stays FARM_STAY times as long and loads the ripe ones one by one)
+## while the rest keep growing. save.farm_growth and save.farm_golden hold a farm square's oldest
+## seed (_sync), so the square looks, ripens and rots by it: left ripe for save.rot_after the whole
+## farm rots. The square shows its count (seed_label: "2/4" planted of slots, "1/2/4" with one ripe).
 
 const SIZE := Vector2(1512, 768)
 const START_PLOTS := 4
@@ -287,6 +291,7 @@ func _process(delta: float) -> void:
 	var rotted := tick(save, delta)
 	sync_workers(_workers, save)
 	var golden_before := save.golden_stock
+	var loading := farms_loading(_workers, save)
 	work(_workers, save, delta)
 	var delivered := auto_seed(save)
 	_seed_blink = maxf(_seed_blink - delta, 0.0)
@@ -311,6 +316,8 @@ func _process(delta: float) -> void:
 			$Rot.play()
 		if save.golden_stock > golden_before:  # A tractor pulled a golden square.
 			$GoldHarvest.play()
+		if batch_loaded(loading, save):  # A tractor loaded a batch off a farm square.
+			$Batch.play()
 		if delivered > 0:  # Only heard and told while the TV is watched.
 			$Buy.play()
 			_say(tr("Standing order: %d seeds delivered.") % delivered)
@@ -330,15 +337,31 @@ static func screen_font() -> SystemFont:
 
 
 ## Fits save.farm_growth to the open squares (new ones empty) and hands out the uncle's seeds once.
+## A farm square saved with one clock for all its seeds (save.farm_square_seeds, or before seeds were
+## counted: one seed if planted) gets a clock per seed, each as far grown (and as golden) as the square was.
 static func ensure(save: SaveGame) -> void:
 	if save.farm_plots == 0:
 		save.farm_plots = START_PLOTS
 		save.farm_seeds = START_SEEDS
 	while save.farm_growth.size() < save.farm_plots:
 		save.farm_growth.append(EMPTY)
-	# A farm square from before seeds were counted holds what it had planted: one seed, or none.
-	while save.farm_square_seeds.size() < save.farm_squares.size():
-		save.farm_square_seeds.append(1 if save.farm_growth[save.farm_squares[save.farm_square_seeds.size()]] >= 0.0 else 0)
+	while save.farm_seed_clocks.size() < save.farm_squares.size():
+		var at := save.farm_seed_clocks.size()
+		var i := save.farm_squares[at]
+		var seeds := maxi(save.farm_square_seeds[at], 1) if at < save.farm_square_seeds.size() else 1
+		_add_farm_seeds(save, i, seeds if save.farm_growth[i] >= 0.0 else 0)
+
+
+## Square `i` (the next of save.farm_squares) starts its per-seed clocks with `seeds` seeds, each as
+## far grown and as golden as the square is now.
+static func _add_farm_seeds(save: SaveGame, i: int, seeds: int) -> void:
+	var clocks := PackedFloat32Array()
+	var golden := PackedByteArray()
+	for k in seeds:
+		clocks.append(save.farm_growth[i])
+		golden.append(1 if save.farm_golden.has(i) else 0)
+	save.farm_seed_clocks.append(clocks)
+	save.farm_seed_golden.append(golden)
 
 
 ## Whether the farm (once bought) can still feed the desk: seeds to plant or a square planted.
@@ -406,14 +429,21 @@ static func is_ripe(save: SaveGame, i: int) -> bool:
 	return save.farm_growth[i] >= grow_time(save)
 
 
-## Every planted square grows by `delta` seconds, up to ripe. Once the overripe event is on it keeps
-## counting past ripe, and save.rot_after s after ripe it rots (no longer golden). Returns how many rotted.
+## Every planted square (a farm square's every seed) grows by `delta` seconds, up to ripe. Once the
+## overripe event is on it keeps counting past ripe, and save.rot_after s after ripe it rots (no longer
+## golden; a farm square by its oldest batch, all its seeds lost). Returns how many rotted.
 static func tick(save: SaveGame, delta: float) -> int:
 	var rotted := 0
 	var ripe := grow_time(save)
 	for i in save.farm_growth.size():
 		if save.farm_growth[i] < 0.0:
 			continue
+		var at := _farm_at(save, i)
+		if at >= 0:  # The same step for each seed as for the square (its oldest) below.
+			var clocks := save.farm_seed_clocks[at]
+			for k in clocks.size():
+				clocks[k] = clocks[k] + delta if save.overripe else minf(clocks[k] + delta, ripe)
+			save.farm_seed_clocks[at] = clocks
 		if not save.overripe:
 			save.farm_growth[i] = minf(save.farm_growth[i] + delta, ripe)
 			continue
@@ -423,7 +453,9 @@ static func tick(save: SaveGame, delta: float) -> int:
 			save.farm_rotted += 1
 			rotted += 1
 			_ungild(save, i)
-			_set_seeds(save, i, 0)
+			if at >= 0:
+				save.farm_seed_clocks[at] = PackedFloat32Array()
+				save.farm_seed_golden[at] = PackedByteArray()
 	return rotted
 
 
@@ -436,21 +468,24 @@ static func plant(save: SaveGame, i: int, roll := randf()) -> bool:
 
 
 ## Puts a seed already in hand (a farm hand's) into square `i`; false if it can't take one (can_sow).
-## With the golden card stamped an empty square grows golden when `roll` (0..1) is under
-## save.golden_chance (a farm square's later seeds grow as its first did).
+## It grows from now on its own clock, slowing no other. With the golden card stamped it grows golden
+## when `roll` (0..1) is under save.golden_chance: every seed on its own, on a farm square too.
 static func sow(save: SaveGame, i: int, roll := randf()) -> bool:
 	if not can_sow(save, i):
 		return false
-	var seeds := seeds_in(save, i)
-	if seeds > 0:
-		# ponytail: one clock per square. A later seed pulls it back by its share (the seeds' average
-		# age) instead of ripening on its own; per-seed clocks if the batches should ripen apart.
-		save.farm_growth[i] *= seeds / (seeds + 1.0)
-		_set_seeds(save, i, seeds + 1)
+	var gold := save.stamped.has("golden_cabbage") and roll < save.golden_chance
+	var at := _farm_at(save, i)
+	if at >= 0:
+		var clocks := save.farm_seed_clocks[at]
+		var golden := save.farm_seed_golden[at]
+		clocks.append(0.0)
+		golden.append(1 if gold else 0)
+		save.farm_seed_clocks[at] = clocks
+		save.farm_seed_golden[at] = golden
+		_sync(save, i)
 		return true
 	save.farm_growth[i] = 0.0
-	_set_seeds(save, i, 1)
-	if save.stamped.has("golden_cabbage") and roll < save.golden_chance and not save.farm_golden.has(i):
+	if gold and not save.farm_golden.has(i):
 		save.farm_golden.append(i)
 	return true
 
@@ -460,32 +495,73 @@ static func slots_of(save: SaveGame, i: int) -> int:
 	return maxi(save.farm_slots, 1) if is_farm(save, i) else 1
 
 
+## Where farm square `i`'s seeds are in save.farm_seed_clocks / farm_seed_golden (-1: a plain square).
+static func _farm_at(save: SaveGame, i: int) -> int:
+	var at := save.farm_squares.find(i)
+	return at if at < save.farm_seed_clocks.size() else -1
+
+
+## Farm square `i` shows its oldest seed (the seeds lie oldest first): save.farm_growth holds that
+## seed's clock (EMPTY with no seed) and save.farm_golden whether it is golden.
+static func _sync(save: SaveGame, i: int) -> void:
+	var at := _farm_at(save, i)
+	if at < 0:
+		return
+	var clocks := save.farm_seed_clocks[at]
+	save.farm_growth[i] = EMPTY if clocks.is_empty() else clocks[0]
+	_ungild(save, i)
+	if not clocks.is_empty() and save.farm_seed_golden[at][0] == 1:
+		save.farm_golden.append(i)
+
+
 ## Seeds growing (or ripe) in square `i`: a farm square's count, one on a planted plain square.
 static func seeds_in(save: SaveGame, i: int) -> int:
-	var at := save.farm_squares.find(i)
-	if at >= 0 and at < save.farm_square_seeds.size():
-		return save.farm_square_seeds[at]
+	var at := _farm_at(save, i)
+	if at >= 0:
+		return save.farm_seed_clocks[at].size()
 	return 1 if save.farm_growth[i] >= 0.0 else 0
 
 
-static func _set_seeds(save: SaveGame, i: int, seeds: int) -> void:
-	var at := save.farm_squares.find(i)
-	if at >= 0 and at < save.farm_square_seeds.size():
-		save.farm_square_seeds[at] = seeds
+## Ripe batches waiting in square `i`: a farm square's ripe seeds, one on a ripe plain square.
+static func ripe_in(save: SaveGame, i: int) -> int:
+	var ripe := grow_time(save)
+	var at := _farm_at(save, i)
+	if at < 0:
+		return 1 if save.farm_growth[i] >= ripe else 0
+	var n := 0
+	for c in save.farm_seed_clocks[at]:
+		n += 1 if c >= ripe else 0
+	return n
 
 
-## Whether square `i` takes a seed now: it is empty, or a farm square still growing with a slot free
-## (a ripe one is harvested first with what it has).
+## Seconds grown of square `i`'s most advanced seed that is still growing (-1: none is).
+static func growing_in(save: SaveGame, i: int) -> float:
+	var ripe := grow_time(save)
+	var at := _farm_at(save, i)
+	if at < 0:
+		return save.farm_growth[i] if save.farm_growth[i] >= 0.0 and save.farm_growth[i] < ripe else -1.0
+	for c in save.farm_seed_clocks[at]:
+		if c < ripe:
+			return c
+	return -1.0
+
+
+## Whether square `i` takes a seed now: it is empty, or a farm square with a slot free (whatever its
+## other seeds are doing, ripe ones included; not while it is rotten).
 static func can_sow(save: SaveGame, i: int) -> bool:
 	if save.farm_growth[i] == EMPTY:
 		return true
-	return is_farm(save, i) and save.farm_growth[i] >= 0.0 and not is_ripe(save, i) and seeds_in(save, i) < slots_of(save, i)
+	return _farm_at(save, i) >= 0 and save.farm_growth[i] >= 0.0 and seeds_in(save, i) < slots_of(save, i)
 
 
-## A farm square's count on the glass, "seeds/slots" ("1/2"; it counts down as its batches are
-## harvested); "" on a plain square.
+## A farm square's count on the glass: "planted/slots" ("1/2"), with ripe batches waiting
+## "ripe/planted/slots" ("1/2/4": one ripe of two planted in four slots); it counts down as its
+## batches are harvested. "" on a plain square.
 static func seed_label(save: SaveGame, i: int) -> String:
-	return "%d/%d" % [seeds_in(save, i), slots_of(save, i)] if is_farm(save, i) else ""
+	if not is_farm(save, i):
+		return ""
+	var ripe := ripe_in(save, i)
+	return ("%d/" % ripe if ripe > 0 else "") + "%d/%d" % [seeds_in(save, i), slots_of(save, i)]
 
 
 ## Square `i` is no longer golden.
@@ -538,15 +614,16 @@ static func can_become_farm(save: SaveGame, i: int) -> bool:
 static func place_farm(save: SaveGame, i: int) -> bool:
 	if not can_become_farm(save, i):
 		return false
+	ensure(save)  # Earlier farm squares have their clocks before this one's are added.
+	_add_farm_seeds(save, i, 1 if save.farm_growth[i] >= 0.0 else 0)
 	save.farm_squares.append(i)
-	save.farm_square_seeds.append(1 if save.farm_growth[i] >= 0.0 else 0)
 	return true
 
 
-## Harvests one batch of square `i` (one seed's crop: a plain square's all, a farm square's next) if
+## Harvests one batch of square `i` (one seed's crop: a plain square's all, a farm square's oldest) if
 ## ripe and its cabbages fit under save.storage_cap: they go into stock
-## (into save.golden_stock too from a golden square). Returns how many (0 if not ripe or storage is
-## full; the square stays ripe). A farm square stays ripe until its last batch is taken. Pulled `by_hand` (the player's pull, never a
+## (into save.golden_stock too from a golden batch). Returns how many (0 if not ripe or storage is
+## full; the square stays ripe). A farm square's other seeds stay and keep growing. Pulled `by_hand` (the player's pull, never a
 ## tractor) it yields harvest_yield, and with hand_replant a seed from the crate goes straight back in.
 ## The first harvest records its farm_seconds
 ## (save.farm_first_harvest).
@@ -554,12 +631,19 @@ static func harvest(save: SaveGame, i: int, by_hand := false) -> int:
 	if save.farm_growth[i] < 0.0 or not is_ripe(save, i) or not storage_room(save, by_hand, i):
 		return 0
 	var units := harvest_yield(save, by_hand, i)
-	var left := seeds_in(save, i) - 1
-	_set_seeds(save, i, maxi(left, 0))
 	save.stock += units
 	if is_golden(save, i):
 		save.golden_stock += units
-	if left <= 0:
+	var at := _farm_at(save, i)
+	if at >= 0:  # The oldest seed leaves; the square shows the next.
+		var clocks := save.farm_seed_clocks[at]
+		var golden := save.farm_seed_golden[at]
+		clocks.remove_at(0)
+		golden.remove_at(0)
+		save.farm_seed_clocks[at] = clocks
+		save.farm_seed_golden[at] = golden
+		_sync(save, i)
+	else:
 		save.farm_growth[i] = EMPTY
 		_ungild(save, i)
 	save.farm_harvests += 1
@@ -580,8 +664,8 @@ static func storage_room(save: SaveGame, by_hand := false, i := -1) -> bool:
 
 
 ## Whether a worker could do its job on open square `i` now: a farm hand plants an empty square
-## or a farm square with a slot free (with a seed it carries), a tractor harvests a ripe one (with
-## storage room for a batch).
+## or a farm square with a slot free (with a seed it carries), a tractor harvests a ripe one (a farm
+## square as soon as one of its batches is ripe; with storage room for a batch).
 static func can_work(save: SaveGame, tractor: bool, i: int) -> bool:
 	if tractor:
 		return save.farm_growth[i] >= 0.0 and is_ripe(save, i) and storage_room(save, false, i)
@@ -649,6 +733,12 @@ static func restart_overdue(save: SaveGame) -> void:
 	for i in save.farm_growth.size():
 		if save.farm_growth[i] >= ripe + save.rot_after:
 			save.farm_growth[i] = ripe
+	for at in save.farm_seed_clocks.size():
+		var clocks := save.farm_seed_clocks[at]
+		for k in clocks.size():
+			if clocks[k] >= ripe + save.rot_after:
+				clocks[k] = ripe
+		save.farm_seed_clocks[at] = clocks
 
 
 ## Adds or removes workers until there are save.farm_hands farm hands and save.farm_tractors tractors
@@ -724,11 +814,34 @@ static func work(workers: Array[Worker], save: SaveGame, delta: float) -> void:
 			w.target = -1
 
 
+## The farm squares a tractor is loading right now, each with the seeds on it (before work(): batch_loaded).
+static func farms_loading(workers: Array[Worker], save: SaveGame) -> Dictionary:
+	var loading := {}
+	for w in workers:
+		if w.tractor and w.busy > 0.0 and w.target >= 0 and is_farm(save, w.target):
+			loading[w.target] = seeds_in(save, w.target)
+	return loading
+
+
+## Whether a tractor took a batch off one of the farm squares in `loading` (farms_loading) since.
+static func batch_loaded(loading: Dictionary, save: SaveGame) -> bool:
+	for i: int in loading:
+		if seeds_in(save, i) < loading[i]:
+			return true
+	return false
+
+
+## Whether a seed put on square `i` goes onto a farm square that already holds one.
+static func stacks(save: SaveGame, i: int) -> bool:
+	return i < save.farm_plots and is_farm(save, i) and seeds_in(save, i) > 0
+
+
 ## Seconds of work a tractor needs per batch on square `i`: TRACTOR_WORK on a plain square; on a
-## farm square FARM_STAY times that, shared by the batches it holds (so a farm takes FARM_STAY times as
-## long whatever it holds, its cabbages coming in batch by batch).
+## farm square FARM_STAY times that, shared by the batches ripe as it pulls up (so a farm takes
+## FARM_STAY times as long however many are ripe, its cabbages coming in batch by batch; one that
+## ripens while it is there is loaded too, at the same pace).
 static func stay(save: SaveGame, i: int) -> float:
-	return TRACTOR_WORK * FARM_STAY / maxi(seeds_in(save, i), 1) if is_farm(save, i) else TRACTOR_WORK
+	return TRACTOR_WORK * FARM_STAY / maxi(ripe_in(save, i), 1) if is_farm(save, i) else TRACTOR_WORK
 
 
 ## Worker `w`'s job on its square is done: plant or harvest it (a tractor on a farm square: one
@@ -1001,9 +1114,10 @@ func _release(point: Vector2) -> void:
 	_held = false
 	var save := SaveManager.save
 	var i := square_at(point)
+	var stacked := i >= 0 and stacks(save, i)
 	if i >= 0 and i < save.farm_plots and plant(save, i):
 		save.hand_planted += 1
-		$Plant.play()
+		($SeedTick if stacked else $Plant).play()  # Onto a farm square that already holds a seed: a tick.
 		_say(tr("Planted. Ripe in %d s.") % grow_time(save))
 		return
 	_flying = true
@@ -1149,14 +1263,17 @@ func _draw_square(save: SaveGame, i: int) -> void:
 	var ripe := grow_time(save)
 	if grown < ripe:
 		draw_texture_rect(crop_of(save, i), sprite_rect(r), false)
-		var bar := Rect2(r.position + Vector2(10, r.size.y - 14), Vector2(r.size.x - 20, 6))
-		draw_rect(bar, LINE)
-		draw_rect(Rect2(bar.position, Vector2(floorf(bar.size.x * grown / ripe / 6.0) * 6.0, bar.size.y)), DIM)
 	elif i != _pull and i != _snap:
 		_draw_cabbage(save, i)
+	var growing := growing_in(save, i)  # The bar: the square's seed, or a farm's next one to ripen.
+	if growing >= 0.0:
+		var bar := Rect2(r.position + Vector2(10, r.size.y - 14), Vector2(r.size.x - 20, 6))
+		draw_rect(bar, LINE)
+		draw_rect(Rect2(bar.position, Vector2(floorf(bar.size.x * growing / ripe / 6.0) * 6.0, bar.size.y)), DIM)
 
 
-## A farm square's seed count ("1/2") in its top left corner on a dark plate, dim while it is empty.
+## A farm square's seed count ("1/2", or "1/2/4" with its ripe batches in front, in cabbage green) in
+## its top left corner on a dark plate, dim while it is empty.
 func _draw_seed_count(save: SaveGame, i: int) -> void:
 	if i >= save.farm_plots or not is_farm(save, i):
 		return
@@ -1165,6 +1282,8 @@ func _draw_seed_count(save: SaveGame, i: int) -> void:
 	var wide := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, COUNT_SIZE).x
 	draw_rect(Rect2(r.position + Vector2(2, 2), Vector2(wide + 10, COUNT_SIZE + 4)), GLASS)
 	draw_string(_font, r.position + Vector2(7, COUNT_SIZE), text, HORIZONTAL_ALIGNMENT_LEFT, -1, COUNT_SIZE, PHOSPHOR if seeds_in(save, i) > 0 else DIM)
+	if ripe_in(save, i) > 0:
+		draw_string(_font, r.position + Vector2(7, COUNT_SIZE), str(ripe_in(save, i)), HORIZONTAL_ALIGNMENT_LEFT, -1, COUNT_SIZE, CABBAGE)
 
 
 ## Square `i`'s ripe cabbage, leaning and stretched toward the mouse while it is pulled.

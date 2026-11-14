@@ -1,4 +1,4 @@
-# Map table props (chapter 3): drafting weight, chart rack, roll core + label band, farm token, site token,
+# Map table props (chapter 3): drafting weight, chart holder, roll core + label band + name tag, farm token, site token,
 # desk call button. Prepend blender_lib.py + desk_vc_common.py, append preview.py. Static meshes, one object per
 # part that Godot shows, hides or moves on its own; exported with GLB=<path> and turned into
 # assets/meshes/Props/map_<object>.res by glb_to_res.gd (prefix "map").
@@ -72,35 +72,25 @@ spin(weight, [(0, 0.063), (0.05, 0.063), (0.05, 0.066), (0, 0.066)], B, I, 24)
 spin(weight, [(0, 0.066), (0.014, 0.066), (0.011, 0.074), (0.011, 0.082), (0.022, 0.088), (0.024, 0.096),
               (0.019, 0.103), (0, 0.105)], K, I, 16)
 
-# ---------------------------------------------------------------- chart rack: two stepped end cheeks
-# Roll middles from the rack's origin (towards the wall, up): the saddles. 0.163 m apart for 0.148 m rolls;
-# the lowest roll clears the desk by 18 mm; the top one's far side stops 6 mm short of the wall (x 5.88).
-SL = [(0.0, 0.092), (0.12, 0.202), (0.24, 0.312)]
+# ---------------------------------------------------------------- chart holder: two end cheeks, one saddle
+# The rolled-up parent of the open sheet lies across the top of the table in it (one roll: the sheets are nested,
+# WORLD > COUNTRY > WAR, so a slot per sheet is not possible). The roll's middle from the holder's origin
+# (towards the wall, up): the saddle. The roll clears the desk by 18 mm. (Until 2026-11-14 this was a three-step
+# rack with a slot, a brass label holder and a number plate per sheet.)
+SL = [(0.0, 0.092)]
 STUB = 0.022
-TREAD = [cz - STUB for _cy, cz in SL]
+TREAD = SL[0][1] - STUB
 CHEEK = (1.63, 1.89)
-rack = bmesh.new()
-stairs = [(-0.09, 0), (-0.09, TREAD[0]), (0.06, TREAD[0]), (0.06, TREAD[1]), (0.18, TREAD[1]), (0.18, TREAD[2]),
-          (0.30, TREAD[2]), (0.30, 0)]
+holder = bmesh.new()
+block = [(-0.115, 0), (-0.115, 0.04), (-0.085, TREAD), (0.085, TREAD), (0.115, 0.04), (0.115, 0)]
 for s in (-1, 1):
-    prism(rack, stairs, min(s * CHEEK[0], s * CHEEK[1]), max(s * CHEEK[0], s * CHEEK[1]), SG, YZ, 0.005)
-    for i, (cy, cz) in enumerate(SL):
-        for dy in (-0.037, 0.037):                    # bakelite saddle blocks either side of the core's stub
-            pbox(rack, (min(s * 1.632, s * 1.672), cy + dy - 0.012, TREAD[i]),
-                 (max(s * 1.632, s * 1.672), cy + dy + 0.012, TREAD[i] + 0.03), 0.004, K)
-        M = at(s * 1.78, cy, TREAD[i] + 0.014) @ rx(14)
-        if s < 0:                                     # brass label holder, 170 x 70 mm, tipped to the camera
-            w, d = 0.17, 0.07
-            pbox(rack, (-w / 2, -d / 2, 0), (w / 2, d / 2, 0.002), 0.0, C, M)
-            for lo, hi in (((-w / 2 - 0.006, -d / 2 - 0.006), (w / 2 + 0.006, -d / 2 + 0.003)),
-                           ((-w / 2 - 0.006, d / 2 - 0.003), (w / 2 + 0.006, d / 2 + 0.006)),
-                           ((-w / 2 - 0.006, -d / 2), (-w / 2 + 0.003, d / 2)), ((w / 2 - 0.003, -d / 2), (w / 2 + 0.006, d / 2))):
-                pbox(rack, (*lo, -0.004), (*hi, 0.006), 0.0, B, M)
-            print("NAME", i, tuple(round(v, 4) for v in (M @ Vector((0, 0, 0.0025)))))
-        else:                                         # oxblood number plate
-            pbox(rack, (-0.04, -0.04, -0.012), (0.04, 0.04, -0.006), 0.0, O, M)
-            print("NUMBER", i, tuple(round(v, 4) for v in (M @ Vector((0, 0, -0.0055)))))
-rod(rack, (-1.63, 0.285, 0.03), (1.63, 0.285, 0.03), 0.012, IR, I, 8)   # tie rail along the wall
+    prism(holder, block, min(s * CHEEK[0], s * CHEEK[1]), max(s * CHEEK[0], s * CHEEK[1]), SG, YZ, 0.005)
+    for dy in (-0.037, 0.037):                        # bakelite saddle blocks either side of the core's stub
+        pbox(holder, (min(s * 1.632, s * 1.672), dy - 0.012, TREAD), (max(s * 1.632, s * 1.672), dy + 0.012, TREAD + 0.03), 0.004, K)
+    pbox(holder, (min(s * 1.72, s * 1.86), -0.05, TREAD), (max(s * 1.72, s * 1.86), 0.05, TREAD + 0.004), 0.0, O)   # oxblood enamel plate
+    for dy in (-0.04, 0.04):                          # its two screws
+        spin(holder, [(0, TREAD + 0.004), (0.006, TREAD + 0.004), (0.006, TREAD + 0.0065), (0, TREAD + 0.0065)], H, at(s * 1.79, dy, 0), 8)
+rod(holder, (-1.63, 0.09, 0.022), (1.63, 0.09, 0.022), 0.011, IR, I, 8)   # tie rail, low behind the roll
 
 # ---------------------------------------------------------------- roll core (on the roll's axis) + label band
 CAP_R, ROLL_R = 0.055, 0.07405
@@ -114,6 +104,15 @@ band = bmesh.new()                                    # cream paper band with an
 r = ROLL_R
 merge(band, lathed([(r - 0.004, -1.44), (r + 0.0015, -1.44), (r + 0.0015, -1.30), (r - 0.004, -1.30), (r - 0.004, -1.44)], 24), AX, C)
 merge(band, lathed([(r - 0.004, -1.458), (r + 0.0022, -1.458), (r + 0.0022, -1.44), (r - 0.004, -1.44), (r - 0.004, -1.458)], 24), AX, O)
+# The roll's name tag: a cream card lying on top of the roll, mid-length, held by a paper strap round it with an
+# oxblood edge either side. The sheet's name is a Label3D on it (MapSheet): "WORLD", a country's name.
+TAG_W, TAG_D = 0.62, 0.084
+tag = bmesh.new()
+pbox(tag, (-TAG_W / 2, -TAG_D / 2, r + 0.001), (TAG_W / 2, TAG_D / 2, r + 0.005), 0.0, C)
+for sx in (-1, 1):
+    x0, x1 = sorted((sx * (TAG_W / 2 - 0.004), sx * (TAG_W / 2 + 0.018)))
+    merge(tag, lathed([(r - 0.004, x0), (r + 0.0025, x0), (r + 0.0025, x1), (r - 0.004, x1), (r - 0.004, x0)], 24), AX, O)
+print("TAG", (0, 0, round(r + 0.0055, 4)))
 
 # ---------------------------------------------------------------- farm token (diorama, board r 92 mm)
 base, sale, owned = bmesh.new(), bmesh.new(), bmesh.new()
@@ -164,14 +163,15 @@ for x in (-0.022, 0.13):
 spin(cap, [(0, 0.02), (0.035, 0.02), (0.035, 0.036), (0.029, 0.042), (0, 0.043)], BD + 1, at(BUTTON_X, 0, 0), 28)
 print("STENCIL", (0.054, 0, 0.0185))
 
-LAYOUT = [("DraftingWeight", weight, -0.75), ("ChartRack", rack, 0.0), ("RollCore", core, 0.0), ("RollBand", band, 0.0),
+LAYOUT = [("DraftingWeight", weight, -0.75), ("ChartHolder", holder, 0.0), ("RollCore", core, 0.0), ("RollBand", band, 0.0),
+          ("RollTag", tag, 0.0),
           ("FarmTokenBase", base, -0.5), ("FarmTokenForSale", sale, -0.5), ("FarmTokenOwned", owned, -0.25),
           ("SiteTokenForSale", washer, 0.0), ("SiteTokenOwned", stud, 0.1), ("DeskButtonPlinth", plinth, 0.4),
           ("DeskButtonCap", cap, 0.4)]
 objs = []
 for name, bm, x in LAYOUT:
-    y = {"ChartRack": 0.4, "RollCore": 0.4, "RollBand": 0.4}.get(name, -0.3)
-    z = SL[0][1] if name in ("RollCore", "RollBand") else 0.0
+    y = {"ChartHolder": 0.4, "RollCore": 0.4, "RollBand": 0.4, "RollTag": 0.4}.get(name, -0.3)
+    z = SL[0][1] if name in ("RollCore", "RollBand", "RollTag") else 0.0
     ob = finish(name, bm, [paint, metal])
     colourise(ob)
     ob.location = (x, y, z)

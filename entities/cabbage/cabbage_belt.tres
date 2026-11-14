@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/cabbage_belt.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://assets/textures/cabbage_belt/cabbage_belt_print.png" id="2_print"]
+[ext_resource type="Texture2D" path="res://assets/textures/cabbage_belt/cabbage_belt_reach.png" id="3_reach"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/print_atlas = ExtResource("2_print")
+shader_parameter/reach = ExtResource("3_reach")

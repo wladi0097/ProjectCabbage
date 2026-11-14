@@ -1,17 +1,17 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://entities/map_table/map_table.gd" id="1_table"]
-[ext_resource type="PackedScene" path="res://entities/map_table/country_sheet.tscn" id="2_country"]
 [ext_resource type="PackedScene" path="res://entities/map_table/world_sheet.tscn" id="3_world"]
-[ext_resource type="PackedScene" path="res://entities/map_table/district_sheet.tscn" id="4_district"]
+[ext_resource type="PackedScene" path="res://entities/map_table/war_sheet.tscn" id="4_war"]
 [ext_resource type="PackedScene" path="res://entities/map_table/props/drafting_weight.tscn" id="5_weight"]
-[ext_resource type="PackedScene" path="res://entities/map_table/props/chart_rack.tscn" id="6_rack"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/chart_holder.tscn" id="6_holder"]
 [ext_resource type="PackedScene" path="res://entities/map_table/props/desk_button.tscn" id="7_button"]
 [ext_resource type="PackedScene" path="res://entities/map_table/props/map_tally.tscn" id="8_tally"]
 
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/map_swap.wav" id="sfx_map_swap"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/map_roll_arrive.wav" id="sfx_map_roll_arrive"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_console_drop"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/map_view_in.wav" id="sfx_map_view_in"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/map_view_out.wav" id="sfx_map_view_out"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_1.wav" id="sfx_card_hover_1"]
@@ -42,35 +42,28 @@ shadow_offset = Vector2(4, 4)
 script = ExtResource("1_table")
 
 [node name="View" type="Marker3D" parent="."]
-transform = Transform3D(0, 0.9848, -0.1736, 0, 0.1736, 0.9848, 1, 0, 0, 4.08, 4.492, 1.75)
+transform = Transform3D(0, 0.9848, -0.1736, 0, 0.1736, 0.9848, 1, 0, 0, 4.1, 3.895, 1.585)
 
 [node name="Lay" type="Marker3D" parent="."]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.4, 0.752, 1.75)
 
-[node name="Rack" type="Node3D" parent="."]
+[node name="Holder" type="Node3D" parent="."]
 
-[node name="Slot0" type="Marker3D" parent="Rack"]
+[node name="Slot" type="Marker3D" parent="Holder"]
 transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 5.56, 0.842, 1.75)
 
-[node name="Slot1" type="Marker3D" parent="Rack"]
-transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 5.68, 0.952, 1.75)
-
-[node name="Slot2" type="Marker3D" parent="Rack"]
-transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 5.8, 1.062, 1.75)
-
-[node name="ChartRack" parent="Rack" instance=ExtResource("6_rack")]
+[node name="ChartHolder" parent="Holder" instance=ExtResource("6_holder")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.56, 0.75, 1.75)
 
 [node name="Sheets" type="Node3D" parent="."]
 
-[node name="Country" parent="Sheets" instance=ExtResource("2_country")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.4, 0.752, 1.75)
-
 [node name="World" parent="Sheets" instance=ExtResource("3_world")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.68, 0.878, 1.75)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.56, 0.768, 1.75)
+visible = false
 
-[node name="District" parent="Sheets" instance=ExtResource("4_district")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.8, 0.988, 1.75)
+[node name="War" parent="Sheets" instance=ExtResource("4_war")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.56, 0.768, 1.75)
+visible = false
 
 [node name="Weights" type="Node3D" parent="."]
 
@@ -87,13 +80,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.665, 0.753, 0.215)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.665, 0.753, 3.285)
 
 [node name="Back" type="Marker3D" parent="."]
-transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 4.5, 0.757, -0.16)
+transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 5.1, 0.757, -0.1)
 
 [node name="DeskButton" parent="." instance=ExtResource("7_button")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.5, 0.75, -0.16)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.1, 0.75, -0.1)
 
 [node name="Tally" parent="." instance=ExtResource("8_tally")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.5, 0.75, 3.6)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.37, 0.75, -0.1)
 
 [node name="Lights" type="Node3D" parent="."]
 
@@ -124,6 +117,11 @@ script = ExtResource("sfx_cue")
 
 [node name="Arrive" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("sfx_map_roll_arrive")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="TallyArrive" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_console_drop")
 bus = &"SFX"
 script = ExtResource("sfx_cue")
 

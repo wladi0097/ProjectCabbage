@@ -328,3 +328,84 @@ func test_every_category_popup_fits_in_english_and_german() -> void:
 			if lang == "de":
 				assert_str(TranslationServer.translate(dry)).is_not_equal(dry)
 	TranslationServer.set_locale(locale)
+
+
+## A wide save's projector tree whose rect then grows a little each frame, as the sheet does while it widens.
+func _widening(frames: int) -> UpgradeTree:
+	var tree := _tree(Projector, SaveGame.new())
+	for i in frames:
+		tree.size += Vector2(20.0, 4.0)
+		tree._process(0.016)
+	return tree
+
+
+func test_while_its_sheet_widens_the_tree_stretches_the_picture_it_has_instead_of_drawing_it_again() -> void:
+	var tree := _tree(Projector, SaveGame.new())
+	var drawn := tree._drawn_unit
+	assert_vector(drawn).is_equal(tree._wheel()[1])  # Laid out: drawn sharp, not stretched.
+	assert_vector((tree.get_node("Layer") as Node2D).scale).is_equal(Vector2.ONE)
+	for i in 30:  # Half a second of widening.
+		tree.size += Vector2(20.0, 4.0)
+		tree._process(0.016)
+		assert_vector(tree._drawn_unit).is_equal(drawn)  # The same picture ...
+		# ... stretched so every node sits where the wider sheet puts it.
+		assert_vector((tree.get_node("Layer") as Node2D).scale * drawn).is_equal_approx(tree._wheel()[1], Vector2.ONE * 0.001)
+
+
+func test_the_tree_is_drawn_sharp_at_the_size_its_sheet_ends_on_once_it_has_held_still() -> void:
+	var tree := _widening(30)
+	var stretched := tree._drawn_unit
+	tree._process(UpgradeTree.SETTLE * 0.5)  # Only just stopped: still the stretched picture.
+	assert_vector(tree._drawn_unit).is_equal(stretched)
+	tree._process(UpgradeTree.SETTLE)
+	assert_vector(tree._drawn_unit).is_equal(tree._wheel()[1])
+	assert_vector((tree.get_node("Layer") as Node2D).scale).is_equal(Vector2.ONE)
+	var sharp := tree._drawn_unit
+	tree._process(1.0)  # And it stays as drawn: nothing moves, nothing is drawn again.
+	assert_vector(tree._drawn_unit).is_equal(sharp)
+
+
+func test_wheel_zoom_stretches_the_picture_and_draws_it_sharp_when_the_wheel_rests() -> void:
+	var tree := _tree(Projector, SaveGame.new())
+	var drawn := tree._drawn_unit
+	for i in 4:
+		tree._zoom_at(tree.size / 2.0, UpgradeTree.ZOOM_STEP)
+		tree._process(0.05)
+	assert_vector(tree._drawn_unit).is_equal(drawn)
+	assert_float((tree.get_node("Layer") as Node2D).scale.x).is_equal_approx(pow(UpgradeTree.ZOOM_STEP, 4), 0.001)
+	tree._process(0.05)
+	tree._process(UpgradeTree.SETTLE)
+	assert_vector(tree._drawn_unit).is_equal(drawn * tree._zoom)
+	assert_vector((tree.get_node("Layer") as Node2D).scale).is_equal(Vector2.ONE)
+
+
+func test_a_change_in_what_the_tree_shows_is_drawn_at_once_even_while_it_is_stretched() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["projector", "street_posters"])
+	var tree := _tree(Projector, save)
+	tree.size += Vector2(20.0, 4.0)
+	tree._process(0.016)
+	assert_vector(tree._drawn_unit).is_not_equal(tree._wheel()[1])
+	save.tree_bought.append("slogan_1")  # Bought mid-motion.
+	tree.size += Vector2(20.0, 4.0)
+	tree._process(0.016)
+	assert_vector(tree._drawn_unit).is_equal(tree._wheel()[1])
+
+
+func test_a_view_that_jumps_to_its_zoom_is_drawn_sharp_at_once() -> void:
+	var tree := _tree(FarmTree, SaveGame.new())
+	tree.home(FarmTree.ZOOM_WIDE, 0.0)  # The farm tree already opened up: no easing.
+	tree._process(0.016)
+	assert_vector(tree._drawn_unit).is_equal(tree._wheel()[1])
+	assert_vector((tree.get_node("Layer") as Node2D).scale).is_equal(Vector2.ONE)
+
+
+func test_a_new_ring_is_a_closed_circle_of_its_radius_round_its_node() -> void:
+	var at := Vector2(300.0, 120.0)
+	var ring := UpgradeTree.ring(at, 40.0)
+	assert_int(ring.size() % 2).is_equal(0)  # Line segments: pairs of points.
+	for point in ring:
+		assert_float(point.distance_to(at)).is_equal_approx(40.0, 0.001)
+	for i in range(1, ring.size() - 1, 2):  # Each segment starts where the last ended ...
+		assert_vector(ring[i]).is_equal_approx(ring[i + 1], Vector2.ONE * 0.001)
+	assert_vector(ring[ring.size() - 1]).is_equal_approx(ring[0], Vector2.ONE * 0.001)  # ... and the last closes it.

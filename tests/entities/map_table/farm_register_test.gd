@@ -4,6 +4,7 @@ const Events := preload("res://globalScripts/game_events.gd")
 const Report := preload("res://entities/boss_report/boss_report.gd")
 const DebugKeys := preload("res://worlds/components/debug_keys.gd")
 const WorldRegister := preload("res://entities/map_table/world_register.gd")
+const WarSheet := preload("res://entities/map_table/war_sheet.gd")
 const SITES := ["K-1", "K-2", "K-3", "K-4", "K-5", "K-6", "K-7", "K-8"]
 
 var _real_save: SaveGame
@@ -33,8 +34,9 @@ func _rich(cards := ["negotiation", "bribery"]) -> SaveGame:
 	return save
 
 
-func _register() -> FarmRegister:
-	var sheet: FarmRegister = auto_free(load("res://entities/map_table/country_sheet.tscn").instantiate())
+## A country's own sheet (the home country's unless told), lying open with its things standing.
+func _register(country := WorldRegister.HOME) -> FarmRegister:
+	var sheet: FarmRegister = auto_free(load("res://entities/map_table/countries/%s.tscn" % country).instantiate())
 	add_child(sheet)
 	sheet.open = 1.0  # Lying open on the table.
 	for i in sheet.thing_count():
@@ -70,6 +72,11 @@ func _reach(sheet: FarmRegister) -> Dictionary:
 			if Vector2(entry.x, entry.y).is_equal_approx(sheet._pixel(site)):
 				out[String(site)] = entry.z
 	return out
+
+
+## `country`'s farm sites as its sheet was generated from them (reports/maps/labels.json).
+func _sites(country: StringName) -> Array:
+	return JSON.parse_string(FileAccess.get_file_as_string("res://reports/maps/labels.json")).country_maps[String(country)].farm_sites
 
 
 func _tag(sheet: FarmRegister, site: String) -> Label:
@@ -129,21 +136,42 @@ func test_cabbages_out_of_the_store_cannot_pay_for_a_farm() -> void:
 	assert_int(save.stock).is_equal(3)
 
 
-func test_farms_six_to_eight_are_not_for_sale_until_the_world_map_card_is_stamped() -> void:
-	var save := _rich()
+func test_the_last_three_home_farms_cannot_be_bought() -> void:
+	var save := _rich(["negotiation", "bribery", FarmRegister.WAR_CARD])
 	for i in Events.HOME_SELLERS:
 		assert_bool(FarmRegister.buy(save, StringName(SITES[i]))).is_true()
+	assert_int(Events.HOME_SITES - Events.HOME_SELLERS).is_equal(3)
 	var coins := save.coins
-	assert_bool(FarmRegister.for_sale(save, &"K-6")).is_false()
-	assert_bool(FarmRegister.buy(save, &"K-6")).is_false()
+	for site: String in SITES.slice(Events.HOME_SELLERS):
+		assert_bool(FarmRegister.for_sale(save, StringName(site))).override_failure_message(site).is_false()
+		assert_bool(FarmRegister.buy(save, StringName(site))).override_failure_message(site).is_false()
 	assert_int(save.farms_owned.size()).is_equal(Events.HOME_SELLERS)
 	assert_int(save.coins).is_equal(coins)
 	assert_dict(FarmRegister.price(save)).is_empty()
-	assert_dict(FarmRegister.seizure(save)).is_empty()
-	save.stamped.append(FarmRegister.SEIZE_CARD)
-	assert_str(FarmRegister.SEIZE_CARD).is_equal("world_map")
-	assert_dict(FarmRegister.price(save)).is_equal(FarmRegister.SEIZURES[0])
-	assert_bool(FarmRegister.for_sale(save, &"K-6")).is_true()
+
+
+func test_war_on_a_farm_needs_the_war_card() -> void:
+	var save := _rich()
+	save.farms_owned = PackedStringArray(SITES.slice(0, Events.HOME_SELLERS))
+	assert_str(FarmRegister.WAR_CARD).is_equal("war_mode")
+	for site: StringName in [&"K-6", &"ostrevia-1"]:
+		assert_bool(FarmRegister.war_ready(save, site)).override_failure_message(site).is_false()
+		assert_dict(FarmRegister.war_bill(save, site)).is_empty()
+		assert_str(FarmRegister.tag_text(save, site)).is_equal("NOT FOR SALE")
+	save.stamped.append(FarmRegister.WAR_CARD)
+	assert_bool(FarmRegister.war_ready(save, &"K-6")).is_true()
+	assert_dict(FarmRegister.war_bill(save, &"K-6")).is_equal(WorldRegister.COUNTRIES[WorldRegister.HOME].wars[0])
+	assert_bool(FarmRegister.war_ready(save, &"ostrevia-1")).is_true()
+	assert_bool(FarmRegister.war_ready(save, &"K-1")).is_false()  # Ours already.
+
+
+func test_a_home_farm_is_taken_by_war_only_once_nobody_sells_any_more() -> void:
+	var save := _rich(["negotiation", "bribery", FarmRegister.WAR_CARD])
+	save.farms_owned = PackedStringArray(SITES.slice(0, Events.HOME_SELLERS - 1))
+	assert_bool(FarmRegister.war_ready(save, &"K-8")).is_false()  # The fifth is still for sale: it is bought.
+	assert_bool(FarmRegister.for_sale(save, &"K-8")).is_true()
+	save.farms_owned.append("K-5")
+	assert_bool(FarmRegister.war_ready(save, &"K-8")).is_true()
 
 
 func test_buying_the_first_farm_starts_the_first_farm_paper_and_the_fifth_the_no_more_sellers_paper() -> void:
@@ -195,7 +223,7 @@ func test_every_price_and_word_a_tag_prints_fits_beside_its_eyelet_in_english_an
 	var sheet := _register()
 	var tag := _tag(sheet, "K-1")
 	var font := tag.get_theme_font(&"font")
-	var sites: Array = JSON.parse_string(FileAccess.get_file_as_string("res://reports/maps/labels.json")).country_map.farm_sites
+	var sites: Array = _sites(WorldRegister.HOME)
 	var box: Dictionary = sites[0].price_tag
 	# The print stands 10 px right of the tag's middle; the eyelet takes the left 27 px, 6 px stay free on the right.
 	var room := minf((box.w / 2.0 - 27.0 + 10.0) * 2.0, (box.w / 2.0 - 6.0 - 10.0) * 2.0)
@@ -205,9 +233,13 @@ func test_every_price_and_word_a_tag_prints_fits_beside_its_eyelet_in_english_an
 		save.farms_owned.resize(owned)
 		texts.append(FarmRegister.tag_text(save, &"K-1"))
 	texts.append("$1.5M + 9,000")  # Millions fit too (the pacing sim wants $1.5M and $5M).
+	for entry: Dictionary in WorldRegister.COUNTRIES.values():  # What a war is expected to cost.
+		for bill: Dictionary in entry.wars:
+			texts.append("$%s + %s" % [FarmRegister.short_coins(bill.coins), FarmScreen._thousands(bill.stock)])
 	for locale: String in ["en", "de"]:
 		TranslationServer.set_locale(locale)
-		for text in texts + [TranslationServer.translate("ACQUIRED"), TranslationServer.translate("NOT FOR SALE")]:
+		for text in texts + [TranslationServer.translate("ACQUIRED"), TranslationServer.translate("NOT FOR SALE"),
+				TranslationServer.translate(WorldRegister.NOT_ADJACENT), TranslationServer.translate(WorldRegister.NO_SEA_LANES)]:
 			var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, tag.get_theme_font_size(&"font_size")).x
 			assert_float(width).override_failure_message("%s (%d px) in %s" % [text, width, locale]).is_less(room)
 
@@ -233,7 +265,7 @@ func test_clicking_a_farm_lays_out_its_deed_and_buys_nothing() -> void:
 	assert_bool(deed.visible).is_true()
 	assert_str(sheet.deed_site()).is_equal(&"K-5")
 	assert_str(deed.site).is_equal(&"K-5")
-	assert_str((deed.get_node("Page/Form/Title") as Label).text).is_equal("Weiler Marsh Holding")
+	assert_str((deed.get_node("Page/Form/Title") as Label).text).is_equal(_building(sheet, "K-5").title)
 	assert_str((deed.get_node("Page/Form/Site") as Label).text).is_equal("FARM SITE K-5")
 	assert_str((deed.get_node("Page/Form/Coins") as Label).text).is_equal("$60,000")
 	assert_str((deed.get_node("Page/Form/Cabbages") as Label).text).is_equal("800 cabbages")
@@ -415,9 +447,12 @@ func test_no_click_is_taken_while_a_purchase_plays_out() -> void:
 	assert_str(sheet.deed_site()).is_equal(&"K-4")
 
 
-func test_the_deed_lies_beside_its_farm_inside_the_sheet_and_never_on_the_farm() -> void:
+func test_the_deed_lies_beside_its_farm_inside_the_sheet_and_never_on_the_farm_in_every_country() -> void:
 	var paper := Rect2(Vector2.ZERO, MapSheet.SIZE * MapSheet.PIXELS_PER_METRE)
-	var sites: Array = JSON.parse_string(FileAccess.get_file_as_string("res://reports/maps/labels.json")).country_map.farm_sites
+	var sites: Array = []
+	for country: StringName in WorldRegister.COUNTRIES:
+		sites.append_array(_sites(country))
+	assert_int(sites.size()).is_equal(Events.FARMS)
 	for site: Dictionary in sites:
 		var at := Vector2(site.x, site.y)
 		var deed := Rect2(FarmRegister.deed_corner(at), FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE)
@@ -429,18 +464,27 @@ func test_the_deed_lies_beside_its_farm_inside_the_sheet_and_never_on_the_farm()
 
 func test_the_deed_covers_what_lies_under_it_and_tucks_those_tokens_away() -> void:
 	var sheet := _register()
-	sheet.press(&"K-4")  # Its deed lies to the right, over K-7.
-	var under := sheet._pixel(&"K-7")
-	assert_bool(Rect2(sheet._deed_corner, FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE).has_point(under)).is_true()
+	# A farm whose deed lies over another one's token.
+	var pair := []
+	for site: StringName in sheet._sites:
+		var paper := Rect2(FarmRegister.deed_corner(sheet._pixel(site)), FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE)
+		for other: StringName in sheet._sites:
+			if pair.is_empty() and other != site and paper.has_point(sheet._pixel(other)):
+				pair = [site, other]
+	assert_array(pair).is_not_empty()
+	var clicked: StringName = pair[0]
+	var covered: StringName = pair[1]
+	sheet.press(clicked)
+	var under := sheet._pixel(covered)
 	assert_str(sheet.spot_at(under)).is_equal(&"")
-	assert_str(sheet.spot_at(sheet._pixel(&"K-4"))).is_equal(&"K-4")
-	sheet._moving[&"K-7"].custom_step(1.0)
-	assert_bool(sheet.thing_up(sheet._index(&"K-7"))).is_false()
-	assert_bool(sheet.thing_up(sheet._index(&"K-4"))).is_true()
+	assert_str(sheet.spot_at(sheet._pixel(clicked))).is_equal(clicked)
+	sheet._moving[covered].custom_step(1.0)
+	assert_bool(sheet.thing_up(sheet._index(covered))).is_false()
+	assert_bool(sheet.thing_up(sheet._index(clicked))).is_true()
 	sheet.press(&"")
-	sheet._moving[&"K-7"].custom_step(1.0)
-	assert_bool(sheet.thing_up(sheet._index(&"K-7"))).is_true()
-	assert_str(sheet.spot_at(under)).is_equal(&"K-7")
+	sheet._moving[covered].custom_step(1.0)
+	assert_bool(sheet.thing_up(sheet._index(covered))).is_true()
+	assert_str(sheet.spot_at(under)).is_equal(covered)
 
 
 func test_the_hint_slip_is_silent_while_a_deed_lies_on_the_sheet() -> void:
@@ -495,14 +539,14 @@ func test_once_five_are_owned_the_other_sites_are_not_for_sale_and_a_click_buys_
 	sheet.press(&"")  # The deed away: the hint slip speaks again.
 	assert_int(SaveManager.save.farms_owned.size()).is_equal(5)
 	assert_int(SaveManager.save.coins).is_equal(10000000)
-	assert_str(sheet.hint(&"K-7")).is_equal("Kalden Holding. Not for sale. The owner is unavailable.")
+	assert_str(sheet.hint(&"K-7")).is_equal(_building(sheet, "K-7").title + ". Not for sale. The owner is unavailable.")
 
 
 func test_the_hint_of_a_farm_not_for_sale_gives_the_same_reason_as_its_deed() -> void:
 	SaveManager.save = _rich([])
 	SaveManager.save.farms_owned = PackedStringArray(["K-1"])
 	var sheet := _register()
-	assert_str(sheet.hint(&"K-2")).is_equal("Mittelfeld Holding. Not for sale. " + FarmRegister.reason(SaveManager.save))
+	assert_str(sheet.hint(&"K-2")).is_equal(_building(sheet, "K-2").title + ". Not for sale. " + FarmRegister.reason(SaveManager.save))
 	assert_str(sheet.hint(&"K-2")).contains("The owners will need persuading.")
 	TranslationServer.set_locale("de")
 	assert_str(sheet.hint(&"K-2")).ends_with("Unverkäuflich. Die Eigentümer müssen erst überzeugt werden.")
@@ -510,20 +554,21 @@ func test_the_hint_of_a_farm_not_for_sale_gives_the_same_reason_as_its_deed() ->
 
 func test_the_hint_names_the_site_with_its_price_what_is_short_and_what_is_ours() -> void:
 	var sheet := _register()
-	assert_str(sheet.hint(&"K-1")).is_equal("Grauhaven Holding. Price: $60,000, 800 cabbages. Click for the deed.")
+	var called := _building(sheet, "K-1").title
+	assert_str(sheet.hint(&"K-1")).is_equal(called + ". Price: $60,000, 800 cabbages. Click for the deed.")
 	SaveManager.save.coins = 59000
 	SaveManager.save.stock = 790
-	assert_str(sheet.hint(&"K-1")).is_equal("Grauhaven Holding. Price: $60,000, 800 cabbages. Short: $1,000, 10 cabbages.")
+	assert_str(sheet.hint(&"K-1")).is_equal(called + ". Price: $60,000, 800 cabbages. Short: $1,000, 10 cabbages.")
 	SaveManager.save.coins = 60000
-	assert_str(sheet.hint(&"K-1")).is_equal("Grauhaven Holding. Price: $60,000, 800 cabbages. Short: 10 cabbages.")
+	assert_str(sheet.hint(&"K-1")).is_equal(called + ". Price: $60,000, 800 cabbages. Short: 10 cabbages.")
 	SaveManager.save.farms_owned.append("K-1")
-	assert_str(sheet.hint(&"K-1")).is_equal("Grauhaven Holding. Company property.")
+	assert_str(sheet.hint(&"K-1")).is_equal(called + ". Company property.")
 
 
 func test_the_tags_and_the_hint_are_german_in_german_and_still_say_cabbages() -> void:
 	TranslationServer.set_locale("de")
 	var sheet := _register()
-	assert_str(sheet.hint(&"K-1")).is_equal("Grauhaven Holding. Preis: $60,000, 800 Kohlköpfe. Klicken für die Urkunde.")
+	assert_str(sheet.hint(&"K-1")).is_equal(_building(sheet, "K-1").title + ". Preis: $60,000, 800 Kohlköpfe. Klicken für die Urkunde.")
 	_buy(sheet, "K-1")
 	assert_str(_tag(sheet, "K-1").text).is_equal("ERWORBEN")
 	SaveManager.save.farms_owned = PackedStringArray(["K-1", "K-2", "K-3", "K-4", "K-5"])
@@ -534,15 +579,16 @@ func test_the_tags_and_the_hint_are_german_in_german_and_still_say_cabbages() ->
 
 
 func test_a_site_is_pointed_at_on_its_disc_and_its_two_tags_and_nowhere_else() -> void:
-	var sheet := _register()
-	var sites: Array = JSON.parse_string(FileAccess.get_file_as_string("res://reports/maps/labels.json")).country_map.farm_sites
-	assert_int(sites.size()).is_equal(8)
-	for site: Dictionary in sites:
-		for pixel: Vector2 in [Vector2(site.x, site.y), Vector2(site.name_tag.x, site.name_tag.y), Vector2(site.price_tag.x, site.price_tag.y)]:
-			assert_str(sheet.spot_at(pixel)).is_equal(site.id)
-	assert_str(sheet.spot_at(Vector2(300, 300))).is_equal(&"")  # The sea.
-	assert_str(sheet.spot_at(Vector2(-1, -1))).is_equal(&"")  # Off the paper.
-	assert_str(sheet.spot_at(Vector2(1304, 1295))).is_equal(&"")  # The capital.
+	for country: StringName in [WorldRegister.HOME, &"sulvania"]:
+		var sheet := _register(country)
+		var sites := _sites(country)
+		assert_int(sites.size()).is_equal(WorldRegister.COUNTRIES[country].farms)
+		for site: Dictionary in sites:
+			for pixel: Vector2 in [Vector2(site.x, site.y), Vector2(site.name_tag.x, site.name_tag.y), Vector2(site.price_tag.x, site.price_tag.y)]:
+				assert_str(sheet.spot_at(pixel)).is_equal(site.id)
+		assert_str(sheet.spot_at(Vector2(-1, -1))).is_equal(&"")  # Off the paper.
+		var capital: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://reports/maps/labels.json")).country_maps[String(country)].capital
+		assert_str(sheet.spot_at(Vector2(capital.x, capital.y))).is_equal(&"")  # The capital.
 
 
 func test_a_hovered_site_stands_taller_and_comes_down_when_the_mouse_leaves() -> void:
@@ -582,7 +628,7 @@ func test_every_step_of_the_purchase_has_its_sound_in_order() -> void:
 	sheet.press(FarmRegister.STAMP)
 	assert_bool((deed.get_node("Strike") as SoundCue).playing).is_false()  # The stamp is still falling.
 	sheet._dealing.custom_step(FarmRegister.STAMP_DROP_TIME + 0.01)
-	assert_bool((deed.get_node("Strike") as SoundCue).playing).is_true()  # The desk press's thunk.
+	assert_bool((deed.get_node("Strike") as SoundCue).playing).is_true()  # The deed stamp's slam.
 	assert_bool((sheet.get_node("Flash/Acquire") as SoundCue).playing).is_false()  # The hit pause.
 	sheet._dealing.custom_step(FarmRegister.HIT_PAUSE)
 	assert_bool((sheet.get_node("Flash/Acquire") as SoundCue).playing).is_true()  # The token's thunk.
@@ -592,11 +638,11 @@ func test_every_step_of_the_purchase_has_its_sound_in_order() -> void:
 	assert_bool((deed.get_node("Roll") as SoundCue).playing).is_false()
 	sheet._dealing.custom_step(FarmRegister.DEED_LEAVE_AFTER)
 	assert_bool((deed.get_node("Roll") as SoundCue).playing).is_true()  # The deed rolls itself up.
-	# The same thunk as the desk's approval press.
+	# The deed's stamp is its own, heavier slam, not the desk's approval press.
 	var desk: Node = auto_free(load("res://entities/upgrade_desk/upgrade_desk.tscn").instantiate())
 	var press := (desk.get_node("Stamp") as AudioStreamPlayer3D).stream as AudioStreamRandomizer
 	var strike := (deed.get_node("Strike") as SoundCue).stream as AudioStreamRandomizer
-	assert_object(strike.get_stream(0)).is_same(press.get_stream(0))
+	assert_object(strike.get_stream(0)).is_not_same(press.get_stream(0))
 
 
 func test_only_the_first_farm_is_for_sale_before_negotiation() -> void:
@@ -702,20 +748,23 @@ func test_an_offers_cabbages_are_gone_whether_it_lands_or_not() -> void:
 		assert_array(Array(save.haggle_offers)).is_equal([amount])
 
 
-func test_too_few_cabbages_raise_the_price() -> void:
+func test_too_few_cabbages_raise_the_price_its_cabbages_with_its_coins() -> void:
 	var save := _haggling()
 	FarmRegister.offer(save, FarmRegister.wanted(save, 0) - 1)
-	assert_int(FarmRegister.price(save).coins).is_greater(FarmRegister.PRICES[1].coins)
-	assert_int(FarmRegister.price(save).stock).is_equal(FarmRegister.PRICES[1].stock)  # The cabbages of the price never move.
+	var share: float = FarmRegister.price(save).coins / float(FarmRegister.PRICES[1].coins)
+	assert_float(share).is_greater(1.0)
+	assert_int(FarmRegister.price(save).stock).is_equal(roundi(FarmRegister.PRICES[1].stock * share))
 
 
-func test_enough_cabbages_lower_the_price() -> void:
+func test_enough_cabbages_lower_the_price_its_cabbages_with_its_coins() -> void:
 	var save := _haggling()
 	FarmRegister.offer(save, FarmRegister.wanted(save, 0))
 	assert_int(FarmRegister.price(save).coins).is_equal(176000)  # 12% off the $200,000 asked.
-	assert_int(FarmRegister.price(save).stock).is_equal(FarmRegister.PRICES[1].stock)
+	assert_int(FarmRegister.price(save).stock).is_equal(1760)  # And 12% off the 2,000 cabbages.
+	var stock := save.stock
 	assert_bool(FarmRegister.buy(save, &"K-2")).is_true()
 	assert_int(save.coins).is_equal(10000000 - 176000)
+	assert_int(save.stock).is_equal(stock - 1760)
 
 
 func test_a_miss_costs_less_than_a_success_saves_and_a_near_miss_least() -> void:
@@ -831,10 +880,11 @@ func test_a_missed_offer_raises_the_price_at_the_limit_a_player_has_and_the_next
 			assert_int(limits[at][1]).override_failure_message("farm %d: the step to $%d" % [owned + 1, limits[at][0]]).is_less_equal(limits[at - 1][0])
 
 
-func test_no_farm_or_country_costs_more_coins_than_the_highest_coin_limit_holds() -> void:
+func test_no_farm_or_war_costs_more_coins_than_the_highest_coin_limit_holds() -> void:
 	var top: int = _coin_limits()[-1][0]
-	for bill: Dictionary in FarmRegister.SEIZURES + WorldRegister.COUNTRIES.values():
-		assert_int(bill.coins).override_failure_message(str(bill)).is_less_equal(top)
+	for entry: Dictionary in WorldRegister.COUNTRIES.values():
+		for bill: Dictionary in entry.wars:
+			assert_int(bill.coins).override_failure_message(str(bill)).is_less_equal(top)
 	for bill: Dictionary in FarmRegister.PRICES:  # Even after five careless offers.
 		assert_int(roundi(bill.coins * (100 + FarmRegister.PRICE_CEILING) / 100.0)).is_less_equal(top)
 
@@ -852,24 +902,24 @@ func test_an_offer_and_a_stamped_purchase_are_written_to_the_save_at_once() -> v
 	assert_int(SaveManager.save.last_played).is_greater(0)
 
 
-func test_offers_purchases_and_seizures_go_into_the_playtest_log() -> void:
+func test_offers_purchases_and_wars_started_go_into_the_playtest_log() -> void:
 	SaveManager.save = _haggling()
 	var sheet := _register()
 	sheet.press(&"K-2")
 	sheet.press(FarmRegister.OFFER)  # 30 cabbages for the second farm.
 	_play_out(sheet)
-	var coins: int = FarmRegister.price(SaveManager.save).coins
+	var bill := FarmRegister.price(SaveManager.save)
 	sheet.press(FarmRegister.STAMP)
 	_play_out(sheet)
 	SaveManager.save.farms_owned = PackedStringArray(SITES.slice(0, Events.HOME_SELLERS))
-	SaveManager.save.stamped.append("world_map")
+	SaveManager.save.stamped.append(FarmRegister.WAR_CARD)
 	sheet.refresh()
-	_buy(sheet, "K-7")
+	_buy(sheet, "K-7")  # The war order: the war starts, nothing is paid here.
 	var rows := SaveManager.save.playtest_log.map(func(row: Dictionary) -> Array: return [row.kind, row.id, row.price, row.currency])
 	assert_array(rows).contains_exactly([
 		["offer", "2", 30, "stock"],
-		["farm_bought", "K-2", coins, "coins"], ["farm_bought", "K-2", 2000, "stock"],
-		["seizure", "K-7", 6000000, "coins"], ["seizure", "K-7", 9000, "stock"]])
+		["farm_bought", "K-2", bill.coins, "coins"], ["farm_bought", "K-2", bill.stock, "stock"],
+		["war", "K-7", 0, ""]])
 
 
 func test_a_dearer_farm_hides_a_larger_and_wider_number() -> void:
@@ -944,7 +994,7 @@ func test_a_negotiation_in_progress_survives_closing_the_deed_and_a_reload() -> 
 	sheet.press(&"")  # The deed away.
 	assert_str(sheet.deed_site()).is_equal(&"")
 	var loaded := _register()  # The same save, a fresh sheet.
-	assert_str(_tag(loaded, "K-3").text).is_equal("$%s + 2,000" % FarmRegister.short_coins(price))
+	assert_str(_tag(loaded, "K-3").text).is_equal("$%s + %s" % [FarmRegister.short_coins(price), FarmScreen._thousands(FarmRegister.price(SaveManager.save).stock)])
 	loaded.press(&"K-3")  # Any site: it is the next farm's owner who haggles.
 	assert_str(_form(loaded, "Coins").text).is_equal("$" + FarmScreen._thousands(price))
 	assert_str(_form(loaded, "Asked").text).is_equal("ASKED $200,000")
@@ -985,7 +1035,7 @@ func test_a_bribe_is_haggled_in_coins() -> void:
 	assert_int(save.coins).is_equal(10000000 - 2 * wants + 1)  # Both envelopes are gone.
 	assert_int(save.stock).is_equal(30000)
 	assert_int(FarmRegister.price(save).coins).is_equal(5000000 + 50000 * FarmRegister.MOOD_STEP[FarmRegister.mood_of(wants - 1, wants)] - 600000)
-	assert_int(FarmRegister.price(save).stock).is_equal(9000)
+	assert_int(FarmRegister.price(save).stock).is_equal(roundi(9000 * FarmRegister.price(save).coins / 5000000.0))  # The cabbages move with the coins.
 	SaveManager.save = save
 	var sheet := _register()
 	sheet.press(&"K-5")
@@ -1078,7 +1128,7 @@ func test_submitting_an_offer_stamps_the_owners_mood_on_the_deed_and_the_price_c
 	assert_str(_form(sheet, "Coins").text).is_equal("$" + FarmScreen._thousands(price))
 	assert_bool((deed.get_node("Page/Form/Mood/Imprint") as Control).visible).is_true()
 	assert_bool((deed.get_node("MoodStamp") as SoundCue).playing).is_true()
-	assert_bool((deed.get_node("Denied") as SoundCue).playing).is_true()  # A miss: the dry thud.
+	assert_bool((deed.get_node("PriceUp") as SoundCue).playing).is_true()  # A miss: the price goes up.
 	assert_bool((deed.get_node("Agreed") as SoundCue).playing).is_false()
 	assert_bool(deed.stamped).is_false()  # Nothing is bought by it.
 	_play_out(sheet)
@@ -1148,63 +1198,131 @@ func test_a_farm_that_waits_for_its_card_says_not_for_sale_in_german_too() -> vo
 	assert_str(FarmRegister.hint_text(save, &"K-2", "X")).is_equal("X. Unverkäuflich. Die Eigentümer müssen erst überzeugt werden.")
 
 
-func test_the_home_country_is_ours_once_the_last_three_farms_are_seized() -> void:
-	var save := _rich(["negotiation", "bribery", "world_map"])
+func test_the_home_country_is_ours_once_its_last_three_farms_are_won_in_war() -> void:
+	var save := _rich(["negotiation", "bribery", FarmRegister.WAR_CARD])
 	save.coin_limit = 1000000000
 	save.coins = 1000000000
 	save.farms_owned = PackedStringArray(SITES.slice(0, Events.HOME_SELLERS))
-	assert_int(FarmRegister.SEIZURES.size()).is_equal(Events.HOME_SITES - Events.HOME_SELLERS)
-	for nth in FarmRegister.SEIZURES.size():
-		var bill := FarmRegister.SEIZURES[nth]
+	var wars: Array = WorldRegister.COUNTRIES[WorldRegister.HOME].wars
+	assert_int(wars.size()).is_equal(Events.HOME_SITES - Events.HOME_SELLERS)
+	for nth in wars.size():
+		var site := StringName(SITES[Events.HOME_SELLERS + nth])
 		var coins := save.coins
 		var stock := save.stock
 		assert_bool(Events.due("home_country", save)).is_false()
-		assert_dict(FarmRegister.seizure(save)).is_equal(bill)
-		assert_bool(FarmRegister.buy(save, StringName(SITES[Events.HOME_SELLERS + nth]))).is_true()
-		assert_int(save.coins).is_equal(coins - bill.coins)
-		assert_int(save.stock).is_equal(stock - bill.stock)
+		assert_dict(FarmRegister.war_bill(save, site)).is_equal(wars[nth])
+		assert_bool(WarSheet.win(save, site)).is_true()
+		assert_int(save.coins).is_equal(coins - wars[nth].coins)
+		assert_int(save.stock).is_equal(stock - wars[nth].stock)
 	assert_int(Events.home_farms(save)).is_equal(Events.HOME_SITES)
 	assert_bool(Events.due("home_country", save)).is_true()
-	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(UpgradeDesk.card_data("no_taxes")))).is_true()
 	# Nothing is left to take at home.
 	assert_dict(FarmRegister.price(save)).is_empty()
-	assert_dict(FarmRegister.seizure(save)).is_empty()
+	for site: String in SITES:
+		assert_dict(FarmRegister.war_bill(save, StringName(site))).is_empty()
 
 
-func test_a_seizure_costs_more_with_every_farm_seized_and_more_than_the_last_farm_bought() -> void:
-	var last: Dictionary = FarmRegister.PRICES[-1]
-	for bill in FarmRegister.SEIZURES:
-		assert_int(bill.coins).is_greater(last.coins)
-		assert_int(bill.stock).is_greater_equal(last.stock)
-		last = bill
-
-
-func test_farms_abroad_do_not_change_what_the_next_home_farm_costs_to_seize() -> void:
-	var save := _rich(["negotiation", "bribery", "world_map"])
+func test_farms_abroad_do_not_change_what_the_next_home_war_costs() -> void:
+	var save := _rich(["negotiation", "bribery", FarmRegister.WAR_CARD])
 	save.farms_owned = PackedStringArray(SITES.slice(0, Events.HOME_SELLERS))
 	WorldRegister.annex(save, &"ostrevia")
 	WorldRegister.annex(save, &"sulvania")
-	assert_dict(FarmRegister.price(save)).is_equal(FarmRegister.SEIZURES[0])
+	var wars: Array = WorldRegister.COUNTRIES[WorldRegister.HOME].wars
+	assert_dict(FarmRegister.war_bill(save, &"K-8")).is_equal(wars[0])
 	save.farms_owned.append("K-6")
-	assert_dict(FarmRegister.price(save)).is_equal(FarmRegister.SEIZURES[1])
+	assert_dict(FarmRegister.war_bill(save, &"K-8")).is_equal(wars[1])
 
 
-func test_a_farm_nobody_sells_is_taken_with_a_seizure_order_stamped_like_a_purchase_and_nobody_haggles() -> void:
-	SaveManager.save = _rich(["negotiation", "bribery", "world_map"])
+func test_a_farm_nobody_sells_gets_a_war_order_whose_stamp_starts_the_war_and_pays_nothing() -> void:
+	SaveManager.save = _rich(["negotiation", "bribery", FarmRegister.WAR_CARD])
 	SaveManager.save.farms_owned = PackedStringArray(SITES.slice(0, Events.HOME_SELLERS))
+	var bill: Dictionary = WorldRegister.COUNTRIES[WorldRegister.HOME].wars[0]
 	var sheet := _register()
-	assert_str(_tag(sheet, "K-7").text).is_equal("$%s + %s" % [FarmRegister.short_coins(FarmRegister.SEIZURES[0].coins), FarmScreen._thousands(FarmRegister.SEIZURES[0].stock)])
+	var wanted := []
+	sheet.sheet_wanted.connect(func(id: StringName, farm: StringName) -> void: wanted.append([id, farm]))
+	assert_str(_tag(sheet, "K-7").text).is_equal("$%s + %s" % [FarmRegister.short_coins(bill.coins), FarmScreen._thousands(bill.stock)])
+	assert_str(sheet.hint(&"K-7")).contains("Expected cost of war")
 	sheet.press(&"K-7")
 	var deed: FarmDeed = sheet.get_node("Deed")
-	assert_str((deed.get_node("Page/Form/FormLine") as Label).text).is_equal("FORM 3-S  SEIZURE ORDER")
-	assert_str((deed.get_node("Page/Form/PriceHead") as Label).text).is_equal("COST OF THE OPERATION")
+	assert_str((deed.get_node("Page/Form/FormLine") as Label).text).is_equal("FORM 9-W  WAR ORDER")
+	assert_str((deed.get_node("Page/Form/PriceHead") as Label).text).is_equal("ESTIMATED COST OF VICTORY")
 	assert_str((deed.get_node("Page/Form/SmallPrint") as Label).text).is_equal("The owner's signature is not required.")
-	assert_str((deed.get_node("Page/Form/Imprint/Word") as Label).text).is_equal("SEIZED")
+	assert_str((deed.get_node("Page/Form/Imprint/Word") as Label).text).is_equal("WAR")
 	assert_bool((deed.get_node("Page/Form/Box") as Control).visible).is_true()
 	assert_bool((deed.get_node("Page/Form/Strip") as Control).visible).is_false()
-	assert_bool((deed.get_node("Page/Form/Offer") as Control).visible).is_false()
+	assert_bool((deed.get_node("Page/Form/Offer") as Control).visible).is_false()  # Nobody haggles over a war.
 	assert_str(FarmRegister.tender(SaveManager.save)).is_equal("")
-	assert_int(FarmRegister.offers_left(SaveManager.save)).is_equal(0)
+	assert_str(sheet.spot_at(_box(sheet))).is_equal(FarmRegister.STAMP)
 	sheet.press(FarmRegister.STAMP)
-	assert_array(Array(SaveManager.save.farms_owned)).contains(["K-7"])
-	assert_int(SaveManager.save.farms_owned.size()).is_equal(Events.HOME_SELLERS + 1)
+	_play_out(sheet)
+	assert_array(wanted).is_equal([[FarmRegister.WAR, &"K-7"]])  # The table rolls out the war sheet for it.
+	assert_int(SaveManager.save.farms_owned.size()).is_equal(Events.HOME_SELLERS)
+	assert_int(SaveManager.save.coins).is_equal(10000000)
+	assert_int(SaveManager.save.stock).is_equal(30000)
+
+
+func test_a_farm_abroad_out_of_reach_gets_a_war_order_with_a_strip_and_no_stamp_box() -> void:
+	SaveManager.save = _rich(["negotiation", "bribery", FarmRegister.WAR_CARD])
+	SaveManager.save.farms_owned = PackedStringArray(SITES.slice(0, Events.HOME_SELLERS))  # Kohlmark is not wholly ours.
+	var sheet := _register(&"ostrevia")
+	assert_str(_tag(sheet, "ostrevia-1").text).is_equal(WorldRegister.NOT_ADJACENT)
+	sheet.press(&"ostrevia-1")
+	var deed: FarmDeed = sheet.get_node("Deed")
+	assert_str((deed.get_node("Page/Form/FormLine") as Label).text).is_equal("FORM 9-W  WAR ORDER")
+	assert_bool((deed.get_node("Page/Form/Strip") as Control).visible).is_true()
+	assert_str((deed.get_node("Page/Form/Strip/Word") as Label).text).is_equal(WorldRegister.NOT_ADJACENT)
+	assert_str((deed.get_node("Page/Form/Reason") as Label).text).is_equal("No country next to this one is wholly ours. Yet.")
+	assert_bool((deed.get_node("Page/Form/Box") as Control).visible).is_false()
+	assert_str(sheet.spot_at(_box(sheet))).is_equal(&"")
+	# The country next door becomes wholly ours while the order lies there: it gets its cost and its stamp box.
+	WorldRegister.annex(SaveManager.save, WorldRegister.HOME)
+	sheet._process(0.0)
+	assert_bool((deed.get_node("Page/Form/Strip") as Control).visible).is_false()
+	assert_str(sheet.spot_at(_box(sheet))).is_equal(FarmRegister.STAMP)
+	assert_dict(deed.bill).is_equal(WorldRegister.COUNTRIES[&"ostrevia"].wars[0])
+
+
+func test_nothing_abroad_is_bought_or_haggled_over() -> void:
+	var save := _rich(["negotiation", "bribery", "rejected_goods", FarmRegister.WAR_CARD])
+	save.farms_owned = PackedStringArray(SITES.slice(0, 3))  # The next home farm is for sale.
+	for country: StringName in WorldRegister.COUNTRIES:
+		if country != WorldRegister.HOME:
+			for site in WorldRegister.farm_ids(country):
+				assert_bool(FarmRegister.for_sale(save, StringName(site))).override_failure_message(site).is_false()
+				assert_bool(FarmRegister.buy(save, StringName(site))).override_failure_message(site).is_false()
+	assert_int(save.farms_owned.size()).is_equal(3)
+
+
+func test_a_farm_won_in_war_plays_its_moment_once_its_country_sheet_lies_open_again() -> void:
+	SaveManager.save = _rich(["negotiation", "bribery", FarmRegister.WAR_CARD])
+	SaveManager.save.farms_owned = PackedStringArray(SITES.slice(0, Events.HOME_SELLERS))
+	var sheet := _register()
+	assert_bool(WarSheet.win(SaveManager.save, &"K-6")).is_true()
+	sheet.expect(&"K-6")  # Won while the sheet lay rolled up: not shown as ours yet.
+	assert_bool(_building(sheet, "K-6").owned).is_false()
+	sheet.celebrate(&"K-6")
+	assert_bool(_building(sheet, "K-6").owned).is_true()
+	assert_str(_tag(sheet, "K-6").text).is_equal("ACQUIRED")
+	assert_bool((sheet.get_node("Flash/Swap") as SoundCue).playing).is_true()
+	assert_bool((sheet.get_node("Flash/SpreadShort") as SoundCue).playing).is_true()
+	FarmRegister.lamp_held = true
+	sheet._dealing.custom_step(FarmRegister.LAMP_AFTER + 0.01)
+	assert_bool(FarmRegister.lamp_held).is_false()  # The Field Line lights its lamp.
+	sheet._spread_tween.custom_step(10.0)
+	assert_float(_reach(sheet)["K-6"]).is_equal(FarmRegister.PARCEL_RADIUS)
+
+
+func test_when_a_countrys_last_farm_is_taken_its_whole_land_turns() -> void:
+	SaveManager.save = _rich(["negotiation", "bribery", FarmRegister.WAR_CARD])
+	WorldRegister.annex(SaveManager.save, WorldRegister.HOME)
+	SaveManager.save.farms_owned.append("ostrevia-1")
+	var sheet := _register(&"ostrevia")
+	assert_float(_reach(sheet)["ostrevia-1"]).is_equal(FarmRegister.PARCEL_RADIUS)
+	assert_bool(WarSheet.win(SaveManager.save, &"ostrevia-2")).is_true()
+	sheet.expect(&"ostrevia-2")
+	sheet.celebrate(&"ostrevia-2")
+	assert_bool((sheet.get_node("Flash/SpreadLong") as SoundCue).playing).is_true()
+	sheet._spread_tween.custom_step(10.0)
+	for site: String in ["ostrevia-1", "ostrevia-2"]:
+		assert_float(_reach(sheet)[site]).is_equal(FarmRegister.FULL)
+	assert_float(FarmRegister.FULL).is_greater(sheet.span())

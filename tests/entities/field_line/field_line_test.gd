@@ -90,6 +90,24 @@ func test_a_click_on_the_handset_lifts_it() -> void:
 	assert_bool(machine.is_open()).is_true()
 
 
+func test_the_handset_sits_behind_the_lamp_field_as_the_player_sees_it() -> void:
+	# The camera looks from +z: smaller z is further up the screen, nearer the middle of the desk.
+	var machine := _machine()
+	var lamps := machine.get_node("Model/Lamps") as MeshInstance3D
+	var field := lamps.global_transform * lamps.get_aabb()
+	var handset := _handset_at(machine)
+	assert_float(handset.z).is_less(machine.to_local(field.position).z)
+	assert_float(handset.y).is_greater(machine.to_local(field.end).y)  # On the raised deck: the slope never hides it.
+	var window := (machine.get_node("Count") as Node3D).position
+	assert_float(window.z).is_greater(handset.z)
+	assert_float(machine.to_local(field.get_center()).z).is_greater(0.0)  # The lamps on the near half,
+	assert_float(handset.z).is_less(0.0)  # the handset on the far one.
+
+
+func test_the_lifted_handset_does_not_hang_over_the_lamps() -> void:
+	assert_float(FieldLine.handset_offset(1.0, 0.0).origin.z).is_less_equal(0.0)
+
+
 func test_the_lifted_handset_rises_out_of_its_cradle_and_swings() -> void:
 	var lifted := FieldLine.handset_offset(1.0, 1.0)
 	assert_float(lifted.origin.y).is_greater(0.04)

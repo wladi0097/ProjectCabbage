@@ -1,5 +1,6 @@
 extends Node3D
-## The map table's tally (chapter 3): a long steel counter lying along the table's right edge, one
+## The map table's tally (chapter 3, once its desk card is stamped: MapTable.TALLY_CARD): a long steel
+## counter lying left of the sheet, below the TO DESK button, one
 ## split-flap window for everything the company holds, top to bottom: coins ($), cabbages in stock
 ## (the cabbage sign, green), Findings (¶, cold cyan) and farms owned of all there are. A black plate
 ## left of each window carries its sign; no words. Farms are bought at the map, where the desk's own

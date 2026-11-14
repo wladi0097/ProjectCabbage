@@ -18,6 +18,8 @@
 [ext_resource type="Texture2D" path="res://assets/textures/findings_token/findings_token_orm.png" id="4_token_orm"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/findings_slip_1.wav" id="sfx_slip_filed_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/findings_slip_2.wav" id="sfx_slip_filed_2"]
+[ext_resource type="AudioStream" uid="uid://ys77qtw2a4xo" path="res://assets/audio/effects/slip_jam_1.wav" id="sfx_slip_jam_1"]
+[ext_resource type="AudioStream" uid="uid://q4tkv21qsmbi" path="res://assets/audio/effects/slip_jam_2.wav" id="sfx_slip_jam_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_1.wav" id="sfx_slip_land_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_2.wav" id="sfx_slip_land_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/card_land_3.wav" id="sfx_slip_land_3"]
@@ -162,6 +164,12 @@ normal_enabled = true
 normal_texture = ExtResource("4_token_normal")
 uv1_scale = Vector3(0.192, 0.96, 1)
 uv1_offset = Vector3(0.804, 0.02, 0)
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_slip_jam"]
+random_pitch = 1.06
+streams_count = 2
+stream_0/stream = ExtResource("sfx_slip_jam_1")
+stream_1/stream = ExtResource("sfx_slip_jam_2")
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_slip_land"]
 random_pitch = 1.08
@@ -386,6 +394,12 @@ bus = &"SFX"
 max_polyphony = 2
 script = ExtResource("3_cue")
 min_interval = 0.05
+
+[node name="SlipJam" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_slip_jam")
+bus = &"SFX"
+script = ExtResource("3_cue")
+min_interval = 0.8
 
 [node name="SlipFiled" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_slip_filed")

@@ -116,6 +116,7 @@ func test_only_the_cabbage_window_is_green_and_only_the_research_window_is_cyan(
 
 func test_the_tally_is_hidden_until_the_map_table_is_unlocked() -> void:
 	SaveManager.save = SaveGame.new()
+	SaveManager.save.stamped.append(MapTable.TALLY_CARD)  # Its card alone does not show it.
 	var camera: Camera3D = auto_free(Camera3D.new())
 	add_child(camera)
 	camera.make_current()

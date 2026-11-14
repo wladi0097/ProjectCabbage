@@ -64,6 +64,8 @@
 [ext_resource type="AudioStream" uid="uid://bxe3gjijfkysf" path="res://assets/audio/effects/coin_deposit_1.wav" id="sfx_coin_deposit_1"]
 [ext_resource type="AudioStream" uid="uid://c7oewpivfqmbt" path="res://assets/audio/effects/coin_deposit_2.wav" id="sfx_coin_deposit_2"]
 [ext_resource type="AudioStream" uid="uid://cwa0pheh5fb70" path="res://assets/audio/effects/coin_deposit_3.wav" id="sfx_coin_deposit_3"]
+[ext_resource type="AudioStream" uid="uid://68bbg5xw06t1" path="res://assets/audio/effects/coin_return_1.wav" id="sfx_coin_return_1"]
+[ext_resource type="AudioStream" uid="uid://cunasb3j5nubi" path="res://assets/audio/effects/coin_return_2.wav" id="sfx_coin_return_2"]
 [ext_resource type="AudioStream" uid="uid://c1k1glyx6wyap" path="res://assets/audio/effects/coin_land_1.wav" id="sfx_coin_land_1"]
 [ext_resource type="AudioStream" uid="uid://cmixmtnt1wv5u" path="res://assets/audio/effects/coin_land_2.wav" id="sfx_coin_land_2"]
 [ext_resource type="AudioStream" uid="uid://dc4ljvl6l0dq2" path="res://assets/audio/effects/tally_tick_1.wav" id="sfx_tally_tick_1"]
@@ -206,6 +208,12 @@ streams_count = 3
 stream_0/stream = ExtResource("sfx_coin_deposit_1")
 stream_1/stream = ExtResource("sfx_coin_deposit_2")
 stream_2/stream = ExtResource("sfx_coin_deposit_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_coin_return"]
+random_pitch = 1.08
+streams_count = 2
+stream_0/stream = ExtResource("sfx_coin_return_1")
+stream_1/stream = ExtResource("sfx_coin_return_2")
 
 [sub_resource type="ShaderMaterial" id="VignetteMat"]
 shader = ExtResource("4_vignette")
@@ -405,6 +413,12 @@ max_polyphony = 3
 bus = &"SFX"
 script = ExtResource("13_cue")
 
+[node name="Return" type="AudioStreamPlayer3D" parent="Coins"]
+stream = SubResource("Rand_coin_return")
+bus = &"SFX"
+script = ExtResource("13_cue")
+min_interval = 0.8
+
 [node name="TallyMachine" parent="." unique_id=1271739406 instance=ExtResource("12_tally")]
 transform = Transform3D(1.2931938, 0, 0.13285097, 0, 1.3, 0, -0.13285097, 0, 1.2931938, -1.1312298, 0.76, -0.63562363)
 
@@ -532,4 +546,5 @@ script = ExtResource("18_debug")
 [connection signal="collected" from="Coins" to="Coins/Collect" method="cue"]
 [connection signal="deposited" from="Coins" to="Coins/Deposit" method="cue"]
 [connection signal="landed" from="Coins" to="Coins/Land" method="cue"]
+[connection signal="refused" from="Coins" to="Coins/Return" method="cue"]
 [connection signal="refused" from="Coins" to="TallyMachine" method="refuse"]

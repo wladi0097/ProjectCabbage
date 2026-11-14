@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- A barn (gambrel roof, its door cut out) with its silo, over two furrows of a field: flat shapes
+       in white, so a modulate inks it to the print around it. The sign for farms a form needs:
+       "5 [farm] +". Chunky on purpose: it prints about 10 px high on a card in the tray. -->
+  <path fill="#fff" fill-rule="evenodd" d="M22 2 L37 9 L43 22 H38 V41 H6 V22 H1 L7 9 Z M15 41 V28 H29 V41 Z"/>
+  <path fill="#fff" d="M46 13 Q46 5 54 5 Q62 5 62 13 V41 H46 Z"/>
+  <path fill="#fff" d="M1 47 H63 V52 H1 Z M1 57 H63 V62 H1 Z"/>
+</svg>
