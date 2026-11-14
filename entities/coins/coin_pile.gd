@@ -7,7 +7,7 @@ extends MultiMeshInstance3D
 ## spot and stack there, at most MAX_STACK high; extra coins start a stack right beside it. Sweeping an empty hand over them sends them into the deposit.
 ## The purse has a limit (SaveGame.coin_limit): a payout only throws in what still fits beside the
 ## coins already out (fitting); the rest never comes in. One coin of it is tossed up to the gap and
-## drops back into the street, and `refused` fires (the tally machine's FULL plate and buzzer).
+## drops back into the street, and `refused` fires (the tally machine's FULL plate; its buzzer only as the purse becomes full).
 ## Piles spread sideways, never up: a full stack sends the next coin to the nearest stack with room
 ## inside pile_area (stack_cell), and at most MAX_ON_DESK coins are out at once. What a payout has
 ## beyond that is held back (_withheld, still pending_value, so never lost): every KNOCK seconds a

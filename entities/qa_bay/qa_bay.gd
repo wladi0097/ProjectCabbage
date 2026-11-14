@@ -14,7 +14,7 @@ extends Node3D
 ## being analysed and slips not filed yet are counted when the game quits. The coin vacuums leave
 ## slips alone. Findings have a limit (SaveGame.findings_limit): a finished cabbage only ejects
 ## the Findings that still fit beside the slips already out (CoinPile.fitting); the rest is lost and
-## the counter's FULL plate buzzes (TallyMachine.refuse). A research unit yields research_mult times the Findings, a mini unit a share
+## the counter reads FULL (TallyMachine.refuse; its buzzer only as it becomes full). A research unit yields research_mult times the Findings, a mini unit a share
 ## (findings_for); minis are no stock. The tube's research minis appear in the mouth as if thrown in,
 ## or are thrown back onto the mat when every bench is busy (file_direct). The load gauge on the
 ## Slips never tower: the desk in front is a grid of patches (SLIP_AREA, SLIP_CELL), each piled at

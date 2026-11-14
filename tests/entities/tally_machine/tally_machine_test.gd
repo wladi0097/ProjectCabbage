@@ -53,52 +53,159 @@ func test_the_machine_is_lettered_with_the_most_it_holds_and_reads_full_at_the_l
 	TranslationServer.set_locale(was)
 
 
+const COUNTERS: Array[String] = ["res://entities/tally_machine/tally_machine.tscn", "res://entities/tally_machine/findings_counter.tscn"]
+
+var _real_save: SaveGame
+var _real_coins: Callable
+var _real_findings: Callable
+## What lies unbanked on the desk for the counters under test.
+var _unbanked := 0
+
+
+func before_test() -> void:
+	_real_save = SaveManager.save
+	_real_coins = SaveManager.pending_coins
+	_real_findings = SaveManager.pending_findings
+	SaveManager.save = SaveGame.new()
+	_unbanked = 0
+	SaveManager.pending_coins = func() -> int: return _unbanked
+	SaveManager.pending_findings = func() -> int: return _unbanked
+
+
+func after_test() -> void:
+	SaveManager.save = _real_save
+	SaveManager.pending_coins = _real_coins
+	SaveManager.pending_findings = _real_findings
+
+
+func _counter(path: String) -> TallyMachine:
+	var machine: TallyMachine = auto_free((load(path) as PackedScene).instantiate())
+	add_child(machine)
+	SaveManager.save.set(machine.field, 0)
+	machine._process(0.0)
+	return machine
+
+
+func _fill(machine: TallyMachine, full := true) -> void:
+	var save := SaveManager.save
+	save.set(machine.field, save.get(SaveGame.LIMITS[machine.field]) if full else 0)
+	machine._process(0.0)
+
+
+## The buzzer sounded since the last ask (and is silenced for the next).
+func _buzzed(machine: TallyMachine) -> bool:
+	var was := machine._buzzer.playing
+	machine._buzzer.stop()
+	return was
+
+
 func test_both_counters_show_their_limit_and_light_full_only_at_it() -> void:
-	var real := SaveManager.save
-	var save := SaveGame.new()
-	SaveManager.save = save
-	for path: String in ["res://entities/tally_machine/tally_machine.tscn", "res://entities/tally_machine/findings_counter.tscn"]:
-		var machine: TallyMachine = auto_free((load(path) as PackedScene).instantiate())
-		add_child(machine)
-		var limit: int = save.get(SaveGame.LIMITS[machine.field])
-		save.set(machine.field, 0)
-		machine._process(0.0)
+	for path in COUNTERS:
+		var machine := _counter(path)
+		var limit: int = SaveManager.save.get(SaveGame.LIMITS[machine.field])
 		assert_bool(machine._limit.visible).override_failure_message(path).is_true()
 		assert_bool(machine._full.visible).is_false()
 		assert_bool(machine._lamp.visible).is_false()
 		assert_str(machine._limit.text).is_equal(TallyMachine.limit_text(machine.mark, limit))
-		save.set(machine.field, limit)
-		machine._process(0.0)
+		_fill(machine)
 		assert_bool(machine._full.visible).override_failure_message(path).is_true()
 		assert_bool(machine._lamp.visible).is_true()
 		assert_bool(machine._limit.visible).is_false()
-		machine.refuse()  # The buzzer and the flash.
-		assert_bool(machine._flash.is_running()).is_true()
-	SaveManager.save = real
+		assert_str(machine._full.text).is_equal(TallyMachine.limit_text(machine.mark, limit, true))
 
 
-func test_a_refusal_shows_full_and_the_warning_light_for_its_flash_even_while_the_save_has_room() -> void:
-	# Coins and tokens lying unbanked on the desk fill the purse: income is refused before the save is full.
-	var real := SaveManager.save
-	var save := SaveGame.new()
-	SaveManager.save = save
-	for path: String in ["res://entities/tally_machine/tally_machine.tscn", "res://entities/tally_machine/findings_counter.tscn"]:
-		var machine: TallyMachine = auto_free((load(path) as PackedScene).instantiate())
-		add_child(machine)
-		machine._process(0.0)
-		assert_bool(machine._full.visible).override_failure_message(path).is_false()
+func test_the_full_buzzer_sounds_once_when_the_purse_fills_and_not_again_while_it_stays_full() -> void:
+	for path in COUNTERS:
+		var machine := _counter(path)
+		assert_bool(_buzzed(machine)).override_failure_message(path).is_false()
+		_fill(machine)
+		assert_bool(_buzzed(machine)).override_failure_message(path).is_true()
+		for _payout in 50:  # Hired hands keep selling into the full purse, long past the quiet time.
+			machine.refuse()
+			machine._process(2.0)
+			assert_bool(_buzzed(machine)).override_failure_message(path).is_false()
+
+
+func test_the_full_lamp_stays_lit_without_flashing_while_the_purse_is_full() -> void:
+	for path in COUNTERS:
+		var machine := _counter(path)
+		_fill(machine)
+		var energy := machine._lamp.light_energy
+		var ink := machine._full.modulate
+		for _payout in 20:
+			machine.refuse()
+			machine._process(0.1)
+			assert_bool(machine._lamp.visible).override_failure_message(path).is_true()
+			assert_bool(machine._full.visible).is_true()
+			assert_float(machine._lamp.light_energy).is_equal(energy)
+			assert_that(machine._full.modulate).is_equal(ink)
+
+
+func test_income_refused_because_unbanked_pieces_fill_the_purse_buzzes_once_and_shows_full_until_they_no_longer_fill_it() -> void:
+	for path in COUNTERS:
+		var machine := _counter(path)
+		var limit: int = SaveManager.save.get(SaveGame.LIMITS[machine.field])
+		_unbanked = limit  # All of it lies on the desk: the save itself is empty.
 		machine.refuse()
-		machine._process(0.0)
-		assert_bool(machine._full.visible).override_failure_message(path).is_true()
-		assert_bool(machine._lamp.visible).override_failure_message(path).is_true()
-		assert_bool(machine._limit.visible).is_false()
-		assert_str(machine._full.text).is_equal(TallyMachine.limit_text(machine.mark, save.get(SaveGame.LIMITS[machine.field]), true))
-		machine._flash.custom_step(TallyMachine.FLASH + 0.01)
-		machine._process(0.0)
+		assert_bool(_buzzed(machine)).override_failure_message(path).is_true()
+		for banked: int in [0, 1, limit]:  # Banked piece by piece: still full, still quiet.
+			SaveManager.save.set(machine.field, banked)
+			_unbanked = limit - banked
+			machine.refuse()
+			machine._process(TallyMachine.QUIET)
+			assert_bool(machine._full.visible).override_failure_message(path).is_true()
+			assert_bool(machine._lamp.visible).is_true()
+			assert_bool(_buzzed(machine)).override_failure_message(path).is_false()
+		_unbanked = 0
+		_fill(machine, false)
 		assert_bool(machine._full.visible).override_failure_message(path).is_false()  # MAX again: there is room.
 		assert_bool(machine._lamp.visible).is_false()
 		assert_bool(machine._limit.visible).is_true()
-	SaveManager.save = real
+
+
+func test_the_buzzer_sounds_again_only_after_there_was_room_in_between() -> void:
+	for path in COUNTERS:
+		var machine := _counter(path)
+		_fill(machine)
+		assert_bool(_buzzed(machine)).override_failure_message(path).is_true()
+		machine._process(TallyMachine.QUIET * 3.0)  # Full all the while: no room, no buzz.
+		assert_bool(_buzzed(machine)).override_failure_message(path).is_false()
+		_fill(machine, false)  # Money spent.
+		assert_bool(_buzzed(machine)).is_false()
+		_fill(machine)
+		assert_bool(_buzzed(machine)).override_failure_message(path).is_true()
+
+
+func test_a_purse_hovering_at_its_limit_does_not_buzz_again_within_the_quiet_time() -> void:
+	assert_float(TallyMachine.QUIET).is_equal(30.0)
+	for path in COUNTERS:
+		var machine := _counter(path)
+		_fill(machine)
+		assert_bool(_buzzed(machine)).override_failure_message(path).is_true()
+		for _second in 29:  # Spends a little, earns it back, every second.
+			_fill(machine, false)
+			machine._process(0.5)
+			_fill(machine)
+			machine._process(0.5)
+			assert_bool(machine._lamp.visible).override_failure_message(path).is_true()
+			assert_bool(_buzzed(machine)).override_failure_message(path).is_false()
+		_fill(machine, false)
+		machine._process(1.5)
+		_fill(machine)
+		assert_bool(_buzzed(machine)).override_failure_message(path).is_true()
+
+
+func test_each_counter_fills_and_buzzes_on_its_own() -> void:
+	var coins := _counter(COUNTERS[0])
+	var findings := _counter(COUNTERS[1])
+	_fill(coins)
+	findings._process(0.0)
+	assert_bool(_buzzed(coins)).is_true()
+	assert_bool(_buzzed(findings)).is_false()
+	assert_bool(findings._lamp.visible).is_false()
+	_fill(findings)
+	assert_bool(_buzzed(findings)).is_true()
+	assert_bool(_buzzed(coins)).is_false()
 
 
 func test_no_limit_climbs_past_what_its_counters_drums_can_show() -> void:
