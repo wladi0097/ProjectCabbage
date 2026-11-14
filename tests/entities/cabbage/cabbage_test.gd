@@ -498,3 +498,62 @@ func test_a_cabbage_counts_as_the_players_unless_a_hand_lobbed_it_or_the_tube_se
 	cabbage.lobbed = false
 	cabbage.tubed = true
 	assert_bool(cabbage.by_player()).is_false()
+
+
+
+func test_a_condensed_cabbage_takes_two_cabbages_from_stock_when_it_leaves() -> void:
+	var save := SaveGame.new()
+	save.stock = 10
+	var dense := spawn(func(c: Cabbage) -> void: c.units = 2)
+	dense.leave_stock(save)
+	dense.leave_stock(save)  # Only once.
+	assert_int(save.stock).is_equal(8)
+
+
+func test_a_condensed_golden_cabbage_takes_two_golden_cabbages_from_stock() -> void:
+	var save := SaveGame.new()
+	save.stock = 10
+	save.golden_stock = 5
+	var dense := spawn(func(c: Cabbage) -> void:
+		c.golden = true
+		c.units = 2)
+	dense.leave_stock(save)
+	assert_int(save.stock).is_equal(8)
+	assert_int(save.golden_stock).is_equal(3)
+
+
+func test_a_condensed_cabbage_is_a_little_bigger_and_twice_as_heavy_as_a_plain_one() -> void:
+	var dense := spawn(func(c: Cabbage) -> void: c.units = 2)
+	var grow := CabbageScript.condensed_size(2)
+	assert_float(grow).is_between(1.1, 1.2)  # Denser, not much bigger: the mat must not clog.
+	assert_float(CabbageScript.condensed_size(4)).is_less(1.35)
+	assert_float(CabbageScript.condensed_size(1)).is_equal(1.0)
+	assert_float(radius_of(dense)).is_between(base_radius() * (1.0 - CabbageScript.SIZE_SPREAD) * grow - 0.0001,
+			base_radius() * (1.0 + CabbageScript.SIZE_SPREAD) * grow + 0.0001)
+	# Twice the mass of a plain cabbage of its base size (its collider without the condensed growth).
+	assert_float(dense.mass / base_mass()).is_equal_approx(2.0 * pow(radius_of(dense) / grow / base_radius(), 3.0), 0.0001)
+
+
+func test_a_condensed_cabbage_drags_behind_the_hand_but_still_reaches_the_window_speed() -> void:
+	var plain := spawn()
+	var dense := spawn(func(c: Cabbage) -> void: c.units = 2)
+	assert_float(dense.max_accel).is_less(plain.max_accel * 0.85)
+	assert_float(dense.max_accel).is_greater(plain.max_accel * 0.7)
+	assert_float(dense.max_speed).is_equal(plain.max_speed)  # The throw itself is as fast.
+
+
+func test_a_condensed_cabbage_shows_how_many_it_holds_and_a_plain_one_shows_nothing() -> void:
+	var count := spawn(func(c: Cabbage) -> void: c.units = 3).get_node("Count") as Label3D
+	assert_bool(count.visible).is_true()
+	assert_str(count.text).is_equal("×3")
+	assert_bool((spawn().get_node("Count") as Label3D).visible).is_false()
+
+
+func test_a_condensed_cabbage_sounds_lower_the_more_cabbages_it_holds() -> void:
+	assert_float(CabbageScript.heavy_pitch(1)).is_equal(1.0)
+	assert_float(CabbageScript.heavy_pitch(2)).is_between(0.8, 0.9)
+	assert_float(CabbageScript.heavy_pitch(4)).is_between(0.7, 0.8)
+	var dense := spawn(func(c: Cabbage) -> void: c.units = 2)
+	assert_float((dense.get_node("Bump") as SoundCue).pitch_scale).is_equal_approx(CabbageScript.heavy_pitch(2), 0.0001)
+	assert_float((dense.get_node("Grab") as SoundCue).pitch_scale).is_equal_approx(CabbageScript.heavy_pitch(2), 0.0001)
+	assert_float((spawn().get_node("Bump") as SoundCue).pitch_scale).is_equal(1.0)

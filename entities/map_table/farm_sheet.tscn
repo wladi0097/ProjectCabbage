@@ -1,0 +1,1046 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://entities/map_table/map_sheet.tscn" id="1_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/maps/farm_site.svg" id="2_art"]
+
+[node name="FarmSheet" instance=ExtResource("1_sheet")]
+id = &"farm"
+title = "Farm site plan"
+
+[node name="Art" parent="Page/Sheet" index="0"]
+texture = ExtResource("2_art")
+
+[node name="L00" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -160.0
+offset_top = 360.0
+offset_right = 1240.0
+offset_bottom = 480.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "Reservoir"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L01" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 310.0
+offset_top = 890.0
+offset_right = 1710.0
+offset_bottom = 1010.0
+rotation = -1.57080
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Main irrigation ditch"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L02" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 542.0
+offset_top = 282.0
+offset_right = 1942.0
+offset_bottom = 402.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "A1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L03" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 851.0
+offset_top = 282.0
+offset_right = 2251.0
+offset_bottom = 402.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "A2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L04" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1160.0
+offset_top = 282.0
+offset_right = 2560.0
+offset_bottom = 402.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "A3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L05" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1469.0
+offset_top = 282.0
+offset_right = 2869.0
+offset_bottom = 402.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "A4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L06" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1778.0
+offset_top = 282.0
+offset_right = 3178.0
+offset_bottom = 402.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "A5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L07" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 542.0
+offset_top = 742.0
+offset_right = 1942.0
+offset_bottom = 862.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "B1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L08" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 851.0
+offset_top = 742.0
+offset_right = 2251.0
+offset_bottom = 862.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "B2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L09" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1160.0
+offset_top = 742.0
+offset_right = 2560.0
+offset_bottom = 862.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "B3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L10" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1469.0
+offset_top = 742.0
+offset_right = 2869.0
+offset_bottom = 862.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "B4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L11" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1778.0
+offset_top = 742.0
+offset_right = 3178.0
+offset_bottom = 862.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "B5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L12" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 571.0
+offset_top = 1182.0
+offset_right = 1971.0
+offset_bottom = 1302.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "C1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L13" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 940.0
+offset_top = 1182.0
+offset_right = 2340.0
+offset_bottom = 1302.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "C2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L14" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1309.0
+offset_top = 1182.0
+offset_right = 2709.0
+offset_bottom = 1302.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "C3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L15" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -200.0
+offset_top = 1140.0
+offset_right = 1200.0
+offset_bottom = 1260.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Yard (gravel)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L16" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -310.0
+offset_top = 1310.0
+offset_right = 1090.0
+offset_bottom = 1430.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Access road (from Trunk Road B-12)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L17" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 750.0
+offset_top = 116.0
+offset_right = 2150.0
+offset_bottom = 236.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "Perimeter fence - company property"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L18" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -260.0
+offset_top = 680.0
+offset_right = 1140.0
+offset_bottom = 800.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_colors/font_outline_color = Color(0.875, 0.886, 0.851, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 28
+text = "Farmhouse"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L19" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 95.0
+offset_top = 700.0
+offset_right = 1495.0
+offset_bottom = 820.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_colors/font_outline_color = Color(0.875, 0.886, 0.851, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 34
+text = "Barn"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L20" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1160.0
+offset_top = 180.0
+offset_right = 2560.0
+offset_bottom = 300.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "780.0 m"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L21" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1980.0
+offset_top = 430.0
+offset_right = 3380.0
+offset_bottom = 550.0
+rotation = 1.57080
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "200 m"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L22" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1980.0
+offset_top = 880.0
+offset_right = 3380.0
+offset_bottom = 1000.0
+rotation = 1.57080
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "190 m"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L23" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 95.0
+offset_top = 906.0
+offset_right = 1495.0
+offset_bottom = 1026.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "62 m"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L24" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 510.0
+offset_top = 1610.0
+offset_right = 1910.0
+offset_bottom = 1730.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 25
+text = "1 030.0 m"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L25" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2250.0
+offset_top = 540.0
+offset_right = 3650.0
+offset_bottom = 660.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "LEGEND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L26" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2300.0
+offset_top = 610.0
+offset_right = 3700.0
+offset_bottom = 730.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "Cabbage plot"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L27" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2300.0
+offset_top = 710.0
+offset_right = 3700.0
+offset_bottom = 830.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "Building"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L28" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2300.0
+offset_top = 810.0
+offset_right = 3700.0
+offset_bottom = 930.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "Irrigation ditch"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L29" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2300.0
+offset_top = 910.0
+offset_right = 3700.0
+offset_bottom = 1030.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "Fence"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L30" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2300.0
+offset_top = 1010.0
+offset_right = 3700.0
+offset_bottom = 1130.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "Company property"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L31" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2300.0
+offset_top = 1110.0
+offset_right = 3700.0
+offset_bottom = 1230.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "Road"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L32" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2250.0
+offset_top = 164.0
+offset_right = 3650.0
+offset_bottom = 284.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 47
+text = "N"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L33" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1914.0
+offset_top = 1346.0
+offset_right = 3314.0
+offset_bottom = 1466.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 53
+text = "FARM SITE PLAN - PARCEL ___"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L34" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1914.0
+offset_top = 1448.0
+offset_right = 3314.0
+offset_bottom = 1568.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "Standard cabbage holding. Layout per Directive 14 (Yield)."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L35" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1689.0
+offset_top = 1520.0
+offset_right = 3089.0
+offset_bottom = 1640.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 19
+text = "SHEET"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L36" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1689.0
+offset_top = 1566.0
+offset_right = 3089.0
+offset_bottom = 1686.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "3 of 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L37" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1886.0
+offset_top = 1520.0
+offset_right = 3286.0
+offset_bottom = 1640.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 19
+text = "SCALE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L38" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1886.0
+offset_top = 1566.0
+offset_right = 3286.0
+offset_bottom = 1686.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "1 : 2 500"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L39" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2084.0
+offset_top = 1520.0
+offset_right = 3484.0
+offset_bottom = 1640.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 19
+text = "PLOTS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L40" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2084.0
+offset_top = 1566.0
+offset_right = 3484.0
+offset_bottom = 1686.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "13"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L41" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2281.0
+offset_top = 1520.0
+offset_right = 3681.0
+offset_bottom = 1640.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 19
+text = "DRAWN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L42" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2281.0
+offset_top = 1566.0
+offset_right = 3681.0
+offset_bottom = 1686.0
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "Survey Office"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L43" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2309.0
+offset_top = 1387.0
+offset_right = 3709.0
+offset_bottom = 1507.0
+rotation = -0.24435
+pivot_offset = Vector2(700, 60)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 31
+text = "FILED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L44" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -435.0
+offset_top = -6.0
+offset_right = 965.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "A"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L45" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -435.0
+offset_top = 1686.0
+offset_right = 965.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "A"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L46" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -54.0
+offset_top = -6.0
+offset_right = 1346.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "B"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L47" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -54.0
+offset_top = 1686.0
+offset_right = 1346.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "B"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L48" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 328.0
+offset_top = -6.0
+offset_right = 1728.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "C"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L49" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 328.0
+offset_top = 1686.0
+offset_right = 1728.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "C"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L50" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 709.0
+offset_top = -6.0
+offset_right = 2109.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "D"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L51" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 709.0
+offset_top = 1686.0
+offset_right = 2109.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "D"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L52" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1091.0
+offset_top = -6.0
+offset_right = 2491.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "E"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L53" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1091.0
+offset_top = 1686.0
+offset_right = 2491.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "E"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L54" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1472.0
+offset_top = -6.0
+offset_right = 2872.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "F"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L55" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1472.0
+offset_top = 1686.0
+offset_right = 2872.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "F"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L56" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1854.0
+offset_top = -6.0
+offset_right = 3254.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "G"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L57" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 1854.0
+offset_top = 1686.0
+offset_right = 3254.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "G"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L58" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2235.0
+offset_top = -6.0
+offset_right = 3635.0
+offset_bottom = 114.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "H"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L59" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2235.0
+offset_top = 1686.0
+offset_right = 3635.0
+offset_bottom = 1806.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "H"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L60" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 179.0
+offset_right = 754.0
+offset_bottom = 299.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L61" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 179.0
+offset_right = 3846.0
+offset_bottom = 299.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L62" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 510.0
+offset_right = 754.0
+offset_bottom = 630.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L63" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 510.0
+offset_right = 3846.0
+offset_bottom = 630.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L64" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 840.0
+offset_right = 754.0
+offset_bottom = 960.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L65" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 840.0
+offset_right = 3846.0
+offset_bottom = 960.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L66" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 1170.0
+offset_right = 754.0
+offset_bottom = 1290.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L67" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 1170.0
+offset_right = 3846.0
+offset_bottom = 1290.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L68" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = -646.0
+offset_top = 1501.0
+offset_right = 754.0
+offset_bottom = 1621.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="L69" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2446.0
+offset_top = 1501.0
+offset_right = 3846.0
+offset_bottom = 1621.0
+pivot_offset = Vector2(700, 60)
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 31
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1

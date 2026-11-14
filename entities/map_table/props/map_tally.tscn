@@ -1,0 +1,126 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/props/map_tally.gd" id="1_tally"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_tally.res" id="2_mesh"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="3_font"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/cabbage_icon.svg" id="4_cabbage"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_farm_token_base.res" id="5_token"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_farm_token_for_sale.res" id="6_token_look"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_1.wav" id="sfx_tally_tick_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tally_tick_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_3.wav" id="sfx_tally_tick_3"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_tick"]
+random_pitch = 1.08
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_tally_tick_1")
+stream_1/stream = ExtResource("sfx_tally_tick_2")
+stream_2/stream = ExtResource("sfx_tally_tick_3")
+
+[node name="MapTally" type="Node3D"]
+script = ExtResource("1_tally")
+
+[node name="Model" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("2_mesh")
+
+[node name="Windows" type="Node3D" parent="."]
+
+[node name="Coins" type="Label3D" parent="Windows"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.0475, 0.0545, -0.36)
+pixel_size = 0.0005
+modulate = Color(0.84, 0.82, 0.72, 1)
+shaded = false
+auto_translate_mode = 2
+text = "0"
+font = ExtResource("3_font")
+font_size = 128
+outline_size = 0
+
+[node name="Cabbages" type="Label3D" parent="Windows"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.0475, 0.0545, -0.12)
+pixel_size = 0.0005
+modulate = Color(0.4, 0.8, 0.16, 1)
+shaded = false
+auto_translate_mode = 2
+text = "0"
+font = ExtResource("3_font")
+font_size = 128
+outline_size = 0
+
+[node name="Findings" type="Label3D" parent="Windows"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.0475, 0.0545, 0.12)
+pixel_size = 0.0005
+modulate = Color(0.3, 0.8, 0.95, 1)
+shaded = false
+auto_translate_mode = 2
+text = "0"
+font = ExtResource("3_font")
+font_size = 128
+outline_size = 0
+
+[node name="Farms" type="Label3D" parent="Windows"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.0475, 0.0545, 0.36)
+pixel_size = 0.0005
+modulate = Color(0.84, 0.82, 0.72, 1)
+shaded = false
+auto_translate_mode = 2
+text = "0/24"
+font = ExtResource("3_font")
+font_size = 128
+outline_size = 0
+
+[node name="Signs" type="Node3D" parent="."]
+
+[node name="Coins" type="Label3D" parent="Signs"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.1225, 0.0565, -0.36)
+pixel_size = 0.0005
+modulate = Color(0.66, 0.7, 0.68, 1)
+shaded = false
+auto_translate_mode = 2
+text = "$"
+font = ExtResource("3_font")
+font_size = 132
+outline_size = 0
+
+[node name="Cabbages" type="Sprite3D" parent="Signs"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.1225, 0.0565, -0.12)
+cast_shadow = 0
+modulate = Color(0.33, 0.66, 0.13, 1)
+pixel_size = 0.0006
+shaded = false
+texture = ExtResource("4_cabbage")
+
+[node name="Findings" type="Label3D" parent="Signs"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.1225, 0.0565, 0.12)
+pixel_size = 0.0005
+modulate = Color(0.3, 0.8, 0.95, 1)
+outline_modulate = Color(0.3, 0.8, 0.95, 1)
+shaded = false
+auto_translate_mode = 2
+text = "¶"
+font = ExtResource("3_font")
+font_size = 150
+outline_size = 10
+
+[node name="Farms" type="Node3D" parent="Signs"]
+transform = Transform3D(0.45, 0, 0, 0, 0.45, 0, 0, 0, 0.45, -0.1225, 0.054, 0.36)
+
+[node name="Base" type="MeshInstance3D" parent="Signs/Farms"]
+gi_mode = 0
+mesh = ExtResource("5_token")
+
+[node name="Look" type="MeshInstance3D" parent="Signs/Farms"]
+gi_mode = 0
+mesh = ExtResource("6_token_look")
+
+[node name="Tick" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_tick")
+volume_db = -6.0
+pitch_scale = 0.85
+max_polyphony = 2
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+min_interval = 0.1

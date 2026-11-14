@@ -47,15 +47,15 @@ const BODY_SIZE := 18
 const BODY_MIN := 13
 ## The grey veil behind an open report (its alpha at full; it fades in with the drop, out with the flight).
 const VEIL := 0.55
-## Event reports held back for the alpha: chapter 3's paper describes a chapter not built yet, so the
-## alpha's end popup (ui/sub/alpha_end, AlphaEnd) comes instead. Not filed: empty this to bring it back.
-const HELD := ["invest_in_growth"]
 
 ## The memo layer: its FILES folder is where filed reports fly.
 @export var memo: CanvasLayer
 
 ## Whether a report is up (FarmTv lets the mouse through to it then).
 static var up := false
+## Seconds no new report comes up: a moment on screen plays out first (FarmRegister: a farm's
+## acquisition on the map). One already up is not touched.
+static var hold := 0.0
 
 var _queue: Array[String] = []
 var _id := ""
@@ -78,6 +78,7 @@ var _fit_key := ""
 
 func _ready() -> void:
 	up = false
+	hold = 0.0
 	_paper.size = SIZE
 	_paper.pivot_offset = SIZE / 2.0
 	_paper.visible = false
@@ -99,8 +100,9 @@ func _process(delta: float) -> void:
 		for id in due(SaveManager.save):
 			if id != _id and not _queue.has(id):
 				_queue.append(id)
+	hold = maxf(hold - delta, 0.0)
 	if _id.is_empty():
-		if _alpha_end.visible:
+		if _alpha_end.visible or hold > 0.0:
 			return
 		if _queue.is_empty():
 			if AlphaEnd.due(SaveManager.save):
@@ -144,7 +146,7 @@ static func due(save: SaveGame) -> Array[String]:
 	if not save.reports.has("welcome"):
 		out.append("welcome")
 	for id: String in Events.EVENTS:
-		if not save.reports.has(id) and id not in HELD and Events.due(id, save):
+		if not save.reports.has(id) and Events.due(id, save):
 			out.append(id)
 	if Events.Demo.active() and save.farm_seconds >= Events.Demo.END_AFTER and not save.reports.has("demo_end"):
 		out.append("demo_end")

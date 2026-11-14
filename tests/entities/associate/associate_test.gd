@@ -411,3 +411,116 @@ func test_hand_speed_upgrades_scale_every_move() -> void:
 func test_the_associates_grab_sound_waits_a_tenth_of_a_second_between_plays() -> void:
 	var associate: Node = auto_free(ASSOCIATE.instantiate())
 	assert_float((associate.get_node("Grab") as SoundCue).min_interval).is_equal(0.1)
+
+
+
+func test_two_handed_policy_makes_each_hand_throw_two_cabbages_a_trip() -> void:
+	var save := SaveGame.new()
+	assert_bool(Associate.throws_again(1, save.hand_trip, false)).is_false()  # One a trip to start.
+	save.stamped = PackedStringArray(["projector", "junior_associate", "big_ideas"])
+	save.tree_bought = PackedStringArray(["hire_associate_2", "hire_associate_3", "hire_associate_4", "hire_associate_5",
+			"hire_associate_6", "hire_associate_7", "headcount_2"])
+	save.coins = Projector.node_data("two_handed").price
+	assert_bool(Projector.buy("two_handed", save)).is_true()
+	assert_int(save.hand_trip).is_equal(2)
+	assert_bool(Associate.throws_again(1, save.hand_trip, false)).is_true()
+	assert_bool(Associate.throws_again(2, save.hand_trip, false)).is_false()
+	assert_bool(Associate.throws_again(1, save.hand_trip, true)).is_false()  # Lab hands go home.
+
+
+func test_a_hand_that_has_thrown_goes_for_a_second_cabbage_without_going_home_first() -> void:
+	SaveManager.save.hands = 1
+	SaveManager.save.hand_trip = 2
+	var hand := _hand()
+	var first := _cabbage(Vector3(0.6, 0.87, 0.4))
+	var second := _cabbage(Vector3(0.9, 0.87, 0.5))
+	first.freeze = false
+	second.freeze = false
+	hand._set_off()
+	var taken: Cabbage = hand._target
+	assert_object(taken).is_not_null()
+	# What the hand's trip does once it is over the cabbage, then at the release point.
+	hand._take()
+	hand._throw()
+	assert_int(hand._thrown).is_equal(1)
+	assert_bool(Associate.throws_again(hand._thrown, SaveManager.save.hand_trip, false)).is_true()
+	taken.sold = true  # It went out of the window.
+	assert_bool(hand._pick(hand._tip)).is_true()
+	assert_object(hand._target).is_same(second if taken == first else first)
+	assert_int(hand._phase).is_equal(Associate.Phase.REACH)
+
+
+# ---- The HANDLING ASSIGNMENT SCHEDULE (entities/hand_schedule/): kinds struck for a kind of hand.
+func test_a_regular_hand_leaves_a_cabbage_kind_its_schedule_forbids() -> void:
+	var plain := _cabbage(Vector3(1.2, 0.87, 0.9))
+	var blue := _cabbage(Vector3(0.0, 0.87, 0.3), false, true)
+
+	assert_object(Associate.pick_target([plain, blue], ENTRY, null, [], false, false, false, false, PackedStringArray(["regular"]))).is_same(blue)
+	assert_object(Associate.pick_target([plain], ENTRY, null, [], false, false, false, false, PackedStringArray(["regular"]))).is_null()
+	assert_object(Associate.pick_target([plain, blue], ENTRY, null, [], false, false, false, false, PackedStringArray(["research"]))).is_same(plain)
+
+
+func test_research_hands_still_take_what_regular_hands_are_forbidden() -> void:
+	var save := SaveManager.save
+	save.stamped.append(HandSchedule.CARD)
+	save.tree_bought.append(HandSchedule.NODES.research)
+	HandSchedule.toggle(save, false, "research")
+	var blue := _cabbage(Vector3(0.6, 0.87, 0.3), false, true)
+	var lab_entry := Associate.park_spot(0, true)
+
+	assert_object(Associate.pick_target([blue], ENTRY, null, [], false, false, false, false, HandSchedule.forbidden(save, false))).is_null()
+	assert_object(Associate.pick_target([blue], lab_entry, null, [], false, true, false, false, HandSchedule.forbidden(save, true))).is_same(blue)
+
+
+func test_a_lab_hand_struck_for_plain_cabbages_takes_only_the_blue_ones() -> void:
+	var plain := _cabbage(Vector3(-0.2, 0.87, 0.9))
+	var blue := _cabbage(Vector3(1.2, 0.87, 0.0), false, true)
+	var lab_entry := Associate.park_spot(0, true)
+
+	assert_object(Associate.pick_target([plain, blue], lab_entry, null, [], false, true, false, false, PackedStringArray(["regular"]))).is_same(blue)
+
+
+func test_the_schedule_never_lets_a_hand_take_gold_it_is_not_cleared_for() -> void:
+	var gold := _cabbage(Vector3(1.2, 0.87, 0.9), false, false, true)
+	var lab_entry := Associate.park_spot(0, true)
+
+	# Nothing struck, no clearance: left alone. Cleared and struck: left alone too.
+	assert_object(Associate.pick_target([gold], ENTRY, null, [], false, false, false, false, PackedStringArray())).is_null()
+	assert_object(Associate.pick_target([gold], lab_entry, null, [], false, true, false, false, PackedStringArray())).is_null()
+	assert_object(Associate.pick_target([gold], ENTRY, null, [], false, false, false, true, PackedStringArray(["golden"]))).is_null()
+	assert_object(Associate.pick_target([gold], ENTRY, null, [], false, false, false, true, PackedStringArray(["regular"]))).is_same(gold)
+
+
+func test_the_schedule_does_not_cover_rotten_cabbages_the_memo_and_the_bin_protocol_do() -> void:
+	var rotten := _cabbage(Vector3(1.2, 0.87, 0.9), true)
+	var all := PackedStringArray(HandSchedule.KINDS)
+
+	assert_object(Associate.pick_target([rotten], ENTRY, null, [], false, false, false, false, all)).is_same(rotten)
+	assert_object(Associate.pick_target([rotten], ENTRY, null, [], true, false, false, false, all)).is_null()
+
+
+func test_a_hired_hand_struck_for_every_plain_cabbage_stays_home_and_looks_again() -> void:
+	var save := SaveManager.save
+	save.hands = 1
+	save.stamped.append(HandSchedule.CARD)
+	HandSchedule.toggle(save, false, "regular")
+	HandSchedule.toggle(save, true, "regular")
+	_cabbage(Vector3(0.6, 0.87, 0.3))
+	var hand := _hand()
+
+	hand._set_off()
+
+	assert_object(hand._target).is_null()
+	assert_float(hand._wait).is_equal(Associate.RETRY)
+
+
+func test_a_hand_lets_a_cabbage_lie_that_is_struck_while_it_reaches_for_it() -> void:
+	var save := SaveManager.save
+	save.stamped.append(HandSchedule.CARD)
+	var plain := _cabbage(Vector3(0.6, 0.87, 0.3))
+
+	assert_bool(Associate.struck(plain, save, false)).is_false()
+	HandSchedule.toggle(save, false, "regular")
+	assert_bool(Associate.struck(plain, save, false)).is_true()
+	assert_bool(Associate.struck(plain, save, true)).override_failure_message("lab hands were not struck").is_false()
+	assert_bool(Associate.struck(null, save, false)).override_failure_message("a freed target").is_false()

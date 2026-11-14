@@ -15,10 +15,12 @@ func after_test() -> void:
 	ProjectSettings.set_setting("game/demo", _demo_was)
 
 
-func test_every_event_starts_on_a_saved_flag_or_a_real_desk_card() -> void:
+func test_every_event_starts_on_a_saved_flag_a_real_desk_card_or_farms_owned() -> void:
 	for id: String in Events.EVENTS:
 		var event: Dictionary = Events.EVENTS[id]
-		assert_bool(event.has("flag") or event.has("card")).override_failure_message(id).is_true()
+		assert_bool(event.has("flag") or event.has("card") or event.has("farms") or event.has("home_farms")).override_failure_message(id).is_true()
+		assert_int(event.get("home_farms", 1)).override_failure_message(id).is_between(1, Events.HOME_SITES)
+		assert_int(event.get("farms", 1)).override_failure_message(id).is_between(1, Events.FARMS)
 		if event.has("flag"):
 			assert_bool(event.flag in SaveGame.new()).override_failure_message(id).is_true()
 		if event.has("card"):
@@ -85,7 +87,7 @@ func test_the_warning_deals_the_farm_card_first_but_leaves_crate_prices_alone() 
 
 
 func test_prices_explode_after_the_set_number_of_units_sold_since_the_warning() -> void:
-	var save := _all_stamped_but(["family_farm", "golden_lamp"])
+	var save := _all_stamped_but(["family_farm", "golden_lamp", "market_intelligence", "stars"])  # The console still stands.
 	save.tray_unlocked = true
 	save.sold = 500
 	UpgradeDesk.start_warning(save)
@@ -335,8 +337,52 @@ func test_the_invest_in_growth_event_starts_only_once_chapter_twos_last_card_is_
 	assert_bool(Events.due("invest_in_growth", save)).is_false()
 	save.stamped.append("consolidation")
 	assert_bool(Events.due("invest_in_growth", save)).is_true()
-	# Its paper is held back for the alpha (BossReport.HELD, ui/sub/alpha_end) but kept for chapter 3.
-	assert_str(Report.report("invest_in_growth").re).is_equal("WE SHOULD INVEST IN GROWTH")
+
+
+func test_stamping_the_consolidation_card_brings_the_promotion_paper_once() -> void:
+	var save := SaveGame.new()
+	save.reports = PackedStringArray(["welcome"])
+	save.stamped = PackedStringArray(["family_farm", "standing_seed_order"])
+	assert_array(Report.due(save)).not_contains(["invest_in_growth"])
+	save.stamped.append("consolidation")
+	assert_array(Report.due(save)).contains(["invest_in_growth"])
+	assert_str(Report.report("invest_in_growth").re).is_equal("YOU ARE PROMOTED AGAIN")
+	assert_str(Report.report("invest_in_growth").body).contains("buying out other farms")
+	save.reports.append("invest_in_growth")
+	assert_array(Report.due(save)).not_contains(["invest_in_growth"])
+
+
+func test_the_first_farm_brings_the_farm_paper_once() -> void:
+	var save := SaveGame.new()
+	save.reports = PackedStringArray(["welcome"])
+	assert_bool(Events.due("first_farm", save)).is_false()
+	assert_array(Report.due(save)).is_empty()
+	save.farms_owned.append("K-1")
+	assert_array(Report.due(save)).is_equal(["first_farm"])
+	assert_str(Report.report("first_farm").body).contains("channel 1")
+	save.reports.append("first_farm")
+	save.farms_owned.append("K-2")
+	assert_array(Report.due(save)).is_empty()
+
+
+func test_five_farms_bring_the_no_more_sellers_paper() -> void:
+	var save := SaveGame.new()
+	save.reports = PackedStringArray(["welcome", "first_farm"])
+	save.farms_owned = PackedStringArray(["K-1", "K-2", "K-3", "K-4"])
+	assert_bool(Events.due("no_more_sellers", save)).is_false()
+	save.farms_owned.append("K-5")
+	assert_int(Events.HOME_SELLERS).is_equal(5)
+	assert_array(Report.due(save)).is_equal(["no_more_sellers"])
+	assert_str(Report.report("no_more_sellers").body).contains("take what should be ours")
+
+
+func test_wholesale_prices_never_explode_once_the_supply_console_is_gone() -> void:
+	var save := SaveGame.new()
+	save.supply_warning = true
+	save.sold = Events.SHOCK_AFTER
+	assert_bool(Events.shock_due(save)).is_true()
+	save.stamped.append("market_intelligence")
+	assert_bool(Events.shock_due(save)).is_false()
 
 
 func test_stamping_mechanisation_promotes_the_player_to_manager_and_not_before() -> void:
@@ -410,3 +456,30 @@ func test_the_progress_warning_waits_behind_a_story_note_due_at_the_same_moment(
 	save.progress_warned = true
 	save.slate_unlocked = true
 	assert_array(Report.due(save)).is_equal(["mood_drift", "progress_required"])
+
+
+func test_owning_every_farm_of_the_home_country_brings_the_notice_that_we_make_the_laws() -> void:
+	var save := SaveGame.new()
+	save.reports = PackedStringArray(["welcome", "first_farm", "no_more_sellers"])
+	for n in Events.HOME_SITES - 1:
+		save.farms_owned.append("%s%d" % [Events.HOME_PREFIX, n + 1])
+	save.farms_owned.append_array(["W-1", "W-2"])  # Nine farms, two of them abroad: one home site is not ours.
+	assert_int(Events.home_farms(save)).is_equal(Events.HOME_SITES - 1)
+	assert_bool(Events.due("home_country", save)).is_false()
+	save.farms_owned.append("%s%d" % [Events.HOME_PREFIX, Events.HOME_SITES])
+	assert_array(Report.due(save)).is_equal(["home_country"])
+	assert_str(Report.report("home_country").body).contains("we write the laws")
+	save.reports.append("home_country")
+	assert_array(Report.due(save)).is_empty()
+
+
+func test_the_home_countrys_farm_sites_are_the_ones_on_the_country_sheet() -> void:
+	var sheet: Node = auto_free(load("res://entities/map_table/country_sheet.tscn").instantiate())
+	var sites: Array[String] = []
+	for thing in sheet.get_node("Things").get_children():
+		if thing is MapBuilding:
+			sites.append(str((thing as MapBuilding).site))
+	assert_int(sites.size()).is_equal(Events.HOME_SITES)
+	for site in sites:
+		assert_bool(site.begins_with(Events.HOME_PREFIX)).override_failure_message(site).is_true()
+	assert_int(Events.HOME_SELLERS).is_less(Events.HOME_SITES)

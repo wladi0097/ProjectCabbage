@@ -1,0 +1,4 @@
+length 1.1 0.3 -3
+1_run.wav 0 -3 0.3
+2_run2.wav 0.22 -6 0.3
+3_stop.wav 0.50 6

@@ -625,3 +625,132 @@ All four came out steady (no surge); grow_pulse shapes them with `afade=t=in:d=0
 | `lever_rattle_cIpP.wav` | (above) | 0.60s | -6.8 dB (true -1.9) | 0.02s | — |
 | `lever_rattle_uIaH.wav` | (above) | 0.60s | -6.5 dB (true -1.5) | 0.09s | — |
 | `lever_rattle_Cgf4.wav` | (above) | 0.60s | -11.0 dB (true -3.3) | 0.00s | — |
+
+### map_paper_roll (2026-11-13)
+> A large heavy paper chart rolled up quickly by hand around a steel tube, fast dry stiff paper rustle and crackle, no impact, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `map_paper_roll_Ibm0.wav` | (above) | 0.80s | -1.1 dB (true -0.8) | 0.33s | map_swap (roll-up, 0.14 s) |
+| `map_paper_roll_cJ1B.wav` | (above) | 0.80s | -3.5 dB (true -1.6) | 0.18s | deed_roll (copied as it is; FarmDeed `Roll`, node -6 dB, pitch 1.25) |
+| `map_paper_roll_vfam.wav` | (above) | 0.80s | -4.2 dB (true -2.3) | 0.31s | — |
+| `map_paper_roll_zHMQ.wav` | (above) | 0.80s | -0.5 dB (true -0.4) | 0.25s | map_swap (unroll, 0.83 s) |
+
+### map_tube_saddle (2026-11-13)
+> A steel map tube with bakelite end caps dropped into the bakelite saddles of an enamelled steel rack, one short hard hollow clack with a faint metal ring, close-mic, dry
+All four came out near-silent (true -28 to -33 dB): not used. map_swap's saddle clacks are the spare `chute_stop_2Q7k` (the new roll leaving, -12) and `chute_stop_Upse` (the old roll stowed, -7).
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `map_tube_saddle_3jND.wav` | (above) | 0.48s | -32.8 dB (true -31.9) | 0.03s | — |
+| `map_tube_saddle_vDEf.wav` | (above) | 0.48s | -35.5 dB (true -33.1) | 0.01s | — |
+| `map_tube_saddle_wtz6.wav` | (above) | 0.48s | -30.5 dB (true -29.3) | 0.02s | — |
+| `map_tube_saddle_xT4g.wav` | (above) | 0.48s | -32.3 dB (true -28.1) | 0.00s | — |
+
+### map_roll_land (2026-11-13)
+> A heavy rolled-up paper chart on a steel tube dropped onto a wooden desk, one dull hollow papery thud with a small second bounce, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `map_roll_land_g6N8.wav` | (above) | 0.60s | -4.7 dB (true -3.1) | 0.01s | map_swap (bounce, 0.90 s) |
+| `map_roll_land_mnlk.wav` | (above) | 0.60s | -1.0 dB (true 0.0) | 0.06s | map_swap (landing, 0.76 s), map_roll_arrive (under the saddle clack) |
+| `map_roll_land_sjUv.wav` | (above) | 0.60s | -11.7 dB (true -11.6) | 0.02s | — |
+| `map_roll_land_vKgV.wav` | (above) | 0.60s | -17.9 dB (true -17.3) | 0.00s | — |
+
+### map_weight_thud (2026-11-13)
+> A small heavy cast-iron drafting weight with a felt foot set down firmly on paper over a wooden table, one short dull solid thump, no ring, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `map_weight_thud_4vLt.wav` | (above) | 0.48s | -6.5 dB (true -6.5) | 0.00s | map_swap (weight 4, 1.47 s) |
+| `map_weight_thud_FkT5.wav` | (above) | 0.48s | -0.8 dB (true -0.7) | 0.06s | map_swap (weight 1, 1.35 s) |
+| `map_weight_thud_gLVb.wav` | (above) | 0.48s | -3.0 dB (true -2.7) | 0.09s | map_swap (weight 2, 1.39 s) |
+| `map_weight_thud_oSKV.wav` | (above) | 0.48s | -2.8 dB (true -2.8) | 0.11s | map_swap (weight 3, 1.43 s) |
+
+### map_token_ripple (2026-11-13)
+> A handful of small wooden game tokens stood up quickly one after another on a paper map, a fast ripple of tiny dry wooden clicks, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `map_token_ripple_D5CC.wav` | (above) | 0.80s | -2.0 dB (true -0.9) | 0.39s | — |
+| `map_token_ripple_WCDl.wav` | (above) | 0.80s | -6.0 dB (true -4.5) | 0.29s | — |
+| `map_token_ripple_kRhH.wav` | (above) | 0.80s | 0.0 dB (true -0.5) | 0.44s | map_swap (pop wave from 1.36 s; its first 0.28 s cut off: `sources/map_swap/12_pop.wav`) |
+| `map_token_ripple_qaLm.wav` | (above) | 0.80s | -0.8 dB (true -1.0) | 0.09s | — |
+
+### farm_deed_seal (2026-11-13)
+> A heavy cast-iron notary embossing seal press clamped down hard on a thick paper deed, one firm crunching mechanical clunk, no ring, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `farm_deed_seal_PL9p.wav` | (above) | 0.60s | -5.3 dB (true -3.5) | 0.12s | farm_acquire_1 |
+| `farm_deed_seal_jrrV.wav` | (above) | 0.60s | -6.2 dB (true -3.9) | 0.06s | farm_acquire_2 |
+| `farm_deed_seal_r7Hh.wav` | (above) | 0.60s | -13.9 dB (true -11.0) | 0.02s | — |
+| `farm_deed_seal_rfuh.wav` | (above) | 0.60s | -6.6 dB (true -4.5) | 0.13s | — |
+
+### farm_ledger (2026-11-13)
+> An old mechanical adding machine, the hand lever pulled once, one short ratchet ka-chunk with the number wheels clattering into place, no bell, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `farm_ledger_CRtu.wav` | (above) | 0.80s | -16.5 dB (true -0.4) | 0.25s | farm_acquire_1 |
+| `farm_ledger_Ob6c.wav` | (above) | 0.80s | -15.1 dB (true -1.9) | 0.11s | — |
+| `farm_ledger_iDad.wav` | (above) | 0.80s | -10.9 dB (true -3.4) | 0.09s | — |
+| `farm_ledger_iWRQ.wav` | (above) | 0.80s | -11.1 dB (true -0.7) | 0.31s | farm_acquire_2 |
+
+### farm_refuse (2026-11-13)
+> A small pewter token wobbling from side to side on a paper-covered wooden table, a brief dry rattling wobble dying away, no impact, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `farm_refuse_E2uw.wav` | (above) | 0.48s | -4.5 dB (true -1.6) | 0.11s | farm_refuse_2 |
+| `farm_refuse_Jw65.wav` | (above) | 0.48s | -2.0 dB (true -1.1) | 0.18s | farm_refuse_1 |
+| `farm_refuse_MDj4.wav` | (above) | 0.48s | -1.8 dB (true -2.1) | 0.24s | — |
+
+### phone_lift (2026-11-13)
+> A heavy bakelite telephone handset lifted off its cradle on an old office switchboard, the hook switch springing up with one soft mechanical click and a small plastic rattle, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `phone_lift_R4b4.wav` | (above) | 0.60s | -0.5 dB (true 0.0) | 0.09s | field_line_lift_1 |
+| `phone_lift_iuTG.wav` | (above) | 0.60s | -0.0 dB (true 0.0) | 0.10s | — |
+| `phone_lift_nipS.wav` | (above) | 0.60s | 0.0 dB (true 0.0) | 0.07s | field_line_lift_2 |
+
+### phone_line_open (2026-11-13)
+> An old telephone exchange line connecting, one small relay click followed by a faint low line hum with soft static crackle, no dial tone, no voice, close-mic, dry
+All three are faint high crackle (8 kHz peak -30 to -35 dB, true -9 to -19): the 'low line hum' did not come. Ask for something audible next time.
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `phone_line_open_eUVt.wav` | (above) | 0.88s | -35.3 dB (true -15.8) | 0.13s | — |
+| `phone_line_open_gf4P.wav` | (above) | 0.88s | -32.1 dB (true -9.2) | 0.67s | field_line_open (crackle, +3) |
+| `phone_line_open_x6KQ.wav` | (above) | 0.88s | -30.2 dB (true -18.5) | 0.08s | — |
+
+### phone_hang_up (2026-11-13)
+> A heavy bakelite telephone handset dropped back into its cradle, one solid plastic clack with the hook switch click and a very faint bell tremor, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `phone_hang_up_5r0C.wav` | (above) | 0.60s | -9.6 dB (true -9.6) | 0.01s | field_line_hang_up_2 (normalised up 5.6 dB) |
+| `phone_hang_up_h73p.wav` | (above) | 0.60s | -37.0 dB (true -35.4) | 0.11s | — |
+| `phone_hang_up_nXFu.wav` | (above) | 0.60s | -0.2 dB (true -0.4) | 0.02s | field_line_hang_up_1 |
+
+### relay_tick (2026-11-13)
+> A single small electromechanical telephone exchange relay switching once, one tiny dry soft click, very short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `relay_tick_OuCe.wav` | (above) | 0.48s | -10.6 dB (true -3.5) | 0.04s | field_line_relay_1 |
+| `relay_tick_XOIT.wav` | (above) | 0.48s | -15.5 dB (true -4.2) | 0.02s | field_line_relay_2 |
+| `relay_tick_Y6Fm.wav` | (above) | 0.48s | -21.4 dB (true -7.2) | 0.19s | field_line_open (click) |
+| `relay_tick_hApg.wav` | (above) | 0.48s | -15.2 dB (true -5.9) | 0.02s | field_line_relay_3 |
+
+### console_lift (2026-11-13)
+> A heavy enamel steel desk terminal lifted quickly off a steel shelf, a short metallic scrape and creak with a loose cable rattle, no impact, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `console_lift_V8om.wav` | (above) | 0.68s | -6.1 dB (true -4.7) | 0.18s | — |
+| `console_lift_eiur.wav` | (above) | 0.68s | -0.2 dB (true -0.5) | 0.11s | console_lift |
+| `console_lift_vVHb.wav` | (above) | 0.68s | -2.6 dB (true -1.9) | 0.05s | — |
+
+Reused on 2026-11-13 (chapter 3): `card_pickup_take_3` → map_swap (weights lifted, -10); `chute_stop_2Q7k`, `chute_stop_Upse` → map_swap (saddle clacks); `desk_lamp_on_EcC6` + `target_lamp_on_D70u` → map_view_in; `desk_lamp_off_m86t` → map_view_out; `price_tick_beep_4` + `projector_stamp_6MLX` → farm_place (low-pass 4 kHz); `projector_unroll_5fR9`, `projector_unroll_5zZm`, `projector_bar_thud_FWaX` (+6) → projector_widen. Effects reused as they are: `card_hover_1..2` (map hover, pitch 0.85), `console_press_1..2` (TO DESK button), `console_drop` (FieldLine landing, pitch 1.12).

@@ -197,6 +197,19 @@ func _bay_in_tree() -> QaBay:
 	return bay
 
 
+func test_a_finished_cabbage_ejects_only_the_findings_that_still_fit_under_the_research_limit() -> void:
+	var bay := _bay_in_tree()
+	_save.findings = _save.findings_limit - 7
+	bay._eject(5)
+	assert_int(bay.pending_findings()).is_equal(5)
+	bay._eject(5)  # Only 2 more fit beside the 5 already out.
+	assert_int(bay.pending_findings()).is_equal(7)
+	bay._eject(5)  # Full: nothing comes out.
+	assert_int(bay.pending_findings()).is_equal(7)
+	bay._file_pending()
+	assert_int(_save.findings).is_equal(_save.findings_limit)
+
+
 func test_a_slip_high_on_the_pile_is_swept_up_where_it_shows_under_the_hand() -> void:
 	var bay := _bay_in_tree()
 	var intake := Node3D.new()
@@ -298,10 +311,26 @@ func test_a_golden_unit_yields_golden_lab_times_the_findings() -> void:
 	assert_float(QaBay.findings_for(gold, _save)).is_equal(50.0)
 
 
-func test_the_findings_a_unit_yields_count_towards_the_findings_ever_earned() -> void:
-	_bay()._take(_unit())
-	_bay()._take(_unit(false, true))
-	assert_int(_save.findings_earned).is_equal(1 + roundi(_save.research_mult))
+func test_findings_count_as_earned_when_they_are_filed_and_only_what_fit_under_the_limit() -> void:
+	var bay := _bay_in_tree()
+	bay._take(_unit())
+	assert_int(_save.findings_earned).is_equal(0)  # On the bench: not earned yet.
+	_save.findings = _save.findings_limit - 7
+	bay._eject(5)
+	bay._eject(5)  # Only 2 more fit: 3 are lost.
+	bay._file_pending()
+	assert_int(_save.findings).is_equal(_save.findings_limit)
+	assert_int(_save.findings_earned).is_equal(7)
+
+
+func test_the_autosave_counts_the_findings_on_the_benches_in_slips_and_held_back() -> void:
+	var bay := _bay_in_tree()
+	bay._yields.append(4)  # A unit on a bench.
+	bay._backlog = 3  # Held back: the desk in front is full.
+	bay._slips.append(_slip(Vector3.ZERO, 2))
+	assert_int(bay.unfiled()).is_equal(9)
+	assert_int(SaveManager.pending_findings.call()).is_equal(9)
+	bay._slips.clear()
 
 
 func test_a_golden_unit_taken_in_is_counted_as_analysed() -> void:
@@ -457,9 +486,89 @@ func test_a_big_findings_payout_comes_as_a_handful_of_high_tokens_each_bigger_th
 	for high in ["Slip500", "Slip1000", "Slip5000", "Slip10000"]:
 		var look: Material = (bay.get_node(high) as MeshInstance3D).get_surface_override_material(0)
 		assert_str(look.resource_path).starts_with("res://assets/materials/findings_token_")
+	_save.findings_limit = 40000  # Room for it (the archive card's limit).
 	bay._eject(10000)
 	assert_array(bay._slips).has_size(20)
 	var total := 0
 	for slip in bay._slips:
 		total += slip.get_meta(&"value")
 	assert_int(total).is_equal(10000)
+
+
+
+func test_a_condensed_cabbage_in_the_lab_gives_twice_the_findings() -> void:
+	_save.findings_per_cabbage = 3
+	var dense := _unit()
+	dense.units = 2
+	assert_float(QaBay.findings_for(dense, _save)).is_equal(6.0)
+	assert_float(QaBay.findings_for(_unit(), _save)).is_equal(3.0)
+	_save.stock = 10
+	assert_int(_bay()._take(dense)).is_equal(6)
+	assert_int(_save.stock).is_equal(8)
+
+
+func test_a_condensed_research_cabbage_counts_as_two_research_cabbages_analysed() -> void:
+	_save.findings_per_cabbage = 1
+	var dense := _unit(false, true)
+	dense.units = 2
+	assert_float(QaBay.findings_for(dense, _save)).is_equal(2.0 * roundf(_save.research_mult))
+	_bay()._take(dense)
+	assert_int(_save.research_units).is_equal(2)
+
+
+func test_a_token_lands_right_in_front_of_the_mouth_and_a_full_spot_sends_the_next_one_further_out() -> void:
+	var thick := QaBay.SLIP_HALF * 2.0
+	var first: Vector2i = QaBay.slip_cell({}, thick)
+	assert_int(first.y).is_equal(0)
+	var piles := {first: QaBay.SLIP_REACH}
+	var next: Vector2i = QaBay.slip_cell(piles, thick)
+	assert_that(next).is_not_equal(first)
+	assert_int(maxi(absi(next.x - first.x), absi(next.y - first.y))).is_equal(1)
+	# Still room for a thin token on a spot that a thick one no longer fits on.
+	assert_that(QaBay.slip_cell({first: QaBay.SLIP_REACH - thick}, thick)).is_equal(first)
+	assert_that(QaBay.slip_cell({first: QaBay.SLIP_REACH - thick}, thick * 2.0)).is_not_equal(first)
+
+
+func test_no_token_comes_to_rest_above_the_reach_height_and_findings_are_held_back_while_the_desk_is_full() -> void:
+	var bay := _bay_in_tree()
+	for i in 60:
+		bay._eject(3)
+	var cells := QaBay.slip_cells()
+	assert_int(bay._slips.size()).is_less_equal(cells.x * cells.y * 3)
+	var piles := bay._piles()
+	assert_int(piles.size()).is_equal(cells.x * cells.y)
+	for cell: Vector2i in piles:
+		assert_float(piles[cell]).is_less_equal(QaBay.SLIP_REACH + 0.0001)
+		assert_bool(Rect2i(Vector2i.ZERO, cells).has_point(cell)).is_true()
+	# Nothing is lost while tokens are held back.
+	assert_int(bay._backlog).is_equal(180 - bay._slips.size())
+	assert_int(bay.pending_findings()).is_equal(180)
+
+
+func test_held_back_findings_drop_as_the_fewest_tokens_when_room_appears_and_nothing_is_lost() -> void:
+	var bay := _bay_in_tree()
+	for i in 60:
+		bay._eject(3)
+	var out := bay._slips.size()
+	for slip: Node3D in bay._slips.duplicate():
+		bay._file(slip)
+	assert_int(_save.findings).is_equal(out)
+	bay._drop()
+	assert_int(bay._backlog).is_equal(0)
+	assert_int(bay._slips.size()).is_equal(CoinPile.coin_values(180 - out).size())
+	assert_int(_save.findings + bay.pending_findings()).is_equal(180)
+
+
+func test_a_token_whose_pile_was_taken_from_under_it_drops_onto_the_desk() -> void:
+	var bay := _bay_in_tree()
+	bay._eject(2)
+	var low := bay._slips[0]
+	var high := bay._slips[1]
+	assert_that(high.get_meta(&"cell")).is_equal(low.get_meta(&"cell"))
+	for slip: Node3D in [low, high]:
+		slip.set_meta(&"resting", true)
+	bay._restack()
+	assert_float(high.global_position.y).is_greater(low.global_position.y)
+	bay._file(low)
+	bay._restack()
+	assert_float(high.global_position.y).is_equal_approx(QaBay.DESK_Y + float(high.get_meta(&"thick")) * 0.5, 0.0001)

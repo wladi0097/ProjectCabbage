@@ -1,0 +1,13 @@
+length 2.0 0.3 -3
+1_weights_off.wav -0.25 -10
+2_roll_up.wav 0.14 -4 0.45
+3_fetch.wav 0.45 -12
+4_land.wav 0.70 -2
+5_stow.wav 0.81 -7
+6_unroll.wav 0.83 -4 0.42
+7_bounce.wav 0.89 -10
+8_weight1.wav 1.29 -3
+9_weight2.wav 1.30 -4
+10_weight3.wav 1.32 -4
+11_weight4.wav 1.47 -3
+12_pop.wav 1.36 -8

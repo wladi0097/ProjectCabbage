@@ -3,8 +3,9 @@
 # Build: cat blender_lib.py room_geo.py > build.py   (has its own preview, no preview.py)
 #   blender -b --factory-startup -P build.py -- <abs room.blend> <abs png dir>   (SAVE=1 saves)
 # Textures (generated, no sources): python room_tex.py <abs assets/textures>
+#   except room_wall_map (map corner concrete, ambientCG Concrete029): room_wall_map_pack.py
 # Blender coords (Z-up): Godot (x, y, z) = Blender (x, -z, y). +Y here = outside.
-# Wall inner face Godot z=-0.80 -> Blender y=0.80; outer face y=1.05. x -8.0..3.6, height 0..2.6.
+# Wall inner face Godot z=-0.80 -> Blender y=0.80; outer face y=1.05. x -8.0..6.13, height 0..2.6.
 # Window opening x -0.55..1.95 (centred on the mat), height 0.75..1.90.
 # Steel sill: top 0.75 flat from y 0.75 (desk back edge, fills the 5 cm gap) to 0.86, then slopes out and down
 #   to 0.57 at y 1.10 (5 cm past the outer face); x -0.61..2.01.
@@ -19,6 +20,9 @@ WALL_S = 1 / 2.4                               # keep equal to uv1_scale in the 
 def env_rgb(k, d): return tuple(float(v) for v in os.environ.get(k, d).split(","))
 WALL_T = env_rgb("WALLT", "0.56,0.61,0.56")    # grey-sage paint; = albedo_color in the .tres
 m_wall = material("room_wall", (1, 1, 1), 0, 0.9); textured(m_wall, "room_wall", WALL_S, WALL_T)
+# The map corner (chapter 3, desk's right wing): board-formed concrete, ambientCG Concrete029 via room_wall_map_pack.py,
+# same 2.4 m tile; = albedo_color / uv1_scale in room_wall_map.tres
+m_wmap = material("room_wall_map", (1, 1, 1), 0, 0.85); textured(m_wmap, "room_wall_map", WALL_S, env_rgb("WMT", "0.50,0.51,0.52"))
 m_win = material("room_window", env_rgb("WT", "0.085,0.095,0.095"), 0.0, 0.42)    # dark painted steel
 m_bl = material("room_blinds", env_rgb("BT", "0.50,0.52,0.48"), 0.0, 0.55)         # dull grey venetian blinds
 m_st = material("room_street", (1, 1, 1), 0, 0.8); textured(m_st, "room_street", 1 / 2.4, env_rgb("STT", "0.55,0.57,0.57"))
@@ -30,20 +34,33 @@ nt.links.new(t.outputs["Color"], nt.nodes["Principled BSDF"].inputs["Base Color"
 # ---------- back wall: four blocks around the opening ----------
 X0, X1, Z0, Z1 = -0.55, 1.95, 0.75, 1.90       # opening; Z0 = sill top = desk top
 SB = 0.53                                      # underside of the steel sill block, top of the wall below it
-WX, WB, WT_, Y0, Y1 = 3.6, 0.0, 2.6, 0.80, 1.05
+WX, WB, WT_, Y0, Y1 = 6.13, 0.0, 2.6, 0.80, 1.05   # runs right past the desk's U to the right side wall's outside
 WXL = 8.0                                      # the wall runs further left: behind the farm TV on the desk's L wing
 # Side wall (playtest 2026-11-07, moved out 2026-11-08): the farm TV's corner gets a room corner behind it. Inner
 # face at Godot x -4.68 (8 cm past the L desk's left edge at -4.6), from the back wall to Godot z +3.3; off
 # screen in the desk view.
 SWX, SWY = -4.68, -3.3
+# Right side wall (2026-11-13), the mirror for chapter 3's map area on the desk's right part: inner face at Godot
+# x 5.88 (8 cm past the right edge at 5.8), from the back wall to Godot z +4.3 (the right arm ends at 4.0).
+RWX, RWY = 5.88, -4.3
+# The map corner is its own place: the right side wall and the back wall right of the main desk (x > MX, behind the
+# wing's back part) are concrete (slot 1); a dark steel cover strip hides the brick/concrete change at MX and a steel
+# rail at desk height runs round the corner (slot 2), so the wing's edge meets a finished line seen from above.
+MX = 3.2
 bm = bmesh.new()
-for lo, hi in [((-WXL, Y0, WB), (WX, Y1, SB)),          # below the sill
-               ((-WXL, Y0, Z1), (WX, Y1, WT_)),         # above the window
-               ((-WXL, Y0, SB), (X0, Y1, Z1)),          # left pier
-               ((X1, Y0, SB), (WX, Y1, Z1)),           # right pier
-               ((SWX - 0.25, SWY, WB), (SWX, Y0, WT_))]:    # side wall behind the farm TV
-    part_box(bm, lo, hi, 0.0, 0)
-finish("room_wall", bm, [m_wall])
+for lo, hi, mat in [((-WXL, Y0, WB), (MX, Y1, SB), 0),     # below the sill
+                    ((-WXL, Y0, Z1), (MX, Y1, WT_), 0),    # above the window
+                    ((-WXL, Y0, SB), (X0, Y1, Z1), 0),     # left pier
+                    ((X1, Y0, SB), (MX, Y1, Z1), 0),       # right pier
+                    ((SWX - 0.25, SWY, WB), (SWX, Y0, WT_), 0),   # side wall behind the farm TV
+                    ((MX, Y0, WB), (WX, Y1, WT_), 1),      # back wall behind the wing
+                    ((RWX, RWY, WB), (RWX + 0.25, Y0, WT_), 1)]:  # right side wall
+    part_box(bm, lo, hi, 0.0, mat)
+RP, RZ0, RZ1 = 0.015, 0.72, 0.80               # rail: 1.5 cm proud, 8 cm tall around the desk top (0.75)
+part_box(bm, (MX - 0.025, Y0 - RP, WB), (MX + 0.025, Y0, WT_), 0.003, 2)      # cover strip, full height
+part_box(bm, (MX + 0.025, Y0 - RP, RZ0), (RWX - RP, Y0, RZ1), 0.003, 2)       # rail along the back wall
+part_box(bm, (RWX - RP, RWY, RZ0), (RWX, Y0, RZ1), 0.003, 2)                  # rail along the side wall
+finish("room_wall", bm, [m_wall, m_wmap, m_win])
 
 def prism(bm, prof, xa, xb, mat):
     """Closed (y, z) profile extruded along x."""

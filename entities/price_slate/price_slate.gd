@@ -28,6 +28,8 @@ const WILD_STEP := 0.3
 ## The projector nodes that show the forecast: READS THE ROOM the way, STREET TIMETABLE the time.
 ## Each works alone; a lone half sits centred under the price.
 const FORECAST := "consultant_mood"
+## The projector node (chapter 3) after which a bad mood no longer lowers the full-sale price (street_mood).
+const MANDATORY := "mandatory_consumption"
 const FORECAST_TIME := "consultant_clock"
 ## Sets how fast sales fall above the full-sale price: at 2, a price a third over it sells 56%.
 const ELASTICITY := 2.0
@@ -180,7 +182,13 @@ func _drop_gauge() -> void:
 
 ## The chance the street buys at the save's price right now: what the gauge shows and the window uses.
 static func acceptance(save: SaveGame) -> float:
-	return demand(save.sale_price, ref_price(save.marketing, save.demand_mood))
+	return demand(save.sale_price, ref_price(save.marketing, street_mood(save)))
+
+
+## The mood the street buys with: save.demand_mood, and never under 1 once MANDATORY CONSUMPTION
+## (MANDATORY) is bought: at the full-sale price every cabbage sells, whatever the mood; a good mood still counts.
+static func street_mood(save: SaveGame) -> float:
+	return maxf(save.demand_mood, 1.0) if save.tree_bought.has(MANDATORY) else save.demand_mood
 
 
 func _pose_needle() -> void:

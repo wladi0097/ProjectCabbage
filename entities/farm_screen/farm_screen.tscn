@@ -19,6 +19,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/farm_rot_2.wav" id="rt2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/farm_clear_1.wav" id="cl1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/farm_clear_2.wav" id="cl2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_place.wav" id="pl1"]
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_GoldHarvest"]
 random_pitch = 1.05
@@ -155,6 +156,11 @@ script = ExtResource("1_script")
 [node name="Plant" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_plant")
 volume_db = -8.0
+bus = &"SFX"
+
+[node name="Place" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("pl1")
+volume_db = -6.0
 bus = &"SFX"
 
 [node name="Harvest" type="AudioStreamPlayer" parent="."]

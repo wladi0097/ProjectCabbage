@@ -54,6 +54,12 @@ gdUnit4 (`addons/gdUnit4`), run by `.\check.ps1` (warning check, then every suit
 
 Tools: Godot `C:\Users\wladi\Desktop\Godot_v4.7.2-stable_win64.exe`, Blender 5.2 (headless only), ffmpeg on the PATH.
 
+## Running Godot
+
+You may start Godot yourself to test, probe or screenshot anything, without asking. Two rules:
+- **Always close every instance you started before you finish**, including ones a crashed or timed-out run left behind. Before reporting, list the running Godot processes and kill the ones that are yours (by the PID you started, never the user's open editor). This applies to subagents too.
+- **Prefer windowed** (a small window). Go bigger or fullscreen only when the thing you are checking needs the size.
+
 ## Folder structure
 
 - `assets/` – raw art & audio (audio, fonts, materials, meshes, shaders, sprites, textures)

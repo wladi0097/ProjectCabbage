@@ -126,7 +126,7 @@ func _process(delta: float) -> void:
 ## mood come nearest save.consultant_bounce (the dearer on a tie), within the floor and ceiling, and
 ## never over squeeze_cap.
 static func target_price(save: SaveGame) -> int:
-	var ref := Slate.ref_price(save.marketing, save.demand_mood)
+	var ref := Slate.ref_price(save.marketing, Slate.street_mood(save))
 	var want := save.consultant_bounce / 100.0
 	var near := Slate.MIN_PRICE
 	for price in range(Slate.MIN_PRICE, Slate.max_price(save.marketing) + 1):

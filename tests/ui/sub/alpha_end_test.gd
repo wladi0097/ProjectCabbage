@@ -21,13 +21,14 @@ func after_test() -> void:
 
 func _capstone_stamped() -> SaveGame:
 	var save := SaveGame.new()
-	save.stamped = PackedStringArray(["family_farm", "consolidation"])
+	save.stamped = PackedStringArray(["family_farm", "consolidation", "market_intelligence", "stars"])
 	return save
 
 
-func test_the_alpha_thanks_the_player_once_the_chapter_two_capstone_is_stamped_and_not_before() -> void:
+func test_the_alpha_end_comes_only_after_the_stars_card_not_after_chapter_twos_last_card() -> void:
 	var save := SaveGame.new()
-	save.stamped = PackedStringArray(["family_farm", "standing_seed_order"])
+	save.stamped = PackedStringArray(["family_farm", "consolidation", "market_intelligence"])
+	assert_bool(Report.Events.chapter_3(save)).is_true()
 	assert_bool(AlphaEnd.due(save)).is_false()
 	assert_bool(AlphaEnd.due(_capstone_stamped())).is_true()
 
@@ -51,8 +52,9 @@ func test_the_demo_never_shows_the_alpha_popup() -> void:
 	assert_bool(AlphaEnd.due(_capstone_stamped())).is_false()
 
 
-func test_for_the_alpha_the_chapter_three_paper_is_held_back_but_its_event_still_starts() -> void:
-	var save := _capstone_stamped()
-	save.reports = PackedStringArray(["welcome"])
-	assert_bool(Report.Events.chapter_3(save)).is_true()
-	assert_array(Report.due(save)).not_contains(["invest_in_growth"])
+func test_the_stars_card_is_chapter_threes_last_card_and_needs_every_farm_in_the_game() -> void:
+	var card := UpgradeDesk.card_data("stars")
+	assert_int(card.farms).is_equal(Report.Events.FARMS)
+	assert_int(Report.Events.FARMS).is_equal(FieldLine.LAMPS)
+	assert_bool(card.get("priority", false)).is_true()
+	assert_dict(UpgradeDesk.CARDS[-1]).is_equal(card)

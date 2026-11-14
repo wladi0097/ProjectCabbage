@@ -8,6 +8,13 @@ extends Resource
 @export var last_played := 0
 @export var play_seconds := 0
 @export var coins := 0
+## The most coins and Findings the save may hold (earn): what comes in past it is lost, so nothing
+## is hoarded through a chapter's end. $40,000 and ¶8,000 at the start; chapter 3's desk cards
+## cash_holding and archive_capacity multiply them by 5, then the projector's TREASURY chain
+## (coin_limit_1..5, to $16M) and CH2's ARCHIVE chain (archive_1..5) raise them. A save holding more
+## (an old one) keeps it and earns nothing until it is under the limit again.
+@export var coin_limit := 40000
+@export var findings_limit := 8000
 ## Unsold cabbages, the ones on the mat included. The game starts with 10 to sell.
 @export var stock := 10
 ## The most units the stock may hold: no pack is bought and no farm square harvested past it.
@@ -160,6 +167,10 @@ extends Resource
 @export var research_units := 0
 ## Research hands (entities/associate/, research = true): hands that lob units into the QA bay.
 @export var research_hands := 0
+## HANDLING ASSIGNMENT SCHEDULE (desk card hand_schedule, entities/hand_schedule/): the cabbage kinds
+## (HandSchedule.KINDS) struck for hired hands, and for lab hands: a hand never takes a kind in its list.
+@export var hands_forbidden := PackedStringArray()
+@export var lab_hands_forbidden := PackedStringArray()
 ## Units the street refused and threw back in.
 @export var refusals := 0
 ## The radio (entities/radio/): playing or stopped, the track it is on, songs skipped, and seconds
@@ -229,6 +240,16 @@ extends Resource
 ## 1.0 until the card (1.2); its projector chain raises it to 1.6.
 @export var own_sale := 1.0
 @export var own_lab := 1.0
+## CONDENSE CABBAGES (desk card condense, chapter 3): how many cabbages from stock one condensed
+## cabbage off the chute holds (Cabbage.units, CabbageFeeder.condensed): 1 before the card, 2 with it;
+## the projector's CONDENSE II to V raise it to 8. It counts that many times wherever it goes.
+@export var condense := 1
+## Cabbages a hired hand throws out of the window per trip before it goes back to its spot
+## (projector node TWO-HANDED POLICY: 2).
+@export var hand_trip := 1
+## BIG MINDS HAVE BIG IDEAS (desk card big_ideas): the projector's wider sheet has been unrolled
+## once (Projector: until then the first pull-down shows it widening).
+@export var projector_wide := false
 ## STANDING SEED ORDER (desk card standing_seed_order): its AUTO SEED switch on CH1 (on from the
 ## stamp), the crate's seed count at or under which it buys a pack (farm tree SAFETY SEED STOCK
 ## raises it), and the pack it buys (FarmScreen.SEED_PACKS: 0 the 10, 1 the 50; farm tree).
@@ -237,12 +258,30 @@ extends Resource
 @export var farm_seed_pack := 0
 ## The TV channel last shown (1: the fields, 2: the farm tree).
 @export var farm_channel := 1
+## Chapter 3's farms bought on the map: the ids of the farm sites owned (.size(): how many farms).
+@export var farms_owned := PackedStringArray()
+## The negotiation for the next farm (FarmRegister): every offer made so far, in order (cabbages, or
+## coins for a bribe), and the coin price they have left it at (0: still the asking price). Both
+## start over when the farm is bought. What the owner has in mind is never saved: it follows from
+## `created` and the farms owned, so reloading cannot change it.
+@export var haggle_offers := PackedInt32Array()
+@export var haggle_price := 0
+## The CH1 squares made farm squares, one per farm owned, picked by the player (FarmScreen.place_farm),
+## and how many times a plain square's cabbages each farm square harvests (CH2's FARM OUTPUT raises it).
+@export var farm_squares := PackedInt32Array()
+@export var farm_square_mult := 10.0
+## Seeds a farm square holds (2; CH2's SEED BEDS behind STRUCTURED FARM raise it), and the seeds in
+## each farm square now, in farm_squares' order (FarmScreen.seeds_in): each grows its own batch.
+@export var farm_slots := 2
+@export var farm_square_seeds := PackedInt32Array()
+## STRUCTURED FARM (desk card structured_farm): CH2's tree has been shown opening up once (FarmTree).
+@export var farm_tree_wide := false
 ## The chute lever (card chute_control) is pulled: a metal blocker sits on the chute and no unit
 ## comes down it; stock only piles up.
 @export var chute_blocked := false
 ## Big events whose boss report has been shown or filed (entities/boss_report/), GameEvents ids.
 @export var reports := PackedStringArray()
-## The alpha's end popup (ui/sub/alpha_end/, chapter 3 unlocked) has been closed: it never comes again.
+## The alpha's end popup (ui/sub/alpha_end/, chapter 3's last card stamped) has been closed: it never comes again.
 @export var alpha_end := false
 # Playtest counters: running totals for tools/pace.py's calibration (research/numbers.md). Each is
 # counted where its event already happens; the *_seconds ones add up frame time.
@@ -277,10 +316,27 @@ extends Resource
 var playtest_log: Array[Dictionary] = []
 
 const MIGRATION := 4
+## The save field that caps each capped one (room, earn).
+const LIMITS := {&"coins": &"coin_limit", &"findings": &"findings_limit"}
+
+
+## How much more of `field` ("coins", "findings") fits under its limit: 0 at the limit or over it.
+func room(field: StringName) -> int:
+	return maxi(get(LIMITS[field]) - get(field), 0)
+
+
+## Adds what fits of `amount` to `field` and returns it: the only way coins and Findings come in.
+## Never takes anything away: a save over its limit keeps what it holds.
+func earn(field: StringName, amount: int) -> int:
+	var fits := clampi(amount, 0, room(field))
+	set(field, get(field) + fits)
+	return fits
+
 ## The playtest log (SaveManager.LOG_PATH, a CSV appended one line per entry; tools/pace.py reads it).
 ## A line starting "t,kind," is a header: a build with other columns appends a new one, and every
 ## line after it follows that header. Rows: "session" (id = seconds away), "minute" (every
-## SaveManager.LOG_MINUTE s of play), "card"/"node"/"farm" (a purchase: id, price, currency),
+## SaveManager.LOG_MINUTE s of play), "card"/"node"/"farm" (a purchase: id, price, currency), "farm_bought"/"seizure"/"annexation"
+## (the map table: a row per currency) and "offer" (a haggle: id = which farm, price = what was offered),
 ## "milestone", "event", "quota_met"/"quota_missed", and "snapshot" (old builds, every 30 s).
 ## Every row carries the state right after it. Columns:
 ##   t: play seconds. kind, id, price, currency: what happened (above).

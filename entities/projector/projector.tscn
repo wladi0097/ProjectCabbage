@@ -5,6 +5,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/projector_roll_up.wav" id="3_roll_up"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/projector_approve.wav" id="4_approve"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/projector_denied.wav" id="5_denied"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/projector_widen.wav" id="sfx_widen"]
 [ext_resource type="Script" path="res://entities/components/interactable.gd" id="6_interactable"]
 [ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="7_font"]
 [ext_resource type="PackedScene" path="res://entities/components/upgrade_tree/upgrade_tree.tscn" id="8_tree"]
@@ -79,6 +80,7 @@ roll_down_sound = ExtResource("2_roll_down")
 roll_up_sound = ExtResource("3_roll_up")
 approve_sound = ExtResource("4_approve")
 denied_sound = ExtResource("5_denied")
+widen_sound = ExtResource("sfx_widen")
 beam = SubResource("Beam")
 
 [node name="Overlay" type="ColorRect" parent="Screen"]

@@ -82,6 +82,27 @@ func test_a_logged_purchase_lands_in_the_save_at_the_current_play_time() -> void
 	assert_int(entry.t).is_greater_equal(500)
 
 
+func test_an_autosave_takes_in_the_coins_and_findings_still_on_the_desk_and_leaves_the_save_as_it_was() -> void:
+	var save := SaveManager.save
+	var asked := []
+	var coins := SaveManager.pending_coins
+	var findings := SaveManager.pending_findings
+	SaveManager.pending_coins = func() -> int:
+		asked.append("coins")
+		return 15
+	SaveManager.pending_findings = func() -> int:
+		asked.append("findings")
+		return 7
+	save.coins = 30
+	save.findings = save.findings_limit - 3  # Only 3 of the 7 fit: the file never holds more than the limit.
+	SaveManager.autosave()
+	SaveManager.pending_coins = coins
+	SaveManager.pending_findings = findings
+	assert_array(asked).is_equal(["coins", "findings"])
+	assert_int(save.coins).is_equal(30)
+	assert_int(save.findings).is_equal(save.findings_limit - 3)
+
+
 const TEMP_DIR := "user://save_manager_test"
 
 

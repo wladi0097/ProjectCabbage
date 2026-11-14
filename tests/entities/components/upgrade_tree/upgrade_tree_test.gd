@@ -51,6 +51,19 @@ func test_the_projector_tree_still_buys_with_coins() -> void:
 	assert_array(paid).is_equal([["slogan_1", Projector.price_of("slogan_1", save)]])
 
 
+func test_the_trees_titles_follow_a_change_of_language() -> void:
+	var was := TranslationServer.get_locale()
+	TranslationServer.set_locale("en")
+	var tree := _tree(Projector, SaveGame.new())
+	var drawn := tree._layer_key
+	tree._process(0.0)
+	assert_array(tree._layer_key).is_equal(drawn)  # Nothing changed: not drawn again.
+	TranslationServer.set_locale("de")
+	tree._process(0.0)
+	assert_array(tree._layer_key).is_not_equal(drawn)  # Drawn again, in German.
+	TranslationServer.set_locale(was)
+
+
 func test_a_short_hold_buys_nothing() -> void:
 	var save := SaveGame.new()
 	save.stamped = PackedStringArray(["projector", "street_posters"])

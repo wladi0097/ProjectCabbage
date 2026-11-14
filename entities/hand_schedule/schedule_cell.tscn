@@ -1,0 +1,77 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/hand_schedule/schedule_cell.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/cabbage_icon.svg" id="2_cabbage"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/padlock.svg" id="3_padlock"]
+
+[sub_resource type="StyleBoxFlat" id="StampBox"]
+content_margin_left = 4.0
+content_margin_top = 1.0
+content_margin_right = 4.0
+content_margin_bottom = 2.0
+bg_color = Color(0.78, 0.78, 0.72, 0.55)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.62, 0.13, 0.11, 0.9)
+
+[node name="ScheduleCell" type="Button"]
+custom_minimum_size = Vector2(108, 118)
+focus_mode = 0
+mouse_default_cursor_shape = 2
+script = ExtResource("1_script")
+
+[node name="Picture" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 10.0
+offset_right = 84.0
+offset_bottom = 70.0
+pivot_offset = Vector2(30, 30)
+mouse_filter = 2
+texture = ExtResource("2_cabbage")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="."]
+layout_mode = 0
+offset_top = 82.0
+offset_right = 108.0
+offset_bottom = 110.0
+theme_override_font_sizes/font_size = 16
+text = "PLAIN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Lock" type="TextureRect" parent="."]
+visible = false
+modulate = Color(0.13, 0.14, 0.14, 0.7)
+layout_mode = 0
+offset_left = 40.0
+offset_top = 26.0
+offset_right = 68.0
+offset_bottom = 54.0
+mouse_filter = 2
+texture = ExtResource("3_padlock")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Stamp" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 5.0
+offset_top = 20.0
+offset_right = 103.0
+offset_bottom = 62.0
+rotation = -0.2
+pivot_offset = Vector2(49, 21)
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.13, 0.11, 1)
+theme_override_constants/line_spacing = -5
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StampBox")
+text = "NOT TO BE
+HANDLED"
+horizontal_alignment = 1
+vertical_alignment = 1

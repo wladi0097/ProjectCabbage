@@ -222,3 +222,60 @@ func test_the_playtest_clocks_count_time_with_no_stock_a_full_mat_and_a_shut_chu
 	assert_float(save.empty_seconds).is_equal_approx(2.0, 0.0001)
 	assert_float(save.mat_full_seconds).is_equal_approx(3.0, 0.0001)
 	assert_float(save.chute_shut_seconds).is_equal_approx(3.0, 0.0001)
+
+
+
+func _condensing(nodes: Array = []) -> SaveGame:
+	var save := SaveGame.new()
+	UpgradeDesk.apply("condense", save)
+	save.tree_bought = PackedStringArray(nodes)
+	return save
+
+
+func test_before_the_condense_card_every_cabbage_comes_down_single() -> void:
+	assert_int(Feeder.condensed(SaveGame.new(), false, false, false, 10)).is_equal(1)
+
+
+func test_a_condensed_plain_cabbage_holds_two_cabbages_from_stock() -> void:
+	var save := _condensing()
+	assert_int(save.condense).is_equal(2)
+	assert_int(Feeder.condensed(save, false, false, false, 10)).is_equal(2)
+
+
+func test_only_plain_cabbages_are_condensed_until_their_nodes() -> void:
+	var save := _condensing()
+	assert_int(Feeder.condensed(save, false, false, true, 10)).is_equal(1)  # research
+	assert_int(Feeder.condensed(save, false, true, false, 10)).is_equal(1)  # golden
+	save.tree_bought.append(Feeder.CONDENSE_RESEARCH)
+	assert_int(Feeder.condensed(save, false, false, true, 10)).is_equal(2)
+	assert_int(Feeder.condensed(save, false, true, false, 10)).is_equal(1)
+	save.tree_bought.append(Feeder.CONDENSE_GOLD)
+	assert_int(Feeder.condensed(save, false, true, false, 10)).is_equal(2)
+
+
+func test_rotten_cabbages_are_never_condensed() -> void:
+	var save := _condensing([Feeder.CONDENSE_RESEARCH, Feeder.CONDENSE_GOLD])
+	save.condense = 4
+	assert_int(Feeder.condensed(save, true, false, false, 10)).is_equal(1)
+
+
+func test_the_chute_drops_a_single_cabbage_when_only_one_is_left() -> void:
+	var save := _condensing()
+	assert_int(Feeder.condensed(save, false, false, false, 1)).is_equal(1)
+	save.condense = 4
+	assert_int(Feeder.condensed(save, false, false, false, 3)).is_equal(3)  # What is left, never more.
+
+
+func test_a_condensed_cabbage_on_the_mat_counts_as_the_stock_it_holds_so_the_chute_never_drops_more_than_there_is() -> void:
+	# 2 in stock, both in the one condensed cabbage on a mat with room: nothing more comes down.
+	assert_bool(Feeder.should_dispense(1, 2, 3, 2)).is_false()
+	assert_bool(Feeder.should_dispense(1, 2, 3, 3)).is_true()
+
+
+func test_the_condense_nodes_raise_what_a_condensed_cabbage_holds_to_three_then_four() -> void:
+	var save := _condensing()
+	save.stamped = PackedStringArray(["projector", "big_ideas", "condense"])
+	save.coins = 100000000
+	for step: Array in [[Feeder.CONDENSE_RESEARCH, 2], ["condense_2", 3], ["condense_3", 4]]:
+		assert_bool(Projector.buy(step[0], save)).override_failure_message(step[0]).is_true()
+		assert_int(save.condense).is_equal(step[1])

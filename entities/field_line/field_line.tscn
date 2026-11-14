@@ -1,0 +1,115 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/field_line/field_line.gd" id="1_script"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
+[ext_resource type="PackedScene" path="res://assets/meshes/Machines/field_line.blend" id="4_model"]
+
+[ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_lift_1.wav" id="sfx_field_line_lift_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_lift_2.wav" id="sfx_field_line_lift_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_open.wav" id="sfx_field_line_open"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_hang_up_1.wav" id="sfx_field_line_hang_up_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_hang_up_2.wav" id="sfx_field_line_hang_up_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_relay_1.wav" id="sfx_field_line_relay_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_relay_2.wav" id="sfx_field_line_relay_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_relay_3.wav" id="sfx_field_line_relay_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_console_drop"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_lift"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_field_line_lift_1")
+stream_1/stream = ExtResource("sfx_field_line_lift_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_hang_up"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_field_line_hang_up_1")
+stream_1/stream = ExtResource("sfx_field_line_hang_up_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_relay"]
+random_pitch = 1.1
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_field_line_relay_1")
+stream_1/stream = ExtResource("sfx_field_line_relay_2")
+stream_2/stream = ExtResource("sfx_field_line_relay_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_land"]
+random_pitch = 1.03
+random_volume_offset_db = 1.5
+streams_count = 1
+stream_0/stream = ExtResource("sfx_console_drop")
+
+[sub_resource type="BoxShape3D" id="BodyShape"]
+size = Vector3(0.41, 0.1, 0.23)
+
+[sub_resource type="BoxShape3D" id="HandsetShape"]
+size = Vector3(0.26, 0.05, 0.075)
+
+[node name="FieldLine" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Model" parent="." instance=ExtResource("4_model")]
+
+[node name="ReceiverMount" type="BoneAttachment3D" parent="Model/Armature/Skeleton3D"]
+bone_name = "Receiver"
+
+[node name="Handset" type="StaticBody3D" parent="Model/Armature/Skeleton3D/ReceiverMount"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="Shape" type="CollisionShape3D" parent="Model/Armature/Skeleton3D/ReceiverMount/Handset"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.013, 0)
+shape = SubResource("HandsetShape")
+
+[node name="Interactable" type="Node" parent="Model/Armature/Skeleton3D/ReceiverMount/Handset"]
+script = ExtResource("2_interactable")
+tooltip = "Field line.
+Lift the handset to be put through to the maps. One lamp for every farm the company holds."
+grip_height = 0.03
+reach = true
+
+[node name="Body" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+
+[node name="Shape" type="CollisionShape3D" parent="Body"]
+shape = SubResource("BodyShape")
+
+[node name="Count" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.4413, 0.8974, 0, -0.8974, 0.4413, 0.113, 0.117, -0.0285)
+pixel_size = 0.00062
+modulate = Color(1, 0.62, 0.18, 1)
+shaded = false
+text = "0/24"
+font_size = 64
+outline_size = 0
+
+[node name="Lift" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_lift")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="LineOpen" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_field_line_open")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="HangUp" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_hang_up")
+bus = &"SFX"
+script = ExtResource("3_cue")
+
+[node name="Relay" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_relay")
+max_polyphony = 3
+bus = &"SFX"
+script = ExtResource("3_cue")
+min_interval = 0.04
+
+[node name="Land" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_land")
+pitch_scale = 1.12
+bus = &"SFX"
+script = ExtResource("3_cue")

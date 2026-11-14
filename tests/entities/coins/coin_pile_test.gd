@@ -409,6 +409,51 @@ func test_banked_coins_count_towards_the_coins_ever_earned_and_spending_never_lo
 	assert_int(save.coins_earned).is_equal(17)
 
 
+func test_banked_coins_never_pass_the_cash_limit_and_only_what_fits_counts_as_earned() -> void:
+	var save := SaveGame.new()
+	save.coins = save.coin_limit - 3
+	CoinPile.bank(save, 12)
+	assert_int(save.coins).is_equal(save.coin_limit)
+	assert_int(save.coins_earned).is_equal(3)
+
+
+func test_a_sale_at_the_limit_pays_nothing_more() -> void:
+	assert_int(CoinPile.fitting(22, 0, 0)).is_equal(0)
+	# The coins already out (on the mat, in the air, in a robot's bag) take up the room too.
+	assert_int(CoinPile.fitting(22, 500, 500)).is_equal(0)
+	assert_int(CoinPile.fitting(22, 500, 900)).is_equal(0)
+
+
+func test_a_payout_brings_in_only_what_still_fits_under_the_limit() -> void:
+	assert_int(CoinPile.fitting(22, 40000, 0)).is_equal(22)
+	assert_int(CoinPile.fitting(22, 10, 0)).is_equal(10)
+	assert_int(CoinPile.fitting(22, 30, 20)).is_equal(10)
+
+
+func test_a_payout_at_a_full_purse_throws_no_coin_onto_the_mat_and_says_so() -> void:
+	var real := SaveManager.save
+	var save := SaveGame.new()
+	save.coins = save.coin_limit
+	SaveManager.save = save
+	var pile: CoinPile = auto_free(CoinPile.new())
+	pile.multimesh = MultiMesh.new()
+	add_child(pile)
+	pile.set_process(false)
+	var refusals := [0]
+	pile.refused.connect(func(_at: Vector3) -> void: refusals[0] += 1)
+	pile.throw_in(Vector3(0.3, 0.4, -1.1), 500)
+	assert_int(pile.pending_value()).is_equal(0)
+	assert_int(refusals[0]).is_equal(1)
+	# The one coin shown is the street keeping it: worth nothing, never landing.
+	assert_int(pile._coins.size()).is_equal(1)
+	assert_bool(pile._coins[0].lost).is_true()
+	save.coins -= 300  # Room for 300 of the next 500.
+	pile.throw_in(Vector3(0.3, 0.4, -1.1), 500)
+	assert_int(pile.pending_value()).is_equal(300)
+	assert_int(refusals[0]).is_equal(2)
+	SaveManager.save = real
+
+
 func test_a_big_payout_comes_as_a_handful_of_high_coins_not_hundreds_of_small_ones_or_one_lonely_coin() -> void:
 	for amount: int in [950, 3000, 4200, 10000, 26000, 140000, 999999, 5000000]:
 		var values := CoinPile.coin_values(amount)
@@ -416,3 +461,68 @@ func test_a_big_payout_comes_as_a_handful_of_high_coins_not_hundreds_of_small_on
 		assert_int(values.size()).override_failure_message("payout %d" % amount).is_between(5, CoinPile.MAX_THROW + 14)
 	assert_bool(CoinPile.coin_values(10000).all(func(v: int) -> bool: return v == 500)).is_true()
 	assert_int(CoinPile.coin_values(140000).max()).is_equal(5000)
+
+
+func test_a_full_stack_sends_the_next_coin_to_the_nearest_stack_with_room_inside_the_pile_area() -> void:
+	var full := []
+	full.resize(CoinPile.MAX_STACK)
+	# The aimed stack sits in the corner of the area: only the stack beside it, further in, is free.
+	var stacks := {Vector2i(0, 0): full}
+	for i in 30:
+		assert_that(CoinPile.stack_cell(stacks, Vector2i(0, 0), CoinPile.MAX_STACK, Rect2i(0, 0, 3, 1))).is_equal(Vector2i(1, 0))
+	stacks[Vector2i(1, 0)] = full
+	assert_that(CoinPile.stack_cell(stacks, Vector2i(0, 0), CoinPile.MAX_STACK, Rect2i(0, 0, 3, 1))).is_equal(Vector2i(2, 0))
+
+
+func test_no_coin_comes_to_rest_above_the_reach_height_however_many_land_on_one_spot() -> void:
+	var pile := _pile_with([])
+	var spot := CoinPile.cell_of(pile.landing_area.position)
+	for i in 400:
+		var coin := CoinPile.Coin.new()
+		coin.value = 10000 if i % 2 == 0 else 1
+		coin.cell = spot
+		pile._coins.append(coin)
+		pile._land(coin)
+	assert_int(pile._stacks.size()).is_greater_equal(40)
+	for coin in pile._coins:
+		var top := coin.to.origin.y + CoinPile.thickness(coin.value) * 0.5 - pile.desk_height
+		assert_float(top).is_less_equal(CoinPile.reach_height() + 0.0001)
+		assert_bool(pile._pile_cells().has_point(CoinPile.cell_of(coin.to.origin))).is_true()
+
+
+func test_no_coin_lands_on_the_desk_the_lab_stands_on_and_drops_its_slips_on() -> void:
+	var closed := Rect2i(0, 0, 4, 4)
+	for i in 30:
+		var cell := CoinPile.stack_cell({}, Vector2i(1, 1), CoinPile.MAX_STACK, Rect2i(-8, -8, 20, 20), closed)
+		assert_bool(closed.has_point(cell)).is_false()
+
+
+func test_coins_past_the_most_the_desk_holds_are_held_back_and_none_is_lost() -> void:
+	var saved := SaveManager.save
+	SaveManager.save = SaveGame.new()
+	var pile := _pile_with([])
+	for i in CoinPile.MAX_ON_DESK - 2:
+		pile._coins.append(CoinPile.Coin.new())
+	var lying := pile.pending_value()
+	pile.throw_in(Vector3.ZERO, 4)  # four $1 coins, room for two
+	assert_int(pile._coins.size()).is_equal(CoinPile.MAX_ON_DESK)
+	assert_int(pile._withheld).is_equal(2)
+	assert_int(pile.pending_value()).is_equal(lying + 4)
+	# Still full: the next payout stays out whole, and waiting only shows a coin worth nothing at the gap.
+	pile.throw_in(Vector3.ZERO, 30)
+	pile._release(CoinPile.KNOCK)
+	assert_int(pile._withheld).is_equal(32)
+	assert_int(pile.pending_value()).is_equal(lying + 34)
+	SaveManager.save = saved
+
+
+func test_held_back_coins_come_in_as_the_fewest_coins_once_some_are_picked_up() -> void:
+	var saved := SaveManager.save
+	SaveManager.save = SaveGame.new()
+	var pile := _pile_with([])
+	pile._withheld = 32
+	pile._release(CoinPile.KNOCK)
+	assert_int(pile._withheld).is_equal(0)
+	assert_array(pile._coins.map(func(c: CoinPile.Coin) -> int: return c.value)).contains_exactly_in_any_order([1, 1, 10, 10, 10])
+	assert_int(pile.pending_value()).is_equal(32)
+	SaveManager.save = saved

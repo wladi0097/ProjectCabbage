@@ -23,6 +23,8 @@ const GAP_X := Vector2(-0.4, 1.8)
 const SPLIT_X := 0.33
 const THROW_DELAY := 0.45
 const SUCK_TIME := 0.35
+## A condensed cabbage lands in the crate outside as two thuds, this far apart (s), and lower.
+const SECOND_THUD := 0.11
 ## How far past the wall a sold cabbage is pulled (out of sight behind the crates).
 const SUCK_TO_Z := -1.9
 const GAP_MID_Y := 0.92
@@ -155,12 +157,21 @@ static func is_stray(at: Vector3) -> bool:
 	return not MAT.has_point(flat) or HIDDEN.has_point(flat)
 
 
+## How many crate thuds a cabbage holding `units` makes going out: a condensed one sounds as more
+## than one sale.
+static func thuds(units: int) -> int:
+	return 2 if units > 1 else 1
+
+
 func _judge(cabbage: Cabbage) -> void:
 	var save := SaveManager.save
 	var price := save.sale_price
 	var x := clampf(cabbage.global_position.x, _gap_x.x, _gap_x.y)
 	var out := Vector3(x, GAP_MID_Y, SUCK_TO_Z)
+	$Suck.pitch_scale = Cabbage.heavy_pitch(cabbage.units)
 	$Suck.cue(cabbage.global_position)
+	if thuds(cabbage.units) > 1:
+		get_tree().create_timer(SECOND_THUD).timeout.connect($Suck.cue.bind(cabbage.global_position))
 	if cabbage.rotten:
 		# Inspected at the window and confiscated: no refusal, no coins, a fine.
 		cabbage.suck_out(out, SUCK_TIME)
@@ -185,23 +196,25 @@ func _judge(cabbage: Cabbage) -> void:
 		paid = payout(price * save.mini_value * own_factor(cabbage.by_player(), save), boosts)
 	else:
 		cabbage.leave_stock(save)  # A grown mini (growing station) is a full unit but no stock.
-		save.sold += 1
-		save.golden_sold += int(cabbage.golden)
-		paid = payout(price * golden_factor(cabbage.golden, save) * own_factor(cabbage.by_player(), save), boosts_for(cabbage.golden, boosts, save))
+		# A condensed cabbage (Cabbage.units) is that many sales in one: counted and paid as each.
+		save.sold += cabbage.units
+		save.golden_sold += cabbage.units * int(cabbage.golden)
+		paid = payout(price * cabbage.units * golden_factor(cabbage.golden, save) * own_factor(cabbage.by_player(), save), boosts_for(cabbage.golden, boosts, save))
 		save.grown_sold += int(cabbage.grown)
 		if cabbage.golden:
 			cabbage.ring_golden_sale()
-	count_seller(save, cabbage.lobbed)
+	count_seller(save, cabbage.lobbed, cabbage.units)
 	sold.emit(cabbage, paid)
 	coins.throw_in_after(THROW_DELAY, Vector3(x, throw_from.y, throw_from.z), paid)
 
 
-## A sale goes to whoever threw it last: a hired hand (`lobbed`) or the player.
-static func count_seller(save: SaveGame, lobbed: bool) -> void:
+## A sale goes to whoever threw it last: a hired hand (`lobbed`) or the player; a condensed
+## cabbage counts as the `units` it holds.
+static func count_seller(save: SaveGame, lobbed: bool, units := 1) -> void:
 	if lobbed:
-		save.hand_sold += 1
+		save.hand_sold += units
 	else:
-		save.player_sold += 1
+		save.player_sold += units
 
 
 ## After `wait` seconds the street throws `cabbage` back in through the window (`refused`: emits thrown_back).

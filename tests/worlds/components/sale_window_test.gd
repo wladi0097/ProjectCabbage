@@ -192,3 +192,68 @@ func test_a_golden_cabbage_thrown_out_of_the_window_in_the_golden_age_is_paid_wi
 
 func test_a_golden_cabbage_thrown_out_of_the_window_in_the_golden_age_is_paid_with_it_once_gold_standard_is_bought() -> void:
 	assert_int(_golden_sale_in_the_golden_age(true)).is_equal(50)  # $1 × 10 × 5
+
+
+
+## A cabbage holding `units` (golden or not), sold at $3 through the window's own sale path with
+## 10 in stock (4 of them golden): [coins thrown back, the save after].
+func _condensed_sale(units: int, golden := false) -> Array:
+	var real := SaveManager.save
+	var save := SaveGame.new()
+	save.sale_price = 3
+	save.stock = 10
+	save.golden_stock = 4
+	SaveManager.save = save
+	var holder: Node3D = auto_free(Node3D.new())
+	add_child(holder)
+	var window := SaleWindow.new()
+	var coins: FakeCoins = auto_free(FakeCoins.new())
+	window.coins = coins
+	for cue: String in ["Suck", "Refuse"]:
+		var player: AudioStreamPlayer3D = preload("res://entities/components/sound_cue.gd").new()
+		player.name = cue
+		window.add_child(player)
+	holder.add_child(window)
+	window._owed = 1.0  # The street buys this one.
+	var cabbage: Cabbage = preload("res://entities/cabbage/cabbage.tscn").instantiate()
+	cabbage.units = units
+	cabbage.golden = golden
+	holder.add_child(cabbage)
+	window._judge(cabbage)
+	SaveManager.save = real
+	return [coins.paid[0] if coins.paid.size() == 1 else -1, save]
+
+
+func test_a_condensed_cabbage_sells_as_two_cabbages_two_sold_two_paid_two_off_the_stock() -> void:
+	var sale := _condensed_sale(2)
+	var save: SaveGame = sale[1]
+	assert_int(sale[0]).is_equal(6)  # 2 × $3
+	assert_int(save.sold).is_equal(2)
+	assert_int(save.player_sold).is_equal(2)
+	assert_int(save.stock).is_equal(8)
+	assert_int(save.golden_stock).is_equal(4)
+
+
+func test_a_plain_cabbage_still_sells_as_one() -> void:
+	var sale := _condensed_sale(1)
+	assert_int(sale[0]).is_equal(3)
+	assert_int((sale[1] as SaveGame).sold).is_equal(1)
+	assert_int((sale[1] as SaveGame).stock).is_equal(9)
+
+
+func test_a_condensed_golden_cabbage_pays_the_golden_price_twice_and_takes_two_golden_cabbages() -> void:
+	var sale := _condensed_sale(2, true)
+	var save: SaveGame = sale[1]
+	assert_int(sale[0]).is_equal(60)  # 2 × $3 × 10
+	assert_int(save.golden_sold).is_equal(2)
+	assert_int(save.sold).is_equal(2)
+	assert_int(save.golden_stock).is_equal(2)
+	assert_int(save.stock).is_equal(8)
+
+
+func test_a_condensed_cabbage_lands_outside_as_two_thuds_and_a_plain_one_as_one() -> void:
+	assert_int(SaleWindow.thuds(1)).is_equal(1)
+	assert_int(SaleWindow.thuds(2)).is_equal(2)
+	assert_int(SaleWindow.thuds(4)).is_equal(2)
+	# The second thud comes while the cabbage is still on its way out.
+	assert_float(SaleWindow.SECOND_THUD).is_less(SaleWindow.SUCK_TIME)

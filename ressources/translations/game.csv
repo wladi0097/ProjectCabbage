@@ -1132,9 +1132,9 @@ How many cabbages storage holds, and what golden cabbages earn at the window and
 How many cabbages storage holds, and what golden cabbages earn at the window and in the lab.","Jeder Schrank ist ein Lager im Wartestand.
 Wie viele Kohlköpfe ins Lager passen, und was goldene Kohlköpfe am Fenster und im Labor einbringen."
 "The mat is leased by the cabbage.
-One more cabbage fits on the mat per step, up to 20.","The mat is leased by the cabbage.
-One more cabbage fits on the mat per step, up to 20.","Die Matte wird pro Kohlkopf gemietet.
-Pro Stufe passt ein Kohlkopf mehr auf die Matte, bis 20."
+One more cabbage fits on the mat per step, later three, up to 20.","The mat is leased by the cabbage.
+One more cabbage fits on the mat per step, later three, up to 20.","Die Matte wird pro Kohlkopf gemietet.
+Pro Stufe passt ein Kohlkopf mehr auf die Matte, später drei, bis 20."
 "Incidents at the window, monetised.
 The catch combo, the lit crates in the street and what the bin pays for rot.","Incidents at the window, monetised.
 The catch combo, the lit crates in the street and what the bin pays for rot.","Zwischenfälle am Fenster, zu Geld gemacht.
@@ -1259,15 +1259,9 @@ I have it from a reliable source that wholesale prices will spike soon. Crates s
 9-CABBAGE MAT,9-CABBAGE MAT,MATTE FÜR 9
 10-CABBAGE MAT,10-CABBAGE MAT,MATTE FÜR 10
 11-CABBAGE MAT,11-CABBAGE MAT,MATTE FÜR 11
-12-CABBAGE MAT,12-CABBAGE MAT,MATTE FÜR 12
-13-CABBAGE MAT,13-CABBAGE MAT,MATTE FÜR 13
-14-CABBAGE MAT,14-CABBAGE MAT,MATTE FÜR 14
-15-CABBAGE MAT,15-CABBAGE MAT,MATTE FÜR 15
-16-CABBAGE MAT,16-CABBAGE MAT,MATTE FÜR 16
-17-CABBAGE MAT,17-CABBAGE MAT,MATTE FÜR 17
-18-CABBAGE MAT,18-CABBAGE MAT,MATTE FÜR 18
-19-CABBAGE MAT,19-CABBAGE MAT,MATTE FÜR 19
-20-CABBAGE MAT,20-CABBAGE MAT,MATTE FÜR 20
+MAT ANNEXATION,MAT ANNEXATION,MATTENANNEXION
+DESK REZONING,DESK REZONING,TISCHUMWIDMUNG
+TOTAL MAT,TOTAL MAT,TOTALMATTE
 "Floor space is leased by the cabbage.
 One more cabbage fits on the mat
 (the chute keeps it full): 4 instead of 3.","Floor space is leased by the cabbage.
@@ -1324,78 +1318,36 @@ One more cabbage fits on the mat
 (the chute keeps it full): 11 instead of 10.","Kaffee ist auf der Matte nicht mehr gestattet.
 Ein Kohlkopf mehr passt auf die Matte
 (die Rutsche hält sie voll): 11 statt 10."
-"The mat is extended into the margin.
-One more cabbage fits on the mat
-(the chute keeps it full): 12 instead of 11.","The mat is extended into the margin.
-One more cabbage fits on the mat
-(the chute keeps it full): 12 instead of 11.","Die Matte wird bis in den Seitenrand verlängert.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 12 statt 11."
-"The in-tray is relocated. It did not object.
-One more cabbage fits on the mat
-(the chute keeps it full): 13 instead of 12.","The in-tray is relocated. It did not object.
-One more cabbage fits on the mat
-(the chute keeps it full): 13 instead of 12.","Die Eingangsablage wird versetzt. Sie hat nicht widersprochen.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 13 statt 12."
-"The desk lamp now sits on the floor.
-One more cabbage fits on the mat
-(the chute keeps it full): 14 instead of 13.","The desk lamp now sits on the floor.
-One more cabbage fits on the mat
-(the chute keeps it full): 14 instead of 13.","Die Tischlampe steht jetzt auf dem Boden.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 14 statt 13."
-"The mat is issued a serial number.
-One more cabbage fits on the mat
-(the chute keeps it full): 15 instead of 14.","The mat is issued a serial number.
-One more cabbage fits on the mat
-(the chute keeps it full): 15 instead of 14.","Die Matte erhält eine Seriennummer.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 15 statt 14."
-"Personal items are removed from the desk.
-One more cabbage fits on the mat
-(the chute keeps it full): 16 instead of 15.","Personal items are removed from the desk.
-One more cabbage fits on the mat
-(the chute keeps it full): 16 instead of 15.","Persönliche Gegenstände werden vom Tisch entfernt.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 16 statt 15."
-"The telephone is mounted on the wall.
-One more cabbage fits on the mat
-(the chute keeps it full): 17 instead of 16.","The telephone is mounted on the wall.
-One more cabbage fits on the mat
-(the chute keeps it full): 17 instead of 16.","Das Telefon wird an die Wand montiert.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 17 statt 16."
-"The desk is now mostly mat.
-One more cabbage fits on the mat
-(the chute keeps it full): 18 instead of 17.","The desk is now mostly mat.
-One more cabbage fits on the mat
-(the chute keeps it full): 18 instead of 17.","Der Tisch ist jetzt überwiegend Matte.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 18 statt 17."
-"The mat reaches the window sill.
-One more cabbage fits on the mat
-(the chute keeps it full): 19 instead of 18.","The mat reaches the window sill.
-One more cabbage fits on the mat
-(the chute keeps it full): 19 instead of 18.","Die Matte reicht bis zum Fensterbrett.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 19 statt 18."
+"The in-tray and the desk lamp are relocated.
+Three more cabbages fit on the mat
+(the chute keeps it full): 14 instead of 11.","The in-tray and the desk lamp are relocated.
+Three more cabbages fit on the mat
+(the chute keeps it full): 14 instead of 11.","Eingangsablage und Tischlampe werden versetzt.
+Drei Kohlköpfe mehr passen auf die Matte
+(die Rutsche hält sie voll): 14 statt 11."
+"Personal items and the telephone are removed.
+Three more cabbages fit on the mat
+(the chute keeps it full): 17 instead of 14.","Personal items and the telephone are removed.
+Three more cabbages fit on the mat
+(the chute keeps it full): 17 instead of 14.","Persönliches und das Telefon werden entfernt.
+Drei Kohlköpfe mehr passen auf die Matte
+(die Rutsche hält sie voll): 17 statt 14."
 "There is no more desk. There is only the mat.
-One more cabbage fits on the mat
-(the chute keeps it full): 20 instead of 19.","There is no more desk. There is only the mat.
-One more cabbage fits on the mat
-(the chute keeps it full): 20 instead of 19.","Es gibt keinen Tisch mehr. Nur noch die Matte.
-Ein Kohlkopf mehr passt auf die Matte
-(die Rutsche hält sie voll): 20 statt 19."
+Three more cabbages fit on the mat
+(the chute keeps it full): 20 instead of 17.","There is no more desk. There is only the mat.
+Three more cabbages fit on the mat
+(the chute keeps it full): 20 instead of 17.","Es gibt keinen Tisch mehr. Nur noch die Matte.
+Drei Kohlköpfe mehr passen auf die Matte
+(die Rutsche hält sie voll): 20 statt 17."
 "UNIT INVERTED
 PLEASE ASSIST","UNIT INVERTED
 PLEASE ASSIST","GERÄT UMGEKIPPT
 BITTE HELFEN"
 FORM 0-P  PRIORITY ACQUISITION,FORM 0-P  PRIORITY ACQUISITION,FORMULAR 0-P  VORRANGIGER ERWERB
 "Floor space is a privilege, not a right.
-One more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells one more space at a time, up to 20, each dearer than the last.","Floor space is a privilege, not a right.
-One more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells one more space at a time, up to 20, each dearer than the last.","Stellfläche ist ein Privileg, kein Recht.
-Sofort passt ein Kohlkopf mehr auf die Matte (3 statt 2). Danach verkauft der Projektor je einen Platz mehr, bis 20, jeder teurer als der letzte."
+One more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells more space a step at a time, up to 20, each dearer than the last.","Floor space is a privilege, not a right.
+One more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells more space a step at a time, up to 20, each dearer than the last.","Stellfläche ist ein Privileg, kein Recht.
+Sofort passt ein Kohlkopf mehr auf die Matte (3 statt 2). Danach verkauft der Projektor Stufe um Stufe mehr Platz, bis 20, jede teurer als die letzte."
 "The supplier is reminded of alternatives.
 Packs cost 30% less. The ticker shows the cut price.","The supplier is reminded of alternatives.
 Packs cost 30% less. The ticker shows the cut price.","Der Lieferant wird an Alternativen erinnert.
@@ -1690,8 +1642,6 @@ CONSOLIDATED GROWTH REQUISITION,CONSOLIDATED GROWTH REQUISITION,ANFORDERUNG: KON
 Paid in cabbages from stock, more than the regional depot holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","The desk has outgrown the desk.
 Paid in cabbages from stock, more than the regional depot holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future.","Der Schreibtisch ist dem Schreibtisch entwachsen.
 Bezahlt in Kohlköpfen aus dem Lager, mehr als das Regionallager fasst: Lager ausbauen, Rutsche schließen, den Hof es füllen lassen. Abgestempelt prüft der Vorstand die Zukunft des Schreibtischs."
-WE SHOULD INVEST IN GROWTH,WE SHOULD INVEST IN GROWTH,WIR SOLLTEN IN WACHSTUM INVESTIEREN
-"The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Cabbages remain cabbages. Some of them will now be shares.","The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Cabbages remain cabbages. Some of them will now be shares.","Der Vorstand hat Ihre Zahlen geprüft. Kohl wächst mit der Geschwindigkeit von Kohl, und so lange kann der Vorstand nicht warten. Ab heute wächst der Schreibtisch durch Übernahmen: Wir kaufen andere Firmen, und wir investieren am Aktienmarkt. Sie bekommen einen Ticker. Kohlköpfe bleiben Kohlköpfe. Einige davon sind ab jetzt Aktien."
 MEMORANDUM · ALPHA BUILD,MEMORANDUM · ALPHA BUILD,MEMORANDUM · ALPHA-VERSION
 THANKS FOR PLAYING THE ALPHA,THANKS FOR PLAYING THE ALPHA,DANKE FÜRS SPIELEN DER ALPHA
 Chapter 3 is still under review. You will be notified in writing.,Chapter 3 is still under review. You will be notified in writing.,Kapitel 3 befindet sich noch in Prüfung. Sie werden schriftlich benachrichtigt.
@@ -1824,3 +1774,436 @@ Every form on this desk must be approved for you to progress. The projector is o
 Jedes Formular auf diesem Schreibtisch muss genehmigt werden, damit Sie vorankommen. Der Projektor ist freiwillig."
 PLACE FORM HERE,PLACE FORM HERE,FORMULAR HIER ABLEGEN
 PULL TO STAMP,PULL TO STAMP,ZUM STEMPELN ZIEHEN
+River Grau (regulated),River Grau (regulated),Fluss Grau (reguliert)
+Trunk Road B-12,Trunk Road B-12,Fernstraße B-12
+Service Lane 3,Service Lane 3,Wirtschaftsweg 3
+Municipal Block,Municipal Block,Städtischer Block
+HEAD OFFICE,HEAD OFFICE,ZENTRALE
+DISTRICT 7 - AGRICULTURAL CADASTRE,DISTRICT 7 - AGRICULTURAL CADASTRE,BEZIRK 7 - AGRARKATASTER
+"Parcels available for consolidation. Survey Office, Bureau of Land Use.","Parcels available for consolidation. Survey Office, Bureau of Land Use.","Zur Konsolidierung verfügbare Parzellen. Vermessungsamt, Büro für Bodennutzung."
+SHEET,SHEET,BLATT
+1 of 3,1 of 3,1 von 3
+SCALE,SCALE,MASSSTAB
+The Board,The Board,Vorstand
+FILED,FILED,ABLAGE
+District 7 cadastre,District 7 cadastre,Kataster Bezirk 7
+Nordhal Protectorate,Nordhal Protectorate,Protektorat Nordhal
+Federated Morrow,Federated Morrow,Föderiertes Morrow
+The Lower Provinces,The Lower Provinces,Die Unteren Provinzen
+Grey Sea,Grey Sea,Graues Meer
+Sea of Quarterly Returns,Sea of Quarterly Returns,Meer der Quartalserträge
+Survey Pole 0,Survey Pole 0,Vermessungspol 0
+WORLD MARKETS - GENERAL CHART,WORLD MARKETS - GENERAL CHART,WELTMÄRKTE - GENERALKARTE
+Territories pending cabbage distribution. Not to be removed from the office.,Territories pending cabbage distribution. Not to be removed from the office.,Gebiete mit ausstehender Kohlverteilung. Nicht aus dem Büro zu entfernen.
+2 of 3,2 of 3,2 von 3
+PROJECTION,PROJECTION,PROJEKTION
+Board standard,Board standard,Vorstandsnorm
+EDITION,EDITION,AUSGABE
+CLEARANCE,CLEARANCE,FREIGABE
+Level 3,Level 3,Stufe 3
+World markets chart,World markets chart,Weltmarktkarte
+Reservoir,Reservoir,Speicherbecken
+Main irrigation ditch,Main irrigation ditch,Hauptbewässerungsgraben
+Yard (gravel),Yard (gravel),Hof (Kies)
+Access road (from Trunk Road B-12),Access road (from Trunk Road B-12),Zufahrt (von Fernstraße B-12)
+Perimeter fence - company property,Perimeter fence - company property,Außenzaun - Firmeneigentum
+Farmhouse,Farmhouse,Bauernhaus
+Barn,Barn,Scheune
+LEGEND,LEGEND,LEGENDE
+Cabbage plot,Cabbage plot,Kohlfeld
+Building,Building,Gebäude
+Irrigation ditch,Irrigation ditch,Bewässerungsgraben
+Fence,Fence,Zaun
+Company property,Company property,Firmeneigentum
+Road,Road,Straße
+FARM SITE PLAN - PARCEL ___,FARM SITE PLAN - PARCEL ___,HOFLAGEPLAN - PARZELLE ___
+Standard cabbage holding. Layout per Directive 14 (Yield).,Standard cabbage holding. Layout per Directive 14 (Yield).,Standard-Kohlbetrieb. Anlage gemäß Richtlinie 14 (Ertrag).
+3 of 3,3 of 3,3 von 3
+PLOTS,PLOTS,FELDER
+DRAWN,DRAWN,GEZEICHNET
+Survey Office,Survey Office,Vermessungsamt
+Farm site plan,Farm site plan,Hoflageplan
+"Field line.
+Lift the handset to be put through to the maps. One lamp for every farm the company holds.","Field line.
+Lift the handset to be put through to the maps. One lamp for every farm the company holds.","Feldleitung.
+Hörer abheben, um zu den Karten durchgestellt zu werden. Eine Lampe für jeden Hof im Besitz der Firma."
+Price: ____,Price: ____,Preis: ____
+HEAD OFFICE (company freehold),HEAD OFFICE (company freehold),ZENTRALE (Firmengrund)
+River Grau,River Grau,Fluss Grau
+River Kohl,River Kohl,Fluss Kohl
+State Railway 1,State Railway 1,Staatsbahn 1
+Port Weisskohl,Port Weisskohl,Hafen Weisskohl
+KOHLMARK - NATIONAL FARM REGISTER,KOHLMARK - NATIONAL FARM REGISTER,KOHLMARK - NATIONALES HOFREGISTER
+Domestic farm sites eligible for acquisition. Prices per Schedule C.,Domestic farm sites eligible for acquisition. Prices per Schedule C.,"Inländische Hofstandorte, zum Erwerb freigegeben. Preise gemäß Anhang C."
+1A of 3,1A of 3,1A von 3
+FARM SITES,FARM SITES,HOFSTANDORTE
+Domestic,Domestic,Inland
+Kohlmark farm register,Kohlmark farm register,Hofregister Kohlmark
+A farm is waiting for its field: click a square under a green arrow.,A farm is waiting for its field: click a square under a green arrow.,Ein Hof wartet auf sein Feld: Klicke auf ein Feld unter einem grünen Pfeil.
+Farm established on this field: %d× its cabbages.,Farm established on this field: %d× its cabbages.,Hof auf diesem Feld eingerichtet: %d× so viele Kohlköpfe.
+FARM OUTPUT,FARM OUTPUT,HOFERTRAG
+"Acquired farms are held to the same targets.
+Every farm square harvests more cabbages.","Acquired farms are held to the same targets.
+Every farm square harvests more cabbages.","Erworbene Höfe unterliegen denselben Zielvorgaben.
+Jedes Hoffeld erntet mehr Kohlköpfe."
+YIELD TARGETS,YIELD TARGETS,ERTRAGSZIELE
+"The farm has been informed of its potential.
+Every farm square harvests 15× a plain square's cabbages, not 10×.","The farm has been informed of its potential.
+Every farm square harvests 15× a plain square's cabbages, not 10×.","Der Hof wurde über sein Potenzial informiert.
+Jedes Hoffeld erntet 15× die Kohlköpfe eines einfachen Feldes, nicht 10×."
+SHARED SERVICES,SHARED SERVICES,SHARED SERVICES
+"Every farm now shares one accountant.
+Every farm square harvests 20× a plain square's cabbages, not 15×.","Every farm now shares one accountant.
+Every farm square harvests 20× a plain square's cabbages, not 15×.","Alle Höfe teilen sich jetzt einen Buchhalter.
+Jedes Hoffeld erntet 20× die Kohlköpfe eines einfachen Feldes, nicht 15×."
+VERTICAL INTEGRATION,VERTICAL INTEGRATION,VERTIKALE INTEGRATION
+"The farm now reports to itself.
+Every farm square harvests 30× a plain square's cabbages, not 20×.","The farm now reports to itself.
+Every farm square harvests 30× a plain square's cabbages, not 20×.","Der Hof berichtet jetzt an sich selbst.
+Jedes Hoffeld erntet 30× die Kohlköpfe eines einfachen Feldes, nicht 20×."
+YOU ARE PROMOTED AGAIN,YOU ARE PROMOTED AGAIN,SIE WERDEN ERNEUT BEFÖRDERT
+"The board has reviewed your figures. You are now Head of Acquisitions, Desk 4. Your salary has been reviewed and found adequate. We are not expanding fast enough: cabbage grows at the speed of cabbage, and the board will not wait for it. From today we grow by buying out other farms. A form is in your tray. A map table has been set up to your right.","The board has reviewed your figures. You are now Head of Acquisitions, Desk 4. Your salary has been reviewed and found adequate. We are not expanding fast enough: cabbage grows at the speed of cabbage, and the board will not wait for it. From today we grow by buying out other farms. A form is in your tray. A map table has been set up to your right.","Der Vorstand hat Ihre Zahlen geprüft. Sie sind ab sofort Leiter Übernahmen, Schreibtisch 4. Ihr Gehalt wurde geprüft und für angemessen befunden. Wir expandieren nicht schnell genug: Kohl wächst mit der Geschwindigkeit von Kohl, und darauf wartet der Vorstand nicht. Ab heute wachsen wir, indem wir andere Höfe aufkaufen. Ein Formular liegt in Ihrer Ablage. Rechts von Ihnen steht nun ein Kartentisch."
+A FARM HAS BEEN ACQUIRED,A FARM HAS BEEN ACQUIRED,EIN HOF WURDE ERWORBEN
+"The company now owns a farm it has never seen. To keep a clean overview, check the TV, channel 1: green arrows mark your fields. Click one to upgrade it to a farm. It will produce accordingly. One field for every farm we own. Head office likes to see on a screen what is ours.","The company now owns a farm it has never seen. To keep a clean overview, check the TV, channel 1: green arrows mark your fields. Click one to upgrade it to a farm. It will produce accordingly. One field for every farm we own. Head office likes to see on a screen what is ours.","Die Firma besitzt nun einen Hof, den sie nie gesehen hat. Für einen sauberen Überblick sehen Sie auf dem Fernseher nach, Kanal 1: Grüne Pfeile markieren Ihre Felder. Klicken Sie eines an, um es zu einem Hof aufzuwerten. Es wird entsprechend liefern. Ein Feld für jeden Hof, den wir besitzen. Die Zentrale sieht gern auf einem Bildschirm, was uns gehört."
+THEY WILL NOT SELL ANY MORE,THEY WILL NOT SELL ANY MORE,SIE VERKAUFEN NICHT MEHR
+"The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. Head office is making the necessary arrangements. Your maps will be extended beyond the border. Stand by.","The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. Head office is making the necessary arrangements. Your maps will be extended beyond the border. Stand by.","Die übrigen Eigentümer beantworten unsere Angebote nicht mehr. Fünf Höfe, und sie nennen es genug. Es ist nicht genug. Sie verkaufen nicht mehr, also nehmen wir uns, was uns zusteht. Die Zentrale trifft die nötigen Vorkehrungen. Ihre Karten werden über die Grenze hinaus erweitert. Halten Sie sich bereit."
+PROCURE MARKET INTELLIGENCE,PROCURE MARKET INTELLIGENCE,MARKTINFORMATIONEN BESCHAFFEN
+"We no longer buy cabbages. We buy what is known about those who grow them.
+The supply console is removed for good: no more crates. A field line takes its place: its lamps count the farms you own, of 24. Lift the handset to go to the map table.","We no longer buy cabbages. We buy what is known about those who grow them.
+The supply console is removed for good: no more crates. A field line takes its place: its lamps count the farms you own, of 24. Lift the handset to go to the map table.","Wir kaufen keine Kohlköpfe mehr. Wir kaufen, was man über jene weiß, die sie anbauen.
+Das Bestellpult wird endgültig entfernt: keine Kisten mehr. An seine Stelle tritt eine Feldleitung: Ihre Lampen zählen die Höfe, die Ihnen gehören, von 24. Heben Sie den Hörer ab, um zum Kartentisch zu gelangen."
+WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS,WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS,DIE WELT GEHÖRT UNS. WEITER GEHT ES IN DEN STERNEN
+"There is nothing left to buy down here.
+Needs all 24 farms: the field line counts them. Stamped, the board looks up.","There is nothing left to buy down here.
+Needs all 24 farms: the field line counts them. Stamped, the board looks up.","Hier unten gibt es nichts mehr zu kaufen.
+Erfordert alle 24 Höfe: Die Feldleitung zählt sie. Gestempelt, blickt der Vorstand nach oben."
+%d FARMS,%d FARMS,%d HÖFE
+ACQUIRED,ACQUIRED,ERWORBEN
+NOT FOR SALE,NOT FOR SALE,UNVERKÄUFLICH
+%s cabbages,%s cabbages,%s Kohlköpfe
+%s. Company property.,%s. Company property.,%s. Firmeneigentum.
+%s. Not for sale.,%s. Not for sale.,%s. Unverkäuflich.
+%s. Price: %s. Click for the deed.,%s. Price: %s. Click for the deed.,%s. Preis: %s. Klicken für die Urkunde.
+%s. Price: %s. Short: %s.,%s. Price: %s. Short: %s.,%s. Preis: %s. Es fehlen: %s.
+BIG MINDS HAVE BIG IDEAS,BIG MINDS HAVE BIG IDEAS,GROSSE GEISTER HABEN GROSSE IDEEN
+"The screen was too small for the thinking.
+The projector gets a much wider screen, with new and dearer upgrades around its edge. Pull it down to see.","The screen was too small for the thinking.
+The projector gets a much wider screen, with new and dearer upgrades around its edge. Pull it down to see.","Die Leinwand war zu klein für das Denken.
+Der Projektor bekommt eine viel breitere Leinwand, mit neuen und teureren Verbesserungen an ihrem Rand. Ziehen Sie sie herunter, um nachzusehen."
+CONDENSE CABBAGES,CONDENSE CABBAGES,KOHLKÖPFE VERDICHTEN
+"Two cabbages now occupy the space of one. Physics has been informed.
+Every plain cabbage from the chute is condensed: it takes 2 cabbages from stock and counts as 2 wherever it goes (sold, paid, researched). Research and golden cabbages follow on the projector.","Two cabbages now occupy the space of one. Physics has been informed.
+Every plain cabbage from the chute is condensed: it takes 2 cabbages from stock and counts as 2 wherever it goes (sold, paid, researched). Research and golden cabbages follow on the projector.","Zwei Kohlköpfe nehmen jetzt den Platz von einem ein. Die Physik wurde informiert.
+Jeder gewöhnliche Kohlkopf aus der Rutsche ist verdichtet: Er nimmt 2 Kohlköpfe aus dem Lager und zählt überall als 2 (verkauft, bezahlt, erforscht). Forschungs- und goldene Kohlköpfe folgen am Projektor."
+BOARD-APPROVED SLOGAN,BOARD-APPROVED SLOGAN,GENEHMIGTER SLOGAN
+NATIONAL CAMPAIGN,NATIONAL CAMPAIGN,LANDESWEITE KAMPAGNE
+MANDATORY CONSUMPTION,MANDATORY CONSUMPTION,VERZEHRPFLICHT
+DEPARTMENTAL HEADCOUNT,DEPARTMENTAL HEADCOUNT,ABTEILUNGS-STELLENPLAN
+TWO-HANDED POLICY,TWO-HANDED POLICY,ZWEIHAND-RICHTLINIE
+CONDENSED SAMPLES,CONDENSED SAMPLES,VERDICHTETE PROBEN
+CONDENSED BULLION,CONDENSED BULLION,VERDICHTETE BARREN
+CONDENSE II,CONDENSE II,VERDICHTEN II
+CONDENSE III,CONDENSE III,VERDICHTEN III
+CONDENSATION,CONDENSATION,VERDICHTUNG
+"Less air, more cabbage.
+Which cabbages come down the chute condensed, and how many cabbages each one holds.","Less air, more cabbage.
+Which cabbages come down the chute condensed, and how many cabbages each one holds.","Weniger Luft, mehr Kohl.
+Welche Kohlköpfe verdichtet aus der Rutsche kommen und wie viele Kohlköpfe jeder fasst."
+"""Cabbage. Approved by the board.""
+The street now pays 25% more without refusing.
+Raise your price on the slate to cash in.","""Cabbage. Approved by the board.""
+The street now pays 25% more without refusing.
+Raise your price on the slate to cash in.","""Kohl. Vom Vorstand genehmigt.""
+Die Straße zahlt jetzt 25% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+"Every wall, every wireless, every hour.
+The street now pays 25% more without refusing.
+Raise your price on the slate to cash in.","Every wall, every wireless, every hour.
+The street now pays 25% more without refusing.
+Raise your price on the slate to cash in.","Jede Wand, jeder Rundfunk, jede Stunde.
+Die Straße zahlt jetzt 25% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+"Demand is no longer a matter of opinion.
+The street's bad moods no longer count: it pays
+as in a normal mood, or better in a good one.","Demand is no longer a matter of opinion.
+The street's bad moods no longer count: it pays
+as in a normal mood, or better in a good one.","Nachfrage ist keine Ansichtssache mehr.
+Schlechte Laune der Straße zählt nicht mehr: Sie
+zahlt wie bei normaler Laune, bei guter mehr."
+"A second department is opened to manage the first.
+Two more hired hands throw cabbages out of the
+window.","A second department is opened to manage the first.
+Two more hired hands throw cabbages out of the
+window.","Eine zweite Abteilung verwaltet nun die erste.
+Zwei Hilfskräfte mehr werfen Kohlköpfe aus dem
+Fenster."
+"The other hand was idle. This has been corrected.
+Every hired hand throws two cabbages out of the
+window per trip before it goes back, not one.","The other hand was idle. This has been corrected.
+Every hired hand throws two cabbages out of the
+window per trip before it goes back, not one.","Die andere Hand war untätig. Das wurde korrigiert.
+Jede Hilfskraft wirft pro Gang zwei Kohlköpfe aus
+dem Fenster, bevor sie zurückgeht, nicht einen."
+"A sample of two is a study.
+Blue research cabbages are condensed too:
+each holds as many as a plain cabbage.","A sample of two is a study.
+Blue research cabbages are condensed too:
+each holds as many as a plain cabbage.","Eine Stichprobe von zwei ist eine Studie.
+Auch blaue Forschungskohlköpfe sind verdichtet:
+Jeder fasst so viele wie ein gewöhnlicher."
+"Gold is compressed. It does not complain.
+Golden cabbages are condensed too: each takes
+that many from your golden stock.","Gold is compressed. It does not complain.
+Golden cabbages are condensed too: each takes
+that many from your golden stock.","Gold wird gepresst. Es beschwert sich nicht.
+Auch goldene Kohlköpfe sind verdichtet: Jeder
+nimmt so viele aus Ihrem goldenen Lager."
+"Three cabbages agree to share.
+A condensed cabbage holds 3 cabbages, not 2:
+it takes 3 from stock and counts as 3.","Three cabbages agree to share.
+A condensed cabbage holds 3 cabbages, not 2:
+it takes 3 from stock and counts as 3.","Drei Kohlköpfe einigen sich aufs Teilen.
+Ein verdichteter Kohlkopf fasst 3 statt 2:
+Er nimmt 3 aus dem Lager und zählt als 3."
+"The cabbage is now mostly cabbage.
+A condensed cabbage holds 4 cabbages, not 3:
+it takes 4 from stock and counts as 4.","The cabbage is now mostly cabbage.
+A condensed cabbage holds 4 cabbages, not 3:
+it takes 4 from stock and counts as 4.","Der Kohlkopf besteht nun vor allem aus Kohlkopf.
+Ein verdichteter Kohlkopf fasst 4 statt 3:
+Er nimmt 4 aus dem Lager und zählt als 4."
+WORLD,WORLD,WELT
+DISTRICT,DISTRICT,BEZIRK
+NEGOTIATION,NEGOTIATION,VERHANDLUNG
+"The owners said no. No is an opening position.
+Needs 1 farm. The next three farms on the country map are for sale again. Their deeds take offers of cabbages: enough and the price drops, too few and it rises. Cabbages offered are gone either way.","The owners said no. No is an opening position.
+Needs 1 farm. The next three farms on the country map are for sale again. Their deeds take offers of cabbages: enough and the price drops, too few and it rises. Cabbages offered are gone either way.","Die Eigentümer haben Nein gesagt. Nein ist eine Verhandlungsposition.
+Braucht 1 Hof. Die nächsten drei Höfe auf der Landeskarte stehen wieder zum Verkauf. Ihre Urkunden nehmen Angebote in Kohlköpfen an: Genug, und der Preis sinkt; zu wenig, und er steigt. Gebotene Kohlköpfe sind in jedem Fall weg."
+RECOVER REJECTED GOODS,RECOVER REJECTED GOODS,ABGELEHNTE WARE ZURÜCKHOLEN
+"A refused offer was never accepted. Legal concurs.
+Needs 2 farms. Half of every offer an owner refuses comes back to you. Offers he accepts stay spent.","A refused offer was never accepted. Legal concurs.
+Needs 2 farms. Half of every offer an owner refuses comes back to you. Offers he accepts stay spent.","Ein abgelehntes Angebot wurde nie angenommen. Die Rechtsabteilung stimmt zu.
+Braucht 2 Höfe. Von jedem Angebot, das ein Eigentümer ablehnt, kommt die Hälfte zu Ihnen zurück. Angenommene Angebote bleiben ausgegeben."
+BRIBERY,BRIBERY,BESTECHUNG
+"Entered in the books as hospitality.
+Needs 4 farms. The fifth farm on the country map is for sale. Its owner does not eat cabbage: its deed takes coins in an envelope. Same rules.","Entered in the books as hospitality.
+Needs 4 farms. The fifth farm on the country map is for sale. Its owner does not eat cabbage: its deed takes coins in an envelope. Same rules.","In den Büchern als Bewirtung geführt.
+Braucht 4 Höfe. Der fünfte Hof auf der Landeskarte steht zum Verkauf. Sein Eigentümer isst keinen Kohl: Seine Urkunde nimmt Münzen im Umschlag an. Gleiche Regeln."
+EXTEND THE MAPS BEYOND THE BORDER,EXTEND THE MAPS BEYOND THE BORDER,KARTEN ÜBER DIE GRENZE HINAUS ERWEITERN
+"The home market is settled. Abroad has not been consulted.
+Needs 5 farms. The cartographers are paid in cabbages. A chart of the world's markets is delivered to the rack at your map table: click its roll to lay it out. The three farms left in Kohlmark can now be seized on the country map.","The home market is settled. Abroad has not been consulted.
+Needs 5 farms. The cartographers are paid in cabbages. A chart of the world's markets is delivered to the rack at your map table: click its roll to lay it out. The three farms left in Kohlmark can now be seized on the country map.","Der Heimatmarkt ist geregelt. Das Ausland wurde nicht gefragt.
+Braucht 5 Höfe. Die Kartografen werden in Kohlköpfen bezahlt. Eine Karte der Weltmärkte wird in das Regal an Ihrem Kartentisch geliefert: Klicken Sie auf die Rolle, um sie auszulegen. Die drei übrigen Höfe in Kohlmark können jetzt auf der Landeskarte enteignet werden."
+THE COUNTRY IS OURS,THE COUNTRY IS OURS,DAS LAND GEHÖRT UNS
+"Every farm in Kohlmark now belongs to the company. A country that grows nothing but our cabbages is, for practical purposes, ours. The board has reviewed the constitution and found it amendable. From today we write the laws. The first one is on your desk.","Every farm in Kohlmark now belongs to the company. A country that grows nothing but our cabbages is, for practical purposes, ours. The board has reviewed the constitution and found it amendable. From today we write the laws. The first one is on your desk.","Jeder Hof in Kohlmark gehört nun dem Unternehmen. Ein Land, das nur noch unsere Kohlköpfe anbaut, gehört praktisch uns. Der Vorstand hat die Verfassung geprüft und für änderbar befunden. Ab heute schreiben wir die Gesetze. Das erste liegt auf Ihrem Tisch."
+NO MORE TAXES ON CABBAGES,NO MORE TAXES ON CABBAGES,KEINE STEUERN MEHR AUF KOHLKÖPFE
+"Taxing cabbages was found to be an oversight. It has been corrected.
+Needs every farm in Kohlmark (8). The 19% tax on cabbages is abolished and the company keeps it: every cabbage sells for 19% more.","Taxing cabbages was found to be an oversight. It has been corrected.
+Needs every farm in Kohlmark (8). The 19% tax on cabbages is abolished and the company keeps it: every cabbage sells for 19% more.","Die Besteuerung von Kohlköpfen hat sich als Versehen erwiesen. Es wurde korrigiert.
+Braucht jeden Hof in Kohlmark (8). Die 19 % Steuer auf Kohlköpfe wird abgeschafft, und das Unternehmen behält sie: Jeder Kohlkopf verkauft sich für 19 % mehr."
+1 FARM,1 FARM,1 HOF
+Endmark Isle,Endmark Isle,Insel Endmark
+FORM 3-D  DEED OF TRANSFER,FORM 3-D  DEED OF TRANSFER,FORMULAR 3-D  ÜBERTRAGUNGSURKUNDE
+FARM SITE %s,FARM SITE %s,HOFSTELLE %s
+PURCHASE PRICE,PURCHASE PRICE,KAUFPREIS
+SHORT %s,SHORT %s,ES FEHLEN %s
+STAMP HERE,STAMP HERE,HIER STEMPELN
+The seller confirms that the transfer is voluntary.,The seller confirms that the transfer is voluntary.,"Der Verkäufer bestätigt, dass die Übertragung freiwillig erfolgt."
+The owners will need persuading.,The owners will need persuading.,Die Eigentümer müssen erst überzeugt werden.
+The owner is unavailable.,The owner is unavailable.,Der Eigentümer ist nicht erreichbar.
+ASKED %s,ASKED %s,VERLANGT %s
+CABBAGES OFFERED,CABBAGES OFFERED,KOHLKÖPFE GEBOTEN
+IN THE ENVELOPE,IN THE ENVELOPE,IM UMSCHLAG
+SUBMIT OFFER,SUBMIT OFFER,ANGEBOT EINREICHEN
+PASS THE ENVELOPE,PASS THE ENVELOPE,UMSCHLAG ÜBERREICHEN
+NO FURTHER OFFERS,NO FURTHER OFFERS,KEINE WEITEREN ANGEBOTE
+OWNER'S MOOD,OWNER'S MOOD,STIMMUNG
+INSULTED,INSULTED,BELEIDIGT
+UNIMPRESSED,UNIMPRESSED,UNGERÜHRT
+LISTENING,LISTENING,HÖRT ZU
+INTRIGUED,INTRIGUED,NEUGIERIG
+DELIGHTED,DELIGHTED,ENTZÜCKT
+UNSEEN,UNSEEN,ÜBERSEHEN
+WEIGHED,WEIGHED,GEWOGEN
+CONSIDERED,CONSIDERED,ERWOGEN
+UNDERSTOOD,UNDERSTOOD,VERSTANDEN
+GRATEFUL,GRATEFUL,DANKBAR
+Cabbages offered are not returned.,Cabbages offered are not returned.,Gebotene Kohlköpfe werden nicht erstattet.
+Envelopes are not returned.,Envelopes are not returned.,Umschläge werden nicht erstattet.
+Half of a refused offer is returned.,Half of a refused offer is returned.,Von einem abgelehnten Angebot wird die Hälfte erstattet.
+HANDLING ASSIGNMENT SCHEDULE,HANDLING ASSIGNMENT SCHEDULE,ZUTEILUNGSPLAN HANDHABUNG
+"Every cabbage has a rightful hand. This is now on file.
+A switch right of the price slate opens a schedule: lab hands left, hired hands right. Click a cabbage there and that kind of hand no longer touches it. Plain cabbages to start; more kinds on the projector.","Every cabbage has a rightful hand. This is now on file.
+A switch right of the price slate opens a schedule: lab hands left, hired hands right. Click a cabbage there and that kind of hand no longer touches it. Plain cabbages to start; more kinds on the projector.","Jeder Kohlkopf hat eine zuständige Hand. Das ist jetzt aktenkundig.
+Ein Schalter rechts neben der Preistafel öffnet einen Plan: links Laborkräfte, rechts Hilfskräfte. Klicken Sie dort einen Kohlkopf an, und diese Kräfte fassen die Sorte nicht mehr an. Zunächst nur normale Kohlköpfe, weitere Sorten am Projektor."
+ANNEX: BLUE,ANNEX: BLUE,ANHANG: BLAU
+"Blue is a jurisdiction.
+The handling schedule also lists blue research
+cabbages: strike them for either kind of hand.","Blue is a jurisdiction.
+The handling schedule also lists blue research
+cabbages: strike them for either kind of hand.","Blau ist eine Zuständigkeit.
+Der Zuteilungsplan führt auch blaue Forschungskohlköpfe: Sie lassen sich für Laborkräfte oder Hilfskräfte streichen."
+ANNEX: MINI,ANNEX: MINI,ANHANG: MINI
+"Small cabbages, full paperwork.
+The handling schedule also lists mini cabbages:
+strike them for either kind of hand.","Small cabbages, full paperwork.
+The handling schedule also lists mini cabbages:
+strike them for either kind of hand.","Kleine Kohlköpfe, voller Papierkram.
+Der Zuteilungsplan führt auch Mini-Kohlköpfe: Sie lassen sich für Laborkräfte oder Hilfskräfte streichen."
+ANNEX: GOLD,ANNEX: GOLD,ANHANG: GOLD
+"Clearance was the easy part.
+The handling schedule also lists golden cabbages.
+It only withholds: clearances still apply.","Clearance was the easy part.
+The handling schedule also lists golden cabbages.
+It only withholds: clearances still apply.","Die Freigabe war der leichte Teil.
+Der Zuteilungsplan führt auch goldene Kohlköpfe. Er entzieht nur: Freigaben gelten weiter."
+HANDLING,HANDLING,HANDHABUNG
+"Who touches what, in writing.
+Which cabbage kinds the handling schedule can withhold from lab hands or hired hands.","Who touches what, in writing.
+Which cabbage kinds the handling schedule can withhold from lab hands or hired hands.","Wer was anfasst, schriftlich.
+Welche Kohlsorten der Zuteilungsplan Laborkräften oder Hilfskräften entziehen kann."
+Handling schedule switch. Click to open the schedule: which cabbages lab hands and hired hands may not touch. The lamp is lit while anything is struck.,Handling schedule switch. Click to open the schedule: which cabbages lab hands and hired hands may not touch. The lamp is lit while anything is struck.,"Schalter des Zuteilungsplans. Klicken öffnet den Plan: welche Kohlköpfe Laborkräfte und Hilfskräfte nicht anfassen dürfen. Die Lampe leuchtet, solange etwas gestrichen ist."
+"Form 9-C, in duplicate. Which hands may touch which cabbages. Click a cabbage to strike it for that column; click again to clear it.","Form 9-C, in duplicate. Which hands may touch which cabbages. Click a cabbage to strike it for that column; click again to clear it.","Formular 9-C, in doppelter Ausfertigung. Welche Hände welche Kohlköpfe anfassen dürfen. Ein Klick auf einen Kohlkopf streicht ihn für diese Spalte, ein weiterer gibt ihn wieder frei."
+HIRED HANDS,HIRED HANDS,HILFSKRÄFTE
+Blue cuff. They throw into the research lab.,Blue cuff. They throw into the research lab.,Blaue Manschette. Sie werfen ins Forschungslabor.
+Grey sleeve. They throw out of the window.,Grey sleeve. They throw out of the window.,Grauer Ärmel. Sie werfen aus dem Fenster.
+PLAIN,PLAIN,NORMAL
+BLUE,BLUE,BLAU
+"NOT TO BE
+HANDLED","NOT TO BE
+HANDLED","NICHT
+ANFASSEN"
+This schedule only withholds. Clearances for golden cabbages and the handling of rotten ones are governed elsewhere. Padlocked kinds are added on the projector. You may always handle a cabbage yourself.,This schedule only withholds. Clearances for golden cabbages and the handling of rotten ones are governed elsewhere. Padlocked kinds are added on the projector. You may always handle a cabbage yourself.,Dieser Plan entzieht nur. Freigaben für goldene Kohlköpfe und der Umgang mit verdorbenen sind andernorts geregelt. Sorten mit Schloss kommen am Projektor hinzu. Sie selbst dürfen jeden Kohlkopf jederzeit anfassen.
+RAISE THE AUTHORISED CASH HOLDING,RAISE THE AUTHORISED CASH HOLDING,GENEHMIGTEN KASSENBESTAND ERHÖHEN
+"Cash on the desk was capped at $40,000. The cap has been reviewed.
+You can hold up to $200,000 instead of $40,000. Coins that do not fit are not paid in. More on the projector.","Cash on the desk was capped at $40,000. The cap has been reviewed.
+You can hold up to $200,000 instead of $40,000. Coins that do not fit are not paid in. More on the projector.","Der Kassenbestand am Schreibtisch war auf $40.000 begrenzt. Die Grenze wurde überprüft.
+Sie können bis zu $200.000 halten statt $40.000. Münzen, die nicht mehr hineinpassen, werden nicht eingezahlt. Mehr am Projektor."
+EXTEND THE ARCHIVE,EXTEND THE ARCHIVE,DAS ARCHIV ERWEITERN
+"Findings are filed. The cabinet was full.
+You can hold up to ¶40,000 instead of ¶8,000. Findings that do not fit are not filed. More on channel 2.","Findings are filed. The cabinet was full.
+You can hold up to ¶40,000 instead of ¶8,000. Findings that do not fit are not filed. More on channel 2.","Befunde werden abgelegt. Der Schrank war voll.
+Sie können bis zu ¶40.000 halten statt ¶8.000. Befunde, die nicht mehr hineinpassen, werden nicht abgelegt. Mehr auf Kanal 2."
+PETTY CASH TIN,PETTY CASH TIN,HANDKASSE
+"The tin is larger than the petty cash.
+You can hold up to $500,000 instead of $200,000.","The tin is larger than the petty cash.
+You can hold up to $500,000 instead of $200,000.","Die Kassette ist größer als die Handkasse.
+Sie können bis zu $500.000 halten statt $200.000."
+WALL SAFE,WALL SAFE,WANDTRESOR
+"Behind the founder's portrait. Everyone knows.
+You can hold up to $1.5M instead of $500,000.","Behind the founder's portrait. Everyone knows.
+You can hold up to $1.5M instead of $500,000.","Hinter dem Porträt des Gründers. Jeder weiß es.
+Sie können bis zu $1,5 Mio. halten statt $500.000."
+STRONGROOM,STRONGROOM,TRESORRAUM
+"The door weighs more than the staff.
+You can hold up to $4M instead of $1.5M.","The door weighs more than the staff.
+You can hold up to $4M instead of $1.5M.","Die Tür wiegt mehr als die Belegschaft.
+Sie können bis zu $4 Mio. halten statt $1,5 Mio."
+BASEMENT VAULT,BASEMENT VAULT,KELLERTRESOR
+"Two keys are required. You hold both.
+You can hold up to $8M instead of $4M.","Two keys are required. You hold both.
+You can hold up to $8M instead of $4M.","Zwei Schlüssel sind erforderlich. Sie haben beide.
+Sie können bis zu $8 Mio. halten statt $4 Mio."
+CENTRAL RESERVE,CENTRAL RESERVE,ZENTRALRESERVE
+"The desk is now a bank. The banks were not asked.
+You can hold up to $16M instead of $8M.","The desk is now a bank. The banks were not asked.
+You can hold up to $16M instead of $8M.","Der Schreibtisch ist jetzt eine Bank. Die Banken wurden nicht gefragt.
+Sie können bis zu $16 Mio. halten statt $8 Mio."
+ARCHIVE,ARCHIVE,ARCHIV
+"Findings need somewhere to be kept.
+The most Findings (¶) you can hold.","Findings need somewhere to be kept.
+The most Findings (¶) you can hold.","Befunde müssen irgendwo aufbewahrt werden.
+Wie viele Befunde (¶) Sie höchstens halten können."
+SECOND CABINET,SECOND CABINET,ZWEITER AKTENSCHRANK
+"Identical to the first. This was a requirement.
+You can hold up to ¶100,000 instead of ¶40,000.","Identical to the first. This was a requirement.
+You can hold up to ¶100,000 instead of ¶40,000.","Baugleich mit dem ersten. Das war Vorschrift.
+Sie können bis zu ¶100.000 halten statt ¶40.000."
+BASEMENT STACKS,BASEMENT STACKS,KELLERMAGAZIN
+"Damp, but alphabetical.
+You can hold up to ¶200,000 instead of ¶100,000.","Damp, but alphabetical.
+You can hold up to ¶200,000 instead of ¶100,000.","Feucht, aber alphabetisch.
+Sie können bis zu ¶200.000 halten statt ¶100.000."
+MICROFILM,MICROFILM,MIKROFILM
+"Every Finding, reduced to the size of a seed.
+You can hold up to ¶400,000 instead of ¶200,000.","Every Finding, reduced to the size of a seed.
+You can hold up to ¶400,000 instead of ¶200,000.","Jeder Befund, verkleinert auf Samenkorngröße.
+Sie können bis zu ¶400.000 halten statt ¶200.000."
+OFF-SITE ARCHIVE,OFF-SITE ARCHIVE,AUSSENARCHIV
+"Nobody has seen it. It is reported to be full.
+You can hold up to ¶600,000 instead of ¶400,000.","Nobody has seen it. It is reported to be full.
+You can hold up to ¶600,000 instead of ¶400,000.","Niemand hat es gesehen. Es soll voll sein.
+Sie können bis zu ¶600.000 halten statt ¶400.000."
+RECORD OFFICE,RECORD OFFICE,REGISTRATUR
+"The records now have records of their own.
+You can hold up to ¶900,000 instead of ¶600,000.","The records now have records of their own.
+You can hold up to ¶900,000 instead of ¶600,000.","Die Akten haben jetzt eigene Akten.
+Sie können bis zu ¶900.000 halten statt ¶600.000."
+STRUCTURED FARM,STRUCTURED FARM,STRUKTURIERTER HOF
+"The farm grew. Its organisation chart did not.
+Needs 1 farm. The farm tree on channel 2 opens up, with new and dearer upgrades around its edge: more seeds in a farm square, and farm hands who keep up with them.","The farm grew. Its organisation chart did not.
+Needs 1 farm. The farm tree on channel 2 opens up, with new and dearer upgrades around its edge: more seeds in a farm square, and farm hands who keep up with them.","Der Hof ist gewachsen. Sein Organigramm nicht.
+Braucht 1 Hof. Der Upgrade-Baum des Hofs auf Kanal 2 öffnet sich, mit neuen und teureren Verbesserungen an seinem Rand: mehr Saatkörner pro Hoffeld und Knechte, die damit Schritt halten."
+SEED BEDS,SEED BEDS,SAATBEETE
+"The field has been divided on paper.
+Every farm square holds 3 seeds instead of 2. Each seed grows its own batch.","The field has been divided on paper.
+Every farm square holds 3 seeds instead of 2. Each seed grows its own batch.","Das Feld wurde auf dem Papier aufgeteilt.
+Jedes Hoffeld fasst 3 Saatkörner statt 2. Jedes Saatkorn bringt seine eigene Charge."
+SEED BEDS II,SEED BEDS II,SAATBEETE II
+"The paths between the beds were found to be unproductive.
+Every farm square holds 4 seeds instead of 3.","The paths between the beds were found to be unproductive.
+Every farm square holds 4 seeds instead of 3.","Die Wege zwischen den Beeten erwiesen sich als unproduktiv.
+Jedes Hoffeld fasst 4 Saatkörner statt 3."
+SEED BEDS III,SEED BEDS III,SAATBEETE III
+"A second layer has been approved.
+Every farm square holds 6 seeds instead of 4.","A second layer has been approved.
+Every farm square holds 6 seeds instead of 4.","Eine zweite Lage wurde genehmigt.
+Jedes Hoffeld fasst 6 Saatkörner statt 4."
+FARM ROUNDS,FARM ROUNDS,HOFRUNDE
+"The roster now has a first page.
+Farm hands plant the farm squares first, and plain squares only when every farm is full.","The roster now has a first page.
+Farm hands plant the farm squares first, and plain squares only when every farm is full.","Der Plan hat jetzt eine erste Seite.
+Knechte bepflanzen zuerst die Hoffelder und einfache Felder erst, wenn jeder Hof voll ist."
+SEED SATCHELS,SEED SATCHELS,SAATTASCHEN
+"A bag is issued. Its weight is deducted.
+Farm hands carry two more seeds per trip and plant two more before returning to the yard.","A bag is issued. Its weight is deducted.
+Farm hands carry two more seeds per trip and plant two more before returning to the yard.","Eine Tasche wird ausgegeben. Ihr Gewicht wird abgezogen.
+Knechte tragen pro Gang zwei Saatkörner mehr und setzen zwei mehr, bevor sie zum Hof zurückkehren."
+CONDENSE IV,CONDENSE IV,VERDICHTEN IV
+"Six to a cabbage. Nobody asked the cabbages.
+A condensed cabbage holds 6 cabbages, not 4:
+it takes 6 from stock and counts as 6.","Six to a cabbage. Nobody asked the cabbages.
+A condensed cabbage holds 6 cabbages, not 4:
+it takes 6 from stock and counts as 6.","Sechs pro Kohlkopf. Gefragt wurde keiner.
+Ein verdichteter Kohlkopf fasst 6 statt 4:
+Er nimmt 6 aus dem Lager und zählt als 6."
+CONDENSE V,CONDENSE V,VERDICHTEN V
+"It is heavier than it looks. So is the paperwork.
+A condensed cabbage holds 8 cabbages, not 6:
+it takes 8 from stock and counts as 8.","It is heavier than it looks. So is the paperwork.
+A condensed cabbage holds 8 cabbages, not 6:
+it takes 8 from stock and counts as 8.","Schwerer, als er aussieht. Der Papierkram auch.
+Ein verdichteter Kohlkopf fasst 8 statt 6:
+Er nimmt 8 aus dem Lager und zählt als 8."
+FORM 3-S  SEIZURE ORDER,FORM 3-S  SEIZURE ORDER,FORMULAR 3-S  ENTEIGNUNGSBESCHEID
+FORM 7-A  ANNEXATION ORDER,FORM 7-A  ANNEXATION ORDER,FORMULAR 7-A  ANNEXIONSBESCHEID
+COST OF THE OPERATION,COST OF THE OPERATION,KOSTEN DER MASSNAHME
+The owner's signature is not required.,The owner's signature is not required.,Die Unterschrift des Eigentümers ist nicht erforderlich.
+The population has been informed in writing.,The population has been informed in writing.,Die Bevölkerung wurde schriftlich informiert.
+SEIZED,SEIZED,ENTEIGNET
+ANNEXED,ANNEXED,ANNEKTIERT
+NOT ADJACENT,NOT ADJACENT,NICHT ANGRENZEND
+NO SEA LANES,NO SEA LANES,KEINE SEEWEGE
+NOT YET,NOT YET,NOCH NICHT
+We do not border this country. Yet.,We do not border this country. Yet.,Wir grenzen nicht an dieses Land. Noch nicht.
+The sea is not ours to cross yet.,The sea is not ours to cross yet.,Das Meer dürfen wir noch nicht überqueren.
+Head office has scheduled the island for last.,Head office has scheduled the island for last.,Die Zentrale hat die Insel für zuletzt eingeplant.
+FARMS x%d,FARMS x%d,HÖFE x%d
+%s. Farms: %d. %s,%s. Farms: %d. %s,%s. Höfe: %d. %s
+%s. Farms: %d. Cost: %s. Click for the order.,%s. Farms: %d. Cost: %s. Click for the order.,%s. Höfe: %d. Kosten: %s. Klicken für den Bescheid.
+%s. Farms: %d. Cost: %s. Short: %s.,%s. Farms: %d. Cost: %s. Short: %s.,%s. Höfe: %d. Kosten: %s. Es fehlen: %s.
+SEA LANES,SEA LANES,SEEWEGE
+"Water is not a border. It is a delay.
+Needs 13 farms. The sea lanes drawn on the world chart are opened: a country across a lane from one of ours can be taken.","Water is not a border. It is a delay.
+Needs 13 farms. The sea lanes drawn on the world chart are opened: a country across a lane from one of ours can be taken.","Wasser ist keine Grenze. Es ist eine Verzögerung.
+Braucht 13 Höfe. Die auf der Weltkarte eingezeichneten Seewege werden geöffnet: Ein Land, das über einen Seeweg an eines unserer Länder grenzt, kann eingenommen werden."

@@ -295,3 +295,70 @@ func test_packs_bought_by_the_button_and_by_the_standing_order_are_counted_apart
 	console._press(true)
 	assert_int(save.packs_manual).is_equal(1)
 	assert_int(save.packs_auto).is_equal(2)
+
+
+## A stocked, rich desk with the console in and the standing order on.
+func _rich_console(stamped: Array) -> SupplyConsole:
+	var save := SaveGame.new()
+	save.buy_unlocked = true
+	save.stock = 0
+	save.coins = 100000
+	save.stamped = PackedStringArray(["auto_procurement"] + stamped)
+	SaveManager.save = save
+	var console: SupplyConsole = auto_free(load("res://entities/supply_console/supply_console.tscn").instantiate())
+	add_child(console)
+	return console
+
+
+func test_once_market_intelligence_is_stamped_the_supply_console_buys_nothing_by_hand_or_by_standing_order() -> void:
+	var console := _rich_console([])
+	var save := SaveManager.save
+	console._process(0.1)  # The standing order: out of stock, money there.
+	assert_int(save.packs_auto).is_equal(1)
+	console._press()
+	assert_int(save.packs_manual).is_equal(1)
+	var was := [save.coins, save.stock, save.price_factor]
+
+	save.stamped.append("market_intelligence")
+	save.stock = 0
+	was[1] = 0
+	assert_bool(Console.retired(save)).is_true()
+	for i in 200:  # Past the auto cooldown and a price tick.
+		console._process(0.5)
+	console._press()
+
+	assert_array([save.coins, save.stock, save.price_factor]).is_equal(was)
+	assert_array([save.packs_auto, save.packs_manual]).is_equal([1, 1])
+
+
+func test_the_retired_console_is_lifted_off_the_desk_and_its_button_and_switch_take_no_more_clicks() -> void:
+	var console := _rich_console([])
+	var rest := console.position
+	assert_bool(console.visible).is_true()
+	SaveManager.save.stamped.append("market_intelligence")
+	console._process(0.0)
+	assert_bool(console._button.enabled).is_false()
+	assert_bool(console._auto_switch.enabled).is_false()
+	await await_millis(int(Console.LIFT_TIME * 1000.0) + 150)
+	assert_bool(console.visible).is_false()
+	assert_float(console.position.y).is_greater(rest.y + 5.0)
+
+
+func test_a_loaded_save_with_market_intelligence_never_shows_the_supply_console() -> void:
+	var console := _rich_console(["market_intelligence"])
+	assert_bool(console.visible).is_false()
+	assert_bool(console._button.enabled).is_false()
+	assert_bool(console._auto_switch.enabled).is_false()
+	console._process(0.5)
+	assert_bool(console.visible).is_false()
+	assert_int(SaveManager.save.packs_auto).is_equal(0)
+
+
+func test_the_retired_console_scrapes_off_its_plinth_as_it_is_lifted() -> void:
+	var console := _rich_console([])
+	var lift := console.get_node("Lift") as SoundCue
+	assert_object(lift.stream).is_not_null()
+	assert_bool(lift.playing).is_false()
+	SaveManager.save.stamped.append("market_intelligence")
+	console._process(0.0)
+	assert_bool(lift.playing).is_true()

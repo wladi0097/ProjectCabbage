@@ -61,6 +61,10 @@ const OFF := Vector2(-1e9, -1e9)
 
 ## The tree's script (see above), set by the host.
 var rules: Variant
+## How far the wheel zooms out (the host lowers it when its tree outgrows ZOOM_MIN: the projector's wide sheet).
+var zoom_min := ZOOM_MIN
+## The zoom the view starts at and a double-click returns to (the host changes it with home()).
+var zoom_home := 1.0
 ## How lit the tree is, 0..1: it fades with it, and only takes hovers and holds above 0.9.
 var light := 1.0
 
@@ -116,7 +120,7 @@ func _process(delta: float) -> void:
 	_layer.position = _wheel()[0]
 	_layer.modulate.a = light * (pulse(Time.get_ticks_msec() / 1000.0) if shimmer else 1.0)
 	_top.size = size
-	var key: Array = [_zoom, size, save.get_instance_id()] + rules.drawn_key(save)
+	var key: Array = [_zoom, size, save.get_instance_id(), TranslationServer.get_locale()] + rules.drawn_key(save)
 	if key != _layer_key:
 		_layer_key = key
 		_themes_shown = rules.themes_shown(save)
@@ -230,7 +234,7 @@ func _zoom_at(point: Vector2, factor: float) -> void:
 	var base_unit: Vector2 = wheel[1] / _zoom
 	var middle: Vector2 = wheel[0] - _pan
 	var old := _zoom
-	_zoom = clampf(_zoom * factor, ZOOM_MIN, ZOOM_MAX)
+	_zoom = clampf(_zoom * factor, zoom_min, ZOOM_MAX)
 	var pan := point - under * base_unit * _zoom - middle
 	# Zooming into empty space that would push the whole tree out is refused.
 	if _keeps_tree(pan):
@@ -260,11 +264,21 @@ func _keeps_tree(pan: Vector2) -> bool:
 	return false
 
 
-## Eases the view back to the start: no pan, zoom 1.
+## Eases the view back to the start: no pan, zoom zoom_home.
 func _recentre() -> void:
+	home(zoom_home, 0.25)
+
+
+## The view's start becomes zoom `zoom` (zoom_home), and the view goes there over `time` s (0: at once).
+func home(zoom: float, time: float) -> void:
+	zoom_home = zoom
+	if time <= 0.0:
+		_pan = Vector2.ZERO
+		_zoom = zoom
+		return
 	var tween := create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "_pan", Vector2.ZERO, 0.25)
-	tween.tween_property(self, "_zoom", 1.0, 0.25)
+	tween.tween_property(self, "_pan", Vector2.ZERO, time)
+	tween.tween_property(self, "_zoom", zoom, time)
 
 
 ## What is under `point`: a node (_hovered), else a theme heading (_hovered_theme). OFF: nothing.
@@ -404,7 +418,7 @@ func _draw_top() -> void:
 	var wheel := _wheel()
 	var r: float = wheel[2]
 	var area := Rect2(Vector2.ZERO, size)
-	var hint := tr("DRAG TO MOVE   |   WHEEL TO ZOOM") if _pan == Vector2.ZERO and is_equal_approx(_zoom, 1.0) else tr("DOUBLE-CLICK TO RECENTRE")
+	var hint := tr("DRAG TO MOVE   |   WHEEL TO ZOOM") if _pan == Vector2.ZERO and is_equal_approx(_zoom, zoom_home) else tr("DOUBLE-CLICK TO RECENTRE")
 	_top.draw_string(font, area.end - Vector2(area.size.x, 12.0), hint, HORIZONTAL_ALIGNMENT_RIGHT, area.size.x - 14.0, 15, Color(ink, light * 0.55))
 	if _holding != "":
 		var at: Vector2 = wheel[0] + rules.node_data(_holding).at * wheel[1]

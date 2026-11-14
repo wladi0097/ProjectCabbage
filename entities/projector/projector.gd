@@ -39,12 +39,17 @@ const Events := preload("res://globalScripts/game_events.gd")
 ## management fanning out), automation left (consultancy, supply chain, coin units, associates,
 ## headcount); THEMES names the fans. Generated, with no overlaps or crossing edges, by tools/projector_layout/layout.py from its
 ## sectors.json (the mat, procurement and storage chains are laid by hand, "fixed" there, and checked by it).
+## The late game (the first node of each late run names big_ideas in its `needs`, which hides the run) and
+## chapter 3's own nodes (the block at the end of NODES) only show once the desk card BIG MINDS HAVE
+## BIG IDEAS is stamped, on the wider sheet (screen_for). A node a save has bought always shows.
 ## Storage steps dropped from the chain (200 to 1,000 in two steps, not six), each with the kept
 ## step an old save that bought it gets instead (migrate_storage).
 const DROPPED_STORAGE := {"stock_250": "storage_3", "stock_320": "storage_3", "stock_400": "storage_3", "stock_750": "stock_1000"}
-## The mat allowance: the desk card gives the 3rd unit, then a chain of nodes "mat_%d", one per
-## unit from MAT_FIRST up to MAT_MAX (migrate_mat files an old save's units as bought).
+## The mat allowance: the desk card gives the 3rd unit, then a chain of nodes "mat_%d" (the size the
+## mat reaches): one unit a step from MAT_FIRST to MAT_SINGLES, then three a step up to MAT_MAX
+## (migrate_mat files an old save's steps as bought).
 const MAT_FIRST := 4
+const MAT_SINGLES := 11
 const MAT_MAX := 20
 const NODES := [
 	# Departments: free sub-hubs around the hub, one per direction, never bought (`dept`). Greyed until
@@ -77,7 +82,7 @@ const NODES := [
 		mul = {marketing = 1.25}, title = "SLOGAN V",
 		body = "\"Cabbage. Your household quota is attached.\"\nThe street now pays 25% more without refusing.\nRaise your price on the slate to cash in."},
 	{id = "slogan_6", parent = "slogan_5", at = Vector2(-0.49, -3.18), icon = "megaphone", price = 105000,
-		mul = {marketing = 1.25}, title = "SLOGAN VI",
+		needs = ["big_ideas"], mul = {marketing = 1.25}, title = "SLOGAN VI",
 		body = "\"Cabbage.\"\nThe street now pays 25% more without refusing.\nRaise your price on the slate to cash in."},
 	{id = "pack_1", parent = "dept_manual", at = Vector2(1.79, -0.18), icon = "crate", price = 250,
 		add = {pack_size = 3}, title = "BULK PROCUREMENT",
@@ -138,14 +143,14 @@ Storage holds 200 cabbages instead of 160."},
 		body = "The golden ones are kept at eye level.
 A golden cabbage sold pays 15× your price, not 10×."},
 	{id = "gold_sale_2", parent = "gold_sale_1", at = Vector2(4.06, 0.16), icon = "crate", price = 20000,
-		add = {golden_sale = 5.0}, title = "LUXURY CLASSIFICATION",
+		needs = ["big_ideas"], add = {golden_sale = 5.0}, title = "LUXURY CLASSIFICATION",
 		body = "The street is told it cannot afford them.
 A golden cabbage sold pays 20× your price, not 15×."},
 	# Until this, the golden lamp's Golden Age skips golden units (SaleWindow.boosts_for, GOLD_AGE). No
 	# number: the window reads tree_bought. The dearest golden node (slogan_6 and hire_associate_8 cost more;
 	# tools/pace.py: "nogate"), bought after chapter 2's last card in the sim.
 	{id = "gold_age", parent = "gold_sale_1", at = Vector2(3.56, -0.27), icon = "crate", price = 75000,
-		needs = ["golden_cabbage", "golden_lamp"], title = "GOLD STANDARD",
+		needs = ["golden_cabbage", "golden_lamp", "big_ideas"], title = "GOLD STANDARD",
 		body = "The Golden Age is extended to the premium range.
 In a Golden Age, golden cabbages get its bonus too.
 Until now they paid only their own premium."},
@@ -155,7 +160,7 @@ Until now they paid only their own premium."},
 A golden cabbage in the research lab gives 15× the
 Findings, not 10×."},
 	{id = "gold_lab_2", parent = "gold_lab_1", at = Vector2(4.66, 0.16), icon = "pilcrow", price = 18000,
-		add = {golden_lab = 10.0}, title = "PRECIOUS METALS DESK",
+		needs = ["big_ideas"], add = {golden_lab = 10.0}, title = "PRECIOUS METALS DESK",
 		body = "Nobody is sure which metal.
 A golden cabbage in the research lab gives 25× the
 Findings, not 15×."},
@@ -192,7 +197,7 @@ Storage holds 1,500 cabbages instead of 1,000."},
 		body = "The aircraft were surplus to requirements.
 Storage holds 2,000 cabbages instead of 1,500."},
 	{id = "stock_3000", parent = "stock_2000", at = Vector2(4.13, -3.28), icon = "crate", price = 12500,
-		add = {storage_cap = 1000}, title = "SALT MINE",
+		needs = ["big_ideas"], add = {storage_cap = 1000}, title = "SALT MINE",
 		body = "Underground, stable, and nobody asks.
 Storage holds 3,000 cabbages instead of 2,000."},
 	{id = "storage_5", parent = "stock_3000", at = Vector2(4.13, -2.85), icon = "crate", price = 15500,
@@ -218,7 +223,7 @@ Storage holds 15,000 cabbages instead of 9,999."},
 		mul = {dispense_interval = 0.67}, title = "CONVEYOR II",
 		body = "A second motor, same belt.\nThe chute rolls out a cabbage every 0.33 s, not every 0.5 s."},
 	{id = "conveyor_3", parent = "conveyor_2", at = Vector2(-1.95, -2.15), icon = "belt", price = 67500,
-		mul = {dispense_interval = 0.67}, title = "CONVEYOR III",
+		needs = ["big_ideas"], mul = {dispense_interval = 0.67}, title = "CONVEYOR III",
 		body = "Safety guards removed.\nThe chute rolls out a cabbage every 0.22 s, not every 0.33 s."},
 	{id = "associate_1", parent = "dept_automation", at = Vector2(-1.60, 0.50), icon = "clock", price = 180,
 		needs = ["junior_associate"], mul = {associate_speed = 1.5}, title = "BRISK WALK I",
@@ -242,7 +247,7 @@ Storage holds 15,000 cabbages instead of 9,999."},
 		hire = true, title = "HIRE ASSOCIATE VI",
 		body = "Names are no longer collected.\nOne more hired hand throws cabbages out of the\nwindow: 6 instead of 5."},
 	{id = "hire_associate_7", parent = "hire_associate_6", at = Vector2(-1.59, 2.53), icon = "hand", price = 35000,
-		hire = true, title = "HIRE ASSOCIATE VII",
+		needs = ["big_ideas"], hire = true, title = "HIRE ASSOCIATE VII",
 		body = "A second coat rack is requisitioned.\nOne more hired hand throws cabbages out of the\nwindow: 7 instead of 6."},
 	{id = "hire_associate_8", parent = "hire_associate_7", at = Vector2(-1.69, 2.92), icon = "hand", price = 100000,
 		hire = true, title = "HIRE ASSOCIATE VIII",
@@ -257,12 +262,14 @@ Storage holds 15,000 cabbages instead of 9,999."},
 		mul = {qa_time = 0.5}, title = "LAB FAST TRACK",
 		body = "Analysis is now a formality.\nThe research lab analyses a cabbage in 1.9 s, not 3.75 s."},
 	{id = "double_findings", parent = "qa_fast_track", at = Vector2(0.15, 3.01), icon = "pilcrow", price = 20000,
-		mul = {findings_per_cabbage = 2}, title = "DOUBLE FINDINGS",
+		needs = ["big_ideas"], mul = {findings_per_cabbage = 2}, title = "DOUBLE FINDINGS",
 		body = "Every finding is filed twice.\nEach cabbage analysed gives twice the Findings."},
 	# Supply + automation (desk space, packs, auto-buy, hands, seating, campaigns, vacuums, QA rest):
 	# entities/supply_console/, entities/associate/, entities/vacuum/, entities/qa_bay/.
-	# The mat allowance: one node per unit on the mat past the 3 the card gives (MAT_FIRST..MAT_MAX),
-	# each the child of the last, 1.4 times dearer each.
+	# The mat allowance: one node per unit on the mat past the 3 the card gives (MAT_FIRST..MAT_SINGLES),
+	# each the child of the last, 1.4 times dearer each; then three units a step to MAT_MAX (a single
+	# unit stopped being felt there: +4-7% each). The three-unit steps cost more than chapter 2's purse
+	# holds ($40,000), so they wait for big_ideas.
 	{id = "mat_4", parent = "dept_manual", at = Vector2(2.26, -1.57), icon = "desk", price = 2100,
 		needs = ["mat_allowance"], add = {desk_capacity = 1}, title = "4-CABBAGE MAT",
 		body = "Floor space is leased by the cabbage.\nOne more cabbage fits on the mat\n(the chute keeps it full): 4 instead of 3."},
@@ -287,33 +294,21 @@ Storage holds 15,000 cabbages instead of 9,999."},
 	{id = "mat_11", parent = "mat_10", at = Vector2(2.76, -3.29), icon = "desk", price = 22150,
 		add = {desk_capacity = 1}, title = "11-CABBAGE MAT",
 		body = "Coffee is no longer permitted on the mat.\nOne more cabbage fits on the mat\n(the chute keeps it full): 11 instead of 10."},
-	{id = "mat_12", parent = "mat_11", at = Vector2(2.76, -2.86), icon = "desk", price = 31000,
-		add = {desk_capacity = 1}, title = "12-CABBAGE MAT",
-		body = "The mat is extended into the margin.\nOne more cabbage fits on the mat\n(the chute keeps it full): 12 instead of 11."},
-	{id = "mat_13", parent = "mat_12", at = Vector2(2.76, -2.43), icon = "desk", price = 43400,
-		add = {desk_capacity = 1}, title = "13-CABBAGE MAT",
-		body = "The in-tray is relocated. It did not object.\nOne more cabbage fits on the mat\n(the chute keeps it full): 13 instead of 12."},
-	{id = "mat_14", parent = "mat_13", at = Vector2(2.76, -2.00), icon = "desk", price = 60750,
-		add = {desk_capacity = 1}, title = "14-CABBAGE MAT",
-		body = "The desk lamp now sits on the floor.\nOne more cabbage fits on the mat\n(the chute keeps it full): 14 instead of 13."},
-	{id = "mat_15", parent = "mat_14", at = Vector2(2.76, -1.57), icon = "desk", price = 85050,
-		add = {desk_capacity = 1}, title = "15-CABBAGE MAT",
-		body = "The mat is issued a serial number.\nOne more cabbage fits on the mat\n(the chute keeps it full): 15 instead of 14."},
-	{id = "mat_16", parent = "mat_15", at = Vector2(3.26, -1.57), icon = "desk", price = 119050,
-		add = {desk_capacity = 1}, title = "16-CABBAGE MAT",
-		body = "Personal items are removed from the desk.\nOne more cabbage fits on the mat\n(the chute keeps it full): 16 instead of 15."},
-	{id = "mat_17", parent = "mat_16", at = Vector2(3.26, -2.00), icon = "desk", price = 166700,
-		add = {desk_capacity = 1}, title = "17-CABBAGE MAT",
-		body = "The telephone is mounted on the wall.\nOne more cabbage fits on the mat\n(the chute keeps it full): 17 instead of 16."},
-	{id = "mat_18", parent = "mat_17", at = Vector2(3.26, -2.43), icon = "desk", price = 233350,
-		add = {desk_capacity = 1}, title = "18-CABBAGE MAT",
-		body = "The desk is now mostly mat.\nOne more cabbage fits on the mat\n(the chute keeps it full): 18 instead of 17."},
-	{id = "mat_19", parent = "mat_18", at = Vector2(3.26, -2.86), icon = "desk", price = 326700,
-		add = {desk_capacity = 1}, title = "19-CABBAGE MAT",
-		body = "The mat reaches the window sill.\nOne more cabbage fits on the mat\n(the chute keeps it full): 19 instead of 18."},
-	{id = "mat_20", parent = "mat_19", at = Vector2(3.26, -3.29), icon = "desk", price = 457350,
-		add = {desk_capacity = 1}, title = "20-CABBAGE MAT",
-		body = "There is no more desk. There is only the mat.\nOne more cabbage fits on the mat\n(the chute keeps it full): 20 instead of 19."},
+	{id = "mat_14", parent = "mat_11", at = Vector2(2.76, -2.86), icon = "desk", price = 100000,
+		needs = ["big_ideas"], add = {desk_capacity = 3}, title = "MAT ANNEXATION",
+		body = "The in-tray and the desk lamp are relocated.
+Three more cabbages fit on the mat
+(the chute keeps it full): 14 instead of 11."},
+	{id = "mat_17", parent = "mat_14", at = Vector2(2.76, -2.43), icon = "desk", price = 300000,
+		add = {desk_capacity = 3}, title = "DESK REZONING",
+		body = "Personal items and the telephone are removed.
+Three more cabbages fit on the mat
+(the chute keeps it full): 17 instead of 14."},
+	{id = "mat_20", parent = "mat_17", at = Vector2(2.76, -2.00), icon = "desk", price = 700000,
+		add = {desk_capacity = 3}, title = "TOTAL MAT",
+		body = "There is no more desk. There is only the mat.
+Three more cabbages fit on the mat
+(the chute keeps it full): 20 instead of 17."},
 	{id = "discount_1", parent = "pack_1", at = Vector2(2.28, 0.05), icon = "crate", price = 350,
 		mul = {pack_discount = 0.7}, title = "SUPPLIER REVIEW",
 		body = "The supplier is reminded of alternatives.\nPacks cost 30% less. The ticker shows the cut price."},
@@ -351,7 +346,7 @@ Storage holds 15,000 cabbages instead of 9,999."},
 		mul = {marketing = 1.25}, title = "TRUSTED BY THE MINISTRY",
 		body = "The Ministry has not denied it.\nThe street now pays 25% more without refusing.\nRaise your price on the slate to cash in."},
 	{id = "campaign_6", parent = "campaign_5", at = Vector2(0.00, -3.18), icon = "megaphone", price = 67500,
-		mul = {marketing = 1.25}, title = "THE ONLY VEGETABLE",
+		needs = ["big_ideas"], mul = {marketing = 1.25}, title = "THE ONLY VEGETABLE",
 		body = "Other vegetables are under review.\nThe street now pays 25% more without refusing.\nRaise your price on the slate to cash in."},
 	# Coin units (entities/vacuum/): many small steps (drive, bag, dock, nozzle) between the big ones,
 	# the second and third robot. A spine to the left with the docks above and the rest below; the bag
@@ -483,7 +478,7 @@ Coin robots no longer tip onto their backs."},
 		add = {bin_coins = 3}, title = "WASTE MONETISATION",
 		body = "Spoilage now has its own quarterly target.\nA rotten cabbage in the bin pops out $8 in coins\n($5 before), whatever your price."},
 	{id = "bin_rebate_5", parent = "bin_rebate_4", at = Vector2(3.76, 4.07), icon = "crate", price = 40000,
-		add = {bin_coins = 4}, title = "SPOILAGE PREMIUM",
+		needs = ["big_ideas"], add = {bin_coins = 4}, title = "SPOILAGE PREMIUM",
 		body = "A rotten cabbage is worth more than a fresh one.\nA rotten cabbage in the bin pops out $12 in coins\n($8 before), whatever your price."},
 	{id = "hands_bin", parent = "dept_automation", at = Vector2(-0.52, 0.96), icon = "hand", price = 400,
 		needs = ["junior_associate", "catch_combo"], add = {hands_bin = 1}, title = "WASTE HANDLING PROTOCOL",
@@ -529,7 +524,7 @@ Coin robots no longer tip onto their backs."},
 		add = {mini_grow_chance = 0.06}, title = "GROWTH TARGETS",
 		body = "Each mini is given a quarterly target.\n18% of minis through the growing station come out\nfull cabbages, not 12%."},
 	{id = "grow_4", parent = "grow_3", at = Vector2(1.66, -3.10), icon = "crate", price = 22000,
-		add = {mini_grow_chance = 0.07}, title = "MANDATORY MATURITY",
+		needs = ["big_ideas"], add = {mini_grow_chance = 0.07}, title = "MANDATORY MATURITY",
 		body = "Remaining small is no longer an option.\n1 mini in 4 through the growing station comes out\na full cabbage, not 18%."},
 	# Research units and lab hands (QA, down): Cabbage.research, entities/associate/ (research hands).
 	{id = "research_mult_1", parent = "dept_qa", at = Vector2(-0.44, 1.61), icon = "pilcrow", price = 350,
@@ -542,7 +537,7 @@ Coin robots no longer tip onto their backs."},
 		add = {research_mult = 4.0}, title = "CONTROL GROUP",
 		body = "Half the cabbages are told nothing.\nBlue research cabbages give 12× the Findings, not 8×."},
 	{id = "research_mult_4", parent = "research_mult_3", at = Vector2(-0.90, 2.95), icon = "pilcrow", price = 35000,
-		add = {research_mult = 8.0}, title = "PUBLISH OR PERISH",
+		needs = ["big_ideas"], add = {research_mult = 8.0}, title = "PUBLISH OR PERISH",
 		body = "The findings are published internally.\nBlue research cabbages give 20× the Findings, not 12×."},
 	{id = "research_chance_1", parent = "research_mult_1", at = Vector2(-0.79, 1.80), icon = "lens", price = 800,
 		add = {research_chance = 0.05}, title = "SAMPLING QUOTA",
@@ -551,7 +546,7 @@ Coin robots no longer tip onto their backs."},
 		add = {research_chance = 0.05}, title = "SAMPLING QUOTA II",
 		body = "Random is redefined.\n1 cabbage in 5 off the chute is blue, not 1 in ~7."},
 	{id = "research_chance_3", parent = "research_chance_2", at = Vector2(-1.19, 2.57), icon = "lens", price = 22000,
-		add = {research_chance = 0.05}, title = "SAMPLING QUOTA III",
+		needs = ["big_ideas"], add = {research_chance = 0.05}, title = "SAMPLING QUOTA III",
 		body = "Every cabbage is now a candidate.\n1 cabbage in 4 off the chute is blue, not 1 in 5."},
 	{id = "lab_hand_2", parent = "dept_qa", at = Vector2(0.50, 1.92), icon = "hand", price = 900,
 		needs = ["research_assistant"], add = {research_hands = 1}, title = "SECOND LAB ASSISTANT",
@@ -559,6 +554,21 @@ Coin robots no longer tip onto their backs."},
 	{id = "lab_hand_3", parent = "lab_hand_2", at = Vector2(0.72, 2.41), icon = "hand", price = 9000,
 		add = {research_hands = 1}, title = "THIRD LAB ASSISTANT",
 		body = "The lab has a waiting list now.\nOne more lab hand throws cabbages into the\nresearch lab: 3 instead of 2."},
+	# HANDLING (desk card hand_schedule): each lists one more cabbage kind on the handling schedule, so
+	# it can be struck for lab hands or hired hands (HandSchedule.NODES; no number: it reads tree_bought).
+	# The golden annex waits for golden cabbages and the hired hands' clearance (`after`): before a
+	# clearance no hand takes gold, so there is nothing to withhold. By hand, between the lab hands and
+	# the manager's column; the golden annex past THIRD LAB ASSISTANT, in the gap beside MANAGERIAL
+	# SIGN-OFF (the pocket above it is full).
+	{id = "schedule_research", parent = "dept_qa", at = Vector2(0.72, 1.40), icon = "hand", price = 120,
+		needs = ["hand_schedule"], title = "ANNEX: BLUE",
+		body = "Blue is a jurisdiction.\nThe handling schedule also lists blue research\ncabbages: strike them for either kind of hand."},
+	{id = "schedule_mini", parent = "schedule_research", at = Vector2(0.80, 1.80), icon = "hand", price = 300,
+		needs = ["mini_cabbages"], title = "ANNEX: MINI",
+		body = "Small cabbages, full paperwork.\nThe handling schedule also lists mini cabbages:\nstrike them for either kind of hand."},
+	{id = "schedule_golden", parent = "schedule_mini", at = Vector2(0.89, 2.93), icon = "hand", price = 6000,
+		needs = ["golden_cabbage"], after = "gold_hands", title = "ANNEX: GOLD",
+		body = "Clearance was the easy part.\nThe handling schedule also lists golden cabbages.\nIt only withholds: clearances still apply."},
 	# Managerial work (desk cards own_sales, own_research): the player's own sales (save.own_sale) and
 	# own flicks into the lab (own_lab), 1.2 from the card to 1.6. By hand, clear of every node and
 	# edge: the sales under the manager's first node (down past the bin rebates' left), the lab under
@@ -570,7 +580,7 @@ Coin robots no longer tip onto their backs."},
 		add = {own_sale = 0.15}, title = "AIR OF AUTHORITY",
 		body = "The street can tell a manager threw it.\nCabbages you sell yourself pay 45% more, not 30%."},
 	{id = "own_sale_3", parent = "own_sale_2", at = Vector2(1.82, 3.40), icon = "hand", price = 32000,
-		add = {own_sale = 0.15}, title = "EXECUTIVE HANDLING",
+		needs = ["big_ideas"], add = {own_sale = 0.15}, title = "EXECUTIVE HANDLING",
 		body = "Each cabbage is now released, not thrown.\nCabbages you sell yourself pay 60% more, not 45%."},
 	{id = "own_lab_1", parent = "qa_findings", at = Vector2(0.50, 2.95), icon = "pilcrow", price = 2500,
 		needs = ["own_research"], add = {own_lab = 0.1}, title = "MANAGERIAL SIGN-OFF",
@@ -579,8 +589,76 @@ Coin robots no longer tip onto their backs."},
 		add = {own_lab = 0.15}, title = "HANDS-ON LEADERSHIP",
 		body = "The lab coat is worn over the suit.\nCabbages you flick into the research lab yourself\ngive 45% more Findings, not 30%."},
 	{id = "own_lab_3", parent = "own_lab_2", at = Vector2(0.70, 3.95), icon = "pilcrow", price = 28000,
-		add = {own_lab = 0.15}, title = "PRINCIPAL INVESTIGATOR",
+		needs = ["big_ideas"], add = {own_lab = 0.15}, title = "PRINCIPAL INVESTIGATOR",
 		body = "Your name goes first on every paper. Then nobody's.\nCabbages you flick into the research lab yourself\ngive 60% more Findings, not 45%."},
+	# ---- Chapter 3: the wide sheet's own nodes (desk card big_ideas). Prices paced in tools/pace.py
+	# (`python tools/pace.py ch3`): the desk earns about $50k a minute when the sheet widens and about
+	# $1.5M when the fifth farm is bought, some 50 min later.
+	# Spots by hand, checked by tools/projector_layout/layout.py ("fixed" sectors) and the suite. ----
+	# MARKETING II, past SLOGAN VI: two more slogans, then the street's bad moods stop counting. No
+	# number for the last: the slate reads tree_bought (PriceSlate.MANDATORY, street_mood).
+	{id = "slogan_7", parent = "slogan_6", at = Vector2(-0.49, -3.61), icon = "megaphone", price = 300000,
+		needs = ["big_ideas"], mul = {marketing = 1.25}, title = "BOARD-APPROVED SLOGAN",
+		body = "\"Cabbage. Approved by the board.\"\nThe street now pays 25% more without refusing.\nRaise your price on the slate to cash in."},
+	{id = "slogan_8", parent = "slogan_7", at = Vector2(-0.49, -4.04), icon = "megaphone", price = 1200000,
+		mul = {marketing = 1.25}, title = "NATIONAL CAMPAIGN",
+		body = "Every wall, every wireless, every hour.\nThe street now pays 25% more without refusing.\nRaise your price on the slate to cash in."},
+	{id = "mandatory_consumption", parent = "slogan_8", at = Vector2(-0.49, -4.47), icon = "megaphone", price = 3000000,
+		title = "MANDATORY CONSUMPTION",
+		body = "Demand is no longer a matter of opinion.\nThe street's bad moods no longer count: it pays\nas in a normal mood, or better in a good one."},
+	# HEADCOUNT II, off HIRE ASSOCIATE VII: two hands at once (past Associate.MAX_VISIBLE the visible
+	# ones work faster), then every money hand throws save.hand_trip cabbages a trip (Associate.throws_again).
+	{id = "headcount_2", parent = "hire_associate_7", at = Vector2(-2.35, 2.75), icon = "hand", price = 600000,
+		needs = ["big_ideas"], add = {hands = 2}, title = "DEPARTMENTAL HEADCOUNT",
+		body = "A second department is opened to manage the first.\nTwo more hired hands throw cabbages out of the\nwindow."},
+	{id = "two_handed", parent = "headcount_2", at = Vector2(-3.00, 3.10), icon = "hand", price = 2000000,
+		add = {hand_trip = 1}, title = "TWO-HANDED POLICY",
+		body = "The other hand was idle. This has been corrected.\nEvery hired hand throws two cabbages out of the\nwindow per trip before it goes back, not one."},
+	# CONDENSATION (desk card condense): which kinds come down the chute condensed (no number:
+	# CabbageFeeder.CONDENSE_RESEARCH / CONDENSE_GOLD read tree_bought) and how many cabbages a
+	# condensed one holds (save.condense, 2 from the card).
+	{id = "condense_research", parent = "dept_manual", at = Vector2(3.60, 0.85), icon = "pilcrow", price = 100000,
+		needs = ["big_ideas", "condense"], title = "CONDENSED SAMPLES",
+		body = "A sample of two is a study.\nBlue research cabbages are condensed too:\neach holds as many as a plain cabbage."},
+	{id = "condense_gold", parent = "condense_research", at = Vector2(4.00, 1.40), icon = "crate", price = 250000,
+		title = "CONDENSED BULLION",
+		body = "Gold is compressed. It does not complain.\nGolden cabbages are condensed too: each takes\nthat many from your golden stock."},
+	{id = "condense_2", parent = "condense_research", at = Vector2(4.30, 0.85), icon = "crate", price = 600000,
+		add = {condense = 1}, title = "CONDENSE II",
+		body = "Three cabbages agree to share.\nA condensed cabbage holds 3 cabbages, not 2:\nit takes 3 from stock and counts as 3."},
+	{id = "condense_3", parent = "condense_2", at = Vector2(5.00, 0.85), icon = "crate", price = 3500000,
+		add = {condense = 1}, title = "CONDENSE III",
+		body = "The cabbage is now mostly cabbage.\nA condensed cabbage holds 4 cabbages, not 3:\nit takes 4 from stock and counts as 4."},
+	# The desk's answer to the farm's SEED BEDS (CH2, desk card structured_farm): the chute and the mat
+	# pass no more cabbages a minute (20 slots, CONVEYOR III), so what follows a bigger harvest is what
+	# each one holds. Paced in tools/pace.py (`ch3`, `flow`).
+	{id = "condense_4", parent = "condense_3", at = Vector2(5.70, 0.85), icon = "crate", price = 5000000,
+		add = {condense = 2}, title = "CONDENSE IV",
+		body = "Six to a cabbage. Nobody asked the cabbages.\nA condensed cabbage holds 6 cabbages, not 4:\nit takes 6 from stock and counts as 6."},
+	{id = "condense_5", parent = "condense_4", at = Vector2(6.40, 0.85), icon = "crate", price = 10000000,
+		add = {condense = 2}, title = "CONDENSE V",
+		body = "It is heavier than it looks. So is the paperwork.\nA condensed cabbage holds 8 cabbages, not 6:\nit takes 8 from stock and counts as 8."},
+	# TREASURY: the most coins the save holds (save.coin_limit, SaveGame.earn), $200,000 from the desk
+	# card cash_holding (stamped before big_ideas), up to $16M. Each step costs less than the limit
+	# before it and at least doubles it, so the ladder stays ahead of what chapter 3 charges (the farms
+	# to $5M, BRIBERY $2.5M, NO MORE TAXES $10M). Paced in tools/pace.py (`ch3`). By hand, in the gap
+	# between SUPPLY CHAIN and COIN UNITS, up into the free top-left corner. The first step needs the
+	# card too, so its x5 always comes before a step's sum.
+	{id = "coin_limit_1", parent = "dept_automation", at = Vector2(-2.60, -0.85), icon = "crate", price = 45000,
+		needs = ["cash_holding", "big_ideas"], add = {coin_limit = 300000}, title = "PETTY CASH TIN",
+		body = "The tin is larger than the petty cash.\nYou can hold up to $500,000 instead of $200,000."},
+	{id = "coin_limit_2", parent = "coin_limit_1", at = Vector2(-3.05, -1.25), icon = "crate", price = 100000,
+		add = {coin_limit = 1000000}, title = "WALL SAFE",
+		body = "Behind the founder's portrait. Everyone knows.\nYou can hold up to $1.5M instead of $500,000."},
+	{id = "coin_limit_3", parent = "coin_limit_2", at = Vector2(-3.05, -1.68), icon = "crate", price = 300000,
+		add = {coin_limit = 2500000}, title = "STRONGROOM",
+		body = "The door weighs more than the staff.\nYou can hold up to $4M instead of $1.5M."},
+	{id = "coin_limit_4", parent = "coin_limit_3", at = Vector2(-3.05, -2.11), icon = "crate", price = 800000,
+		add = {coin_limit = 4000000}, title = "BASEMENT VAULT",
+		body = "Two keys are required. You hold both.\nYou can hold up to $8M instead of $4M."},
+	{id = "coin_limit_5", parent = "coin_limit_4", at = Vector2(-3.05, -2.54), icon = "crate", price = 2000000,
+		add = {coin_limit = 8000000}, title = "CENTRAL RESERVE",
+		body = "The desk is now a bank. The banks were not asked.\nYou can hold up to $16M instead of $8M."},
 ]
 ## Each theme's heading on the slide, part of its branch: the edges from its first nodes' (the roots,
 ## the last entry) parent run through it to them (UpgradeTree), so it names the branch as it opens
@@ -593,7 +671,7 @@ const THEMES := [
 	["STORAGE", Vector2(1.44, -0.31), ["stock_25"],
 		"Every cupboard is a warehouse in waiting.\nHow many cabbages storage holds, and what golden cabbages earn at the window and in the lab."],
 	["DESK SPACE", Vector2(1.55, -0.79), ["mat_4"],
-		"The mat is leased by the cabbage.\nOne more cabbage fits on the mat per step, up to 20."],
+		"The mat is leased by the cabbage.\nOne more cabbage fits on the mat per step, later three, up to 20."],
 	["SALES EVENTS", Vector2(1.25, 0.46), ["combo_window", "target_size", "bin_mouth"],
 		"Incidents at the window, monetised.\nThe catch combo, the lit crates in the street and what the bin pays for rot."],
 	["MANAGEMENT", Vector2(0.90, 0.46), ["manager_time"],
@@ -614,9 +692,23 @@ const THEMES := [
 		"The blue ones are special. It says so here.\nMore blue research cabbages off the chute, and more Findings from each."],
 	["LAB HANDS", Vector2(0.32, 1.52), ["lab_hand_2"],
 		"The lab is staffed, eventually.\nMore lab hands throwing cabbages into the research lab."],
+	["HANDLING", Vector2(0.40, 1.12), ["schedule_research"],
+		"Who touches what, in writing.\nWhich cabbage kinds the handling schedule can withhold from lab hands or hired hands."],
+	["CONDENSATION", Vector2(2.75, 0.59), ["condense_research"],
+		"Less air, more cabbage.\nWhich cabbages come down the chute condensed, and how many cabbages each one holds."],
 ]
-## The screen's rect as fractions of the view: centred, 70% wide, unrolled down to 88% of the height.
+## The screen's rect as fractions of the view: centred, 70% wide, unrolled down to 88% of the height;
+## SCREEN_WIDE once the desk card BIG_IDEAS is stamped (screen_for): nearly the whole view, the
+## overlay's rim left to click it away. The first time it comes down after the stamp it unrolls
+## as before, then widens over WIDEN_TIME (save.projector_wide: shown once). On the wide sheet the
+## tree can be zoomed out as far as ZOOM_WIDE (UpgradeTree.zoom_min), where the whole wheel with the
+## outer ring fits; it does not zoom out by itself.
 const SCREEN := Rect2(0.15, 0.0, 0.7, 0.88)
+const SCREEN_WIDE := Rect2(0.03, 0.0, 0.94, 0.95)
+const BIG_IDEAS := "big_ideas"
+const WIDEN_TIME := 0.9
+const WIDEN_PAUSE := 0.35
+const ZOOM_WIDE := 0.22
 ## Pulled this far (of the whole drop) from where it rested, the screen goes the rest of the way itself.
 const LET_GO := 0.3
 ## A press on the pull that moves less than this (px) is a click: it rolls the screen down.
@@ -671,6 +763,8 @@ const PULL_WIDTH := 0.08
 @export var roll_up_sound: AudioStream
 @export var approve_sound: AudioStream
 @export var denied_sound: AudioStream
+## The wide sheet running out to both sides (WIDEN_TIME; its stop lands on the overshoot).
+@export var widen_sound: AudioStream
 ## The projector's hot spot: a soft cold wash, fading out toward the screen's edges.
 @export var beam: GradientTexture2D
 
@@ -689,6 +783,8 @@ var _close_hot := false
 var _arrive := 0.0
 ## The bottom bar's sideways lag behind the swinging pull while it rolls (px).
 var _sway := 0.0
+## How far the sheet has grown from SCREEN (0) to SCREEN_WIDE (1), see screen_for.
+var _wide := 0.0
 ## The dimming behind the open sheet, and the player for its sounds.
 @onready var _overlay: ColorRect = $Overlay
 @onready var _sfx: AudioStreamPlayer = $Sfx
@@ -745,6 +841,7 @@ func _ready() -> void:
 	_handle.grabbed.connect(_grab)
 	_handle.released.connect(_let_go)
 	visible = false
+	_wide = 1.0 if SaveManager.save.projector_wide else 0.0
 	if unlocked(SaveManager.save):
 		_show(false)
 	# A save from before nodes were marked NEW: everything showing now counts as seen.
@@ -790,6 +887,7 @@ func _process(delta: float) -> void:
 	_tree.size = area.size
 	_tree.visible = _lamp > 0.0
 	_tree.light = _lamp
+	_tree.zoom_min = lerpf(UpgradeTree.ZOOM_MIN, ZOOM_WIDE, clampf(_wide, 0.0, 1.0))
 	# Rolled up, _draw draws nothing: one last redraw clears the sheet, then none.
 	if _drop > 0.0 or _sheet_drawn:
 		queue_redraw()
@@ -878,11 +976,25 @@ static func node_data(id: String) -> Dictionary:
 	return _by_id.get(id, {})
 
 
-## Shown on the tree: its feature is unlocked, i.e. every desk card it and its ancestors need is stamped.
+## Shown on the tree: its feature is unlocked, i.e. every desk card it and its ancestors need is
+## stamped. A node the save has bought always shows (a late node bought before it moved behind
+## BIG_IDEAS: it keeps its effect and its place, and the run past it stays buyable).
 static func is_shown(id: String, save: SaveGame) -> bool:
 	var node := node_data(id)
-	return not node.is_empty() and node.get("needs", []).all(func(card: String) -> bool: return save.stamped.has(card)) \
-			and (node.parent == "" or is_shown(node.parent, save))
+	if node.is_empty():
+		return false
+	return save.tree_bought.has(id) or (node.get("needs", []).all(func(card: String) -> bool: return save.stamped.has(card)) \
+			and (node.parent == "" or is_shown(node.parent, save)))
+
+
+## Whether the save has the wide sheet: the desk card BIG_IDEAS is stamped.
+static func wide(save: SaveGame) -> bool:
+	return save.stamped.has(BIG_IDEAS)
+
+
+## The screen's rect (fractions of the view) `widened` of the way from SCREEN (0) to SCREEN_WIDE (1).
+static func screen_for(widened: float) -> Rect2:
+	return Rect2(SCREEN.position.lerp(SCREEN_WIDE.position, widened), SCREEN.size.lerp(SCREEN_WIDE.size, widened))
 
 
 ## The nodes reachable in `save` that it has not seen reachable yet (save.tree_seen), in NODES order.
@@ -1003,13 +1115,16 @@ static func migrate_vacuums(save: SaveGame) -> void:
 
 
 ## An old save's mat: with the allowance card stamped it holds at least 3 (the card's free unit), and
-## each chain node up to its capacity counts as bought. Never takes a unit away; safe to rerun.
+## each chain step its capacity reaches counts as bought. A save between two steps (it bought the
+## single units 12, 13, 15... the three-unit steps replaced) keeps every unit and pays the next step
+## in full for the rest. Never takes a unit away; safe to rerun.
 static func migrate_mat(save: SaveGame) -> void:
 	if save.stamped.has("mat_allowance"):
 		save.desk_capacity = maxi(save.desk_capacity, MAT_FIRST - 1)
-	for unit in range(MAT_FIRST, mini(save.desk_capacity, MAT_MAX) + 1):
-		if not save.tree_bought.has("mat_%d" % unit):
-			save.tree_bought.append("mat_%d" % unit)
+	for node: Dictionary in NODES:
+		if node.id.begins_with("mat_") and node.id.trim_prefix("mat_").to_int() <= save.desk_capacity \
+				and not save.tree_bought.has(node.id):
+			save.tree_bought.append(node.id)
 
 
 ## Reachable, not bought and not waiting for research: a hold on it buys it (if the coins are there).
@@ -1261,6 +1376,13 @@ func _settle(down: bool) -> void:
 		# The lamp warms up with a stutter.
 		for level: float in [0.6, 0.1, 0.8, 0.3, 1.0]:
 			_settling.tween_property(self, "_lamp", level, 0.05)
+		if wide(SaveManager.save) and _wide < 1.0:
+			# The wide sheet's first showing: lit as it was, then the roller runs out to both sides and
+			# the fabric with it, past its width and back.
+			_settling.tween_interval(WIDEN_PAUSE)
+			_settling.tween_callback(_play.bind(widen_sound))
+			_settling.tween_property(self, "_wide", 1.0, WIDEN_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_settling.tween_callback(func() -> void: SaveManager.save.projector_wide = true)
 	else:
 		_lamp_off()
 		_play(roll_up_sound)
@@ -1283,7 +1405,8 @@ func _play(stream: AudioStream) -> void:
 # --- Layout ---
 
 func _screen_rect() -> Rect2:
-	return Rect2(size * SCREEN.position, size * SCREEN.size)
+	var screen := screen_for(_wide)
+	return Rect2(size * screen.position, size * screen.size)
 
 
 ## How far the fabric can unroll (px).

@@ -101,3 +101,17 @@ func test_a_farm_bought_before_the_shock_gets_the_squeeze_report_only_with_the_s
 	assert_array(Report.due(save)).is_empty()
 	save.supply_shock = true
 	assert_array(Report.due(save)).is_equal(["supply_shock", "supply_squeeze"])
+
+
+func test_a_report_held_back_comes_up_only_when_the_hold_has_run_out() -> void:
+	var real := SaveManager.save
+	SaveManager.save = SaveGame.new()  # The welcome is due.
+	var boss: Report = auto_free(load("res://entities/boss_report/boss_report.tscn").instantiate())
+	add_child(boss)
+	Report.hold = 1.0
+	boss._process(0.6)
+	assert_bool(Report.up).is_false()
+	boss._process(0.6)
+	assert_bool(Report.up).is_true()
+	SaveManager.save = real
+	Report.up = false

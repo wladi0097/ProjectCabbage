@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/map_building.gd" id="1_building"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_farm_token_base.res" id="2_base"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_farm_token_for_sale.res" id="3_sale"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_farm_token_owned.res" id="4_owned"]
+
+[node name="FarmToken" type="Node3D"]
+script = ExtResource("1_building")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("2_base")
+
+[node name="ForSale" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("3_sale")
+
+[node name="Owned" type="MeshInstance3D" parent="."]
+visible = false
+gi_mode = 0
+mesh = ExtResource("4_owned")

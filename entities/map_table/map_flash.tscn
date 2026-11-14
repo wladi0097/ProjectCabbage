@@ -1,0 +1,48 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_acquire_1.wav" id="sfx_farm_acquire_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_acquire_2.wav" id="sfx_farm_acquire_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_refuse_1.wav" id="sfx_farm_refuse_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/farm_refuse_2.wav" id="sfx_farm_refuse_2"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_acquire"]
+random_pitch = 1.04
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_farm_acquire_1")
+stream_1/stream = ExtResource("sfx_farm_acquire_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_refuse"]
+random_pitch = 1.08
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_farm_refuse_1")
+stream_1/stream = ExtResource("sfx_farm_refuse_2")
+
+[sub_resource type="TorusMesh" id="FlashRing"]
+inner_radius = 0.086
+outer_radius = 0.104
+rings = 48
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="FlashPaper"]
+shading_mode = 0
+albedo_color = Color(0.93, 0.94, 0.9, 1)
+
+[node name="MapFlash" type="MeshInstance3D"]
+gi_mode = 0
+cast_shadow = 0
+mesh = SubResource("FlashRing")
+surface_material_override/0 = SubResource("FlashPaper")
+
+[node name="Acquire" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_acquire")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Refuse" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_refuse")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+min_interval = 0.15

@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/props/desk_button.gd" id="1_button"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_desk_button_plinth.res" id="2_plinth"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_desk_button_cap.res" id="3_cap"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="4_font"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_press_1.wav" id="sfx_console_press_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_press_2.wav" id="sfx_console_press_2"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_press"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_console_press_1")
+stream_1/stream = ExtResource("sfx_console_press_2")
+
+[node name="DeskButton" type="Node3D"]
+script = ExtResource("1_button")
+
+[node name="Plinth" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("2_plinth")
+
+[node name="Button" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("3_cap")
+
+[node name="Stencil" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.054, 0.0185, 0)
+pixel_size = 0.0005
+modulate = Color(0.66, 0.7, 0.68, 1)
+text = "TO DESK"
+font = ExtResource("4_font")
+font_size = 96
+outline_size = 0
+
+[node name="Press" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_press")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+min_interval = 0.08

@@ -1,16 +1,16 @@
 class_name AlphaEnd
 extends Control
-## The alpha's end: when chapter 3 unlocks (GameEvents.chapter_3, the capstone card stamped) a big
-## memo over a dimmed screen thanks the player, once per save (save.alpha_end, set on closing). For
-## the alpha it stands in for the chapter's boss paper (BossReport.HELD). Closed by its button or
-## Esc; the game keeps running behind it. The demo has its own end (BossReport.DEMO_END).
+## The alpha's end: when chapter 3's last card is stamped (GameEvents.chapter_3_done: "stars", which
+## needs every farm) a big memo over a dimmed screen thanks the player, once per save
+## (save.alpha_end, set on closing). Closed by its button or Esc; the game keeps running behind it.
+## The demo has its own end (BossReport.DEMO_END).
 
 const Events := preload("res://globalScripts/game_events.gd")
 
 
 ## Whether the popup comes now for `save`.
 static func due(save: SaveGame) -> bool:
-	return not Events.Demo.active() and not save.alpha_end and Events.chapter_3(save)
+	return not Events.Demo.active() and not save.alpha_end and Events.chapter_3_done(save)
 
 
 func open() -> void:

@@ -69,3 +69,15 @@ func test_the_sleeves_hand_keeps_the_associates_skin_when_the_editor_saves_the_w
 	var hand: MeshInstance3D = warmup.get_node("Sleeve/Armature/Skeleton3D/Hand")
 	assert_object(hand.material_override).is_not_null()
 	assert_str(hand.material_override.resource_path).ends_with("associate_hand.tres")
+
+
+func test_the_warm_up_draws_the_field_lines_lamps_and_the_map_sheets_shader() -> void:
+	var warmup: Node3D = auto_free(SCENE.instantiate())
+	var used := []
+	var shaders := []
+	for pair: Array in _drawn(warmup):
+		used.append(pair[1])
+		if pair[1] is ShaderMaterial:
+			shaders.append((pair[1] as ShaderMaterial).shader)
+	assert_bool(used.has(load("res://entities/field_line/field_line_lamps.tres"))).is_true()
+	assert_bool(shaders.has(load("res://assets/shaders/map_sheet.gdshader"))).is_true()

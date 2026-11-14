@@ -12,9 +12,16 @@ extends Node3D
 ## a new unit while others are analysed; the flap only shuts once every bench is busy. Rotten units
 ## are refused: the chamber spits them back onto the mat (they are the bin's business). Units still
 ## being analysed and slips not filed yet are counted when the game quits. The coin vacuums leave
-## slips alone. A research unit yields research_mult times the Findings, a mini unit a share
+## slips alone. Findings have a limit (SaveGame.findings_limit): a finished cabbage only ejects
+## the Findings that still fit beside the slips already out (CoinPile.fitting); the rest is lost and
+## the counter's FULL plate buzzes (TallyMachine.refuse). A research unit yields research_mult times the Findings, a mini unit a share
 ## (findings_for); minis are no stock. The tube's research minis appear in the mouth as if thrown in,
 ## or are thrown back onto the mat when every bench is busy (file_direct). The load gauge on the
+## Slips never tower: the desk in front is a grid of patches (SLIP_AREA, SLIP_CELL), each piled at
+## most SLIP_REACH high; a slip goes to the patch nearest the mouth with room (slip_cell), so the
+## piles spread out over the mat. With every patch full the rest of the Findings is held back
+## (_backlog, still pending_findings, never lost), the busy lamp blinks, and it comes out as the
+## fewest tokens as soon as slips are picked up. Slips left over a gap drop down (_restack).
 ## console, left of the busy lamp, is a row of jewel lamps under one chrome bezel, a socket for each of
 ## the lab's (at most) MAX_BENCHES benches: dark glass while its bench is free, cold cyan while a
 ## cabbage is on it, and no lens at all (a blanked-off socket) for a bench not bought yet.
@@ -45,14 +52,22 @@ const COUNTER_DROP_TIME := 0.4
 ## (CoinPile.coin_values): the fewest ¶1, ¶5, ¶10, ¶50 and ¶100 tokens, a big one also ¶500, ¶1K,
 ## ¶5K and ¶10K tokens (¶500 and up carry a cold cyan rim), a huge one ¶100Ks drawn as the ¶10K.
 ## The template is the Slip<n> node of the value's tier (slip_template).
-## SLIP_HALF is the token mesh's half thickness at scale 1; layers stack SLIP_LAYER apart.
-const SLIP_AREA := AABB(Vector3(-0.1, 0.0, 0.46), Vector3(0.47, 0.0, 0.16))
+## SLIP_HALF is the token mesh's half thickness at scale 1. SLIP_AREA is cut into patches SLIP_CELL
+## wide (7 x 6 of them, on the open mat where the hand and the coin robots reach); a patch is piled
+## at most SLIP_REACH above the desk (three of the smallest tokens, one or two big ones), so no more
+## than 126 slips ever lie out.
+const SLIP_AREA := AABB(Vector3(-0.2, 0.0, 0.44), Vector3(0.7, 0.0, 0.6))
+const SLIP_CELL := 0.1
+## The desk the bay stands on and SLIP_AREA in front of it (bay space): coins keep clear of it
+## (CoinPile.keep_clear), so none lands under the bay and none buries a slip.
+const COIN_FREE := AABB(Vector3(-0.52, 0.0, -0.2), Vector3(1.02, 0.0, 1.24))
+const SLIP_REACH := 0.05
 const SLIP_LIFT := 0.18
-## Slips land side by side, this many in a row.
-const SLIP_ROW := 3
 const SLIP_EJECT_TIME := 0.45
 const SLIP_HALF := 0.008
-const SLIP_LAYER := 0.022
+## Seconds between tries to eject held-back Findings, and the busy lamp's blink while there are some.
+const SLIP_RETRY := 0.3
+const BLINK := 0.5
 const DESK_Y := 0.76
 ## MICRO-SAMPLE PROTOCOL (desk card micro_samples) multiplies a mini's share (save.mini_value) by
 ## this: two full units at the base share of 0.25, and the projector's mini value nodes still count.
@@ -74,6 +89,10 @@ var _yields: Array[int] = []
 var _owed := 0.0
 ## Slips out of the bay and not filed yet (on their way out, on the desk or homing); value in meta.
 var _slips: Array[Node3D] = []
+## Findings held back while the desk in front is full, and the seconds until the next try.
+var _backlog := 0
+var _retry := 0.0
+var _time := 0.0
 ## The empty hand's point on the desk last frame (null while it holds something), as CoinPile's.
 var _last_hand: Variant = null
 ## The end and mouse ray of the last stroke _sweep tested, and whether a slip has come to rest since.
@@ -106,13 +125,14 @@ func _ready() -> void:
 	add_to_group(&"qa_bay")
 	$Chamber.body_entered.connect(_on_entered)
 	SaveManager.closing.connect(_file_pending)
+	SaveManager.pending_findings = unfiled
 	$Scan.visible = false
 	_scan = 0.0
 	_lamp.emission_energy_multiplier = 0.0
 	_pose()
 	_show_load()
 	if SaveManager.save.stamped.has("quality_assurance"):
-		window.split()
+		_claim_desk()
 	else:
 		visible = false
 		counter.visible = false
@@ -131,6 +151,14 @@ func _process(delta: float) -> void:
 		_last_hand = now
 	else:
 		_last_hand = null
+	if _backlog > 0:
+		_time += delta
+		_retry -= delta
+		if _retry <= 0.0:
+			_retry = SLIP_RETRY
+			_drop()
+		_lamp.emission_energy_multiplier = LAMP_GLOW if _backlog > 0 and fmod(_time, BLINK) < BLINK * 0.5 \
+				else LAMP_GLOW if _backlog == 0 and not _jobs.is_empty() else 0.0
 	if _jobs.is_empty():
 		return
 	for i in _jobs.size():
@@ -202,9 +230,10 @@ func _admit(cabbage: Cabbage) -> void:
 ## a mini mini_value of it (MICRO-SAMPLE PROTOCOL, micro_samples: MICRO_SAMPLE times that), any other
 ## findings_per_cabbage. A mini's share is exact, not rounded: _take tallies the fractions. Flicked in
 ## by the player themself (Cabbage.by_player: no lab hand, not the tube), all of it times
-## save.own_lab (managerial work), fractions tallied the same way.
+## save.own_lab (managerial work), fractions tallied the same way. A condensed cabbage
+## (Cabbage.units) is worth each cabbage it holds.
 static func findings_for(cabbage: Cabbage, save: SaveGame) -> float:
-	var own := save.own_lab if cabbage.by_player() else 1.0
+	var own := (save.own_lab if cabbage.by_player() else 1.0) * cabbage.units
 	if cabbage.golden:
 		return roundf(save.findings_per_cabbage * save.golden_lab) * own
 	if cabbage.research:
@@ -230,11 +259,10 @@ func _take(cabbage: Cabbage) -> int:
 	var save := SaveManager.save
 	cabbage.leave_stock(save)
 	if cabbage.research:
-		save.research_units += 1
-	save.golden_analysed += int(cabbage.golden)
+		save.research_units += cabbage.units
+	save.golden_analysed += cabbage.units * int(cabbage.golden)
 	var counted := tally(_owed, findings_for(cabbage, save))
 	_owed = counted[1]
-	save.findings_earned += counted[0]
 	return counted[0]
 
 
@@ -268,11 +296,11 @@ func _finish() -> void:
 	reset.tween_callback(_swing_flap.bind(0.0))
 
 
-## Quitting: the units on the benches and the slips not filed yet yield their Findings now.
+## Quitting: the units on the benches and the slips not filed yet yield their Findings now (what
+## fits under the limit, SaveGame.earn).
 func _file_pending() -> void:
-	for amount in _yields:
-		SaveManager.save.findings += amount
-	SaveManager.save.findings += pending_findings()
+	_earn(unfiled())
+	_backlog = 0
 	_jobs.clear()
 	_yields.clear()
 	for slip in _slips:
@@ -280,20 +308,84 @@ func _file_pending() -> void:
 	_slips.clear()
 
 
-## Findings in slips not filed yet.
+## Files `amount` Findings: what fits under the limit comes in and counts as earned (as coins:
+## CoinPile.bank), the rest is lost.
+func _earn(amount: int) -> void:
+	var save := SaveManager.save
+	save.findings_earned += save.earn(&"findings", amount)
+
+
+## Every Finding not in the save yet: the units on the benches, the slips out and those held back.
+## The autosave writes them into the file (SaveManager.pending_findings), quitting files them.
+func unfiled() -> int:
+	var total := pending_findings()
+	for amount: int in _yields:
+		total += amount
+	return total
+
+
+## Findings in slips not filed yet, and those held back while the desk is full.
 func pending_findings() -> int:
-	var total := 0
+	var total := _backlog
 	for slip in _slips:
 		total += slip.get_meta(&"value")
 	return total
 
 
-## A finished unit's report slips (`amount` split like coins, CoinPile.coin_values) fly out onto the desk in front.
+## A finished unit's report slips (`amount` split like coins, CoinPile.coin_values) fly out onto the desk in front:
+## only what the Findings counter still has room for beside the slips already out. The rest is lost.
+## What the desk in front has no room for is held back (_drop).
 func _eject(amount: int) -> void:
+	var fits := CoinPile.fitting(amount, SaveManager.save.room(&"findings"), pending_findings())
+	var machine := counter as TallyMachine
+	if fits < amount and machine != null:
+		machine.refuse()
+	_backlog += fits
+	_drop()
+
+
+## Ejects what is held back, as the fewest tokens (smallest first), until one finds no patch with room.
+func _drop() -> void:
+	var piles := _piles()
 	var delay := 0.0
-	for value in CoinPile.coin_values(amount):
-		_eject_slip(value, delay)
+	for value in CoinPile.coin_values(_backlog):
+		var thick := SLIP_HALF * 2.0 * (get_node(slip_template(value)) as Node3D).scale.y
+		var cell: Variant = slip_cell(piles, thick)
+		if cell == null:
+			return
+		_eject_slip(value, delay, cell, piles.get(cell, 0.0))
+		piles[cell] = piles.get(cell, 0.0) + thick
+		_backlog -= value
 		delay += CoinPile.THROW_STAGGER * 2.0
+
+
+## How high each patch of the desk is piled (m): the slips lying on it and on their way to it.
+func _piles() -> Dictionary:
+	var piles := {}
+	for slip in _slips:
+		if slip.has_meta(&"cell"):
+			piles[slip.get_meta(&"cell")] = piles.get(slip.get_meta(&"cell"), 0.0) + slip.get_meta(&"thick")
+	return piles
+
+
+## The patch a token `thick` thick lands on: the one nearest the mouth (the middle of the first row)
+## whose pile (`piles`, patch -> height) stays within SLIP_REACH with it. Null when none has room.
+static func slip_cell(piles: Dictionary, thick: float) -> Variant:
+	var size := slip_cells()
+	var best: Variant = null
+	var nearest := INF
+	for x in size.x:
+		for z in size.y:
+			var away := Vector2(x + 0.5 - size.x * 0.5, z).length_squared()
+			if away < nearest and piles.get(Vector2i(x, z), 0.0) + thick <= SLIP_REACH + 0.0001:
+				nearest = away
+				best = Vector2i(x, z)
+	return best
+
+
+## How many patches SLIP_AREA has, across and out from the bay.
+static func slip_cells() -> Vector2i:
+	return Vector2i(roundi(SLIP_AREA.size.x / SLIP_CELL), roundi(SLIP_AREA.size.z / SLIP_CELL))
 
 
 ## The token a slip worth `value` is drawn as: its tier's Slip<n> (¶100K and up look like ¶10K).
@@ -301,20 +393,23 @@ static func slip_template(value: int) -> String:
 	return "Slip%d" % CoinPile.DENOMINATIONS[CoinPile.tier(value)]
 
 
-func _eject_slip(value: int, delay: float) -> void:
+## A slip worth `value` flies out onto patch `cell`, on top of the `below` m already piled there.
+func _eject_slip(value: int, delay: float, cell: Vector2i, below: float) -> void:
 	var slip: Node3D = get_node(slip_template(value)).duplicate()
 	var size := Basis.from_scale(slip.scale)
 	slip.top_level = true
 	slip.set_meta(&"value", value)
 	slip.set_meta(&"resting", false)
+	slip.set_meta(&"cell", cell)
+	slip.set_meta(&"thick", SLIP_HALF * 2.0 * slip.scale.y)
 	add_child(slip)
 	_slips.append(slip)
 	var from := to_global(Vector3(0.15, 0.08, 0.15))
-	# Side by side across the patch, then a layer on top of them.
-	var n := _slips.size() - 1
-	var spot := to_global(SLIP_AREA.position + Vector3((n % SLIP_ROW + randf_range(0.2, 0.8)) / SLIP_ROW, 0.0, randf()) * SLIP_AREA.size)
-	@warning_ignore("integer_division")
-	spot.y = DESK_Y + SLIP_HALF * slip.scale.y + (n / SLIP_ROW) * SLIP_LAYER + (n % SLIP_ROW) * 0.002
+	# Loosely on its patch (a small token has room to sit off centre).
+	var loose := maxf(SLIP_CELL - 0.085 * slip.scale.x, 0.0) * 0.5
+	var spot := to_global(SLIP_AREA.position + Vector3(cell.x + 0.5, 0.0, cell.y + 0.5) * SLIP_CELL
+			+ Vector3(randf_range(-loose, loose), 0.0, randf_range(-loose, loose)))
+	spot.y = DESK_Y + below + SLIP_HALF * slip.scale.y
 	var turn := randf_range(-0.6, 0.6)
 	slip.global_position = from
 	slip.visible = false
@@ -332,6 +427,7 @@ func _eject_slip(value: int, delay: float) -> void:
 func _settle_slip(slip: Node3D) -> void:
 	slip.set_meta(&"resting", true)
 	_landed = true
+	_restack()
 	$SlipLand.cue(slip.global_position)
 
 
@@ -350,9 +446,25 @@ func _sweep(from: Vector3, to: Vector3, rise: Vector3) -> void:
 		var slip := _slips[i]
 		if slip.get_meta(&"resting") and CoinPile.under_hand(from, to, rise, slip.global_position, slip.global_position):
 			slip.set_meta(&"resting", false)
+			slip.remove_meta(&"cell")
 			taken.append(slip)
 	for i in taken.size():
 		_home(taken[i], CoinPile.home_delay(i, taken.size()))
+	if not taken.is_empty():
+		_restack()
+
+
+## The slips resting on each patch lie on the desk and on each other, oldest lowest: one whose
+## neighbours below were taken drops onto what is left.
+func _restack() -> void:
+	var piles := {}
+	for slip in _slips:
+		if not slip.has_meta(&"cell") or not slip.get_meta(&"resting"):
+			continue
+		var cell: Vector2i = slip.get_meta(&"cell")
+		var thick: float = slip.get_meta(&"thick")
+		slip.global_position.y = DESK_Y + piles.get(cell, 0.0) + thick * 0.5
+		piles[cell] = piles.get(cell, 0.0) + thick
 
 
 ## Where the slips lying on the desk are (the coin vacuums' goals once token_recovery is stamped).
@@ -371,8 +483,11 @@ func vacuum_at(point: Vector3, reach: float, room: int) -> Array[Node3D]:
 	for slip in _slips:
 		if got.size() < room and slip.get_meta(&"resting") and Vector2(slip.global_position.x - point.x, slip.global_position.z - point.z).length() <= reach:
 			slip.set_meta(&"resting", false)
+			slip.remove_meta(&"cell")
 			slip.hide()
 			got.append(slip)
+	if not got.is_empty():
+		_restack()
 	return got
 
 
@@ -405,7 +520,7 @@ func _home(slip: Node3D, delay: float) -> void:
 
 func _file(slip: Node3D) -> void:
 	_slips.erase(slip)
-	SaveManager.save.findings += slip.get_meta(&"value")
+	_earn(slip.get_meta(&"value"))
 	slip.queue_free()
 
 
@@ -417,12 +532,19 @@ func _deliver() -> void:
 	tween.tween_property(self, "position", _rest, DELIVER_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(func() -> void:
 		_set_physics(true)
-		window.split()
+		_claim_desk()
 		$Thud.cue(global_position))
 	counter.visible = true
 	counter.position = _counter_rest + Vector3.UP * COUNTER_DROP
 	tween.tween_property(counter, "position", _counter_rest, COUNTER_DROP_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_callback(func() -> void: $Thud.cue(counter.global_position))
+
+
+## The bay is in: the window gives up its left third, the coins the desk under and in front of it.
+func _claim_desk() -> void:
+	window.split()
+	if window.coins != null:
+		window.coins.keep_clear = CoinPile.cells_in(to_global(COIN_FREE.position), to_global(COIN_FREE.end))
 
 
 func _set_physics(on: bool) -> void:

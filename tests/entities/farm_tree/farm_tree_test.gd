@@ -12,6 +12,16 @@ const HARVEST_NUMBERS := ["hand_yield", "hand_replant", "golden_chance"]
 const SEED_ORDER := ["farm_seed_reserve", "farm_seed_pack"]
 ## How long a ripe square waits before it rots (COLD CHAIN).
 const ROT := ["rot_after"]
+## What a farm square harvests, times a plain square (FARM OUTPUT).
+const FARM_OUTPUT := ["farm_square_mult"]
+## The most Findings the save may hold (ARCHIVE).
+const ARCHIVE := ["findings_limit"]
+## Seeds a farm square holds (SEED BEDS).
+const SEED_BEDS := ["farm_slots"]
+## The outer ring: what only shows once the desk card STRUCTURED FARM is stamped. Its own nodes, and
+## the late steps that moved behind it.
+const RING: Array[String] = ["farm_slots_1", "farm_slots_2", "farm_slots_3", "hand_route_2", "hand_shift_2"]
+const MOVED: Array[String] = ["farm_mult_2", "farm_mult_3", "archive_3", "archive_4", "archive_5"]
 
 var _real_save: SaveGame
 
@@ -49,10 +59,10 @@ func test_every_farm_node_is_paid_in_findings_so_coins_stay_for_the_projector() 
 		assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("findings")
 
 
-func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_the_seed_order_and_the_rot_delay() -> void:
+func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_the_seed_order_the_rot_delay_farm_output_the_archive_and_seed_beds() -> void:
 	for node: Dictionary in FarmTree.NODES:
 		for stat: String in node.get("add", {}).keys() + node.get("mul", {}).keys():
-			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER or stat in ROT).override_failure_message("%s: %s" % [node.id, stat]).is_true()
+			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER or stat in ROT or stat in FARM_OUTPUT or stat in ARCHIVE or stat in SEED_BEDS).override_failure_message("%s: %s" % [node.id, stat]).is_true()
 
 
 func test_every_number_a_node_changes_is_tracked_by_the_save() -> void:
@@ -225,7 +235,7 @@ func test_each_farm_heading_sits_on_its_branch_between_the_hub_and_its_first_nod
 
 
 func test_the_golden_chance_lives_on_the_farm_tree_and_climbs_from_one_in_forty_to_one_in_ten() -> void:
-	var save := _save(["farm_terminal", "golden_cabbage"], 0, 1000000)
+	var save := _save(["farm_terminal", "golden_cabbage", "archive_capacity"], 0, 1000000)  # GILDED STRAIN (¶9,000) waits for the archive card.
 	var odds: Array[int] = [roundi(1.0 / save.golden_chance)]
 	for id: String in ["gold_chance_1", "gold_chance_2", "gold_chance_3"]:
 		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
@@ -277,3 +287,162 @@ func test_the_cold_chain_waits_for_the_golden_card_and_stretches_the_rot_from_th
 		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
 		waits.append(save.rot_after)
 	assert_array(waits).is_equal([180.0, 300.0, 480.0, 720.0])
+
+
+func test_the_farm_output_branch_shows_only_once_a_farm_is_owned() -> void:
+	var save := _save(["farm_terminal", "archive_capacity"], 0, 1000000)  # ¶15,000: more than the first purse holds.
+	assert_bool(FarmTree.is_shown("farm_mult_1", save)).is_false()
+	assert_bool(FarmTree.can_buy("farm_mult_1", save)).is_false()
+	var heading := FarmTree.THEMES.map(func(theme: Array) -> String: return theme[0]).find("FARM OUTPUT")
+	assert_bool(FarmTree.themes_shown(save)[heading]).is_false()
+	save.farms_owned.append("site_a")
+	assert_bool(FarmTree.is_shown("farm_mult_1", save)).is_true()
+	assert_bool(FarmTree.is_shown("farm_mult_3", save)).is_false()  # x20 and x30 wait for STRUCTURED FARM.
+	assert_bool(FarmTree.can_buy("farm_mult_1", save)).is_true()
+	save.stamped.append("structured_farm")
+	assert_bool(FarmTree.is_shown("farm_mult_3", save)).is_true()
+
+
+func test_farm_output_nodes_raise_every_farm_squares_multiplier_from_ten_to_fifteen_twenty_then_thirty() -> void:
+	var save := _save(["farm_terminal", "archive_capacity", "structured_farm"], 0, 1000000)
+	save.farms_owned.append("site_a")
+	assert_float(save.farm_square_mult).is_equal(10.0)
+	for step: Array in [["farm_mult_1", 15.0], ["farm_mult_2", 20.0], ["farm_mult_3", 30.0]]:
+		assert_bool(FarmTree.buy(step[0], save)).override_failure_message(step[0]).is_true()
+		assert_float(save.farm_square_mult).is_equal(step[1])
+
+
+func test_farm_output_nodes_are_paid_in_research() -> void:
+	for id: String in ["farm_mult_1", "farm_mult_2", "farm_mult_3"]:
+		assert_str(UpgradeTree.currency_of(FarmTree.node_data(id))).is_equal("findings")
+	var save := _save(["farm_terminal"], 1000000, FarmTree.price_of("farm_mult_1", SaveGame.new()) - 1)
+	save.farms_owned.append("site_a")
+	assert_bool(FarmTree.buy("farm_mult_1", save)).is_false()
+
+
+func test_a_farm_bought_redraws_channel_two_so_its_branch_appears() -> void:
+	var save := _save(["farm_terminal"])
+	var no_farm := FarmTree.drawn_key(save)
+	save.farms_owned.append("site_a")
+	assert_array(FarmTree.drawn_key(save)).is_not_equal(no_farm)
+
+
+## STRUCTURED FARM (desk card structured_farm): the tree opens up and its outer ring shows.
+func _ring_save(cards: Array = []) -> SaveGame:
+	var save := _save(["farm_terminal", "seasonal_workforce", "mechanisation", "archive_capacity"] + cards, 0, 100000000)
+	save.findings_limit = 1000000000
+	save.farms_owned.append("site_a")
+	for id: String in ["hand_2", "hand_route", "hand_shift", "farm_mult_1", "archive_1", "archive_2"]:
+		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
+	return save
+
+
+func test_structured_farm_opens_the_dearer_ring_of_the_farm_tree() -> void:
+	var save := _ring_save()
+	assert_bool(FarmTree.wide(save)).is_false()
+	for id: String in RING + MOVED:
+		assert_bool(FarmTree.is_shown(id, save)).override_failure_message(id).is_false()
+		assert_bool(FarmTree.can_buy(id, save)).override_failure_message(id).is_false()
+	save.stamped.append("structured_farm")
+	assert_bool(FarmTree.wide(save)).is_true()
+	for id: String in RING + MOVED:
+		assert_bool(FarmTree.is_shown(id, save)).override_failure_message(id).is_true()
+	# Every node of the ring costs more than the card that opens it.
+	var card: int = UpgradeDesk.card_data("structured_farm").price
+	for id: String in RING + MOVED:
+		assert_int(FarmTree.node_data(id).price).override_failure_message(id).is_greater(card)
+
+
+func test_the_first_node_of_each_ring_run_names_structured_farm() -> void:
+	for id: String in ["farm_slots_1", "hand_route_2", "hand_shift_2", "farm_mult_2", "archive_3"]:
+		assert_array(FarmTree.node_data(id).needs).override_failure_message(id).contains(["structured_farm"])
+
+
+func test_an_old_save_keeps_a_farm_tree_node_that_moved_behind_structured_farm() -> void:
+	var save := _ring_save()
+	save.farm_bought.append("farm_mult_2")  # Bought before the card existed.
+	save.farm_square_mult = 20.0
+	assert_bool(FarmTree.is_shown("farm_mult_2", save)).is_true()
+	assert_bool(FarmTree.is_bought("farm_mult_2", save)).is_true()
+	assert_float(save.farm_square_mult).is_equal(20.0)
+	# And the run past it stays open: x30 shows and can be bought without the card.
+	assert_bool(FarmTree.is_shown("farm_mult_3", save)).is_true()
+	assert_bool(FarmTree.buy("farm_mult_3", save)).is_true()
+	assert_float(save.farm_square_mult).is_equal(30.0)
+	assert_bool(FarmTree.is_shown("farm_slots_1", save)).is_false()  # The ring's own nodes still wait.
+
+
+func test_seed_beds_raise_a_farm_squares_seeds_from_two_to_three_four_then_six() -> void:
+	var save := _ring_save(["structured_farm"])
+	assert_int(save.farm_slots).is_equal(2)
+	for step: Array in [["farm_slots_1", 3], ["farm_slots_2", 4], ["farm_slots_3", 6]]:
+		var was := save.farm_slots
+		assert_bool(FarmTree.buy(step[0], save)).override_failure_message(step[0]).is_true()
+		assert_int(save.farm_slots).is_equal(step[1])
+		assert_float(float(save.farm_slots) / was).override_failure_message(step[0]).is_greater_equal(1.25)  # Each step felt.
+
+
+func test_farm_rounds_send_farm_hands_to_farm_squares_first_and_satchels_add_two_seeds_a_trip() -> void:
+	var save := _ring_save(["structured_farm"])
+	assert_int(save.farm_hand_route).is_equal(1)
+	assert_int(save.farm_hand_shift).is_equal(2)
+	assert_bool(FarmTree.buy("hand_route_2", save)).is_true()
+	assert_bool(FarmTree.buy("hand_shift_2", save)).is_true()
+	assert_int(save.farm_hand_route).is_equal(2)  # FarmScreen.target_for: farm squares first.
+	assert_int(FarmScreen.shift(save, false)).is_equal(4)
+
+
+func test_farm_rounds_wait_for_the_planting_roster_and_satchels_for_overtime() -> void:
+	var save := _save(["farm_terminal", "seasonal_workforce", "structured_farm"], 0, 100000000)
+	FarmTree.buy("hand_2", save)
+	assert_bool(FarmTree.can_buy("hand_route_2", save)).is_false()
+	assert_bool(FarmTree.can_buy("hand_shift_2", save)).is_false()
+	FarmTree.buy("hand_route", save)
+	FarmTree.buy("hand_shift", save)
+	assert_bool(FarmTree.can_buy("hand_route_2", save)).is_true()
+	assert_bool(FarmTree.can_buy("hand_shift_2", save)).is_true()
+
+
+func test_the_tree_opens_up_with_the_widening_sound_the_first_time_it_shows_after_structured_farm() -> void:
+	var save := _save(["farm_terminal"])
+	SaveManager.save = save
+	var screen: FarmTree = auto_free(SCENE.instantiate())
+	add_child(screen)
+	var tree := screen.get_node("Tree") as UpgradeTree
+	var sfx := screen.get_node("Sfx") as AudioStreamPlayer
+	screen._process(0.0)
+	assert_float(tree.zoom_home).is_equal(1.0)  # Without the card it stays as it was.
+	assert_bool(save.farm_tree_wide).is_false()
+	save.stamped.append("structured_farm")
+	screen._process(0.0)
+	assert_float(tree.zoom_home).is_equal(FarmTree.ZOOM_WIDE)
+	assert_float(tree.zoom_min).is_equal(FarmTree.ZOOM_MIN_WIDE)
+	assert_float(FarmTree.ZOOM_MIN_WIDE).is_less(UpgradeTree.ZOOM_MIN)
+	assert_object(screen.widen_sound).is_not_null()
+	assert_object(sfx.stream).is_same(screen.widen_sound)
+	assert_bool(sfx.playing).is_true()
+	assert_bool(save.farm_tree_wide).is_true()
+	assert_float(tree._zoom).is_equal(1.0)  # It eases out from where it was, not in a jump.
+
+
+func test_a_save_that_has_seen_the_tree_open_up_starts_opened_without_the_sound() -> void:
+	var save := _save(["farm_terminal", "structured_farm"])
+	save.farm_tree_wide = true
+	SaveManager.save = save
+	var screen: FarmTree = auto_free(SCENE.instantiate())
+	add_child(screen)
+	screen._process(0.0)
+	var tree := screen.get_node("Tree") as UpgradeTree
+	assert_float(tree._zoom).is_equal(FarmTree.ZOOM_WIDE)
+	assert_bool((screen.get_node("Sfx") as AudioStreamPlayer).playing).is_false()
+
+
+func test_opened_up_the_whole_ring_fits_the_screen_at_the_view_it_settles_on() -> void:
+	# The Tree's rect on the glass (farm_tree.tscn) and the wheel's scale on it (UpgradeTree._wheel).
+	var area := Vector2(1440.0, 620.0)
+	var uy := area.y / 2.0 / 1.25
+	var unit := Vector2(minf(area.x / 2.0 / 1.05, uy * UpgradeTree.WIDEN), uy) * FarmTree.ZOOM_WIDE
+	var centre := area / 2.0 + Vector2(0.0, uy * 0.06)
+	for node: Dictionary in FarmTree.NODES:
+		var at: Vector2 = centre + node.at * unit
+		assert_bool(Rect2(Vector2.ZERO, area).grow(-15.0).has_point(at)).override_failure_message(node.id).is_true()

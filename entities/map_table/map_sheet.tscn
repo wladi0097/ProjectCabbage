@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/map_sheet.gd" id="1_sheet"]
+[ext_resource type="Shader" path="res://assets/shaders/map_sheet.gdshader" id="2_shader"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/roll_core.tscn" id="3_core"]
+
+[sub_resource type="PlaneMesh" id="PaperPlane"]
+size = Vector2(3.2, 1.8)
+subdivide_width = 3
+subdivide_depth = 159
+center_offset = Vector3(0, 0, 0.9)
+
+[sub_resource type="ShaderMaterial" id="PaperMat"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/open = 0.0
+shader_parameter/sheet_length = 1.8
+shader_parameter/core = 0.03
+shader_parameter/pitch = 0.008
+
+[node name="MapSheet" type="Node3D"]
+script = ExtResource("1_sheet")
+
+[node name="Page" type="SubViewport" parent="."]
+disable_3d = true
+size = Vector2i(2560, 1440)
+render_target_update_mode = 1
+
+[node name="Sheet" type="Control" parent="Page"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 3200.0
+offset_bottom = 1800.0
+scale = Vector2(0.8, 0.8)
+mouse_filter = 2
+
+[node name="Art" type="TextureRect" parent="Page/Sheet"]
+layout_mode = 0
+offset_right = 3200.0
+offset_bottom = 1800.0
+mouse_filter = 2
+
+[node name="Layers" type="Control" parent="Page/Sheet"]
+layout_mode = 0
+offset_right = 3200.0
+offset_bottom = 1800.0
+mouse_filter = 2
+
+[node name="Paper" type="MeshInstance3D" parent="."]
+gi_mode = 0
+extra_cull_margin = 0.5
+mesh = SubResource("PaperPlane")
+material_override = SubResource("PaperMat")
+
+[node name="Core" parent="." instance=ExtResource("3_core")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.074, 0)
+
+[node name="Things" type="Node3D" parent="."]

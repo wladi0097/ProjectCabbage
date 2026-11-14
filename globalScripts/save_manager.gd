@@ -23,6 +23,8 @@ var seconds_away := 0
 ## Returns the coins not banked yet (CoinPile.pending_value): the autosave writes them into the file
 ## without adding them to save.coins, so a crash loses nothing and nothing is counted twice.
 var pending_coins := Callable()
+## The same for the Findings not filed yet (QaBay.unfiled: benches, slips, those held back).
+var pending_findings := Callable()
 
 var _played_since_msec := 0
 var _save_timer := 0.0
@@ -57,12 +59,14 @@ func _process(delta: float) -> void:
 		autosave()
 
 
-## Writes the save with the coins not banked yet in it (pending_coins), save.coins left as it is.
+## Writes the save with the coins not banked and the Findings not filed yet in it (pending_coins,
+## pending_findings: what fits under the limits), save.coins and save.findings left as they are.
 func autosave() -> void:
-	var unbanked: int = pending_coins.call() if pending_coins.is_valid() else 0
-	save.coins += unbanked
+	var unbanked := save.earn(&"coins", pending_coins.call() if pending_coins.is_valid() else 0)
+	var unfiled := save.earn(&"findings", pending_findings.call() if pending_findings.is_valid() else 0)
 	write_save()
 	save.coins -= unbanked
+	save.findings -= unfiled
 
 
 ## Adds a playtest log line (see SaveGame.LOG_COLUMNS): a "card" or "node" purchase, a "session" start

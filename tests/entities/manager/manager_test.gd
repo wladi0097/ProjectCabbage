@@ -326,3 +326,39 @@ func test_after_the_verdict_he_leaves_and_returns_two_and_a_half_to_four_minutes
 func test_the_manager_comes_five_seconds_after_his_card_and_a_minute_after_a_load() -> void:
 	assert_float(Manager.first_wait(false)).is_equal(5.0)
 	assert_float(Manager.first_wait(true)).is_equal(60.0)
+
+
+func test_once_the_supply_console_is_gone_the_manager_counts_no_crates() -> void:
+	var save := SaveGame.new()
+	save.stock = 2
+	save.buy_unlocked = true
+	save.coins = 100
+	assert_float(Manager.supply(save)).is_equal(INF)  # A pack pays for itself: all of them count.
+	save.stamped.append("market_intelligence")
+	assert_float(Manager.supply(save)).is_equal(2.0)
+	assert_int(Manager.deliverable(save, 1)).is_equal(2)
+
+
+func test_a_farm_square_counts_at_its_own_yield_in_what_the_farm_can_bring_in() -> void:
+	var save := SaveGame.new()
+	save.stamped.append("family_farm")
+	var ripe := FarmScreen.grow_time(save)
+	save.farm_plots = 2
+	save.farm_growth = PackedFloat32Array([ripe, ripe])  # Both ripe now; no seeds to replant.
+	var plain := FarmScreen.harvest_yield(save, true)
+	assert_int(Manager.harvests(save, 10.0)).is_equal(2 * plain)
+	save.farms_owned.append("K-1")
+	save.farm_squares.append(1)
+	assert_int(Manager.harvests(save, 10.0)).is_equal(plain + roundi(plain * save.farm_square_mult))
+	# One seed for the replant: it goes to the farm square.
+	save.farm_seeds = 1
+	assert_int(Manager.harvests(save, ripe + 10.0)).is_equal(plain + 2 * roundi(plain * save.farm_square_mult))
+
+
+
+func test_condensed_drops_let_head_office_ask_for_twice_as_many_cabbages() -> void:
+	var save := _stocked(1)
+	var single := Manager.deliverable(save, 0)
+	UpgradeDesk.apply("condense", save)
+	# Each drop now holds two; the rotten share is floored after doubling.
+	assert_int(Manager.deliverable(save, 0)).is_between(single * 2, single * 2 + 1)

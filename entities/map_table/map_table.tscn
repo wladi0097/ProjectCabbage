@@ -1,0 +1,162 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/map_table.gd" id="1_table"]
+[ext_resource type="PackedScene" path="res://entities/map_table/country_sheet.tscn" id="2_country"]
+[ext_resource type="PackedScene" path="res://entities/map_table/world_sheet.tscn" id="3_world"]
+[ext_resource type="PackedScene" path="res://entities/map_table/district_sheet.tscn" id="4_district"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/drafting_weight.tscn" id="5_weight"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/chart_rack.tscn" id="6_rack"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/desk_button.tscn" id="7_button"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/map_tally.tscn" id="8_tally"]
+
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/map_swap.wav" id="sfx_map_swap"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/map_roll_arrive.wav" id="sfx_map_roll_arrive"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/map_view_in.wav" id="sfx_map_view_in"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/map_view_out.wav" id="sfx_map_view_out"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_1.wav" id="sfx_card_hover_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_2.wav" id="sfx_card_hover_2"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_hover"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_card_hover_1")
+stream_1/stream = ExtResource("sfx_card_hover_2")
+
+[sub_resource type="StyleBoxFlat" id="HintPaper"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.72, 0.73, 0.69, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.391, 0.405, 0.398, 1)
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_offset = Vector2(4, 4)
+
+[node name="MapTable" type="Node3D" groups=["map_table"]]
+script = ExtResource("1_table")
+
+[node name="View" type="Marker3D" parent="."]
+transform = Transform3D(0, 0.9848, -0.1736, 0, 0.1736, 0.9848, 1, 0, 0, 4.08, 4.492, 1.75)
+
+[node name="Lay" type="Marker3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.4, 0.752, 1.75)
+
+[node name="Rack" type="Node3D" parent="."]
+
+[node name="Slot0" type="Marker3D" parent="Rack"]
+transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 5.56, 0.842, 1.75)
+
+[node name="Slot1" type="Marker3D" parent="Rack"]
+transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 5.68, 0.952, 1.75)
+
+[node name="Slot2" type="Marker3D" parent="Rack"]
+transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 5.8, 1.062, 1.75)
+
+[node name="ChartRack" parent="Rack" instance=ExtResource("6_rack")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.56, 0.75, 1.75)
+
+[node name="Sheets" type="Node3D" parent="."]
+
+[node name="Country" parent="Sheets" instance=ExtResource("2_country")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.4, 0.752, 1.75)
+
+[node name="World" parent="Sheets" instance=ExtResource("3_world")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.68, 0.878, 1.75)
+
+[node name="District" parent="Sheets" instance=ExtResource("4_district")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.8, 0.988, 1.75)
+
+[node name="Weights" type="Node3D" parent="."]
+
+[node name="TopLeft" parent="Weights" instance=ExtResource("5_weight")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.3, 0.753, 0.215)
+
+[node name="TopRight" parent="Weights" instance=ExtResource("5_weight")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.3, 0.753, 3.285)
+
+[node name="BottomLeft" parent="Weights" instance=ExtResource("5_weight")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.665, 0.753, 0.215)
+
+[node name="BottomRight" parent="Weights" instance=ExtResource("5_weight")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.665, 0.753, 3.285)
+
+[node name="Back" type="Marker3D" parent="."]
+transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 4.5, 0.757, -0.16)
+
+[node name="DeskButton" parent="." instance=ExtResource("7_button")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.5, 0.75, -0.16)
+
+[node name="Tally" parent="." instance=ExtResource("8_tally")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.5, 0.75, 3.6)
+
+[node name="Lights" type="Node3D" parent="."]
+
+[node name="Key" type="SpotLight3D" parent="Lights"]
+light_bake_mode = 0
+transform = Transform3D(-0.6357, -0.7129, 0.2962, 0, 0.3837, 0.9234, -0.772, 0.587, -0.2439, 5.3, 3.4, 0.9)
+light_color = Color(0.74, 0.84, 0.9, 1)
+light_energy = 2.0
+light_specular = 0.2
+shadow_enabled = true
+spot_range = 5.0
+spot_attenuation = 0.4
+spot_angle = 48.0
+spot_angle_attenuation = 0.25
+
+[node name="Fill" type="OmniLight3D" parent="Lights"]
+light_bake_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4, 2.4, 1.75)
+light_color = Color(0.55, 0.62, 0.68, 1)
+light_energy = 0.45
+light_specular = 0.0
+omni_range = 4.5
+
+[node name="Swap" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_map_swap")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Arrive" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_map_roll_arrive")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="ViewIn" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_map_view_in")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="ViewOut" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_map_view_out")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Hover" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_hover")
+pitch_scale = 0.85
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+min_interval = 0.08
+
+[node name="Cursor" type="Control" parent="." groups=["blocks_hand"]]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="HintLayer" type="CanvasLayer" parent="."]
+layer = 15
+
+[node name="Hint" type="Label" parent="HintLayer"]
+visible = false
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.13, 0.15, 0.14, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("HintPaper")
+text = "Back to the desk"

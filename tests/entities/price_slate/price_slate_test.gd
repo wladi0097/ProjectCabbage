@@ -242,3 +242,23 @@ func test_hovering_the_slate_explains_the_price_and_its_arrows() -> void:
 	_slate_save()
 	var slate := _slate()
 	assert_str(Interactable.of(slate.get_node("Board")).tooltip).is_equal(Slate.BOARD_TIP)
+
+
+
+func test_mandatory_consumption_stops_refusals_at_the_full_sale_price_whatever_the_mood() -> void:
+	var save := SaveGame.new()
+	save.marketing = 2.0
+	save.sale_price = roundi(Slate.ref_price(save.marketing, 1.0))  # The full sale price in a neutral mood.
+	save.demand_mood = Slate.WILD_RANGE.x  # The street at its sourest.
+	assert_float(Slate.acceptance(save)).is_less(0.5)
+	save.tree_bought.append(Slate.MANDATORY)
+	assert_float(Slate.acceptance(save)).is_equal(1.0)
+	save.sale_price += 2  # Above it, the street still refuses some.
+	assert_float(Slate.acceptance(save)).is_less(1.0)
+
+
+func test_mandatory_consumption_keeps_what_a_good_mood_adds() -> void:
+	var save := SaveGame.new()
+	save.demand_mood = 1.3
+	save.tree_bought.append(Slate.MANDATORY)
+	assert_float(Slate.street_mood(save)).is_equal(1.3)

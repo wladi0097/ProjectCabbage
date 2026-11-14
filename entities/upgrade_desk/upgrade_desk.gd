@@ -18,6 +18,7 @@ const CARDS := [
 	# each other (`needs`), kept loose enough that the tray usually holds two or three. A card costs
 	# `price` in `currency` (coins if none); `also` adds more currencies on top ({findings = 2000}),
 	# all paid at once (costs, affords). Checks on a card's currency read `price`/`currency`.
+	# `farms` (chapter 3): the card also needs that many farms owned; a threshold, nothing is spent.
 	{id = "price_slate", price = 12, title = "PRICE SLATE",
 		body = "Pricing is your responsibility.\nThe slate shows your price per cabbage. Click \"<\" or \">\" to change it by $1. Up to ~$3, every cabbage sells. Above that, more get refused."},
 	# No effect here: entities/radio/ drops the radio onto the desk once it is stamped.
@@ -70,6 +71,13 @@ const CARDS := [
 		body = "Some cabbages are worth more as data.\nA lever by the bin: SALES / SPLIT / RESEARCH (drag or click). RESEARCH sends tube minis into the research lab (onto the mat if it is full). SPLIT sends every second one."},
 	{id = "lab_priority", price = 40, currency = "findings", title = "MEMO: LAB PRIORITY", needs = ["research_assistant"],
 		body = "Research cabbages are not for sale.\nLab hands take blue research cabbages first. Other hired hands stop selling them."},
+	# Optional (no card needs it). No effect here: entities/hand_schedule/ puts its switch on the desk once
+	# it is stamped; the paper it opens strikes cabbage kinds for lab hands or hired hands (save.hands_forbidden,
+	# lab_hands_forbidden; nothing struck to start). Plain cabbages are listed; the projector's HANDLING
+	# branch lists the other kinds. After the lab assistant: both kinds of hand are on the desk by then.
+	# One of GameEvents.DRY_LEFT: left unstamped it never holds stage 2 back.
+	{id = "hand_schedule", price = 150, title = "HANDLING ASSIGNMENT SCHEDULE", needs = ["research_assistant"],
+		body = "Every cabbage has a rightful hand. This is now on file.\nA switch right of the price slate opens a schedule: lab hands left, hired hands right. Click a cabbage there and that kind of hand no longer touches it. Plain cabbages to start; more kinds on the projector."},
 	{id = "managerial_oversight", price = 30, currency = "findings", title = "REQUEST MANAGERIAL OVERSIGHT",
 		needs = ["performance_review"], body = "Someone will be checking.\nEvery 2.5-4 min a manager knocks on the window with a quota: sell that many cabbages in 45 s (your pace of the last 5 min plus 25%, but never more than the chute can drop in time). Met: you get quota × your price in coins. Missed: only a memo."},
 	{id = "window_targets", price = 40, currency = "findings", title = "STREET TARGET PRACTICE",
@@ -94,7 +102,7 @@ const CARDS := [
 		needs = ["coin_collector"], body = "Nobody knows why.\nAbout every 150 s a Golden Age dawns for 20 s and the lamp at the back right glows gold. While it lasts, every sale pays 5× (golden cabbages excluded)."},
 	# One more unit on the mat now (apply), and the projector's mat chain (Projector.MAT_FIRST..MAT_MAX) for the rest.
 	{id = "mat_allowance", price = 3000, title = "APPLY FOR AN EXTENDED MAT ALLOWANCE",
-		needs = ["coin_collector", "desk_space"], body = "Floor space is a privilege, not a right.\nOne more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells one more space at a time, up to 20, each dearer than the last."},
+		needs = ["coin_collector", "desk_space"], body = "Floor space is a privilege, not a right.\nOne more cabbage fits on the mat right away (3 instead of 2). After that, the projector sells more space a step at a time, up to 20, each dearer than the last."},
 	# Stage 2 (GameEvents "supply_warning"): only dealt once that event has started (`event`), into a
 	# free tray slot. entities/farm_tv/ shows the remote and the TV, entities/farm_screen/ the farm.
 	{id = "family_farm", price = 1600, title = "ACQUIRE THE FAMILY FARM", event = "supply_warning", priority = true,
@@ -180,6 +188,100 @@ Every cabbage you flick into the research lab yourself gives 20% more Findings. 
 	{id = "consolidation", price = 1900, currency = "stock", also = {findings = 4000, coins = 20000}, priority = true, title = "CONSOLIDATED GROWTH REQUISITION",
 		needs = ["offsite_storage", "farm_readout", "green_thumb", "seasonal_workforce", "standing_seed_order", "golden_cabbage"],
 		body = "The desk has outgrown the desk.\nPaid in cabbages from stock, more than the regional depot holds: add storage, shut the chute, let the farm fill it. Stamped, the board reviews the desk's future."},
+	# ---- Chapter 3 (the farms on the map table). Its cards come one after the other like any others
+	# (each needs the one before it, `needs`; no event deals them but the first): what holds a card back
+	# is its price, and farms are part of it (`farms`: that many farms owned; `home_farms`: that many of
+	# the home country's; printed "5 FARMS +", checked at the press, never spent). Prices paced in
+	# tools/pace.py (`python tools/pace.py ch3`); the cards from the first law on are provisional. ----
+	# Dealt by GameEvents "invest_in_growth" (the promotion paper, on stamping consolidation; `event`).
+	# Stamped, the supply console leaves for good (SupplyConsole.retired) and the FieldLine drops in
+	# on its spot (worlds/components/field_exchange.gd): its handset is the way to the map table.
+	# ¶1,500: about 2 min of Findings at chapter 2's end (¶650-850 a minute), right after the last card took ¶4,000.
+	{id = "market_intelligence", price = 1500, currency = "findings", title = "PROCURE MARKET INTELLIGENCE", event = "invest_in_growth", needs = ["consolidation"],
+		body = "We no longer buy cabbages. We buy what is known about those who grow them.
+The supply console is removed for good: no more crates. A field line takes its place: its lamps count the farms you own, of 24. Lift the handset to go to the map table."},
+	# The limits (save.coin_limit $40,000, save.findings_limit ¶8,000 from the start: nothing is hoarded
+	# through chapter 2's end) go up five times each, early in chapter 3 and before anything that costs
+	# more than they allow: the cash card before the first farm ($60,000) and the wide sheet, the
+	# archive card (below, after big_ideas, so the ¶ never hold the sheet back) before CH2's YIELD
+	# TARGETS (¶15,000). apply: save.coin_limit / findings_limit x LIMIT_RAISE. Further steps: the
+	# projector's coin_limit_1..5 (behind big_ideas), CH2's archive_1..5. Paced in tools/pace.py (`ch3`):
+	# $15,000 is under a minute of income and ¶2,000 is what chapter 2's last cards leave.
+	{id = "cash_holding", price = 15000, title = "RAISE THE AUTHORISED CASH HOLDING", needs = ["market_intelligence"],
+		body = "Cash on the desk was capped at $40,000. The cap has been reviewed.
+You can hold up to $200,000 instead of $40,000. Coins that do not fit are not paid in. More on the projector."},
+	# The projector's sheet grows (Projector.screen_for, save.projector_wide) and its late-game and
+	# chapter 3 nodes show (`needs = ["big_ideas"]` there). No effect here. $40,000: a minute of
+	# income, so the sheet opens right after the field line.
+	{id = "big_ideas", price = 40000, title = "BIG MINDS HAVE BIG IDEAS", needs = ["cash_holding"],
+		body = "The screen was too small for the thinking.
+The projector gets a much wider screen, with new and dearer upgrades around its edge. Pull it down to see."},
+	{id = "archive_capacity", price = 2000, currency = "findings", title = "EXTEND THE ARCHIVE", needs = ["big_ideas"],
+		body = "Findings are filed. The cabinet was full.
+You can hold up to ¶40,000 instead of ¶8,000. Findings that do not fit are not filed. More on channel 2."},
+	# Needs the first farm. apply: save.condense 2, and
+	# worlds/components/cabbage_feeder.gd rolls condensed cabbages (Cabbage.units); the projector's
+	# CONDENSATION branch needs it and big_ideas. $150,000: 2-3 min of income after the first farm, for
+	# 1.7 times the sales (the chapter's first big step; the farms then have to feed it).
+	{id = "condense", price = 150000, farms = 1, title = "CONDENSE CABBAGES", needs = ["archive_capacity"],
+		body = "Two cabbages now occupy the space of one. Physics has been informed.
+Every plain cabbage from the chute is condensed: it takes 2 cabbages from stock and counts as 2 wherever it goes (sold, paid, researched). Research and golden cabbages follow on the projector."},
+	# The home farms past the first are NOT FOR SALE until these two are stamped (FarmRegister.GATES):
+	# NEGOTIATION opens the 2nd to 4th, BRIBERY the 5th. No effect here: the country sheet reads
+	# save.stamped, and each farm behind them is haggled over on its deed before it is stamped
+	# (FarmRegister: cabbages for the 2nd to 4th, coins for the 5th). Between them RECOVER REJECTED
+	# GOODS (2 farms; FarmRegister.RECOVER): half of an offer that missed comes back. No effect here
+	# either. Prices paced in tools/pace.py (`python tools/pace.py ch3`, `haggle`); PROVISIONAL.
+	# CH2's farm tree opens up (FarmTree.wide, save.farm_tree_wide) and its outer ring shows (`needs =
+	# ["structured_farm"]` there: SEED BEDS, the farm hands' rounds and satchels, FARM OUTPUT from x20,
+	# ARCHIVE from the third step), as BIG MINDS does for the projector. No effect here. Paid in
+	# Findings like the ring it opens; paced in tools/pace.py (`ch3`).
+	{id = "structured_farm", price = 12000, currency = "findings", farms = 1, title = "STRUCTURED FARM", needs = ["condense"],
+		body = "The farm grew. Its organisation chart did not.
+Needs 1 farm. The farm tree on channel 2 opens up, with new and dearer upgrades around its edge: more seeds in a farm square, and farm hands who keep up with them."},
+	{id = "negotiation", price = 90000, farms = 1, title = "NEGOTIATION", needs = ["structured_farm"],
+		body = "The owners said no. No is an opening position.
+Needs 1 farm. The next three farms on the country map are for sale again. Their deeds take offers of cabbages: enough and the price drops, too few and it rises. Cabbages offered are gone either way."},
+	{id = "rejected_goods", price = 120000, farms = 2, title = "RECOVER REJECTED GOODS", needs = ["negotiation"],
+		body = "A refused offer was never accepted. Legal concurs.
+Needs 2 farms. Half of every offer an owner refuses comes back to you. Offers he accepts stay spent."},
+	{id = "bribery", price = 2500000, farms = 4, title = "BRIBERY", needs = ["rejected_goods"],
+		body = "Entered in the books as hospitality.
+Needs 4 farms. The fifth farm on the country map is for sale. Its owner does not eat cabbage: its deed takes coins in an envelope. Same rules."},
+	# The world map (`priority`: it opens the world, a new stage). Needs GameEvents.HOME_SELLERS farms
+	# (a test holds the two together: nobody at home sells more); the price is cabbages from stock
+	# only. Stamped, the world sheet's roll arrives in the map table's rack (MapTable.SHEET_CARDS).
+	# 13,000: paced in tools/pace.py (`python tools/pace.py ch3`), the chapter's last built purchase;
+	# it needs the 15,000 store (the fifth farm's 9,000 needed 9,999).
+	{id = "world_map", price = 13000, currency = "stock", farms = 5, priority = true, title = "EXTEND THE MAPS BEYOND THE BORDER", needs = ["bribery"],
+		body = "The home market is settled. Abroad has not been consulted.
+Needs 5 farms. The cartographers are paid in cabbages. A chart of the world's markets is delivered to the rack at your map table: click its roll to lay it out. The three farms left in Kohlmark can now be seized on the country map."},
+	# The first law (the boss's THE COUNTRY IS OURS paper, GameEvents "home_country"): needs every farm
+	# site of the home country (`home_farms`, GameEvents.HOME_SITES). apply: the 19% tax is gone, so the
+	# street's full-sale price is 19% higher (save.marketing x TAX_FREE) and the chalked price goes up
+	# with it. The home farms past the fifth are seized on the country sheet once the world map card is
+	# stamped (FarmRegister.SEIZURES). PROVISIONAL price, paced in tools/pace.py (`python tools/pace.py ch3`).
+	{id = "no_taxes", price = 10000000, home_farms = 8, title = "NO MORE TAXES ON CABBAGES", needs = ["world_map"],
+		body = "Taxing cabbages was found to be an oversight. It has been corrected.
+Needs every farm in Kohlmark (8). The 19% tax on cabbages is abolished and the company keeps it: every cabbage sells for 19% more."},
+	# The sea (`priority`: it opens the other continent). Countries are taken on the world sheet, only
+	# next to one owned (WorldRegister); across a drawn sea lane only once this is stamped
+	# (WorldRegister.SEA_CARD). Needs 13 farms: almost all 15 of the starting continent (the home
+	# country's 8 and Sulvania's 3, where the lanes start, with either neighbour's 2); before it no
+	# farm lies anywhere else, so `farms` counts just those. Paid in Findings and coins (the charts are
+	# research). No effect here: the world sheet reads save.stamped. PROVISIONAL price (tools/pace.py ch3).
+	{id = "sea_lanes", price = 200000, currency = "findings", also = {coins = 12000000}, farms = 13, priority = true, title = "SEA LANES", needs = ["no_taxes"],
+		body = "Water is not a border. It is a delay.
+Needs 13 farms. The sea lanes drawn on the world chart are opened: a country across a lane from one of ours can be taken."},
+	# Chapter 3's end (`priority`, the end-of-chapter rule), last in the chain, so it reaches the tray
+	# only once the card before it is stamped: `farms` is a requirement, not a price: the
+	# company must own that many farms (save.farms_owned; all GameEvents.FARMS of them), none is spent
+	# (costs, spendable, pay). Stamped, the alpha's end popup comes (ui/sub/alpha_end); chapter 4 later.
+	# The farms are the wall (the last one is the final island); the coins and Findings on top are a
+	# last lap. PROVISIONAL price (tools/pace.py ch3).
+	{id = "stars", price = 10000000, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "world_map", "no_taxes", "sea_lanes"],
+		body = "There is nothing left to buy down here.
+Needs all 24 farms: the field line counts them. Stamped, the board looks up."},
 ]
 const OFFERED := 3
 const Events := preload("res://globalScripts/game_events.gd")
@@ -385,7 +487,7 @@ func _process(delta: float) -> void:
 ## Head office's progress clock, `delta` play seconds on (GameEvents progress_clock, progress_due): it
 ## runs while a form in the tray is affordable and none is approved, also at the farm TV (the form
 ## still waits); it stands still while a boss report or the in-game menu is up, and stops for good
-## once warned or after the chapter's last card.
+## once warned or from chapter 3 on.
 func _tick_progress(save: SaveGame, delta: float) -> void:
 	if save.progress_warned or Events.chapter_3(save) or BossReport.up or (_menu != null and _menu.visible):
 		return
@@ -504,9 +606,13 @@ static func timed(card: Dictionary) -> bool:
 
 
 ## The only events a card may be dealt by: started by what the player does, never by a timer (the
-## warning: the tray has run dry; the promotion: the mechanisation card is stamped). No upgrade card
-## waits on a timer.
-const UNTIMED_EVENTS := ["supply_warning", "promotion"]
+## warning: the tray has run dry; the promotion and chapter 3's opening: a card is stamped). No
+## upgrade card waits on a timer. Chapter 3's other cards follow each other by `needs` alone.
+const UNTIMED_EVENTS := ["supply_warning", "promotion", "invest_in_growth"]
+## NO MORE TAXES ON CABBAGES (card no_taxes): what the street's full-sale price is multiplied by.
+const TAX_FREE := 1.19
+## Cards cash_holding and archive_capacity: what the coin and the Findings limit are multiplied by.
+const LIMIT_RAISE := 5
 
 
 ## Whether timed card `card` is due in `save`: its event has started, its projector node is bought.
@@ -588,6 +694,11 @@ static func migrate(save: SaveGame) -> void:
 		save.miss_keep = maxf(save.miss_keep, 0.5)
 	if save.migration < 4:
 		migrate_farm(save)
+	for nth in mini(save.farms_owned.size(), FarmRegister.GATES.size()):  # Farms bought before their card gated them: the card is filed.
+		if FarmRegister.GATES[nth] != "" and not save.stamped.has(FarmRegister.GATES[nth]):
+			save.stamped.append(FarmRegister.GATES[nth])
+	if save.stamped.has(FarmRegister.BRIBE) and not save.stamped.has(FarmRegister.RECOVER):
+		save.stamped.append(FarmRegister.RECOVER)  # BRIBERY stamped before the card it now follows existed: filed.
 	save.migration = SaveGame.MIGRATION
 	save.sale_price = mini(save.sale_price, PriceSlate.max_price(save.marketing))
 
@@ -652,16 +763,30 @@ static func apply(id: String, save: SaveGame) -> void:
 			save.own_sale += 0.2
 		"own_research":  # And their own flicks into the lab (QaBay.findings_for).
 			save.own_lab += 0.2
+		"condense":  # A plain cabbage off the chute holds 2 from stock (CabbageFeeder.condensed).
+			save.condense = maxi(save.condense, 2)
+		"cash_holding":  # The purse holds five times as much (SaveGame.earn).
+			save.coin_limit *= LIMIT_RAISE
+		"archive_capacity":
+			save.findings_limit *= LIMIT_RAISE
+		"no_taxes":  # The street pays 19% more for the same cabbage, and the slate's price goes up with it.
+			save.marketing *= TAX_FREE
+			save.sale_price = mini(roundi(save.sale_price * TAX_FREE), PriceSlate.max_price(save.marketing))
 
 
 ## What card `card` (a CARDS entry) costs, {currency: amount}: its `price` in `currency` and its
-## `also`, coins first, then Findings, then units (the order the card prints them).
+## `also`, coins first, then Findings, then units (the order the card prints them). A card's `farms`
+## stands before them all: farms the company must own, checked like a price (affords) but never
+## taken (pay).
 static func costs(card: Dictionary) -> Dictionary:
 	var all: Dictionary = card.get("also", {}).duplicate()
 	if card.has("price"):  # The reminder slip's NOTICE has none.
 		all[card.get("currency", "coins")] = card.price
+	for owned: String in ["farms", "home_farms"]:
+		if card.has(owned):
+			all[owned] = card[owned]
 	var out := {}
-	for paid_in: String in ["coins", "findings", "stock"]:
+	for paid_in: String in ["farms", "home_farms", "coins", "findings", "stock"]:
 		if all.has(paid_in):
 			out[paid_in] = all[paid_in]
 	return out
@@ -673,26 +798,34 @@ static func affords(save: SaveGame, bill: Dictionary, out := Vector2i.ZERO) -> b
 
 
 ## What the save can pay in `currency`. In units only the ones still in the store: `out` of the
-## stock are out of the chute (on the mat, in a hand, refused in the street) and can't pay.
+## stock are out of the chute (on the mat, in a hand, refused in the street) and can't pay. In
+## "farms": the farms owned.
 static func spendable(save: SaveGame, currency: String, out := Vector2i.ZERO) -> int:
+	if currency == "farms":
+		return save.farms_owned.size()
+	if currency == "home_farms":
+		return Events.home_farms(save)
 	return save.get(currency) - (out.x if currency == "stock" else 0)
 
 
 ## Takes `price` in `currency` from the save. Paid in units, they come from the store (not the `out`
 ## ones, x of them, y golden) and plain ones go first: golden units in the store are kept as long as
-## there are plain ones to pay with.
+## there are plain ones to pay with. "farms" are only needed, never taken.
 static func pay(save: SaveGame, currency: String, price: int, out := Vector2i.ZERO) -> void:
+	if currency in ["farms", "home_farms"]:
+		return
 	save.set(currency, save.get(currency) - price)
 	if currency == "stock":
 		save.golden_stock = out.y + maxi(clamp_stock(save.golden_stock - out.y, save.stock - out.x), 0)
 
 
-## The stock units out of the chute among `cabbages`: x all of them, y the golden ones (see spendable).
+## The stock units out of the chute among `cabbages`: x all of them, y the golden ones (see
+## spendable); a condensed cabbage counts as the cabbages it holds (Cabbage.units).
 static func units_out(cabbages: Array) -> Vector2i:
 	var out := Vector2i.ZERO
 	for cabbage: Cabbage in cabbages:
 		if cabbage.in_stock():
-			out += Vector2i(1, int(cabbage.golden))
+			out += Vector2i(1, int(cabbage.golden)) * cabbage.units
 	return out
 
 
@@ -964,7 +1097,8 @@ func _bottom_out() -> void:
 	save.stamped.append(card.id)
 	apply(card.id, save)
 	for paid_in: String in card.costs:  # One log line per currency (SaveGame.LOG_COLUMNS: one price each).
-		SaveManager.log_event("card", card.id, card.costs[paid_in], paid_in)
+		if paid_in not in ["farms", "home_farms"]:  # A requirement, not a payment.
+			SaveManager.log_event("card", card.id, card.costs[paid_in], paid_in)
 	$Stamp.cue(_pad())
 	card.stamp()
 	_ring()

@@ -83,12 +83,12 @@ func test_a_short_title_keeps_the_full_size_and_a_long_word_prints_smaller() -> 
 
 
 func test_a_stage_changing_card_is_an_oxblood_priority_form_and_the_rest_plain_stock() -> void:
-	for id: String in ["family_farm", "consolidation"]:  # The farm, and chapter 2's last card.
+	for id: String in ["family_farm", "consolidation", "world_map", "sea_lanes", "stars"]:  # The farm, the world map, the sea lanes, and each chapter's last card.
 		var card := UpgradeDesk.card_data(id)
 		assert_object(UpgradeCard.paper_tint(card)).override_failure_message(id).is_equal(UpgradeCard.PRIORITY_TINT)
 		assert_str(UpgradeCard.form_of(card)).override_failure_message(id).is_equal("FORM 0-P  PRIORITY ACQUISITION")
 	for card: Dictionary in UpgradeDesk.CARDS:
-		if card.id not in ["family_farm", "consolidation"]:
+		if card.id not in ["family_farm", "consolidation", "world_map", "sea_lanes", "stars"]:
 			assert_object(UpgradeCard.paper_tint(card)).override_failure_message(card.id).is_equal(Color.WHITE)
 
 
@@ -119,3 +119,28 @@ func test_a_card_in_one_currency_prints_nothing_beside_its_price_box() -> void:
 			assert_str(UpgradeCard.also_text(UpgradeDesk.costs(each), each.get("currency", "coins"))).override_failure_message(each.id).is_empty()
 	var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("projector")))
 	assert_bool((card.get_node("Look/Also") as Label3D).visible).is_false()
+
+
+func test_farms_a_card_needs_are_printed_left_of_its_price_box_as_a_count_of_farms() -> void:
+	var locale := TranslationServer.get_locale()
+	TranslationServer.set_locale("en")
+	assert_str(UpgradeCard.price_text(24, "farms")).is_equal("24 FARMS")
+	var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("stars")))
+	var also := card.get_node("Look/Also") as Label3D
+	assert_bool(also.visible).is_true()
+	assert_str(also.text).is_equal("24 FARMS +")
+	assert_str((card.get_node("Look/Price") as Label3D).text).is_equal("$%d" % UpgradeDesk.card_data("stars").price)
+	var width := UpgradeCard.TITLE_FONT.get_string_size(also.text, HORIZONTAL_ALIGNMENT_LEFT, -1, also.font_size).x * UpgradeCard.PIXEL
+	assert_float(width).is_less_equal(UpgradeCard.ALSO_WIDTH)
+	TranslationServer.set_locale("de")
+	assert_str(UpgradeCard.price_text(24, "farms")).is_equal("24 HÖFE")
+	TranslationServer.set_locale(locale)
+
+
+func test_a_card_that_needs_one_farm_prints_farm_not_farms() -> void:
+	TranslationServer.set_locale("en")
+	assert_str(UpgradeCard.price_text(1, "farms")).is_equal("1 FARM")
+	assert_str(UpgradeCard.price_text(5, "farms")).is_equal("5 FARMS")
+	assert_str(UpgradeCard.price_text(8, "home_farms")).is_equal("8 FARMS")  # Home farms print as farms.
+	TranslationServer.set_locale("de")
+	assert_str(UpgradeCard.price_text(1, "farms")).is_equal("1 HOF")

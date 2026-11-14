@@ -49,6 +49,9 @@
 [ext_resource type="Material" path="res://assets/materials/findings_token_1K.tres" id="47_token_1k"]
 [ext_resource type="Material" path="res://assets/materials/findings_token_5K.tres" id="48_token_5k"]
 [ext_resource type="Material" path="res://assets/materials/findings_token_10K.tres" id="49_token_10k"]
+[ext_resource type="Material" path="res://assets/materials/room_wall_map.tres" id="50_room_wall_map"]
+[ext_resource type="Material" path="res://entities/field_line/field_line_lamps.tres" id="51_field_line_lamps"]
+[ext_resource type="Shader" path="res://assets/shaders/map_sheet.gdshader" id="52_map_sheet"]
 
 [sub_resource type="BoxMesh" id="Box"]
 size = Vector3(0.12, 0.12, 0.12)
@@ -91,6 +94,9 @@ emission = Color(0.35, 0.9, 1, 1)
 [sub_resource type="ShaderMaterial" id="Crt"]
 render_priority = 0
 shader = ExtResource("13_crt_screen")
+
+[sub_resource type="ShaderMaterial" id="MapSheet"]
+shader = ExtResource("52_map_sheet")
 
 [sub_resource type="ShaderMaterial" id="Static"]
 shader = ExtResource("14_tv_static")
@@ -410,6 +416,24 @@ transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0840, -0.0700, 0)
 gi_mode = 0
 mesh = SubResource("Box")
 material_override = ExtResource("37_room_window")
+
+[node name="RoomWallMap" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.1120, -0.0700, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("50_room_wall_map")
+
+[node name="FieldLineLamps" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.1120, -0.0420, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("51_field_line_lamps")
+
+[node name="MapSheet" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.1120, -0.0140, 0)
+gi_mode = 0
+mesh = SubResource("Quad")
+material_override = SubResource("MapSheet")
 
 [node name="TableMat" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0840, -0.0980, 0)

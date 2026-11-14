@@ -49,15 +49,38 @@ const EVENTS := {
 	street_volatility = {flag = "street_volatile", report = {re = "THE STREET HAS BECOME VOLATILE",
 		body = "Analysts report that the street now overreacts. From today its prices jump hard every minute, and the jumps may get wild. A price left alone will soon be refused. A pricing consultant is very useful here: click the switch beside the slate to set its mandate. If none is retained yet, one can still be requisitioned. Panic is not a pricing strategy."}},
 	## The end of stage 2 (chapter 2): the CONSOLIDATED GROWTH REQUISITION card is stamped. Chapter 3
-	## (buying other companies, the stock market) starts from here: chapter_3(save).
-	invest_in_growth = {card = "consolidation", report = {re = "WE SHOULD INVEST IN GROWTH",
-		body = "The board has reviewed your figures. Cabbage grows at the speed of cabbage, and the board cannot wait that long. From today the desk grows by acquisition: we will buy other companies, and we will invest in the stock market. You will be given a ticker. Cabbages remain cabbages. Some of them will now be shares."}},
+	## (buying out other farms on the map table) starts from here: chapter_3(save). The player is
+	## promoted again, and the PROCURE MARKET INTELLIGENCE card is dealt (UpgradeDesk, `event`).
+	invest_in_growth = {card = "consolidation", report = {re = "YOU ARE PROMOTED AGAIN",
+		body = "The board has reviewed your figures. You are now Head of Acquisitions, Desk 4. Your salary has been reviewed and found adequate. We are not expanding fast enough: cabbage grows at the speed of cabbage, and the board will not wait for it. From today we grow by buying out other farms. A form is in your tray. A map table has been set up to your right."}},
+	## Chapter 3: the company owns its first farm (`farms`: at least that many in save.farms_owned).
+	## The TV's channel 1 lets the player make one of their fields a farm square (entities/farm_screen/).
+	first_farm = {farms = 1, report = {re = "A FARM HAS BEEN ACQUIRED",
+		body = "The company now owns a farm it has never seen. To keep a clean overview, check the TV, channel 1: green arrows mark your fields. Click one to upgrade it to a farm. It will produce accordingly. One field for every farm we own. Head office likes to see on a screen what is ours."}},
+	## Chapter 3: HOME_SELLERS farms owned, and nobody at home sells any more. Taking by force starts
+	## from here: with the world map card stamped the other home farms are seized (FarmRegister.seizure)
+	## and countries are taken on the world sheet (entities/map_table/world_register.gd).
+	no_more_sellers = {farms = HOME_SELLERS, report = {re = "THEY WILL NOT SELL ANY MORE",
+		body = "The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. Head office is making the necessary arrangements. Your maps will be extended beyond the border. Stand by."}},
+	## Chapter 3: every farm site of the home country is owned (`home_farms`: home_farms(save), the
+	## country sheet's HOME_SITES sites, not just any 8 farms). The country is ours: we make the laws
+	## (UpgradeDesk "no_taxes" needs the same farms).
+	home_country = {home_farms = HOME_SITES, report = {re = "THE COUNTRY IS OURS",
+		body = "Every farm in Kohlmark now belongs to the company. A country that grows nothing but our cabbages is, for practical purposes, ours. The board has reviewed the constitution and found it amendable. From today we write the laws. The first one is on your desk."}},
 	## Once per save: a form in the tray has been affordable for PROGRESS_AFTER play seconds with none
 	## approved (progress_due; UpgradeDesk ticks save.progress_wait). Changes nothing but the paperwork.
 	## Last, so it never jumps ahead of a story note due at the same moment.
 	progress_required = {flag = "progress_warned", report = {re = "PROGRESS IS REQUIRED",
 		body = "Head office notes that a form on your desk could have been approved five minutes ago and was not. Forms are orders. Approving them is how the company advances, and with it your position. The projector is discretionary. Progress is not."}},
 }
+## Chapter 3: every farm in the game (8 sites at home, 16 abroad: one per field square on the TV's
+## channel 1, one lamp each on the FieldLine), and how many of the home ones their owners sell.
+const FARMS := 24
+const HOME_SELLERS := 5
+## The home country's farm sites (the country sheet, FarmRegister): how many there are, and what
+## their ids start with ("K-1".."K-8"; a farm abroad has another prefix).
+const HOME_SITES := 8
+const HOME_PREFIX := "K-"
 ## Farm seconds after the golden_cabbage card until the overripe event starts.
 const OVERRIPE_AFTER := 60.0
 ## Play seconds after the promotion report is signed until the street turns volatile.
@@ -71,8 +94,8 @@ const SHOCK_AFTER := 150
 const SHOCK_AFTER_FARM := 40
 ## The desk cards that may still be left when the tray counts as run dry (tray_dry): dear ones the
 ## player saves up for anyway (the desk lamp, the mat allowance), and optional ones a player may
-## never want (the behaviour memos, the no-effect ledger). Nothing else needs any of them.
-const DRY_LEFT := ["golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger"]
+## never want (the behaviour memos, the handling schedule, the no-effect ledger). Nothing else needs any of them.
+const DRY_LEFT := ["golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger", "hand_schedule"]
 const Demo := preload("res://globalScripts/demo.gd")
 
 
@@ -80,15 +103,30 @@ static func shock_after() -> int:
 	return Demo.SHOCK_AFTER if Demo.active() else SHOCK_AFTER
 
 
-## Whether event `id` has started for `save`: its flag set and its card stamped, whichever it has.
+## How many of the home country's farm sites `save` owns.
+static func home_farms(save: SaveGame) -> int:
+	var count := 0
+	for site in save.farms_owned:
+		if site.begins_with(HOME_PREFIX):
+			count += 1
+	return count
+
+
+## Whether event `id` has started for `save`: its flag set, its card stamped, its `farms` owned and
+## its `home_farms` of them at home, whichever it has.
 static func due(id: String, save: SaveGame) -> bool:
 	var event: Dictionary = EVENTS[id]
-	return (not event.has("flag") or save.get(event.flag)) and (not event.has("card") or save.stamped.has(event.card))
+	return (not event.has("flag") or save.get(event.flag)) and (not event.has("card") or save.stamped.has(event.card)) 			and save.farms_owned.size() >= event.get("farms", 0) and home_farms(save) >= event.get("home_farms", 0)
 
 
 ## Whether chapter 3 has begun: chapter 2's last card is stamped (the "invest_in_growth" event).
 static func chapter_3(save: SaveGame) -> bool:
 	return due("invest_in_growth", save)
+
+
+## Whether chapter 3 is over: its last card (UpgradeDesk "stars", needs every farm) is stamped.
+static func chapter_3_done(save: SaveGame) -> bool:
+	return save.stamped.has("stars")
 
 
 ## Whether the tray has nothing left to deal but DRY_LEFT cards (event cards aside).
@@ -137,7 +175,8 @@ static func progress_due(seconds: float, warned: bool, affordable: bool) -> bool
 
 
 ## Whether wholesale prices explode now: shock_after() units sold since the warning, or
-## SHOCK_AFTER_FARM since the family farm was stamped (save.farm_sold), whichever first.
+## SHOCK_AFTER_FARM since the family farm was stamped (save.farm_sold), whichever first. Never once
+## the supply console is gone (SupplyConsole.retired): there are no crates left to price.
 static func shock_due(save: SaveGame) -> bool:
-	return save.supply_warning and not save.supply_shock and (save.sold >= save.warning_sold + shock_after() \
+	return save.supply_warning and not save.supply_shock and not SupplyConsole.retired(save) and (save.sold >= save.warning_sold + shock_after() \
 			or (save.farm_sold >= 0 and save.sold >= save.farm_sold + SHOCK_AFTER_FARM))

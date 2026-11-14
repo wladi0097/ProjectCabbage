@@ -140,43 +140,54 @@ static func capped(asked: int, can: int) -> int:
 
 
 ## The most full cabbages that can reach the street in a quota (the walk-in included) with `on_mat`
-## fresh ones already out: the chute at its best gap with a quick flick, no more than the supply has,
-## less the rotten share. The price, the chute lever and buying packs are the player's to fix inside
+## fresh ones already out: the chute at its best gap with a quick flick (each drop a condensed
+## cabbage holding save.condense, once that card is stamped), no more than the supply has, less the
+## rotten share. The price, the chute lever and buying packs are the player's to fix inside
 ## the time, so the refusals, a shut chute and coins left unspent don't lower it.
 static func deliverable(save: SaveGame, on_mat: int) -> int:
 	var gap := Feeder.best_gap(save.dispense_interval, save.restock_delay, save.desk_capacity, QUICK_FLICK)
 	var drops := (save.manager_time + ARRIVE_TIME - QUICK_FLICK) / gap
 	var fresh := 1.0 - 1.0 / Feeder.ROTTEN_EVERY if save.rotten_unlocked else 1.0
-	return on_mat + floori(minf(drops, maxf(supply(save) - on_mat, 0.0)) * fresh)
+	return on_mat + floori(minf(drops * save.condense, maxf(supply(save) - on_mat, 0.0)) * fresh)
 
 
 ## Full cabbages there are to sell in a quota: the stock (the mat's included), the farm's harvests in
 ## the time, and the packs the tally can pay for (with what the stock will bring): all of them once a
-## pack pays for itself.
+## pack pays for itself. No packs once the supply console is gone (SupplyConsole.retired).
 static func supply(save: SaveGame) -> float:
 	var cost := SupplyConsole.pack_cost(save)
 	var money := save.coins + save.stock * save.sale_price
 	var packs := 0.0
-	if save.buy_unlocked and money >= cost:
+	if save.buy_unlocked and not SupplyConsole.retired(save) and money >= cost:
 		packs = INF if cost <= save.pack_size * save.sale_price else floorf(float(money) / cost)
 	return save.stock + harvests(save, save.manager_time + ARRIVE_TIME) + packs * save.pack_size
 
 
 ## Cabbages the farm can bring in within `time` s, pulled by hand: every planted square once it is
-## ripe, and again each grow time after with a seed per replant.
+## ripe, and again each grow time after with a seed per replant, each square at its own yield (a farm
+## square gives more, FarmScreen.harvest_yield); the seeds go to the squares that give most.
 static func harvests(save: SaveGame, time: float) -> int:
 	if not save.stamped.has("family_farm"):
 		return 0
 	var ripe := FarmScreen.grow_time(save)
-	var first := 0
-	var again := 0
-	for grown in save.farm_growth:
+	var units := 0
+	var replants: Array[int] = []  # What each further harvest would give, one entry per seed it takes.
+	for i in save.farm_growth.size():
+		var grown := save.farm_growth[i]
+		var crop := FarmScreen.harvest_yield(save, true, i)
+		var again := 0
 		if grown >= 0.0 and ripe - grown <= time:
-			first += 1
-			again += floori((time - maxf(ripe - grown, 0.0)) / ripe)
+			units += crop
+			again = floori((time - maxf(ripe - grown, 0.0)) / ripe)
 		elif grown == FarmScreen.EMPTY:
-			again += floori(time / ripe)
-	return (first + mini(again, save.farm_seeds + save.farm_seeds_carried)) * FarmScreen.harvest_yield(save, true)
+			again = floori(time / ripe)
+		for n in again:
+			replants.append(crop)
+	replants.sort()
+	var seeds := mini(replants.size(), save.farm_seeds + save.farm_seeds_carried)
+	for more in replants.slice(replants.size() - seeds):
+		units += more
+	return units
 
 
 ## Seconds to the first visit: FIRST_VISIT when the card was `stamped` before the load, else CARD_VISIT

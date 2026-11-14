@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_drafting_weight.res" id="1_mesh"]
+
+[node name="DraftingWeight" type="Node3D"]
+
+[node name="Model" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("1_mesh")

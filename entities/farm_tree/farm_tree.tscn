@@ -6,6 +6,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_1.wav" id="4_buy"]
 [ext_resource type="FontFile" uid="uid://t5a1wkev2xne" path="res://assets/fonts/Oswald.ttf" id="6_oswald"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/console_denied_1.wav" id="5_denied"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/projector_widen.wav" id="7_widen"]
 
 [sub_resource type="FontVariation" id="FindingsFace"]
 base_font = ExtResource("6_oswald")
@@ -22,6 +23,7 @@ mouse_filter = 2
 script = ExtResource("1_script")
 approve_sound = ExtResource("4_buy")
 denied_sound = ExtResource("5_denied")
+widen_sound = ExtResource("7_widen")
 findings_color = Color(0.886, 0.863, 0.776, 1)
 
 [node name="Glass" type="ColorRect" parent="."]

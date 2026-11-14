@@ -36,6 +36,16 @@ const RESEARCH_MATERIAL := preload("res://assets/materials/cabbage_research.tres
 const RESEARCH_LIGHT := Color(0.45, 0.9, 1.0)
 ## A golden unit (desk card golden_cabbage): cold metallic gold, the one exception to the palette.
 const GOLD_MATERIAL := preload("res://assets/materials/cabbage_gold.tres")
+## A condensed cabbage (`units` over 1) is denser, not much bigger, so the mat does not clog: its
+## size is units ^ CONDENSED_SIZE (2: ×1.15, 4: ×1.32), its mass units times, and it drags behind
+## the hand: its carry acceleration is divided by units ^ CONDENSED_WEIGHT (2: ×0.8, 4: ×0.63).
+## It also sounds heavier: its bump, grab, chute roll and sale play units ^ -CONDENSED_PITCH lower
+## (2: ×0.87, 4: ×0.76).
+const CONDENSED_SIZE := 0.2
+const CONDENSED_WEIGHT := 0.33
+const CONDENSED_PITCH := 0.2
+## Its stencilled count (×2) floats this many radii from its centre, toward the camera.
+const COUNT_OUT := 1.1
 ## Let go by the hand near the bin (RottenBin.let_go_over), it may drop in for this long (a drop or
 ## a short toss lands by then).
 const BIN_GRACE := 1.0
@@ -70,6 +80,10 @@ var research := false
 ## A golden unit from a golden farm square: stock (save.golden_stock), sold for save.golden_sale times
 ## the price or analysed for save.golden_lab times the Findings. Never rotten, mini or research.
 var golden := false
+## How many cabbages from stock it holds: 1, or more for a condensed one (desk card condense,
+## CabbageFeeder.condensed): it leaves the stock, sells, is analysed and is counted as that many, and
+## carries a stencilled ×2. Set before it enters the tree, like rotten. Minis and rotten ones: always 1.
+var units := 1
 ## Last thrown by a hired hand (Associate._throw), not the player: SaleWindow counts its sale as the hand's.
 var lobbed := false
 ## Sent by the mini tube (MiniDrop), into the window gap or the research lab, not thrown by the player.
@@ -105,6 +119,8 @@ var _spin := 0.0:
 var _spinning: Tween
 
 
+## A condensed cabbage's stencilled count (top level: it keeps facing the camera while the body rolls).
+@onready var _count: Label3D = $Count
 @onready var _layer := collision_layer
 @onready var _mask := collision_mask
 
@@ -113,6 +129,12 @@ func _ready() -> void:
 	add_to_group(&"cabbages")
 	$Mesh.mesh = MESHES.pick_random()
 	var size := randf_range(1.0 - SIZE_SPREAD, 1.0 + SIZE_SPREAD) * (MINI_SCALE if mini else 1.0)
+	mass *= size * size * size * units
+	size *= condensed_size(units)
+	max_accel /= pow(units, CONDENSED_WEIGHT)
+	_count.visible = units > 1
+	_count.text = "×%d" % units
+	set_process(units > 1)
 	_look = Basis.from_euler(Vector3(randf(), randf(), randf()) * TAU).scaled(Vector3.ONE * 1.5 * size)
 	if rotten:
 		$Mesh.material_override = ROTTEN_MATERIAL
@@ -130,15 +152,34 @@ func _ready() -> void:
 	var ball := $Shape.shape.duplicate() as SphereShape3D
 	ball.radius *= size
 	$Shape.shape = ball
-	mass *= size * size * size
 	$Interactable.grabbed.connect(_on_grabbed)
 	$Interactable.released.connect(_on_released)
 	body_entered.connect(func(body: Node) -> void:
 		if in_flight and lands_on(body, global_position.y):
 			_land()
 		bumped.emit(linear_velocity.length()))
+	$Bump.pitch_scale = heavy_pitch(units)
+	$Grab.pitch_scale = heavy_pitch(units)
 	bumped.connect(func(speed: float) -> void: $Bump.cue(global_position, speed))
 	$Interactable.grabbed.connect(func() -> void: $Grab.cue(global_position))
+
+
+## How much bigger across a cabbage holding `count` cabbages is than a plain one.
+static func condensed_size(count: int) -> float:
+	return pow(count, CONDENSED_SIZE)
+
+
+## How much lower a cabbage holding `count` cabbages sounds than a plain one (a pitch scale).
+static func heavy_pitch(count: int) -> float:
+	return pow(maxi(count, 1), -CONDENSED_PITCH)
+
+
+## A condensed cabbage's count stays on the side the camera sees, just off its skin.
+func _process(_delta: float) -> void:
+	var camera := get_viewport().get_camera_3d()
+	if camera != null:
+		var radius: float = ($Shape.shape as SphereShape3D).radius
+		_count.global_position = global_position + global_position.direction_to(camera.global_position) * radius * COUNT_OUT
 
 
 ## Whether it came out of the stock (and so leaves it when sold, binned or analysed): minis and
@@ -153,15 +194,15 @@ func in_stock() -> bool:
 	return is_stock() and not _left_stock
 
 
-## It leaves the stock (sold, binned or analysed), once: one unit off save.stock, and off golden_stock
-## if golden, never below 0. Minis and grown ones never were stock.
+## It leaves the stock (sold, binned or analysed), once: its `units` off save.stock (one, or what a
+## condensed one holds), and off golden_stock if golden, never below 0. Minis and grown ones never were stock.
 func leave_stock(save: SaveGame) -> void:
 	if not in_stock():
 		return
 	_left_stock = true
-	save.stock = maxi(save.stock - 1, 0)
+	save.stock = maxi(save.stock - units, 0)
 	if golden:
-		save.golden_stock = maxi(save.golden_stock - 1, 0)
+		save.golden_stock = maxi(save.golden_stock - units, 0)
 
 
 ## The growing station's work, out of sight in the tube: the mini becomes a full-size unit (mesh,

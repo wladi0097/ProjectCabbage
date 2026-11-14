@@ -19,7 +19,8 @@ for path, (loc, s) in PLACE.items():
         o.name = o.name + "-noimp"
         scene.collection.objects.link(o)
         if o.parent is None:
-            o.matrix_world = Matrix.Translation(loc) @ Matrix.Scale(s, 4) @ o.matrix_world
+            # matrix_world is still identity on a just-appended object: use matrix_basis
+            o.matrix_world = Matrix.Translation(loc) @ Matrix.Scale(s, 4) @ o.matrix_basis
 for n in ("Env-noimp", "Scale-noimp"):
     bpy.data.objects[n].hide_render = True
 arm.location = g2b(-0.08, 0.75, -0.80)

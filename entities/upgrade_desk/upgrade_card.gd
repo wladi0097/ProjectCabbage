@@ -290,8 +290,13 @@ func _cue(sound: StringName) -> void:
 
 
 ## "$130", "¶10" or "60" (paid from stock: the cabbage ICON is its sign, see shows_icon): the price
-## with its currency's sign, as on the tally machine's plates.
+## with its currency's sign, as on the tally machine's plates. "24 FARMS" for farms that must be owned
+## (UpgradeDesk.costs "farms"), in the language of the moment.
 static func price_text(amount: int, paid_in: String) -> String:
+	if paid_in in ["farms", "home_farms"]:
+		if amount == 1:
+			return TranslationServer.translate("1 FARM")
+		return TranslationServer.translate("%d FARMS") % amount
 	if paid_in == "stock":
 		return str(amount)
 	return ("¶%d" if paid_in == "findings" else "$%d") % amount

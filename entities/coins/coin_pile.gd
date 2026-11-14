@@ -5,12 +5,22 @@ extends MultiMeshInstance3D
 ## steel ($50) and platinum ($100) coins, and for a big one $500 / $1K / $5K / $10K coins (see
 ## coin_values), each bigger and thicker from $10 up, that all aim at one
 ## spot and stack there, at most MAX_STACK high; extra coins start a stack right beside it. Sweeping an empty hand over them sends them into the deposit.
+## The purse has a limit (SaveGame.coin_limit): a payout only throws in what still fits beside the
+## coins already out (fitting); the rest never comes in. One coin of it is tossed up to the gap and
+## drops back into the street, and `refused` fires (the tally machine's FULL plate and buzzer).
+## Piles spread sideways, never up: a full stack sends the next coin to the nearest stack with room
+## inside pile_area (stack_cell), and at most MAX_ON_DESK coins are out at once. What a payout has
+## beyond that is held back (_withheld, still pending_value, so never lost): every KNOCK seconds a
+## coin shows at the gap and drops back, and as soon as coins are picked up it comes in, as the
+## fewest coins.
 
 signal thrown(origin: Vector3, count: int)
 signal bounced(position: Vector3)
 signal landed(position: Vector3)
 signal collected(position: Vector3)
 signal deposited(position: Vector3)
+## Part of a payout did not fit under the coin limit and was lost.
+signal refused(position: Vector3)
 
 enum State { FLYING, SETTLING, RESTING, HOMING }
 
@@ -21,6 +31,12 @@ const CHUNK := 256
 const CELL := 0.054
 const THICKNESS := 0.014
 const MAX_STACK := 10
+## The most coins out at once (flying, lying, homing): a payout's coins past it are held back. Well
+## under what pile_area holds (its cells x MAX_STACK), so a coin always finds a stack with room, and
+## the bound on the coins drawn and moved each frame (they are MultiMesh instances, not bodies).
+const MAX_ON_DESK := 1500
+## Seconds between tries to bring held-back coins in (and between the coins shown waiting at the gap).
+const KNOCK := 1.0
 const GOLD_VALUE := 5
 const BIG_VALUE := 10
 const FIFTY_VALUE := 50
@@ -82,6 +98,9 @@ const HOME_SPREAD := 0.3
 ## Thrown-in coins land anywhere in here: the top half of the mat, minus its right 30% where the
 ## press and the ramp would hide them.
 @export var landing_area := AABB(Vector3(-0.3, 0.76, -0.55), Vector3(1.4, 0.0, 0.75))
+## Where coins may lie: a coin whose stack is full goes to the nearest stack with room in here (the
+## open mat left of the press and the ramp, down to where the coin robots still drive).
+@export var pile_area := AABB(Vector3(-0.3, 0.76, -0.55), Vector3(1.4, 0.0, 1.2))
 ## Seconds from the gap to the first touch: short keeps the arc flat enough for the gap.
 @export var throw_time := Vector2(0.28, 0.36)
 ## (y, z) where tossed coins come through the window gap. They start out of sight below the
@@ -105,6 +124,7 @@ class Coin:
 	var cell := Vector2i.ZERO  # the payout's stack
 	var gone := false  # taken by a vacuum, dropped from _coins at the end of vacuum_at
 	var slot := -1  # the MultiMesh instance _upload last wrote it to (-1: write it again)
+	var lost := false  # a refused payout's coin (worth nothing): up to the gap, then back down into the street
 
 
 # ponytail: Array of RefCounted coins, the moving ones rewritten each frame (resting ones stay put in
@@ -116,6 +136,14 @@ var _buffer := PackedFloat32Array()
 var _held := 0
 ## Value of payouts set to arrive by throw_in_after and not thrown yet.
 var _scheduled := 0
+## Grid cells no coin lands on: the QA bay and the patch of desk its slips lie on (set by the bay
+## once it is in), so coins never end up under the bay or bury the slips.
+var keep_clear := Rect2i()
+## Value of the coins held back while MAX_ON_DESK are out, where they come in from, and the seconds
+## until the next try.
+var _withheld := 0
+var _withheld_from := Vector3(0.4, 0.6, -1.0)
+var _knock := 0.0
 ## The empty hand's point on the desk last frame (null while it holds something).
 var _last_hand: Variant = null
 ## The tallest a stack can be (m above the desk), for _sweep's window: MAX_STACK of the thickest
@@ -143,7 +171,7 @@ func _ready() -> void:
 
 ## The value of every coin not banked yet (in the air, on the mat, on its way to the deposit).
 func pending_value() -> int:
-	var total := _held + _scheduled
+	var total := _held + _scheduled + _withheld
 	for coin in _coins:
 		total += coin.value
 	return total
@@ -171,13 +199,20 @@ func pop_out_after(delay: float, origin: Vector3, spot: Vector3, amount: int) ->
 ## Throws `amount` worth of coins in from `origin` (out of sight below the sill): up to the gap,
 ## then in, all onto one spot.
 func throw_in(origin: Vector3, amount: int) -> void:
-	var values := coin_values(amount)
+	var fits := _fit(amount, origin)
+	if fits < amount:
+		_toss_back(origin)  # The street keeps it: shown at the gap, never on the mat.
+	_withheld_from = origin
+	var values := _hold_back(coin_values(fits))
+	if values.is_empty():
+		return
 	thrown.emit(origin, values.size())
 	var spot := landing_area.position + Vector3(randf(), 0.0, randf()) * landing_area.size
+	for _try in 16:
+		if not keep_clear.has_point(cell_of(spot)):
+			break
+		spot = landing_area.position + Vector3(randf(), 0.0, randf()) * landing_area.size
 	for i in values.size():
-		if _coins.size() >= MAX_COINS:
-			_deposit_now(values[i])
-			continue
 		var coin := Coin.new()
 		coin.value = values[i]
 		coin.cell = cell_of(spot)
@@ -192,15 +227,52 @@ func throw_in(origin: Vector3, amount: int) -> void:
 		_coins.append(coin)
 
 
+## A coin worth nothing shows at the gap above `origin` and drops back into the street.
+func _toss_back(origin: Vector3) -> void:
+	if _coins.size() >= MAX_COINS:
+		return
+	var kept := Coin.new()
+	kept.value = 0
+	kept.lost = true
+	kept.xf = Transform3D(Basis(Quaternion.from_euler(Vector3(randf(), randf(), randf()) * TAU)), origin)
+	kept.velocity = ballistic(origin, Vector3(origin.x, gap_entry.x, gap_entry.y), TOSS_TIME)
+	kept.toss = TOSS_TIME
+	kept.spin = Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)).normalized() * randf_range(10, 20)
+	_coins.append(kept)
+
+
+## The coins of `values` there is room for on the desk (MAX_ON_DESK), smallest first as given; the
+## value of the rest is held back.
+func _hold_back(values: Array[int]) -> Array[int]:
+	var room := clampi(MAX_ON_DESK - _coins.size(), 0, values.size())
+	for i in range(room, values.size()):
+		_withheld += values[i]
+	return values.slice(0, room)
+
+
+## Held-back coins come in once there is room on the desk (as one payout: the fewest coins, the rest
+## held back again); until then one shows at the gap and drops back.
+func _release(delta: float) -> void:
+	_knock -= delta
+	if _knock > 0.0:
+		return
+	_knock = KNOCK
+	if _coins.size() >= MAX_ON_DESK:
+		_toss_back(_withheld_from)
+		return
+	var amount := _withheld
+	_withheld = 0
+	throw_in(_withheld_from, amount)
+
+
 ## Pops `amount` worth of coins up out of `origin` (the bin's mouth) in a short arc onto one spot
 ## around `spot` on the desk, to be swept up like any payout.
 func pop_out(origin: Vector3, spot: Vector3, amount: int) -> void:
-	var values := coin_values(amount)
+	var values := _hold_back(coin_values(_fit(amount, origin)))
+	if values.is_empty():
+		return
 	thrown.emit(origin, values.size())
 	for i in values.size():
-		if _coins.size() >= MAX_COINS:
-			_deposit_now(values[i])
-			continue
 		var coin := Coin.new()
 		coin.value = values[i]
 		coin.cell = cell_of(spot)
@@ -219,12 +291,17 @@ func _process(delta: float) -> void:
 		_last_hand = now
 	else:
 		_last_hand = null
+	if _withheld > 0:
+		_release(delta)
 	var moving := false
 	for i in range(_coins.size() - 1, -1, -1):
 		var coin := _coins[i]
 		match coin.state:
 			State.FLYING:
 				_fly(coin, delta)
+				if coin.lost and coin.toss <= 0.0 and coin.xf.origin.y < desk_height:
+					_coins[i] = _coins[-1]  # Back under the sill, out of sight: gone.
+					_coins.pop_back()
 			State.SETTLING:
 				coin.t = minf(coin.t + delta / SETTLE_TIME, 1.0)
 				coin.xf = coin.from.interpolate_with(coin.to, ease(coin.t, 0.4))
@@ -257,8 +334,10 @@ func _fly(coin: Coin, delta: float) -> void:
 		if coin.toss <= 0.0:
 			coin.velocity = coin.inbound
 		return
-	if _stacks.get(coin.cell, []).size() >= MAX_STACK:
-		coin.cell = stack_cell(_stacks, coin.cell, MAX_STACK)
+	if coin.lost:
+		return
+	if _stacks.get(coin.cell, []).size() >= MAX_STACK or keep_clear.has_point(coin.cell):
+		coin.cell = stack_cell(_stacks, coin.cell, MAX_STACK, _pile_cells(), keep_clear)
 	var floor_y := _top(coin.cell) + thickness(coin.value) * 0.5
 	if coin.xf.origin.y > floor_y or coin.velocity.y > 0.0:
 		return
@@ -273,7 +352,7 @@ func _fly(coin: Coin, delta: float) -> void:
 
 
 func _land(coin: Coin) -> void:
-	var cell := stack_cell(_stacks, coin.cell, MAX_STACK)
+	var cell := stack_cell(_stacks, coin.cell, MAX_STACK, _pile_cells(), keep_clear)
 	var stack: Array = _stacks.get_or_add(cell, [])
 	var below := _top(cell)
 	stack.append(coin)
@@ -467,10 +546,24 @@ static func ballistic(from: Vector3, to: Vector3, time: float) -> Vector3:
 	return (to - from) / time + 0.5 * Vector3.UP * GRAVITY * time
 
 
-## `value` coins reach the save: held, and counted in save.coins_earned.
+## `value` coins reach the save: what fits under its coin limit (SaveGame.earn) is held, and counted
+## in save.coins_earned.
 static func bank(save: SaveGame, value: int) -> void:
-	save.coins += value
-	save.coins_earned += value
+	save.coins_earned += save.earn(&"coins", value)
+
+
+## What of a payout of `amount` comes in: what the purse still has `room` for (SaveGame.room) beside
+## the `pending` coins already on their way to it. A full purse takes nothing.
+static func fitting(amount: int, room: int, pending: int) -> int:
+	return clampi(room - pending, 0, amount)
+
+
+## fitting for the live save; `refused` fires at `origin` when some of it is lost.
+func _fit(amount: int, origin: Vector3) -> int:
+	var fits := fitting(amount, SaveManager.save.room(&"coins"), pending_value())
+	if fits < amount:
+		refused.emit(origin)
+	return fits
 
 
 func _deposit_now(value: int) -> void:
@@ -576,15 +669,36 @@ static func coin_values(amount: int) -> Array[int]:
 	return out
 
 
+## The grid cells of pile_area.
+func _pile_cells() -> Rect2i:
+	return cells_in(pile_area.position, pile_area.end)
+
+
+## The grid cells from the one holding `from` to the one holding `to` (desk points).
+static func cells_in(from: Vector3, to: Vector3) -> Rect2i:
+	return Rect2i(cell_of(from), cell_of(to) - cell_of(from) + Vector2i.ONE)
+
+
+## The tallest a pile may stand over the desk (m): MAX_STACK of the thickest coin. The hand takes a
+## whole stack wherever it shows (under_hand), and this high it shows on screen all over pile_area.
+static func reach_height() -> float:
+	return MAX_STACK * THICKNESS * SCALES[-1].y
+
+
 ## Where a coin aimed at `cell` lands: on that stack while it is under `max_height`, else on the
-## nearest stack around it with room (a random one of those, so overflow looks loose).
-static func stack_cell(stacks: Dictionary, cell: Vector2i, max_height: int) -> Vector2i:
-	for ring in 8:
+## nearest stack around it with room (a random one of those, so overflow looks loose). With an
+## `area` (cells) the stacks beside it must lie in there, and it looks as far as the area goes. No
+## coin lands in `closed`, not even on the cell it aimed at.
+static func stack_cell(stacks: Dictionary, cell: Vector2i, max_height: int, area := Rect2i(), closed := Rect2i()) -> Vector2i:
+	# ponytail: whole squares walked ring by ring; only far when a big patch is full. Walk the ring's
+	# edge alone if a profile ever shows it.
+	for ring in (64 if area.has_area() else 8):
 		var free: Array[Vector2i] = []
 		for dx in range(-ring, ring + 1):
 			for dz in range(-ring, ring + 1):
 				var near := cell + Vector2i(dx, dz)
-				if maxi(absi(dx), absi(dz)) == ring and stacks.get(near, []).size() < max_height:
+				if maxi(absi(dx), absi(dz)) == ring and stacks.get(near, []).size() < max_height \
+						and (ring == 0 or not area.has_area() or area.has_point(near)) and not closed.has_point(near):
 					free.append(near)
 		if not free.is_empty():
 			return free.pick_random()

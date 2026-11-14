@@ -1,5 +1,6 @@
 extends GdUnitTestSuite
 
+const WorldRegister := preload("res://entities/map_table/world_register.gd")
 const ROUND_TRIP_PATH := "user://save_game_test_round_trip.tres"
 const LOG_PATH := "user://save_game_test_log.csv"
 
@@ -178,3 +179,221 @@ func _another_value(save: SaveGame, field: String) -> Variant:
 			return log_lines
 	fail("no round-trip value for %s (type %d)" % [field, typeof(value)])
 	return value
+
+# ---- The coin and Findings limits (SaveGame.earn), their two desk cards and their ladders ----
+
+func test_a_new_game_may_hold_40000_coins_and_8000_findings() -> void:
+	var save := SaveGame.new()
+	assert_int(save.coin_limit).is_equal(40000)
+	assert_int(save.findings_limit).is_equal(8000)
+
+
+func test_coins_stop_at_the_cash_limit() -> void:
+	var save := SaveGame.new()
+	save.coins = save.coin_limit - 10
+	assert_int(save.earn(&"coins", 25)).is_equal(10)
+	assert_int(save.coins).is_equal(save.coin_limit)
+	assert_int(save.earn(&"coins", 25)).is_equal(0)
+	assert_int(save.coins).is_equal(save.coin_limit)
+
+
+func test_findings_stop_at_the_research_limit() -> void:
+	var save := SaveGame.new()
+	assert_int(save.earn(&"findings", 7990)).is_equal(7990)
+	assert_int(save.earn(&"findings", 500)).is_equal(10)
+	assert_int(save.findings).is_equal(8000)
+	assert_int(save.room(&"findings")).is_equal(0)
+
+
+func test_an_old_save_above_the_limit_keeps_its_coins_and_earns_nothing_until_it_is_under_again() -> void:
+	var save := SaveGame.new()
+	save.coins = 2500000
+	save.findings = 60000
+	assert_int(save.earn(&"coins", 100)).is_equal(0)
+	assert_int(save.earn(&"findings", 100)).is_equal(0)
+	assert_int(save.coins).is_equal(2500000)  # Never clawed back.
+	assert_int(save.findings).is_equal(60000)
+	save.coins = 39000  # Spent down under the limit: it earns again, up to the limit.
+	assert_int(save.earn(&"coins", 5000)).is_equal(1000)
+
+
+func test_a_raised_limit_lets_a_full_purse_earn_again() -> void:
+	var save := SaveGame.new()
+	save.coins = save.coin_limit
+	assert_int(save.earn(&"coins", 100)).is_equal(0)
+	UpgradeDesk.apply("cash_holding", save)
+	assert_int(save.earn(&"coins", 100)).is_equal(100)
+
+
+func test_the_cash_limit_card_multiplies_the_limit_by_five_and_the_archive_card_the_findings_limit() -> void:
+	var save := SaveGame.new()
+	UpgradeDesk.apply("cash_holding", save)
+	assert_int(save.coin_limit).is_equal(200000)
+	assert_int(save.findings_limit).is_equal(8000)
+	UpgradeDesk.apply("archive_capacity", save)
+	assert_int(save.findings_limit).is_equal(40000)
+
+
+## Every step that raises `limit` ("coin_limit", "findings_limit"), in the order it is bought: the desk
+## card, then the tree's chain. Each as [id, price, the node or card].
+func _limit_steps(limit: String) -> Array:
+	var coins := limit == "coin_limit"
+	var card := UpgradeDesk.card_data("cash_holding" if coins else "archive_capacity")
+	var out := [[card.id, card.price, card]]
+	for node: Dictionary in (Projector.NODES if coins else FarmTree.NODES):
+		if node.get("add", {}).has(limit):
+			out.append([node.id, node.price, node])
+	return out
+
+
+## Buys every step of `limit` on a new save, calling `each` (step, limit before, limit after); returns the save.
+func _climb(limit: String, each := Callable()) -> SaveGame:
+	var save := SaveGame.new()
+	for step: Array in _limit_steps(limit):
+		var was: int = save.get(limit)
+		if step[2].has("parent"):
+			UpgradeTree.apply_effect(step[2], save)
+		else:
+			UpgradeDesk.apply(step[0], save)
+		if each.is_valid():
+			each.call(step, was, save.get(limit))
+	return save
+
+
+func test_every_limit_step_costs_no_more_than_the_limit_before_it_and_at_least_doubles_it_but_the_archives_last_two() -> void:
+	# The Findings counter has six drums: the ARCHIVE ladder ends under ¶1,000,000, its last two steps half as much again.
+	for limit: String in ["coin_limit", "findings_limit"]:
+		var currency := "coins" if limit == "coin_limit" else "findings"
+		var steps := _limit_steps(limit)
+		assert_int(steps.size()).override_failure_message(limit).is_equal(6)  # The card, then five steps.
+		_climb(limit, func(step: Array, was: int, now: int) -> void:
+			assert_int(step[1]).override_failure_message("%s costs more than the limit before it" % step[0]).is_less_equal(was)
+			var least := 1.5 if step[0] in ["archive_4", "archive_5"] else 2.0
+			assert_float(float(now)).override_failure_message("%s does not raise the limit %s times" % [step[0], least]).is_greater_equal(was * least))
+		# Paid in the currency it raises, each tree step hanging under the one before.
+		assert_array(UpgradeDesk.costs(steps[0][2]).keys()).is_equal([currency])
+		for i in range(1, steps.size()):
+			assert_str(UpgradeTree.currency_of(steps[i][2])).override_failure_message(steps[i][0]).is_equal(currency)
+			if i > 1:
+				assert_str(steps[i][2].parent).override_failure_message(steps[i][0]).is_equal(steps[i - 1][0])
+
+
+func test_the_ladders_reach_ten_million_coins_and_past_a_hundred_thousand_findings() -> void:
+	assert_int(_climb("coin_limit").coin_limit).is_greater_equal(10000000)
+	assert_int(_climb("findings_limit").findings_limit).is_greater(100000)
+
+
+func test_nothing_in_the_game_costs_more_than_the_highest_limit_of_its_currency() -> void:
+	var top := {coins = _climb("coin_limit").coin_limit, findings = _climb("findings_limit").findings_limit}
+	var bills := {}  # What everything on sale costs, by id.
+	for card: Dictionary in UpgradeDesk.CARDS:
+		bills[card.id] = UpgradeDesk.costs(card)
+	for node: Dictionary in Projector.NODES + FarmTree.NODES:
+		bills[node.id] = {UpgradeTree.currency_of(node): node.price}
+	for nth in FarmRegister.PRICES.size():
+		bills["farm %d" % (nth + 1)] = FarmRegister.PRICES[nth]
+	for nth in FarmRegister.SEIZURES.size():
+		bills["seizure %d" % (nth + 1)] = FarmRegister.SEIZURES[nth]
+	for country: StringName in WorldRegister.COUNTRIES:
+		bills[String(country)] = WorldRegister.price(country)
+	bills["the last farm square"] = {coins = FarmScreen.plot_price_of(FarmScreen.MAX_PLOTS - 1)}
+	for id: String in bills:
+		for currency: String in top:
+			assert_int(bills[id].get(currency, 0)).override_failure_message("%s costs more %s than can ever be held" % [id, currency]) \
+					.is_less_equal(top[currency])
+
+
+func test_everything_needed_before_chapter_3_is_affordable_under_the_starting_limits() -> void:
+	var save := SaveGame.new()
+	# Every desk card up to chapter 2's last one, then the card that opens chapter 3 and the cash card.
+	var ids: Array = UpgradeDesk.CARDS.map(func(card: Dictionary) -> String: return card.id)
+	assert_int(ids.find("cash_holding")).is_equal(ids.find("consolidation") + 2)
+	for card: Dictionary in UpgradeDesk.CARDS.slice(0, ids.find("big_ideas") + 1):
+		var bill := UpgradeDesk.costs(card)
+		assert_int(bill.get("coins", 0)).override_failure_message(card.id).is_less_equal(save.coin_limit)
+		assert_int(bill.get("findings", 0)).override_failure_message(card.id).is_less_equal(save.findings_limit)
+	# The whole storage chain (the last card is paid in more cabbages than the depot holds), and every
+	# projector node a card waits for.
+	var needed: Array = UpgradeDesk.CARDS.filter(func(card: Dictionary) -> bool: return card.has("tree")).map(func(card: Dictionary) -> String: return card.tree)
+	assert_array(needed).is_not_empty()
+	for node: Dictionary in Projector.NODES:
+		if node.get("add", {}).has("storage_cap") or node.id in needed:
+			assert_int(node.price).override_failure_message(node.id).is_less_equal(save.coin_limit)
+
+
+func test_chapter_3_never_asks_for_more_than_the_limit_its_cards_so_far_allow() -> void:
+	# The cash card comes right after the card that opens chapter 3, before the wide sheet and the
+	# first farm ($60,000); the archive card before CONDENSE and CH2's dearer nodes.
+	var ids: Array = UpgradeDesk.CARDS.map(func(card: Dictionary) -> String: return card.id)
+	assert_int(ids.find("cash_holding")).is_equal(ids.find("market_intelligence") + 1)
+	assert_array(UpgradeDesk.card_data("big_ideas").needs).contains(["cash_holding"])
+	assert_array(UpgradeDesk.card_data("archive_capacity").needs).contains(["big_ideas"])
+	assert_array(UpgradeDesk.card_data("condense").needs).contains(["archive_capacity"])
+	var start := SaveGame.new()
+	assert_int(FarmRegister.PRICES[0].coins).is_greater(start.coin_limit)
+	assert_int(FarmRegister.PRICES[0].coins).is_less_equal(start.coin_limit * UpgradeDesk.LIMIT_RAISE)
+	# The projector's steps wait for the wide sheet, CH2's for the archive card.
+	assert_array(Projector.node_data("coin_limit_1").needs).contains(["big_ideas"])
+	assert_array(FarmTree.node_data("archive_1").needs).contains(["archive_capacity"])
+	# Every card of the chapter is covered by the limit the chain has reached when it is dealt: the
+	# cards' own x5, then (from the wide sheet on) every projector and CH2 step, each affordable in turn.
+	var save := SaveGame.new()
+	for card: Dictionary in UpgradeDesk.CARDS.slice(ids.find("market_intelligence")):
+		if card.id == "condense":  # The wide sheet and CH2's archive branch are open: the ladders can be climbed.
+			save.coin_limit = _climb("coin_limit").coin_limit
+			save.findings_limit = _climb("findings_limit").findings_limit
+		var bill := UpgradeDesk.costs(card)
+		assert_int(bill.get("coins", 0)).override_failure_message(card.id).is_less_equal(save.coin_limit)
+		assert_int(bill.get("findings", 0)).override_failure_message(card.id).is_less_equal(save.findings_limit)
+		UpgradeDesk.apply(card.id, save)
+
+
+func test_every_farm_of_the_world_can_be_owned_and_stars_is_reachable() -> void:
+	# From the world map card on, under the top limits and the biggest store: whatever can be paid
+	# with a full purse, a full archive and a full store (less a full mat of condensed cabbages) is
+	# taken, until nothing more can be. The whole chain has to come out of that.
+	var save := _climb("coin_limit")
+	save.findings_limit = _climb("findings_limit").findings_limit
+	save.storage_cap = SaveGame.new().storage_cap
+	var condensed := 2
+	for node: Dictionary in Projector.NODES:
+		save.storage_cap += int(node.get("add", {}).get("storage_cap", 0))
+		condensed += int(node.get("add", {}).get("condense", 0))
+	var out := Vector2i(Projector.MAT_MAX * condensed, 0)
+	var ids: Array = UpgradeDesk.CARDS.map(func(card: Dictionary) -> String: return card.id)
+	save.stamped = PackedStringArray(ids.slice(0, ids.find("world_map") + 1))
+	save.farms_owned = PackedStringArray(["K-1", "K-2", "K-3", "K-4", "K-5"])
+	var order := []  # What happened, in order.
+	var moved := true
+	while moved:
+		moved = false
+		save.coins = save.coin_limit
+		save.findings = save.findings_limit
+		save.stock = save.storage_cap
+		for site: String in WorldRegister.farm_ids(WorldRegister.HOME):
+			if not moved and FarmRegister.buy(save, StringName(site), out):
+				order.append(site)
+				moved = true
+		for id: String in UpgradeDesk.next_cards(save.stamped, 1, save):
+			var bill := UpgradeDesk.costs(UpgradeDesk.card_data(id))
+			if not moved and UpgradeDesk.affords(save, bill, out):
+				for paid_in: String in bill:
+					UpgradeDesk.pay(save, paid_in, bill[paid_in], out)
+				save.stamped.append(id)
+				UpgradeDesk.apply(id, save)
+				order.append(id)
+				moved = true
+		for country: StringName in WorldRegister.COUNTRIES:
+			if not moved and WorldRegister.take(save, country, out):
+				order.append(String(country))
+				moved = true
+	assert_int(save.farms_owned.size()).is_equal(UpgradeDesk.Events.FARMS)
+	assert_bool(UpgradeDesk.Events.chapter_3_done(save)).is_true()
+	assert_array(order.slice(0, 4)).is_equal(["K-6", "K-7", "K-8", "no_taxes"])  # The country, then its first law.
+	assert_str(order[-1]).is_equal("stars")
+	assert_str(order[-2]).is_equal("endmark")  # The final island falls last.
+	# Nothing across the water before the sea lanes.
+	for country: String in ["grauland", "lower_provinces", "morrow", "nordhal", "endmark"]:
+		assert_int(order.find(country)).override_failure_message(country).is_greater(order.find("sea_lanes"))
+	for country: String in ["ostrevia", "veldmark", "sulvania"]:
+		assert_int(order.find(country)).override_failure_message(country).is_between(0, order.find("grauland"))

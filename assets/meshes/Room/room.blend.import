@@ -61,6 +61,11 @@ _subresources={
 "use_external/fallback_path": "res://assets/materials/room_wall.tres",
 "use_external/path": "uid://bdpdfljw35ms4"
 },
+"room_wall_map": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/materials/room_wall_map.tres",
+"use_external/path": "res://assets/materials/room_wall_map.tres"
+},
 "room_window": {
 "use_external/enabled": true,
 "use_external/fallback_path": "res://assets/materials/room_window.tres",

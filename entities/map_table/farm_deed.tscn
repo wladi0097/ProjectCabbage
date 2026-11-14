@@ -1,0 +1,713 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/farm_deed.gd" id="1_deed"]
+[ext_resource type="Shader" path="res://assets/shaders/map_sheet.gdshader" id="2_shader"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_pickup_1.wav" id="sfx_card_pickup_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_pickup_2.wav" id="sfx_card_pickup_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_pickup_3.wav" id="sfx_card_pickup_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_stamp_1.wav" id="sfx_press_stamp_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_stamp_2.wav" id="sfx_press_stamp_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_denied_1.wav" id="sfx_press_denied_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_denied_2.wav" id="sfx_press_denied_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_roll.wav" id="sfx_deed_roll"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_1.wav" id="sfx_tally_tick_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tally_tick_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tally_tick_3.wav" id="sfx_tally_tick_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/projector_approve.wav" id="sfx_projector_approve"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_1.wav" id="sfx_coin_deposit_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_2.wav" id="sfx_coin_deposit_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_deposit_3.wav" id="sfx_coin_deposit_3"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_slide"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_card_pickup_1")
+stream_1/stream = ExtResource("sfx_card_pickup_2")
+stream_2/stream = ExtResource("sfx_card_pickup_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_strike"]
+random_pitch = 1.03
+random_volume_offset_db = 1.0
+streams_count = 2
+stream_0/stream = ExtResource("sfx_press_stamp_1")
+stream_1/stream = ExtResource("sfx_press_stamp_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_denied"]
+random_pitch = 1.05
+random_volume_offset_db = 1.0
+streams_count = 2
+stream_0/stream = ExtResource("sfx_press_denied_1")
+stream_1/stream = ExtResource("sfx_press_denied_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_dial"]
+random_pitch = 1.05
+random_volume_offset_db = 1.0
+streams_count = 3
+stream_0/stream = ExtResource("sfx_tally_tick_1")
+stream_1/stream = ExtResource("sfx_tally_tick_2")
+stream_2/stream = ExtResource("sfx_tally_tick_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_agreed"]
+random_pitch = 1.05
+random_volume_offset_db = 1.0
+streams_count = 3
+stream_0/stream = ExtResource("sfx_coin_deposit_1")
+stream_1/stream = ExtResource("sfx_coin_deposit_2")
+stream_2/stream = ExtResource("sfx_coin_deposit_3")
+
+[sub_resource type="StyleBoxFlat" id="FrameLine"]
+draw_center = false
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.11, 0.125, 0.118, 1)
+
+[sub_resource type="StyleBoxFlat" id="BoxLine"]
+bg_color = Color(0.77, 0.74, 0.62, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.11, 0.125, 0.118, 1)
+
+[sub_resource type="StyleBoxFlat" id="BoxLineHot"]
+bg_color = Color(0.92, 0.9, 0.8, 1)
+border_width_left = 9
+border_width_top = 9
+border_width_right = 9
+border_width_bottom = 9
+border_color = Color(0.416, 0.169, 0.157, 1)
+
+[sub_resource type="StyleBoxFlat" id="ImprintLine"]
+draw_center = false
+border_width_left = 8
+border_width_top = 8
+border_width_right = 8
+border_width_bottom = 8
+border_color = Color(0.416, 0.169, 0.157, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="PlaneMesh" id="DeedPlane"]
+size = Vector2(0.82, 1.04)
+subdivide_width = 1
+subdivide_depth = 95
+center_offset = Vector3(0, 0, 0.52)
+
+[sub_resource type="ShaderMaterial" id="DeedMat"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/open = 1.0
+shader_parameter/sheet_length = 1.04
+shader_parameter/core = 0.02
+shader_parameter/pitch = 0.006
+shader_parameter/lift = 0.0
+shader_parameter/back_color = Color(0.66, 0.63, 0.53, 1)
+
+[sub_resource type="StandardMaterial3D" id="Iron"]
+albedo_color = Color(0.34, 0.37, 0.36, 1)
+metallic = 0.2
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Bakelite"]
+albedo_color = Color(0.3, 0.12, 0.11, 1)
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="HeadBlock"]
+material = SubResource("Iron")
+size = Vector3(0.27, 0.07, 0.2)
+
+[sub_resource type="CylinderMesh" id="HeadNeck"]
+material = SubResource("Iron")
+top_radius = 0.035
+bottom_radius = 0.05
+height = 0.16
+radial_segments = 16
+
+[sub_resource type="SphereMesh" id="HeadKnob"]
+material = SubResource("Bakelite")
+radius = 0.075
+height = 0.12
+radial_segments = 20
+rings = 10
+
+[sub_resource type="StandardMaterial3D" id="RingMat"]
+resource_local_to_scene = true
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.93, 0.94, 0.9, 0)
+
+[sub_resource type="TorusMesh" id="RingMesh"]
+inner_radius = 0.2
+outer_radius = 0.225
+rings = 48
+ring_segments = 4
+
+[node name="FarmDeed" type="Node3D"]
+visible = false
+script = ExtResource("1_deed")
+hot_box = SubResource("BoxLineHot")
+
+[node name="Page" type="SubViewport" parent="."]
+disable_3d = true
+size = Vector2i(820, 1040)
+render_target_update_mode = 1
+
+[node name="Form" type="Control" parent="Page"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 820.0
+offset_bottom = 1040.0
+mouse_filter = 2
+
+[node name="Paper" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_right = 820.0
+offset_bottom = 1040.0
+mouse_filter = 2
+color = Color(0.85, 0.82, 0.7, 1)
+
+[node name="Frame" type="Panel" parent="Page/Form"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 798.0
+offset_bottom = 1018.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="FormLine" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 36.0
+offset_right = 776.0
+offset_bottom = 84.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 42
+text = "FORM 3-D  DEED OF TRANSFER"
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 92.0
+offset_right = 776.0
+offset_bottom = 262.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 76
+theme_override_constants/line_spacing = -10
+text = "Weiler Marsh Holding"
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Site" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 264.0
+offset_right = 776.0
+offset_bottom = 312.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 42
+text = "FARM SITE K-5"
+vertical_alignment = 1
+
+[node name="Rule1" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 322.0
+offset_right = 776.0
+offset_bottom = 326.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="PriceHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 334.0
+offset_right = 776.0
+offset_bottom = 374.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "PURCHASE PRICE"
+vertical_alignment = 1
+
+[node name="Asked" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 380.0
+offset_top = 334.0
+offset_right = 776.0
+offset_bottom = 374.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "ASKED $200,000"
+visible = false
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Coins" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 372.0
+offset_right = 430.0
+offset_bottom = 458.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 70
+text = "$5,000,000"
+vertical_alignment = 1
+
+[node name="CoinsShort" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 420.0
+offset_top = 372.0
+offset_right = 768.0
+offset_bottom = 458.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.9, 0.12, 0.08, 1)
+theme_override_font_sizes/font_size = 36
+text = "SHORT $4,999,000"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Cabbages" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 456.0
+offset_right = 430.0
+offset_bottom = 542.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 70
+text = "9,000 cabbages"
+vertical_alignment = 1
+
+[node name="CabbagesShort" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 420.0
+offset_top = 456.0
+offset_right = 768.0
+offset_bottom = 542.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.9, 0.12, 0.08, 1)
+theme_override_font_sizes/font_size = 36
+text = "SHORT 9,000"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Rule2" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 552.0
+offset_right = 776.0
+offset_bottom = 556.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Offer" type="Control" parent="Page/Form"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 44.0
+offset_top = 566.0
+offset_right = 484.0
+offset_bottom = 766.0
+mouse_filter = 2
+
+[node name="Mood" type="Control" parent="Page/Form"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 500.0
+offset_top = 566.0
+offset_right = 776.0
+offset_bottom = 766.0
+mouse_filter = 2
+
+[node name="Head" type="Label" parent="Page/Form/Offer"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = -8.0
+offset_right = 355.0
+offset_bottom = 36.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "CABBAGES OFFERED"
+vertical_alignment = 1
+
+[node name="Round" type="Label" parent="Page/Form/Offer"]
+layout_mode = 0
+offset_left = 355.0
+offset_top = -8.0
+offset_right = 440.0
+offset_bottom = 36.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "1 / 5"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Less" type="Panel" parent="Page/Form/Offer"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 48.0
+offset_right = 80.0
+offset_bottom = 128.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxLine")
+
+[node name="Word" type="Label" parent="Page/Form/Offer/Less"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 80.0
+offset_bottom = 80.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 60
+text = "<"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Value" type="Panel" parent="Page/Form/Offer"]
+layout_mode = 0
+offset_left = 88.0
+offset_top = 48.0
+offset_right = 352.0
+offset_bottom = 128.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="Number" type="Label" parent="Page/Form/Offer/Value"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 264.0
+offset_bottom = 80.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 56
+text = "$150,000"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="More" type="Panel" parent="Page/Form/Offer"]
+layout_mode = 0
+offset_left = 360.0
+offset_top = 48.0
+offset_right = 440.0
+offset_bottom = 128.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxLine")
+
+[node name="Word" type="Label" parent="Page/Form/Offer/More"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 80.0
+offset_bottom = 80.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 60
+text = ">"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Submit" type="Panel" parent="Page/Form/Offer"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 136.0
+offset_right = 440.0
+offset_bottom = 200.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxLine")
+
+[node name="Word" type="Label" parent="Page/Form/Offer/Submit"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 440.0
+offset_bottom = 64.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "SUBMIT OFFER"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Closed" type="Label" parent="Page/Form/Offer"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 48.0
+offset_right = 440.0
+offset_bottom = 200.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 44
+text = "NO FURTHER OFFERS"
+visible = false
+autowrap_mode = 2
+vertical_alignment = 1
+
+[node name="Head" type="Label" parent="Page/Form/Mood"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = -8.0
+offset_right = 276.0
+offset_bottom = 36.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "OWNER'S MOOD"
+vertical_alignment = 1
+
+[node name="Imprint" type="Panel" parent="Page/Form/Mood"]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_top = 60.0
+offset_right = 276.0
+offset_bottom = 172.0
+rotation = -0.1
+pivot_offset = Vector2(133, 56)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("ImprintLine")
+
+[node name="Word" type="Label" parent="Page/Form/Mood/Imprint"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 266.0
+offset_bottom = 112.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 42
+text = "UNIMPRESSED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Divider" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 491.0
+offset_top = 556.0
+offset_right = 493.0
+offset_bottom = 776.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Rule3" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 776.0
+offset_right = 776.0
+offset_bottom = 780.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="SmallPrint" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 790.0
+offset_right = 484.0
+offset_bottom = 1000.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "The seller confirms that the transfer is voluntary."
+vertical_alignment = 2
+autowrap_mode = 2
+
+[node name="Log" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 786.0
+offset_right = 484.0
+offset_bottom = 1004.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "$150,000  CONSIDERED"
+visible = false
+theme_override_constants/line_spacing = -9
+vertical_alignment = 0
+
+[node name="Reason" type="Label" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 44.0
+offset_top = 790.0
+offset_right = 776.0
+offset_bottom = 1000.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 46
+text = "The owners will need persuading."
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Box" type="Panel" parent="Page/Form"]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 790.0
+offset_right = 780.0
+offset_bottom = 1000.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxLine")
+
+[node name="Word" type="Label" parent="Page/Form/Box"]
+layout_mode = 0
+offset_left = 20.0
+offset_right = 260.0
+offset_bottom = 210.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 0.6)
+theme_override_font_sizes/font_size = 44
+text = "STAMP HERE"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Imprint" type="Panel" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 486.0
+offset_top = 836.0
+offset_right = 794.0
+offset_bottom = 954.0
+rotation = -0.14
+pivot_offset = Vector2(154, 59)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("ImprintLine")
+
+[node name="Word" type="Label" parent="Page/Form/Imprint"]
+layout_mode = 0
+offset_right = 308.0
+offset_bottom = 118.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 62
+text = "ACQUIRED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Strip" type="ColorRect" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = -60.0
+offset_top = 400.0
+offset_right = 880.0
+offset_bottom = 560.0
+rotation = -0.17
+pivot_offset = Vector2(470, 80)
+mouse_filter = 2
+color = Color(0.416, 0.169, 0.157, 1)
+
+[node name="Word" type="Label" parent="Page/Form/Strip"]
+layout_mode = 0
+offset_right = 940.0
+offset_bottom = 160.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.9, 0.89, 0.84, 1)
+theme_override_font_sizes/font_size = 96
+text = "NOT FOR SALE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Paper" type="MeshInstance3D" parent="."]
+gi_mode = 0
+extra_cull_margin = 0.3
+mesh = SubResource("DeedPlane")
+material_override = SubResource("DeedMat")
+
+[node name="Stamp" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.23, 0, 0.895)
+visible = false
+
+[node name="Head" type="MeshInstance3D" parent="Stamp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, 0)
+gi_mode = 0
+mesh = SubResource("HeadBlock")
+
+[node name="Neck" type="MeshInstance3D" parent="Stamp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+gi_mode = 0
+mesh = SubResource("HeadNeck")
+
+[node name="Knob" type="MeshInstance3D" parent="Stamp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+gi_mode = 0
+mesh = SubResource("HeadKnob")
+
+[node name="Ring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.23, 0.004, 0.895)
+visible = false
+gi_mode = 0
+cast_shadow = 0
+mesh = SubResource("RingMesh")
+surface_material_override/0 = SubResource("RingMat")
+
+[node name="Slide" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_slide")
+pitch_scale = 0.8
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Strike" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_strike")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Denied" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_denied")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+min_interval = 0.15
+
+[node name="Roll" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_deed_roll")
+volume_db = -6.0
+pitch_scale = 1.25
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Dial" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_dial")
+pitch_scale = 1.15
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="MoodStamp" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_projector_approve")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Agreed" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_agreed")
+volume_db = -4.0
+bus = &"SFX"
+script = ExtResource("sfx_cue")

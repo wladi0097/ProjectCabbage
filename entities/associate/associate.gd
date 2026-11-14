@@ -19,6 +19,10 @@ extends Node3D
 ## units first and money hands leave them alone.
 ## Golden units are the player's: no hand touches one until the projector node for its kind is bought
 ## (GOLD_SALE for money hands, GOLD_LAB for research hands; takes_golden).
+## With TWO-HANDED POLICY (save.hand_trip 2) a money hand that has thrown goes straight for a second
+## cabbage from where it stands, and only then back to its spot (throws_again).
+## The HANDLING ASSIGNMENT SCHEDULE (entities/hand_schedule/) can strike cabbage kinds for either
+## kind of hand: a hand never takes a struck kind (pick_target `forbidden`, struck).
 
 enum Phase { IDLE, REACH, TAKE, CARRY, FOLLOW, FLINCH, WITHDRAW }
 
@@ -122,6 +126,8 @@ var _aim := Vector3.ZERO
 var _binning := false
 var _lob := LOB_TIME
 var _lifted := false
+## Cabbages thrown on this trip (save.hand_trip of them before it goes home).
+var _thrown := 0
 ## The carried cabbage's collision layer and mask, off while it is carried so it shoves nothing.
 var _layers := Vector2i.ZERO
 var _time := 0.0
@@ -167,7 +173,7 @@ func _process(delta: float) -> void:
 		Phase.REACH, Phase.TAKE, Phase.CARRY when snatched(_target, Hand.held):
 			_flinch()
 		Phase.REACH, Phase.TAKE:
-			if gives_up(_target, Hand.held):
+			if gives_up(_target, Hand.held) or struck(_target, SaveManager.save, research):
 				_withdraw()
 			elif _phase == Phase.REACH and _move(_target.global_position + Vector3.UP * (GRIP + HOVER), REACH_SPEED, delta):
 				_phase = Phase.TAKE
@@ -192,7 +198,9 @@ func _process(delta: float) -> void:
 			return
 		Phase.FOLLOW:
 			if _move(_release + Vector3(0.0, GRIP, -FOLLOW_THROUGH), CARRY_SPEED, delta):
-				_withdraw()
+				# TWO-HANDED POLICY: on for the next cabbage from here; none to take, it goes home.
+				if not throws_again(_thrown, SaveManager.save.hand_trip, research) or not _pick(_tip):
+					_withdraw()
 		Phase.WITHDRAW:
 			if _move(_entry, WITHDRAW_SPEED, delta):
 				_phase = Phase.IDLE
@@ -223,14 +231,16 @@ static func add_hand(save: SaveGame) -> void:
 ## not flying, not stray; and not rotten while `skip_rotten` (the spoilage memo, before hands bin).
 ## A `for_research` hand never takes a rotten one. Under `lab` (desk card lab_priority) money hands never
 ## take research units and research hands take them first. A golden one only while `golden` (takes_golden).
+## Never one whose kind is in `forbidden` (the handling schedule's list for this kind of hand,
+## HandSchedule.forbidden): the schedule only takes away, on top of every rule above.
 static func pick_target(cabbages: Array, from: Vector3, held: Interactable, claimed: Array = [], skip_rotten := false,
-		for_research := false, lab := false, golden := false) -> Cabbage:
+		for_research := false, lab := false, golden := false, forbidden := PackedStringArray()) -> Cabbage:
 	var best: Cabbage = null
 	var best_score := INF
 	for cabbage: Cabbage in cabbages:
 		var interactable := cabbage.get_node("Interactable") as Interactable
 		if claimed.has(cabbage) or ((skip_rotten or for_research) and cabbage.rotten) or (lab and not for_research and cabbage.research) \
-				or (cabbage.golden and not golden) \
+				or (cabbage.golden and not golden) or forbidden.has(HandSchedule.kind_of(cabbage)) \
 				or cabbage.sold or cabbage.away or cabbage.freeze or cabbage.in_flight or not interactable.enabled \
 				or held == interactable or cabbage.linear_velocity.length() > REST_SPEED \
 				or SaleWindow.is_stray(cabbage.global_position):
@@ -255,6 +265,12 @@ static func gives_up(target: Variant, held: Interactable) -> bool:
 	var cabbage := target as Cabbage
 	return cabbage.sold or cabbage.away or cabbage.freeze \
 			or held == cabbage.get_node("Interactable") or SaleWindow.is_stray(cabbage.global_position)
+
+
+## The handling schedule now forbids this kind of hand (`for_research`: a lab hand) the cabbage it is
+## reaching for: struck on the paper while the hand was on its way. It lets it lie.
+static func struck(target: Variant, save: SaveGame, for_research: bool) -> bool:
+	return is_instance_valid(target) and HandSchedule.forbidden(save, for_research).has(HandSchedule.kind_of(target as Cabbage))
 
 
 ## The bin a hand throws `target` into: only a rotten unit, once hands_bin is bought and the bin is
@@ -322,12 +338,27 @@ func _staff() -> void:
 	_staffed = have
 
 
+## Whether a hand that has `thrown` cabbages on this trip takes another before going home: a money
+## hand, until it has thrown `per_trip` (save.hand_trip). Research hands always go home.
+static func throws_again(thrown: int, per_trip: int, for_research: bool) -> bool:
+	return not for_research and thrown < per_trip
+
+
 func _set_off() -> void:
 	var save := SaveManager.save
 	var visible_hands := MAX_RESEARCH if research else MAX_VISIBLE
 	# Past the visible ones the visible hands share the extra hands' trips.
 	_wait = save.associate_interval * minf(1.0, float(visible_hands) / _hired()) / save.hand_output \
 			* randf_range(1.0 - WAIT_JITTER, 1.0 + WAIT_JITTER)
+	_thrown = 0
+	if not _pick(_entry):
+		_wait = RETRY
+
+
+## Goes for the nearest cabbage to `from` it may take (pick_target): aims and starts reaching. False
+## if there is none, or a research hand has no free bench.
+func _pick(from: Vector3) -> bool:
+	var save := SaveManager.save
 	var claimed := []
 	var lab_trips := 0
 	for other: Associate in get_tree().get_nodes_in_group(&"associates"):
@@ -337,19 +368,17 @@ func _set_off() -> void:
 	var bay := get_tree().get_first_node_in_group(&"qa_bay") as QaBay
 	# A research hand only sets off for a free bench nobody else is already carrying a unit to.
 	if research and (bay == null or not bay.has_room() or lab_trips >= save.qa_slots):
-		_wait = RETRY
-		return
-	_target = pick_target(get_tree().get_nodes_in_group(&"cabbages"), _entry, Hand.held, claimed, skips_rotten(save),
-			research, save.stamped.has("lab_priority"), takes_golden(save, research))
+		return false
+	_target = pick_target(get_tree().get_nodes_in_group(&"cabbages"), from, Hand.held, claimed, skips_rotten(save),
+			research, save.stamped.has("lab_priority"), takes_golden(save, research), HandSchedule.forbidden(save, research))
 	if _target == null:
-		_wait = RETRY
-		return
+		return false
 	if research:
 		_aim = bay_aim(bay.mouth(), randf_range(-1, 1))
 		_release = bay.mouth() + RESEARCH_RELEASE
 		_lob = BAY_LOB
 		_phase = Phase.REACH
-		return
+		return true
 	var bin := bin_for(_target, save.hands_bin, get_tree().get_first_node_in_group(&"rotten_bin") as RottenBin)
 	_binning = bin != null
 	if bin != null:
@@ -360,6 +389,7 @@ func _set_off() -> void:
 		_release = Vector3(_aim.x + randf_range(-0.1, 0.1), RELEASE_Y, RELEASE_Z)
 	_lob = LOB_TIME + randf_range(-LOB_JITTER, LOB_JITTER)
 	_phase = Phase.REACH
+	return true
 
 
 ## Closes on it: the cabbage is out of the physics while carried, but the player can still grab it.
@@ -379,6 +409,7 @@ func _throw() -> void:
 	var from := _target.global_position
 	_let_go()
 	_target.lobbed = true
+	_thrown += 1
 	_target.linear_velocity = Feeder.ballistic_velocity(from, _aim, _lob)
 	if _binning:
 		_target.aim_for_bin(_lob + 0.5)

@@ -1,5 +1,5 @@
 # Project Cabbage main desk: a big corporate executive desk + the cabbage mat (desk blotter).
-# Godot top y = 0.75, main top x -2.0..3.2 plus an L wing to x -3.4 (see WING), z -0.75..1.25. Blender Z-up, Blender y = -Godot z,
+# Godot top y = 0.75, main top x -2.0..3.2, z -0.75..1.25, plus an L wing on the left (WX0..) and a right part (..RX1): a U. Blender Z-up, Blender y = -Godot z,
 # so the top spans Blender y -1.25 (front) .. 0.75 (back, against the wall at y 0.80).
 # Objects: "Table" (table_wood, table_steel) origin on the floor under the top's centre,
 # Blender (0, -0.25, 0) = Godot (0, 0, 0.25); "cabbage_mat" (table_mat) origin at the mat's
@@ -33,14 +33,22 @@ WX0 = -4.6                                 # left edge of the L (Godot x)
 AX1 = WX0 + (Y1 - Y0)                      # the arm's inner edge: the arm is as wide as the main top is deep
 AY0 = -3.0                                 # the arm's front end (Godot z 3.0, past the desk view)
 CH = X0 - Y0                               # x - y on the chamfer, from (X0, Y0) to (AX1, Y0 - (X0 - AX1))
+# U desk (2026-11-13, chapter 3's map area): the top also carries on right of X1 to RX1 at full depth, and an arm
+# runs from there toward the camera to RAY0 (Godot z 4.0), its inner edge at RAX0; a 45 degree chamfer joins the
+# main top's front edge (at X1) to it. Its boards run along y (toward the camera), across the main top's, butt-
+# jointed to them at X1; their grain is turned with them (UVs below). Backing and steel band run round the U.
+RX1 = 5.8                                  # right edge of the U (Godot x)
+RAX0 = 3.5                                 # the right arm's inner edge
+RAY0 = -4.0                                # the right arm's front end (Godot z 4.0)
+RCH = X1 + Y0                              # x + y on the right chamfer, from (X1, Y0) to (RAX0, RCH - RAX0)
 y = Y0 + EB
 inner = (Y1 - EB) - y
 widths = [w * inner / sum(widths) for w in widths]
 for i, w in enumerate(widths):
-    xs = [WX0 + EB] + ([joints[i]] if i in joints else []) + [X1 - EB]
+    xs = [WX0 + EB] + ([joints[i]] if i in joints else []) + [X1]   # butt joint with the right part at X1
     for a, b in zip(xs, xs[1:]):
         lo = (a + (gap / 2 if a > X0 + EB + 0.01 else 0), y + gap / 2, TOP - THICK)
-        hi = (b - (gap / 2 if b < X1 - EB - 0.01 else 0), y + w - gap / 2, TOP)
+        hi = (b - gap / 2, y + w - gap / 2, TOP)
         part_box(bm, lo, hi, 0.003, 0)
         pieces.append((lo[0], hi[0], lo[1], hi[1]))
     y += w
@@ -48,7 +56,7 @@ for i, w in enumerate(widths):
 part_box(bm, (WX0 + 0.03, Y0 + 0.03, TOP - THICK - 0.012), (X1 - 0.03, Y1 - 0.03, TOP - 0.03), 0.0, 0)
 
 # Steel edge band around the whole top: chunky, rounded, flush with the wood at TOP.
-band = [((X0, Y0), (X1, Y0 + EB)), ((WX0, Y1 - EB), (X1, Y1)), ((X1 - EB, Y0 + EB), (X1, Y1 - EB))]
+band = [((X0, Y0), (X1, Y0 + EB)), ((WX0, Y1 - EB), (RX1, Y1))]   # front, back (round the U); no band at X1
 for (ax, ay), (bx, by) in band:
     part_box(bm, (ax, ay, TOP - THICK - 0.006), (bx, by, TOP), 0.005, 1)
 
@@ -116,6 +124,31 @@ for x, z in ((WX0 + 0.1, -0.65), (WX0 + 0.1, -AY0 - 0.1), (AX1 - 0.1, -AY0 - 0.1
     part_box(bm, (x - 0.035, -z - 0.035, 0.0), (x + 0.035, -z + 0.035, TOP - THICK), 0.01, 1)
 part_box(bm, (WX0 + 0.1, 0.6, 0.25), (X0, 0.62, TOP - THICK), 0.006, 1)  # modesty panel along the back
 
+# The U's right part (2026-11-13): five boards along y from X1 to the outer band, the first cut by the inset chamfer
+# and the arm's inner band. Backing, band, legs and modesty panel as on the L.
+RCHY = RCH - RAX0                          # where the chamfer meets the arm's inner edge
+RI = RCH + EB * R2                         # x + y on the chamfer band's inner edge
+R_BOARDS = 5
+r_w = (RX1 - EB - X1) / R_BOARDS
+for k in range(R_BOARDS):
+    a, b = X1 + k * r_w + gap / 2, X1 + (k + 1) * r_w - (gap / 2 if k < R_BOARDS - 1 else 0)
+    if k == 0:
+        plan_slab(bm, [(a, Y1 - EB), (a, RI - a), (RAX0 + EB, RI - RAX0 - EB), (RAX0 + EB, RAY0 + EB),
+                       (b, RAY0 + EB), (b, Y1 - EB)], TOP - THICK, TOP, 0.003, 0)
+    else:
+        part_box(bm, (a, RAY0 + EB, TOP - THICK), (b, Y1 - EB, TOP), 0.003, 0)
+    pieces.append((a, b, RAY0 + EB, Y1 - EB))
+RB = RCH + 0.03 * R2                       # backing board, 3 cm in from the chamfer
+plan_slab(bm, [(X1 - 0.03, Y1 - 0.03), (RX1 - 0.03, Y1 - 0.03), (RX1 - 0.03, RAY0 + 0.03), (RAX0 + 0.03, RAY0 + 0.03),
+               (RAX0 + 0.03, RB - RAX0 - 0.03), (RB - Y0 - 0.03, Y0 + 0.03), (X1 - 0.03, Y0 + 0.03)],
+          TOP - THICK - 0.012, TOP - 0.03, 0.0, 0)
+for lo, hi in (((RX1 - EB, RAY0 + EB), (RX1, Y1 - EB)), ((RAX0, RAY0), (RX1, RAY0 + EB)), ((RAX0, RAY0 + EB), (RAX0 + EB, RCHY))):
+    part_box(bm, (*lo, BZ), (*hi, TOP), 0.005, 1)
+plan_slab(bm, [(X1, Y0), (RAX0, RCHY), (RAX0 + EB, RCHY), (RAX0 + EB, RI - RAX0 - EB), (X1, RI - X1)], BZ, TOP, 0.005, 1)
+for x, z in ((RX1 - 0.1, -0.65), (RX1 - 0.1, -RAY0 - 0.1), (RAX0 + 0.1, -RAY0 - 0.1), (RAX0 + 0.1, -RCHY + 0.1)):  # steel legs
+    part_box(bm, (x - 0.035, -z - 0.035, 0.0), (x + 0.035, -z + 0.035, TOP - THICK), 0.01, 1)
+part_box(bm, (X1, 0.6, 0.25), (RX1 - 0.1, 0.62, TOP - THICK), 0.006, 1)  # modesty panel along the back
+
 ob = finish("Table", bm, [wood, steel], (0, CY, 0))
 
 # Offset each board's UVs so the grain never runs continuously across boards.
@@ -127,6 +160,9 @@ for p in me.polygons:
     c = ob.location + p.center
     if c.z < TOP - THICK - 0.005:
         continue
+    if c.x > X1 and abs(p.normal.z) > 0.5:   # the right part: boards (and grain) run along y
+        for li in p.loop_indices:
+            uv[li].uv = (uv[li].uv[1], uv[li].uv[0])
     for k, (a, b, lo, hi) in enumerate(pieces):
         if a <= c.x <= b and lo <= c.y <= hi:
             for li in p.loop_indices:

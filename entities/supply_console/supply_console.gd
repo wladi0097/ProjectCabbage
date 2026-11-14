@@ -17,6 +17,9 @@ extends Node3D
 ## full-sale price (crate_floor), whatever the ticker or the pack discount. The standing order then skips packs that would sell at a loss, and
 ## while the family farm has seeds or crops the bailout is off (the farm on the TV feeds the desk).
 ## Once the farm is in too, the squeeze: crates cost more than a sale brings, for good, and no bailout.
+## Chapter 3 (card market_intelligence, `retired`): the console is lifted off the desk and gone for
+## good: nothing is bought, by hand or by the standing order, and its price stops moving. The
+## FieldLine takes its spot (worlds/components/field_exchange.gd, after LIFT_TIME).
 
 const Slate := preload("res://entities/price_slate/price_slate.gd")
 
@@ -31,6 +34,8 @@ const NOISE := 0.25
 const HISTORY := 12
 const DROP_HEIGHT := 1.6
 const DROP_TIME := 0.45
+## Seconds the retired console takes to be lifted up and away.
+const LIFT_TIME := 0.45
 ## How far the button sinks along the slope normal (Godot space) when pressed.
 const PRESS_DEPTH := Vector3(0, -0.0115, -0.0034)
 ## A short beat, so the price drop reads as the desk answering, not a glitch. Checked every frame.
@@ -87,14 +92,19 @@ func _ready() -> void:
 			steps.append(randf_range(-NOISE, NOISE))
 		save.price_history = walk_back(save.price_factor, steps)
 	_show_price()
-	if not save.buy_unlocked:
+	if not save.buy_unlocked or retired(save):
 		visible = false
 		_button.enabled = false
+		_auto_switch.enabled = false
 		position = _rest + Vector3.UP * 10.0
 
 
 func _process(delta: float) -> void:
 	var save := SaveManager.save
+	if retired(save):
+		if visible and _button.enabled:
+			_lift_away()
+		return
 	if not save.buy_unlocked and save.sold >= UNLOCK_SALES:
 		save.buy_unlocked = true
 		_drop()
@@ -159,6 +169,8 @@ func _tick_price() -> void:
 ## A pack bought, by the standing order when `auto` (counted in save.packs_auto, else packs_manual).
 func _press(auto := false) -> void:
 	var save := SaveManager.save
+	if retired(save):
+		return
 	var cost := _cost()
 	if save.coins < cost or not fits(save.stock, save.pack_size, save.storage_cap):
 		$Denied.cue($Button.global_position)
@@ -228,6 +240,24 @@ func _drop() -> void:
 		$Thud.cue(global_position))
 	tween.tween_property($Model, "scale", Vector3(1.08, 0.86, 1.08), 0.06)
 	tween.tween_property($Model, "scale", Vector3.ONE, 0.25).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+
+
+## Whether the console is gone for good: chapter 3's market intelligence card is stamped.
+static func retired(save: SaveGame) -> bool:
+	return save.stamped.has("market_intelligence")
+
+
+## The retired console is lifted straight up off the desk and is gone (its own moment, before the
+## FieldLine lands: LIFT_TIME), with a steel scrape as it leaves the plinth (`Lift`).
+func _lift_away() -> void:
+	$Lift.cue(global_position)
+	_button.enabled = false
+	_auto_switch.enabled = false
+	var tween := create_tween()
+	tween.tween_property(self, "position", _rest + Vector3.UP * DROP_HEIGHT, LIFT_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func() -> void:
+		visible = false
+		position = _rest + Vector3.UP * 10.0)
 
 
 func _show_price() -> void:
