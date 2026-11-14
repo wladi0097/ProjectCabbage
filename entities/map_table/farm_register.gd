@@ -22,40 +22,55 @@ extends MapSheet
 ## The first farm is sold freely. The next four print NOT FOR SALE until their card is stamped
 ## (GATES: NEGOTIATION for the 2nd to 4th, BRIBERY for the 5th); then each can be haggled over on
 ## its deed before it is stamped (the negotiation, below). Any site can be the next one bought: the
-## price goes by how many farms are owned (PRICES).
+## price goes by how many farms are owned (PRICES), times the site's own worth (WORTH: land by the
+## head office or a big parcel dearer, far out cheaper).
 ## WAR takes what nobody sells, one farm at a time: at home the last three, abroad every farm
 ## (nothing is bought or haggled over abroad). Until the card WAR_CARD is stamped such a farm prints
-## NOT FOR SALE and its paper wears that strip. With it (war_ready) the paper is a WAR ORDER
-## (FarmDeed.FORMS): it prints what the war is expected to cost (WorldRegister.war_price) and its
-## stamp starts the war: nothing is paid, the sheet asks the table for the war sheet of that farm
-## (`sheet_wanted`), where the war is won or left (WarSheet). A farm that cannot be attacked yet
+## NOT FOR SALE and its paper wears that strip. With it (war_ready) the paper is a DECLARATION OF
+## WAR (FarmDeed.FORMS): the war's price in coins only (war_bill: WorldRegister.war_price), the
+## scouting view of the farm's fighting map (WAR_MAP) and one row per unit type the depot deals in with the
+## figures ready (save.army) and how many go ([-] n [+]: the spots FarmDeed.STAFF_LESS/MORE; all of
+## them at first). Its stamp declares the war (declare): the coins are paid, the chosen figures leave
+## save.army (`committed` keeps them for the war sheet) and the sheet asks the table for the war
+## sheet of that farm (`sheet_wanted`; MapTable hands them on: WarSheet.begin), where the war is won
+## or lost. Refused (the clunk, what is short blinks) short of coins or with nobody chosen. A farm
+## that cannot be attacked yet
 ## (WorldRegister.reach: no neighbouring country is wholly ours, or the sea is not open) gets the
 ## order with a strip saying why and no stamp box. Back from a war won, the table has the sheet
 ## play the farm's moment (expect, celebrate): the token's swap, the tag, the pattern, the lamp.
 ## The land (`Page/Sheet/Layers/Parcels`, assets/shaders/farm_parcels.gdshader): the art prints the
-## whole country in the cabbage pattern; the layer greys what is not the company's. A farm's parcel
-## is the land nearer to it than to any other site, out to PARCEL_RADIUS; the head office keeps its
-## own patch (head_office, at home). Once every farm of the country is ours the whole country shows
-## the pattern (as its overlay on the world sheet does). Owned parcels show from the save.
+## whole country in the cabbage pattern; the layer greys what is not the company's. The country's
+## land is split among its sites (and the head office, at home: company land from the start), each
+## parcel the land its site reaches first walking over land (tools/bake_parcels.gd bakes it once into
+## the material's `parcels` texture, with how far each pixel lies from its site). A farm taken spreads
+## the pattern from its token over its parcel (`progress`); with every farm ours the whole country
+## shows it (as its overlay on the world sheet does). Owned parcels show from the save.
 ## Owned sites show as owned from the save, without the moment (also farms from the debug key).
 ##
 ## The negotiation (decided with the user 2026-11-14; its numbers are provisional, paced in
 ## tools/pace.py: `python tools/pace.py haggle`). The deed of a farm behind a card shows the owner's
-## asking price (PRICES) and takes up to ROUNDS offers before it
+## asking price (asking: PRICES times WORTH) and takes up to ROUNDS offers before it
 ## is stamped; it may be stamped at any time at the price it then shows. An offer is cabbages from
-## stock put on the dial (ladder) and submitted; for the farm behind BRIBERY it is coins in an
-## envelope (tender). The owner has a number in mind (wanted: drawn per farm between HAGGLES' `low`
-## and `high`, dearer farms higher and wider; never shown, and fixed by the save's `created`, so a
-## reload cannot change it). What is offered is gone either way (offer). At least his number: the
+## stock, in bundles of `bundle` (HAGGLES), laid on the letter and sent; for the farm behind BRIBERY
+## it is coins in an envelope (tender). The owner (OWNERS names him) has a number in mind (wanted:
+## drawn per site between HAGGLES' `low` and `high`, dearer farms higher and wider, times the site's
+## WORTH: a dear site is harder to talk down; never shown, and fixed by the save's `created`, so a
+## reload cannot change it). Every owner keeps his own negotiation (haggle: the price his offers
+## left, the offers made), so all of them can be haggled with at once and a bad offer stays with
+## his farm. What is offered is gone either way (offer). At least his number: the
 ## price drops; less: it goes up (MOOD_STEP, in percent of the asking price, between PRICE_FLOOR
 ## and PRICE_CEILING; its coins and its cabbages move together, by the same percentage: price; the ceiling may be more than the purse holds, the next TREASURY step holds it). His mood is stamped on
 ## the deed after each offer and is the only clue (Mood, MOOD_FROM: the offer as a share of his
 ## number). After every offer that landed he wants GREED times as much. With the card RECOVER
-## (RECOVER REJECTED GOODS) RECOVERED of an offer that missed comes back. The offers made and the
-## price they left are in the save (haggle_offers, haggle_price) until the farm is bought.
-## On the sheet: the dial's `<` and `>` (LESS, MORE) turn it a notch, SUBMIT OFFER (OFFER) takes the
-## offer at once, the stamp comes down on the mood (as the purchase's, no click meanwhile) and the
-## price reprints as it lands.
+## (RECOVER REJECTED GOODS) RECOVERED of an offer that missed comes back. Each owner's offers and
+## price are in the save (save.haggles, by site) until a farm is bought; then every owner starts
+## over from his new asking price. He answers each offer with a typed line (reply: REPLIES, by mood).
+## On the sheet: START HAGGLING on the deed (HAGGLE) slides the negotiation letter over it
+## (NegotiationLetter in FarmDeed). A press on the crate (CRATE) takes a bundle into the hand, it
+## follows the mouse (drag) and is let go (release) on the offer (PILE) or back; a click on the
+## offer takes the nearest bundle back; SEND OFFER (SEND) sends what lies there: the pile goes, his
+## reply slip arrives and the stamp comes down on his mood (as the purchase's, no click
+## meanwhile), the price reprints as it lands; BACK TO THE DEED (RETURN) slides the letter away.
 ##
 ## The moments, each its own: hover (HOVER_TIME; MapTable's hover sound), the deed sliding in and
 ## away (FarmDeed Slide), the stamp (FarmDeed Strike), the token's swap (the jump JUMP_TIME, the
@@ -82,6 +97,20 @@ const PRICES: Array[Dictionary] = [
 	{coins = 1500000, stock = 5500},
 	{coins = 5000000, stock = 9000},
 ]
+## Each home site's price, times PRICES (coins and cabbages): by the head office or on a big parcel
+## dearer, far out cheaper. A player who buys the cheapest site first pays 0.7 to 1.0 for
+## the five that are sold, so the chapter keeps its pace (tools/pace.py ch3 mirrors it); the dearest
+## three are the ones left to war. Any site not listed: 1.0.
+const WORTH: Dictionary[StringName, float] = {
+	&"K-1": 1.4,  # Beside the head office.
+	&"K-2": 1.0,
+	&"K-3": 1.15,  # Near the head office, a small parcel.
+	&"K-4": 0.85,  # A small parcel.
+	&"K-5": 1.25,  # A big parcel.
+	&"K-6": 0.8,  # Far out, a small parcel.
+	&"K-7": 0.95,  # The biggest parcel, the furthest west.
+	&"K-8": 0.7,  # The furthest from the head office.
+}
 ## The desk card (UpgradeDesk) that allows war on a farm nobody sells.
 const WAR_CARD := "war_mode"
 ## From the stamp on a war order until the sheet asks for the war sheet (s): the stamp lifts first.
@@ -92,16 +121,47 @@ const GATES: Array[String] = ["", "negotiation", "negotiation", "negotiation", "
 ## The gate whose farm is haggled over in coins (a bribe), not in cabbages.
 const BRIBE := "bribery"
 ## The negotiation for the 1st .. 5th farm (none for the first): the owner's number for the first
-## offer lies between `low` and `high` (cabbages; coins for the bribe), and the dial starts at `least`.
+## offer lies between `low` and `high` (cabbages; coins for the bribe), and an offer is made of
+## bundles of `bundle` (a cabbage on the letter showing that count; a stack of coins), at most
+## NegotiationLetter.MOST of them: a typical offer is 3 to 10 bundles.
 ## PROVISIONAL (tools/pace.py haggle): a share of what one step off the price is worth at the deed's
 ## own rate (its coins per cabbage), wider with every farm.
 const HAGGLES: Array[Dictionary] = [
 	{},
-	{low = 35, high = 85, least = 30},
-	{low = 40, high = 160, least = 30},
-	{low = 50, high = 260, least = 40},
-	{low = 40000, high = 250000, least = 30000},
+	{low = 120, high = 176, bundle = 25},
+	{low = 190, high = 320, bundle = 50},
+	{low = 260, high = 546, bundle = 75},
+	{low = 200000, high = 480000, bundle = 125000},
 ]
+## Who owns each home site and answers the letters: one name per site, the same every time.
+const OWNERS: Dictionary[StringName, String] = {
+	&"K-1": "H. Wirsing",
+	&"K-2": "A. Krautmann",
+	&"K-3": "E. Strunk",
+	&"K-4": "O. Blattner",
+	&"K-5": "M. Kappes",
+	&"K-6": "W. Kohlhaas",
+	&"K-7": "R. Rübsam",
+	&"K-8": "G. Lattich",
+}
+## What an owner types back, by what was offered and his mood after it (Mood, worst first; keys):
+## each reply picks one of its mood's lines (reply). The line hints the way, never the number.
+const REPLIES := {
+	"stock": [
+		["Is this a joke? Double it.", "My grandfather planted these rows. I want more than this.", "I have framed better offers. Not many."],
+		["Closer. Not close.", "My accountant laughed. Briefly.", "More. Considerably more."],
+		["Almost. My accountant is listening.", "Nearly. Do not stop now.", "A little more and I stop pretending."],
+		["Acceptable. The price comes down.", "Fine. I will come down. Do not get used to it.", "My wife says yes. I say a smaller yes."],
+		["Fine. Sign before I change my mind.", "Generous. Suspiciously generous.", "You overpaid. I will not mention it again."],
+	],
+	"coins": [
+		["What envelope? I see no envelope.", "This must have fallen out of a very small pocket.", "I do not count anything this thin."],
+		["It is light. Paper weighs more.", "Weighed. Found wanting.", "The envelope is warm. The contents are not."],
+		["Considered. A heavier envelope is easier to consider.", "Nearly persuasive.", "Thicker envelopes close faster."],
+		["Understood. The price was a clerical error.", "I see we understand each other.", "The committee is satisfied. I am the committee."],
+		["Gratitude noted. The paperwork will be quick.", "Very generous. The file has been misplaced.", "My nephew will remember your name."],
+	],
+}
 ## Offers the owner hears per farm.
 const ROUNDS := 5
 ## After an offer that landed he wants this many times as much.
@@ -118,18 +178,20 @@ const PRICE_CEILING := 40
 ## The card that brings RECOVERED of a missed offer back.
 const RECOVER := "rejected_goods"
 const RECOVERED := 0.5
-## The dial's notches: these in every decade, LADDER of them from the farm's `least` up.
-const RUNGS: Array[int] = [10, 15, 20, 30, 40, 50, 75]
-const LADDER := 12
-## The spots of the laid-out deed's dial and its SUBMIT OFFER box (FarmDeed.BOXES).
-const LESS := &"deed_less"
-const MORE := &"deed_more"
-const OFFER := &"deed_offer"
+## The spots of the negotiation letter (NegotiationLetter.BOXES): the crate a bundle is taken from,
+## the offer it is laid on, SEND OFFER.
+const CRATE := &"deed_crate"
+const PILE := &"deed_pile"
+const SEND := &"deed_send"
+## The deed's START HAGGLING box and the letter's BACK TO THE DEED.
+const HAGGLE := &"deed_haggle"
+const RETURN := &"deed_return"
+## The pile carried off the paper on SEND (s, and m along the deed's way out); the reply slip comes
+## after it.
+const SEND_TIME := 0.3
+const SEND_AWAY := 0.6
 ## A site's click target on the art, around its centre (px): its disc and the two tags below it.
 const HIT := Rect2(-115, -90, 230, 285)
-## What the hint slip covers of the art (px): MapTable.SPOT_HINT_WIDTH and six lines at the map
-## camera, at about 1.75 art pixels a screen pixel (hint_pixel).
-const HINT_ROOM := Vector2(740, 400)
 ## The company's ink: the tag of an owned site.
 const OXBLOOD := Color(0.416, 0.169, 0.157)
 ## Hovered, a building stands this much bigger.
@@ -149,6 +211,9 @@ const PAPER_AFTER := 1.4
 const STAMP := &"deed_stamp"
 ## The sheet a stamped war order asks the table for (MapSheet.sheet_wanted).
 const WAR := &"war"
+## The fighting map a war on a farm is fought on (WarMap; the declaration's scouting view).
+## ponytail: every farm uses the test map until each has its own (entities/war/maps).
+const WAR_MAP := "res://entities/war/maps/test_map.tscn"
 ## The deed lies this far (px) beside its site's centre, at least DEED_MARGIN px inside the sheet's
 ## edges and DEED_LIFT m over the paper (clear of the tokens it covers); it slides in from DEED_FROM
 ## px further out in DEED_SLIDE_TIME s.
@@ -163,7 +228,7 @@ const COVER := 110.0
 const TUCK_TIME := 0.1
 ## The purchase, in order from the click on the stamp box (s): the stamp falls for STAMP_DROP_TIME
 ## and stays down HIT_PAUSE; then the token swaps, the stamp lifts (STAMP_LIFT_TIME) and the pattern
-## spreads over the parcel for PARCEL_TIME; LAMP_AFTER later the Field Line may light its lamp;
+## spreads over the parcel for PARCEL_TIME (the country's last farm COUNTRY_TIME longer); LAMP_AFTER later the Field Line may light its lamp;
 ## DEED_LEAVE_AFTER later the deed rolls up (DEED_ROLL_TIME) and drops off the map (DEED_DROP_TIME).
 const STAMP_DROP_TIME := 0.14
 const HIT_PAUSE := 0.09
@@ -173,22 +238,17 @@ const LAMP_AFTER := 0.75
 const DEED_LEAVE_AFTER := 0.45
 const DEED_ROLL_TIME := 0.34
 const DEED_DROP_TIME := 0.28
-## A farm's parcel reaches this far from its site (px), where no other site is nearer.
-const PARCEL_RADIUS := 300.0
-## A parcel of a country that is wholly ours reaches this far (px): all of the sheet.
-const FULL := 5000.0
-## The land layer takes this many places (farm_parcels.gdshader `sites`): the sites and the head
-## office; the rest lie far off the sheet.
+## The land layer takes this many places (farm_parcels.gdshader `progress`): the sites, then the
+## head office.
 const PLACES := 9
-const NOWHERE := Vector3(-1e6, -1e6, 0.0)
-## The whole country turns in this many seconds when its last farm is taken.
+## The country's last farm spreads this much longer (s): its whole land turns.
 const COUNTRY_TIME := 1.4
 ## Refused, it shakes this far to either side (m, on the sheet).
 const SHAKE := 0.012
 const SHAKE_TIME := 0.28
 
-## The head office on the art (px) and how far its own patch reaches (px): company land from the
-## start. Zero on a sheet without one (every country but the home country).
+## The head office on the art (x, y px; z unused): its share of the land is the company's from the
+## start (tools/bake_parcels.gd). Zero on a sheet without one (every country but the home country).
 @export var head_office := Vector3.ZERO
 
 ## The buildings by site id, and where each stands at rest (on the sheet).
@@ -205,6 +265,12 @@ var _ink: Color
 ## A farm is paid for and its moment on the map still plays: the Field Line (worlds/components/
 ## field_exchange.gd) keeps the new farm's lamp dark until this is false again.
 static var lamp_held := false
+## The figures the last declaration stamped here took to war (unit id -> count), for the war sheet.
+var committed := {}
+## How many of each unit type the declaration lying here sends (unit id -> count), and the army
+## it was printed for.
+var _take := {}
+var _deed_army := {}
 ## The site whose deed lies on the sheet (&"": none), the deed's top left corner on the art (px)
 ## and what it marks as short.
 var _deed_site := &""
@@ -217,12 +283,12 @@ var _dealing: Tween
 var _pending := &""
 var _spreading := &""
 var _spread_tween: Tween
-## How much of each site's parcel shows the pattern (0..1), and how far a whole parcel reaches (px).
+## How much of each site's parcel shows the pattern (0..1).
 var _parcels: Dictionary[StringName, float] = {}
-var _parcel_reach := PARCEL_RADIUS
-## The box of the deed under the mouse (FarmDeed.BOXES; &"": none), and the notch its dial stands on.
+## The box of the deed under the mouse (FarmDeed.BOXES; &"": none).
 var _hot_box := &""
-var _dial := 0
+## Where the mouse was last on the negotiation letter's page (px; spot_at).
+var _letter_at := Vector2.ZERO
 ## The sites whose tokens are tucked away under the deed.
 var _tucked: Array[StringName] = []
 
@@ -254,8 +320,8 @@ func _process(_delta: float) -> void:
 		return
 	if open < 1.0:
 		_drop_deed()  # The sheet is being rolled up: its deed goes with it, at once.
-	elif _dealing == null and lacks(SaveManager.save, _deed_bill(), _out()) != _deed_lacks:
-		_print_deed()  # What is short changed while it lies there.
+	elif _dealing == null and (lacks(SaveManager.save, _deed_bill(), _out()) != _deed_lacks or SaveManager.save.army != _deed_army):
+		_print_deed()  # What is short, or the staff ready, changed while it lies there.
 
 
 func _notification(what: int) -> void:
@@ -263,22 +329,69 @@ func _notification(what: int) -> void:
 		refresh()  # The tags' wording changed.
 
 
-## What the next home farm's owner asks of `save`, {currency: amount} as UpgradeDesk.costs; nothing
-## while nobody sells: its card (GATES) is not stamped, or five are owned (the rest is war).
-static func asking(save: SaveGame) -> Dictionary:
+## `site`'s worth (WORTH): what its price is times PRICES.
+static func worth(site: StringName) -> float:
+	return WORTH.get(site, 1.0)
+
+
+## What `site`'s owner asks of `save` as the next home farm, {currency: amount} as UpgradeDesk.costs:
+## PRICES by the farms owned times the site's WORTH (coins to the thousand, cabbages to the ten);
+## nothing while nobody sells: its card (GATES) is not stamped, or five are owned (the rest is war).
+static func asking(save: SaveGame, site: StringName) -> Dictionary:
 	var owned := save.farms_owned.size()
 	if owned >= mini(Events.HOME_SELLERS, PRICES.size()) or (gate(save) != "" and not save.stamped.has(gate(save))):
 		return {}
-	return PRICES[owned]
+	var base: Dictionary = PRICES[owned]
+	return {coins = roundi(base.coins * worth(site) / 1000.0) * 1000, stock = roundi(base.stock * worth(site) / 10.0) * 10}
 
 
-## What the next home farm costs `save` now: the asking price as the offers made have left it. The
-## save keeps the coins (save.haggle_price); the cabbages move by the same share of what was asked.
-static func price(save: SaveGame) -> Dictionary:
-	var bill := asking(save)
-	if bill.is_empty() or save.haggle_price <= 0:
+## What `site` costs `save` now: its asking price as the offers made to its owner have left it. The
+## save keeps the coins (haggle); the cabbages move by the same share of what was asked.
+static func price(save: SaveGame, site: StringName) -> Dictionary:
+	var bill := asking(save, site)
+	var coins: int = haggle(save, site).get("price", 0)
+	if bill.is_empty() or coins <= 0:
 		return bill
-	return {coins = save.haggle_price, stock = roundi(bill.stock * float(save.haggle_price) / bill.coins)}
+	return {coins = coins, stock = roundi(bill.stock * float(coins) / bill.coins)}
+
+
+## `site`'s owner's negotiation as `save` has it: {price = the coin price his offers left (0: still
+## asking), offers = every offer made to him, in order}; empty before the first. A save from when
+## one owner at a time was haggled with (haggle_site, haggle_offers, haggle_price) has that
+## negotiation moved to its owner first.
+static func haggle(save: SaveGame, site: StringName) -> Dictionary:
+	if save.haggle_site != "":
+		save.haggles[save.haggle_site] = {price = save.haggle_price, offers = save.haggle_offers}
+	if save.haggle_site != "" or not save.haggle_offers.is_empty() or save.haggle_price != 0:
+		save.haggle_site = ""
+		save.haggle_offers = PackedInt32Array()
+		save.haggle_price = 0
+	return save.haggles.get(String(site), {})
+
+
+## The offers made to `site`'s owner so far, in order.
+static func offers(save: SaveGame, site: StringName) -> PackedInt32Array:
+	return haggle(save, site).get("offers", PackedInt32Array())
+
+
+## How many cabbages (coins for the bribe) one bundle on the letter is for the next farm; 0 where
+## nobody haggles.
+static func bundle(save: SaveGame) -> int:
+	return HAGGLES[save.farms_owned.size()].get("bundle", 0) if save.farms_owned.size() < HAGGLES.size() else 0
+
+
+## Who owns `site` (OWNERS).
+static func owner_of(site: StringName) -> String:
+	return OWNERS.get(site, "")
+
+
+## The line `site`'s owner typed back to offer `nth` (0: the first), which left him in `mood`, by
+## what was offered (`paid_in`): a key of REPLIES, picked by the save and the site, the next one each
+## time the same mood comes again (no line twice in a row), so reloading never changes what he said.
+static func reply(save: SaveGame, site: StringName, nth: int, mood: int, paid_in: String) -> String:
+	var lines: Array = REPLIES[paid_in][mood]
+	var again := moods(save, site).slice(0, nth).count(mood)  # The same mood again: his next line for it.
+	return lines[posmod(hash([save.created, String(site)]) + again, lines.size())]
 
 
 ## The card the next farm waits for (GATES), stamped or not; "" when it needs none.
@@ -287,22 +400,23 @@ static func gate(save: SaveGame) -> String:
 	return GATES[owned] if owned < GATES.size() else ""
 
 
-## What the next farm's owner is offered: "stock" (cabbages) behind NEGOTIATION, "coins" (a bribe)
-## behind BRIBERY; "" where nobody haggles (the first farm, a farm not for sale).
-static func tender(save: SaveGame) -> String:
-	if asking(save).is_empty() or gate(save) == "":
+## What `site`'s owner is offered: "stock" (cabbages) behind NEGOTIATION, "coins" (a bribe) behind
+## BRIBERY; "" where nobody haggles (the first farm, a farm not for sale).
+static func tender(save: SaveGame, site: StringName) -> String:
+	if asking(save, site).is_empty() or gate(save) == "":
 		return ""
 	return "coins" if gate(save) == BRIBE else "stock"
 
 
-## What the next farm's owner has in mind after `wins` offers that landed: at least this much lands.
-## Drawn once per save and farm (save.created, the farms owned), so a reload never changes it.
-## Never shown to the player.
-static func wanted(save: SaveGame, wins: int) -> int:
-	var haggle := HAGGLES[save.farms_owned.size()]
+## What `site`'s owner has in mind after `wins` offers that landed: at least this much lands. Drawn
+## once per save, farm and owner (save.created, the farms owned, the site: what one owner wants says
+## nothing about the next), times the site's WORTH (a dear site is harder), so a reload never
+## changes it. Never shown to the player.
+static func wanted(save: SaveGame, wins: int, site: StringName) -> int:
+	var range_of := HAGGLES[save.farms_owned.size()]
 	var draw := RandomNumberGenerator.new()
-	draw.seed = hash([save.created, save.farms_owned.size()])
-	return roundi(lerpf(haggle.low, haggle.high, draw.randf()) * pow(GREED, wins))
+	draw.seed = hash([save.created, save.farms_owned.size(), String(site)])
+	return roundi(lerpf(range_of.low, range_of.high, draw.randf()) * worth(site) * pow(GREED, wins))
 
 
 ## The owner's mood after `offered` when he has `wants` in mind.
@@ -319,79 +433,70 @@ static func landed(mood: int) -> bool:
 	return mood >= Mood.INTRIGUED
 
 
-## The owner's mood after each offer made for the next farm so far (save.haggle_offers), in order.
-static func moods(save: SaveGame) -> Array[int]:
+## `site`'s owner's mood after each offer made to him so far, in order.
+static func moods(save: SaveGame, site: StringName) -> Array[int]:
 	var out: Array[int] = []
 	var wins := 0
-	for offered in save.haggle_offers:
-		out.append(mood_of(offered, wanted(save, wins)))
+	for offered in offers(save, site):
+		out.append(mood_of(offered, wanted(save, wins, site)))
 		wins += int(landed(out[-1]))
 	return out
 
 
-## The lowest the next farm's coin price goes (PRICE_FLOOR).
-static func floor_price(save: SaveGame) -> int:
-	return roundi(asking(save).coins * (100 + PRICE_FLOOR) / 100.0)
+## The lowest `site`'s coin price goes (PRICE_FLOOR).
+static func floor_price(save: SaveGame, site: StringName) -> int:
+	return roundi(asking(save, site).coins * (100 + PRICE_FLOOR) / 100.0)
 
 
-## How many more offers the next farm's owner hears: ROUNDS in all; none where nobody haggles, and
-## none once the price is at its floor (an offer could only be lost).
-static func offers_left(save: SaveGame) -> int:
-	if tender(save) == "" or price(save).coins <= floor_price(save):
+## How many more offers `site`'s owner hears: ROUNDS in all; none where nobody haggles, and none once
+## the price is at its floor (an offer could only be lost).
+static func offers_left(save: SaveGame, site: StringName) -> int:
+	if tender(save, site) == "" or price(save, site).coins <= floor_price(save, site):
 		return 0
-	return maxi(ROUNDS - save.haggle_offers.size(), 0)
+	return maxi(ROUNDS - offers(save, site).size(), 0)
 
 
-## The next farm's coin price after an offer that left the owner in `mood`: MOOD_STEP percent of the
-## asking price on or off it, between the floor and the ceiling. The ceiling is not held to the coin
+## `site`'s coin price after an offer that left its owner in `mood`: MOOD_STEP percent of the asking
+## price on or off it, between the floor and the ceiling. The ceiling is not held to the coin
 ## limit (a miss must cost something at the limit a player has): the next TREASURY step holds it and
 ## costs less than the limit (the suite walks that).
-static func price_after(save: SaveGame, mood: int) -> int:
-	var asked: int = asking(save).coins
-	return clampi(price(save).coins + roundi(asked * MOOD_STEP[mood] / 100.0), floor_price(save), roundi(asked * (100 + PRICE_CEILING) / 100.0))
+static func price_after(save: SaveGame, site: StringName, mood: int) -> int:
+	var asked: int = asking(save, site).coins
+	return clampi(price(save, site).coins + roundi(asked * MOOD_STEP[mood] / 100.0), floor_price(save, site), roundi(asked * (100 + PRICE_CEILING) / 100.0))
 
 
-## Puts `amount` (cabbages from the store, or coins: tender) to the next farm's owner: it is gone
-## whether it lands or not (RECOVERED of a miss comes back once RECOVER is stamped), the price moves
-## (price_after) and the offer is on file. The mood it leaves him in (Mood), or -1 when no offer is
-## taken and nothing changes: nobody haggles, no offer left, or `save` does not hold `amount` (`out`:
-## UpgradeDesk.units_out).
-static func offer(save: SaveGame, amount: int, out := Vector2i.ZERO) -> int:
-	var paid_in := tender(save)
-	if offers_left(save) <= 0 or amount <= 0 or UpgradeDesk.spendable(save, paid_in, out) < amount:
+## Puts `amount` (cabbages from the store, or coins: tender) to `site`'s owner: it is gone whether it
+## lands or not (RECOVERED of a miss comes back once RECOVER is stamped), the price moves
+## (price_after) and the offer is on file with his negotiation (haggle; no other owner's changes).
+## The mood it leaves him in (Mood), or -1 when no offer is taken and nothing changes: nobody
+## haggles, no offer left, or `save` does not hold `amount` (`out`: UpgradeDesk.units_out).
+static func offer(save: SaveGame, site: StringName, amount: int, out := Vector2i.ZERO) -> int:
+	var paid_in := tender(save, site)
+	if offers_left(save, site) <= 0 or amount <= 0 or UpgradeDesk.spendable(save, paid_in, out) < amount:
 		return -1
-	var mood := mood_of(amount, wanted(save, moods(save).reduce(func(wins: int, was: int) -> int: return wins + int(landed(was)), 0)))
+	var mood := mood_of(amount, wanted(save, moods(save, site).filter(landed).size(), site))
 	UpgradeDesk.pay(save, paid_in, amount, out)
 	if not landed(mood) and save.stamped.has(RECOVER):
 		save.set(paid_in, save.get(paid_in) + int(amount * RECOVERED))
-	save.haggle_price = price_after(save, mood)
-	save.haggle_offers.append(amount)
+	var made := offers(save, site)
+	made.append(amount)
+	var haggles := save.haggles.duplicate()
+	haggles[String(site)] = {price = price_after(save, site, mood), offers = made}
+	save.haggles = haggles
 	return mood
 
 
-## The negotiation for the next farm starts over: no offer on file, the asking price again.
+## Every negotiation starts over: no offer on file with anyone, every asking price again.
 static func close_haggle(save: SaveGame) -> void:
-	save.haggle_offers = PackedInt32Array()
-	save.haggle_price = 0
-
-
-## The amounts the dial clicks through for a farm whose HAGGLES entry starts it at `least`.
-static func ladder(least: int) -> PackedInt32Array:
-	var out := PackedInt32Array()
-	var decade := 1
-	while out.size() < LADDER:
-		for rung in RUNGS:
-			if rung * decade >= least and out.size() < LADDER:
-				out.append(rung * decade)
-		decade *= 10
-	return out
+	haggle(save, &"")  # An old save's one negotiation goes too.
+	save.haggles = {}
 
 
 ## The small print of a deed that is haggled over, until the first offer (a translation key).
-static func haggle_note(save: SaveGame) -> String:
+static func haggle_note(save: SaveGame, site: StringName) -> String:
 	if save.stamped.has(RECOVER):
 		return "Half of a refused offer is returned."
-	return "Envelopes are not returned." if tender(save) == "coins" else "Cabbages offered are not returned."
+	return "Envelopes are not returned." if tender(save, site) == "coins" else "Cabbages offered are not returned."
 
 
 ## Why `site` is not for sale to `save`, as its paper says it: at home the owners need persuading
@@ -410,11 +515,47 @@ static func war_ready(save: SaveGame, site: StringName) -> bool:
 	return World.country_of(site) != World.HOME or Events.home_farms(save) >= Events.HOME_SELLERS
 
 
-## What the war on `site` is expected to cost `save` (the stand-in victory, WorldRegister.war_price);
+## What the war on `site` is expected to cost `save` (WorldRegister.war_price);
 ## nothing where there is no war to start: not war_ready, or out of reach (WorldRegister.reach).
+## Coins only: the cabbages of a war go into its soldiers (WarRules).
 static func war_bill(save: SaveGame, site: StringName) -> Dictionary:
 	var country := World.country_of(site)
-	return World.war_price(save, country) if war_ready(save, site) and World.reach(save, country) == "" else {}
+	if not war_ready(save, site) or World.reach(save, country) != "":
+		return {}
+	return {coins = World.war_price(save, country).get("coins", 0)}
+
+
+## Whether `save` can declare war on `site` sending `chosen` (unit id -> count): a war can be
+## started there (war_bill), its coins are in the purse, at least one figure goes and none more than
+## save.army has ready (`out`: UpgradeDesk.units_out).
+static func can_declare(save: SaveGame, site: StringName, chosen: Dictionary, out := Vector2i.ZERO) -> bool:
+	var bill := war_bill(save, site)
+	if bill.is_empty() or not UpgradeDesk.affords(save, bill, out):
+		return false
+	var sent := 0
+	for unit: String in chosen:
+		var count := int(chosen[unit])
+		if count < 0 or count > int(save.army.get(unit, 0)):
+			return false
+		sent += count
+	return sent > 0
+
+
+## Declares war on `site` for `save`: pays war_bill's coins and takes the `chosen` figures out of
+## save.army. Whether it was declared; refused (can_declare), nothing changes.
+static func declare(save: SaveGame, site: StringName, chosen: Dictionary, out := Vector2i.ZERO) -> bool:
+	if not can_declare(save, site, chosen, out):
+		return false
+	var bill := war_bill(save, site)
+	for paid_in: String in bill:
+		UpgradeDesk.pay(save, paid_in, bill[paid_in], out)
+	for unit: String in chosen:
+		var left := int(save.army.get(unit, 0)) - int(chosen[unit])
+		if left > 0:
+			save.army[unit] = left
+		else:
+			save.army.erase(unit)
+	return true
 
 
 ## Where the deed for the site at art pixel `at` lies: its top left corner on the art (px). Beside
@@ -443,13 +584,13 @@ static func deed_gone_after() -> float:
 
 ## Whether `site` can still be bought: a home farm, not ours yet, and somebody still sells.
 static func for_sale(save: SaveGame, site: StringName) -> bool:
-	return World.country_of(site) == World.HOME and not save.farms_owned.has(site) and not price(save).is_empty()
+	return World.country_of(site) == World.HOME and not save.farms_owned.has(site) and not price(save, site).is_empty()
 
 
-## What `save` lacks of the next farm's price, {currency: amount}; empty when it can pay (`out`:
+## What `save` lacks of `site`'s price, {currency: amount}; empty when it can pay (`out`:
 ## UpgradeDesk.units_out, cabbages out of the store can't pay).
-static func short(save: SaveGame, out := Vector2i.ZERO) -> Dictionary:
-	return lacks(save, price(save), out)
+static func short(save: SaveGame, site: StringName, out := Vector2i.ZERO) -> Dictionary:
+	return lacks(save, price(save, site), out)
 
 
 ## What `save` lacks of `bill` ({currency: amount}), the same way.
@@ -464,7 +605,7 @@ static func lacks(save: SaveGame, bill: Dictionary, out := Vector2i.ZERO) -> Dic
 ## Buys `site` for `save` if it is for sale and paid for: takes the price, adds the site to the
 ## farms owned. Whether it was bought; refused, nothing changes.
 static func buy(save: SaveGame, site: StringName, out := Vector2i.ZERO) -> bool:
-	var bill := price(save)
+	var bill := price(save, site)
 	if not for_sale(save, site) or not UpgradeDesk.affords(save, bill, out):
 		return false
 	for paid_in: String in bill:
@@ -474,7 +615,7 @@ static func buy(save: SaveGame, site: StringName, out := Vector2i.ZERO) -> bool:
 	return true
 
 
-## What `site`'s price tag prints: the next farm's price ("$60K + 800": coins + cabbages; the tag
+## What `site`'s price tag prints: its price as the next farm ("$60K + 800": coins + cabbages; the tag
 ## is small, so coins from 10,000 are set in whole thousands and from a million in millions,
 ## "$1.5M"; the hint slip has them in full),
 ## ACQUIRED once ours; for a farm taken by war what the war is expected to cost, or why it cannot be
@@ -482,9 +623,11 @@ static func buy(save: SaveGame, site: StringName, out := Vector2i.ZERO) -> bool:
 static func tag_text(save: SaveGame, site: StringName) -> String:
 	if save.farms_owned.has(site):
 		return TranslationServer.translate("ACQUIRED")
-	var bill := price(save) if for_sale(save, site) else war_bill(save, site)
+	var bill := price(save, site) if for_sale(save, site) else war_bill(save, site)
 	if bill.is_empty():
 		return TranslationServer.translate(World.reach(save, World.country_of(site)) if war_ready(save, site) else "NOT FOR SALE")
+	if not bill.has("stock"):
+		return "$" + short_coins(bill.coins)
 	return "$%s + %s" % [short_coins(bill.coins), FarmScreen._thousands(bill.stock)]
 
 
@@ -507,26 +650,23 @@ static func words(bill: Dictionary) -> String:
 	return ", ".join(parts)
 
 
-## The hint slip for `site` called this name: its price (and what is short of it), that it is ours,
-## or why it cannot be bought.
-static func hint_text(save: SaveGame, site: StringName, called: String, out := Vector2i.ZERO) -> String:
+## The hint slip for `site` called this name: its price (never what is short: the deed shows that),
+## that it is ours, or why it cannot be bought.
+static func hint_text(save: SaveGame, site: StringName, called: String) -> String:
 	if save.farms_owned.has(site):
 		return TranslationServer.translate("%s. Company property.") % called
 	if war_ready(save, site):
 		var country := World.country_of(site)
 		if World.reach(save, country) != "":
 			return TranslationServer.translate("%s. Not for sale.") % called + " " + World.reason(save, country)
-		return TranslationServer.translate("%s. Not for sale. Expected cost of war: %s. Click for the war order.") % [called, words(war_bill(save, site))]
+		return TranslationServer.translate("%s. Not for sale. Cost of war: %s. Click to declare war.") % [called, words(war_bill(save, site))]
 	if not for_sale(save, site):
 		return TranslationServer.translate("%s. Not for sale.") % called + " " + reason(save, site)
-	var missing := short(save, out)
-	if missing.is_empty():
-		return TranslationServer.translate("%s. Price: %s. Click for the deed.") % [called, words(price(save))]
-	return TranslationServer.translate("%s. Price: %s. Short: %s.") % [called, words(price(save)), words(missing)]
+	return TranslationServer.translate("%s. Price: %s. Click for the deed.") % [called, words(price(save, site))]
 
 
 static func _state(save: SaveGame) -> Vector3i:
-	return Vector3i(save.farms_owned.size(), save.stamped.size(), save.haggle_price)
+	return Vector3i(save.farms_owned.size(), save.stamped.size(), save.haggles.hash() & 0x7fffffff)
 
 
 ## Shows every site as the save has it (owned look, tag), without any moment, and prints the page.
@@ -535,7 +675,6 @@ func refresh() -> void:
 	if _shown.x >= 0 and save.farms_owned.size() != _shown.x:
 		close_haggle(save)  # A farm came some other way (the debug key): the offers were for another owner.
 	_shown = _state(save)
-	_parcel_reach = FULL if World.owns_all(save, id) and _pending == &"" and _spreading == &"" else PARCEL_RADIUS
 	for site in _sites:
 		var ours := save.farms_owned.has(site) and site != _pending  # Paid for: ours when the stamp lands.
 		_sites[site].owned = ours
@@ -552,26 +691,54 @@ func refresh() -> void:
 
 func spot_at(pixel: Vector2) -> StringName:
 	if _deed_site != &"":
-		var on := pixel - _deed_corner
-		if Rect2(Vector2.ZERO, FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE).has_point(on):
-			# The deed covers what lies under it; only its boxes are spots: the stamp box of a farm
-			# for sale, the dial and SUBMIT OFFER while its owner hears offers.
-			var box := FarmDeed.box_at(on)
-			var live := not _deed.bill.is_empty() if box == STAMP else offers_left(SaveManager.save) > 0
+		# The deed lies DEED_LIFT over the sheet (the record a little more): the mouse is on the
+		# pixel of the paper it shows there, not on the sheet's pixel under it.
+		var on := lifted(pixel, DEED_LIFT + (FarmDeed.HAGGLE_LIFT if _deed.haggling else 0.0)) - _deed_corner
+		if FarmDeed.covers(on, _deed.haggling):
+			# The papers cover what lies under them; only their boxes are spots: the stamp box of a
+			# farm for sale, START HAGGLING where its owner haggles, the letter's crate, offer and
+			# SEND OFFER while he hears offers, and BACK TO THE DEED.
+			_letter_at = FarmDeed.page(on)
+			if _declaring():
+				var staff := FarmDeed.staff_box_at(on, Depot.units(SaveManager.save))
+				if staff != &"":
+					return staff if _dealing == null else &""
+			var box := FarmDeed.box_at(on, _deed.haggling)
+			var live := true
+			if box == STAMP:
+				live = not _deed.bill.is_empty()
+			elif box == HAGGLE:
+				live = tender(SaveManager.save, _deed_site) != "" and for_sale(SaveManager.save, _deed_site)
+			elif box != RETURN:
+				live = offers_left(SaveManager.save, _deed_site) > 0
 			return box if _dealing == null and live else &""
 	for site in _sites:
-		if HIT.has_point(pixel - _pixel(site)):
+		# A farm of ours is no spot: no lift, no sound, no hint slip, no deed (MapTable follows spot_at).
+		if HIT.has_point(pixel - _pixel(site)) and not SaveManager.save.farms_owned.has(site):
 			return site
 	return &""
 
 
+## Sheet pixel `pixel` (where the mouse's ray meets the sheet: MapTable.sheet_pixel) moved to the
+## pixel the mouse is on of a paper lying `height` m over the sheet: the camera looks down at an
+## angle, so what lies higher is seen nearer to it. As it is without a camera.
+func lifted(pixel: Vector2, height: float) -> Vector2:
+	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+	if camera == null:
+		return pixel
+	var screen := camera.unproject_position(point_at(pixel))
+	var up := global_basis.y
+	var hit: Variant = Plane(up.normalized(), point_at(pixel) + up * height).intersects_ray(camera.project_ray_origin(screen), camera.project_ray_normal(screen))
+	return pixel_at(hit) if hit != null else pixel
+
+
 ## Nothing while a deed lies on the sheet: it says all of it, and the slip would lie on it.
 func hint(spot: StringName) -> String:
-	return hint_text(SaveManager.save, spot, _sites[spot].title, _out()) if _sites.has(spot) and _deed_site == &"" else ""
+	return hint_text(SaveManager.save, spot, _sites[spot].title) if _sites.has(spot) and _deed_site == &"" else ""
 
 
 func hover(spot: StringName) -> void:
-	var box := spot if FarmDeed.BOXES.has(spot) else &""
+	var box := spot if FarmDeed.DEED_BOXES.has(spot) or FarmDeed.HAGGLE_BOXES.has(spot) or _staff_spot(spot) else &""
 	if box != _hot_box:
 		_hot_box = box
 		_deed.hot(box)
@@ -585,22 +752,54 @@ func hover(spot: StringName) -> void:
 	_hot = spot
 
 
-## A click on `spot` (&"": on nothing): the stamp box buys the deed's farm, the dial's boxes turn it
-## a notch, SUBMIT OFFER makes the offer, a farm not ours lays out its deed, anything else puts the
-## deed away. Nothing while a purchase or an offer plays out.
+## A click on `spot` (&"": on nothing): the stamp box buys the deed's farm, START HAGGLING and BACK
+## TO THE DEED lay the negotiation letter over the deed and take it away, the crate puts a bundle in
+## the hand, the offer gives the nearest bundle back, SEND OFFER makes the offer, a farm not ours
+## lays out its deed, anything else puts the deed away. Nothing while a purchase or an offer plays out.
 func press(spot: StringName) -> void:
 	if _dealing != null:
 		return
 	if spot == STAMP and _deed_site != &"":
 		_stamp_deed()
-	elif spot in [LESS, MORE] and _deed_site != &"":
-		_turn_dial(1 if spot == MORE else -1)
-	elif spot == OFFER and _deed_site != &"":
+	elif spot in [HAGGLE, RETURN] and _deed_site != &"":
+		_deed.lay_haggle(spot == HAGGLE, deed_side(_pixel(_deed_site)) * DEED_FROM / PIXELS_PER_METRE, DEED_SLIDE_TIME)
+	elif spot == CRATE and _deed_site != &"":
+		_grab()
+	elif spot == PILE and _deed_site != &"":
+		_deed.negotiation.take_back(_letter_at)
+	elif spot == SEND and _deed_site != &"":
 		_submit_offer()
+	elif _staff_spot(spot) and _deed_site != &"":
+		_choose(spot)
 	elif _sites.has(spot) and spot != _deed_site and not SaveManager.save.farms_owned.has(spot) and spot != _pending:
 		_lay_out(spot)
 	else:
 		_put_away()
+
+
+## The mouse moved to sheet pixel `pixel` (MapTable): a bundle in the hand follows it, held over the
+## letter.
+func drag(pixel: Vector2) -> void:
+	if _deed_site != &"" and _deed.negotiation.holding():
+		var over := DEED_LIFT + FarmDeed.HAGGLE_LIFT + NegotiationLetter.HOLD_LIFT
+		_deed.negotiation.drag_to(FarmDeed.page(lifted(pixel, over) - _deed_corner))
+
+
+## While the negotiation letter lies open, its four corners (world, where it comes to rest) and
+## its tray: the table glides the camera in on it so its slips read (MapTable._follow_focus).
+func focus() -> PackedVector3Array:
+	if _deed_site == &"" or not _deed.haggling or not _deed.visible:
+		return PackedVector3Array()
+	var letter := global_transform * Transform3D(Basis(), _deed_at()) * _deed.letter_rest()
+	var size := NegotiationLetter.SIZE
+	return PackedVector3Array([letter * Vector3.ZERO, letter * Vector3(size.x, 0.0, 0.0), letter * Vector3(0.0, 0.0, size.y), letter * Vector3(size.x, 0.0, size.y)])
+
+
+## The mouse button came up over `spot`: a bundle in the hand lies down on the offer (PILE, or a
+## click on the crate) or goes back.
+func release(spot: StringName) -> void:
+	if _deed_site != &"" and _deed.negotiation.holding():
+		_deed.negotiation.drop(spot == PILE)
 
 
 ## A purchase or an offer plays out: the table does not roll the sheet up under it (MapTable.show_sheet).
@@ -617,10 +816,7 @@ func deed_site() -> StringName:
 func _lay_out(spot: StringName) -> void:
 	_deed_site = spot
 	_deed_corner = deed_corner(_pixel(spot))
-	_dial = 0
-	var offers := SaveManager.save.haggle_offers
-	if not offers.is_empty():  # The dial stands where the last offer left it.
-		_dial = maxi(_ladder().find(offers[-1]), 0)
+	_take = SaveManager.save.army.duplicate()  # Everybody ready goes, unless told otherwise.
 	_print_deed()
 	_uncover(0.0)
 	var paper := Rect2(_deed_corner, FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE).grow(COVER)
@@ -643,8 +839,26 @@ func _print_deed() -> void:
 	_deed.fill(_sites[_deed_site].title, _deed_site, bill, _deed_lacks,
 			World.reason(save, id) if war else reason(save, _deed_site))
 	_deed.letter(&"war" if war else &"deed", World.reach(save, id) if war else "")  # Before the band: its note is the haggle's.
-	if tender(save) != "" and for_sale(save, _deed_site):
-		_deed.print_haggle(tender(save), _ladder()[_dial], save.haggle_offers, moods(save), offers_left(save), asking(save).coins, haggle_note(save))
+	var what := tender(save, _deed_site)
+	if what != "" and for_sale(save, _deed_site):
+		var made := offers(save, _deed_site)
+		var said := moods(save, _deed_site)
+		var replies := []
+		for i in made.size():
+			replies.append({offered = made[i], mood = tr(FarmDeed.MOODS[what][said[i]]), line = tr(reply(save, _deed_site, i, said[i], what))})
+		_deed.print_haggle(what, bundle(save), owner_of(_deed_site), replies, offers_left(save, _deed_site),
+				asking(save, _deed_site).coins, UpgradeDesk.spendable(save, what, _out()), haggle_note(save, _deed_site))
+	elif _deed.haggling:
+		_deed.shut_haggle()  # Nobody haggles over it any more (a farm came some other way).
+	_deed_army = save.army.duplicate()
+	if _declaring():
+		var rows := []
+		for unit in Depot.units(save):
+			var have := int(save.army.get(unit, 0))
+			_take[unit] = clampi(int(_take.get(unit, have)), 0, have)
+			rows.append({unit = unit, name = tr(DepotSheet.NAMES[unit]), have = have, take = _take[unit]})
+		_deed.print_staff(rows)
+		_deed.print_scout(WAR_MAP)
 	_deed.hot(_hot_box)  # The mouse may still be on its box.
 
 
@@ -652,40 +866,37 @@ func _print_deed() -> void:
 ## on one that is taken is expected to cost, nothing where neither is to be had.
 func _deed_bill() -> Dictionary:
 	var save := SaveManager.save
-	return price(save) if for_sale(save, _deed_site) else war_bill(save, _deed_site)
+	return price(save, _deed_site) if for_sale(save, _deed_site) else war_bill(save, _deed_site)
 
 
-## The amounts the laid-out deed's dial clicks through (ladder); one notch where nobody haggles.
-func _ladder() -> PackedInt32Array:
+## A press on the crate: a bundle comes into the hand if stock (the purse) holds one more than lies
+## on the offer, and the offer has room; else the refusal.
+func _grab() -> void:
 	var save := SaveManager.save
-	return ladder(HAGGLES[save.farms_owned.size()].least) if tender(save) != "" else PackedInt32Array([0])
+	var letter := _deed.negotiation
+	if UpgradeDesk.spendable(save, tender(save, _deed_site), _out()) < (letter.count + 1) * bundle(save) or not letter.grab(_letter_at):
+		_deed.blink()
 
 
-## The dial turns `by` notches, as far as the ladder goes.
-func _turn_dial(by: int) -> void:
-	var to := clampi(_dial + by, 0, _ladder().size() - 1)
-	if to == _dial:
-		return
-	_dial = to
-	_deed.tick()
-	_print_deed()
-
-
-## A click on SUBMIT OFFER: what is on the dial goes to the owner (offer) and the stamp comes down
-## on his mood; the deed prints it, and the new price, as it lands. Not held: refused, nothing changes.
+## A click on SEND OFFER: what lies on the offer goes to the owner (offer) and is carried off the
+## paper; his reply slip arrives and the stamp comes down on his mood; the price reprints with it.
+## Nothing on the offer, or not held: refused, nothing changes.
 func _submit_offer() -> void:
-	var bribe := tender(SaveManager.save) == "coins"
-	var mood := offer(SaveManager.save, _ladder()[_dial], _out())
+	var save := SaveManager.save
+	var letter := _deed.negotiation
+	var bribe := tender(save, _deed_site) == "coins"
+	var mood := offer(save, _deed_site, letter.offered(), _out()) if letter.count > 0 else -1
 	if mood < 0:
 		_deed.blink()
 		return
+	SaveManager.log_event("offer", str(save.farms_owned.size() + 1), offers(save, _deed_site)[-1], tender(save, _deed_site))
+	SaveManager.autosave()  # At once: quitting must not take a lost offer back and keep what the mood told.
+	letter.send(deed_side(_pixel(_deed_site)) * SEND_AWAY, SEND_TIME)
 	if bribe:
 		_deed.envelope()
-	var save := SaveManager.save
-	SaveManager.log_event("offer", str(save.farms_owned.size() + 1), save.haggle_offers[-1], tender(save))
-	SaveManager.autosave()  # At once: quitting must not take a lost offer back and keep what the mood told.
-	_deed.strike(STAMP_DROP_TIME, FarmDeed.MOOD_AT)
 	_dealing = create_tween()
+	_dealing.tween_interval(SEND_TIME)
+	_dealing.tween_callback(_reply_arrives)
 	_dealing.tween_interval(STAMP_DROP_TIME)
 	_dealing.tween_callback(_mood_landed.bind(landed(mood)))
 	_dealing.tween_interval(HIT_PAUSE)
@@ -694,8 +905,15 @@ func _submit_offer() -> void:
 	_dealing.tween_callback(_offer_done)
 
 
-func _mood_landed(won: bool) -> void:
+## The owner's reply slip lands on the letter (with the price as it now stands) and the stamp
+## starts down onto it.
+func _reply_arrives() -> void:
 	_print_deed()
+	_deed.negotiation.slip_arrives()
+	_deed.strike_mood(STAMP_DROP_TIME)
+
+
+func _mood_landed(won: bool) -> void:
 	_deed.stamp_mood(won)
 
 
@@ -742,6 +960,17 @@ func _deed_at() -> Vector3:
 func _stamp_deed() -> void:
 	var spot := _deed_site
 	if war_ready(SaveManager.save, spot):
+		var chosen := _chosen()
+		var war_cost := war_bill(SaveManager.save, spot)
+		if not declare(SaveManager.save, spot, chosen, _out()):
+			_refuse(spot)
+			_deed.blink(chosen.is_empty())
+			return
+		committed = chosen
+		for paid_in: String in war_cost:
+			SaveManager.log_event("war_declared", spot, war_cost[paid_in], paid_in)
+		SaveManager.autosave()
+		_deed_army = SaveManager.save.army.duplicate()  # The rows keep what was sent until it leaves.
 		_deed.strike(STAMP_DROP_TIME)
 		_dealing = create_tween()
 		_dealing.tween_interval(STAMP_DROP_TIME)
@@ -751,7 +980,7 @@ func _stamp_deed() -> void:
 		_dealing.tween_interval(WAR_AFTER)
 		_dealing.tween_callback(_go_to_war.bind(spot))
 		return
-	var bill := price(SaveManager.save)
+	var bill := price(SaveManager.save, spot)
 	if not buy(SaveManager.save, spot, _out()):
 		_refuse(spot)
 		_deed.blink()
@@ -776,6 +1005,37 @@ func _stamp_deed() -> void:
 	_dealing.tween_callback(_deed.roll_away.bind(off, DEED_ROLL_TIME, DEED_DROP_TIME))
 	_dealing.tween_interval(DEED_ROLL_TIME + DEED_DROP_TIME)
 	_dealing.tween_callback(_deed_gone)
+
+
+## Whether the paper lying here is a declaration that can be stamped (a war that can be started).
+func _declaring() -> bool:
+	return _deed_site != &"" and war_ready(SaveManager.save, _deed_site) and not war_bill(SaveManager.save, _deed_site).is_empty()
+
+
+## Whether `spot` is one of a declaration's [-] / [+] boxes.
+static func _staff_spot(spot: StringName) -> bool:
+	return String(spot).begins_with(FarmDeed.STAFF_LESS) or String(spot).begins_with(FarmDeed.STAFF_MORE)
+
+
+## A click on a declaration's [-] or [+]: one figure of that type fewer or more, as far as it goes.
+func _choose(spot: StringName) -> void:
+	var more := String(spot).begins_with(FarmDeed.STAFF_MORE)
+	var unit := String(spot).trim_prefix(FarmDeed.STAFF_MORE if more else FarmDeed.STAFF_LESS)
+	var to := clampi(int(_take.get(unit, 0)) + (1 if more else -1), 0, int(SaveManager.save.army.get(unit, 0)))
+	if to == int(_take.get(unit, 0)):
+		return
+	_take[unit] = to
+	_deed.count_tick()
+	_print_deed()
+
+
+## What the declaration lying here sends: the figures chosen, types with none left out.
+func _chosen() -> Dictionary:
+	var out := {}
+	for unit in Depot.units(SaveManager.save):
+		if int(_take.get(unit, 0)) > 0:
+			out[unit] = int(_take[unit])
+	return out
 
 
 ## The war order is stamped: the table rolls this sheet up and the war sheet for `spot` out.
@@ -811,16 +1071,16 @@ func hint_title() -> String:
 	return tr("%s farm register") % tr(title)
 
 
-## The hint slip lies in the first corner of the sheet (top left, top right, bottom left, bottom
-## right) where its HINT_ROOM covers no site's disc or tags; every country's sites lie elsewhere.
-func hint_pixel() -> Vector2:
-	var paper := SIZE * PIXELS_PER_METRE
-	var far := paper - HINT_ROOM - HINT_PIXEL
-	for corner: Vector2 in [HINT_PIXEL, Vector2(far.x, HINT_PIXEL.y), Vector2(HINT_PIXEL.x, far.y), far]:
-		var slip := Rect2(corner, HINT_ROOM)
-		if _sites.keys().all(func(site: StringName) -> bool: return not slip.intersects(Rect2(HIT.position + _pixel(site), HIT.size))):
-			return corner
-	return HINT_PIXEL
+## A site's disc and its two tags (its name, then its price, as wide as their lettering runs), so the
+## hint slip lies beside them and never over them.
+func spot_box(spot: StringName) -> Rect2:
+	if not _sites.has(spot):
+		return Rect2()
+	var box := Rect2(HIT.position + _pixel(spot), HIT.size)
+	var price_tag := _tag(spot)
+	for tag: Label in [price_tag.get_parent().get_child(price_tag.get_index() - 1) as Label, price_tag]:
+		box = box.merge(lettering(tag))
+	return box
 
 
 func _release_lamp() -> void:
@@ -849,10 +1109,8 @@ func _acquire(spot: StringName) -> void:
 	if _spread_tween != null:
 		_spread_tween.kill()
 	_spread_tween = create_tween()
-	_spread_tween.tween_method(_spread.bind(spot), 0.0, 1.0, PARCEL_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	var whole := World.owns_all(SaveManager.save, id)  # The country's last farm: all of its land turns.
-	if whole:
-		_spread_tween.tween_method(_spread_country, PARCEL_RADIUS, span(), COUNTRY_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_spread_tween.tween_method(_spread.bind(spot), 0.0, 1.0, PARCEL_TIME + (COUNTRY_TIME if whole else 0.0)) 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_spread_tween.tween_callback(_spread_done)
 	_acquire_sound.cue(_sites[spot].global_position)
 	_swap_sound.cue(_sites[spot].global_position)
@@ -877,32 +1135,21 @@ func _spread(k: float, site: StringName) -> void:
 	_print_parcels()
 
 
-## Every parcel reaches `reach` px: the whole country turning, once its last farm is ours.
-func _spread_country(reach: float) -> void:
-	_parcel_reach = reach
-	_print_parcels()
-
-
 func _spread_done() -> void:
 	_spreading = &""
 	refresh()
 
 
-## How far the sheet's land can lie from a site (px): its diagonal.
-func span() -> float:
-	return (SIZE * PIXELS_PER_METRE).length()
-
-
-## Hands every parcel's reach to the land layer and prints the page.
+## Hands how far each parcel shows to the land layer (the baked texture's order: the sites as
+## `Things` has them, then the head office) and prints the page.
 func _print_parcels() -> void:
-	var reach := PackedVector3Array()
-	for site in _sites:
-		reach.append(Vector3(_pixel(site).x, _pixel(site).y, _parcel_reach * _parcels.get(site, 0.0)))
-	if head_office != Vector3.ZERO:  # Its own patch; with the whole country ours it reaches as far as the parcels.
-		reach.append(Vector3(head_office.x, head_office.y, maxf(head_office.z, _parcel_reach if _parcel_reach > PARCEL_RADIUS else 0.0)))
-	while reach.size() < PLACES:
-		reach.append(NOWHERE)
-	_parcel_ink.set_shader_parameter(&"sites", reach)
+	var progress := PackedFloat32Array()
+	progress.resize(PLACES)
+	for i in _sites.size():
+		progress[i] = _parcels.get(_sites.keys()[i], 0.0)
+	if head_office != Vector3.ZERO:
+		progress[_sites.size()] = 1.0
+	_parcel_ink.set_shader_parameter(&"progress", progress)
 	reprint()
 
 

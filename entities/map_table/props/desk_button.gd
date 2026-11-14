@@ -1,7 +1,8 @@
 extends Node3D
 ## The map table's TO DESK call button (MapTable): an oxblood push button on a sage plinth, its
 ## engraved plate (`Stencil`) beside it. press() pushes the button in and lets it spring back, with
-## the supply console's bakelite button clack (`Press`).
+## the supply console's bakelite button clack (`Press`). `Plate` is its click plate (MapTable.BACK_HALF
+## about it, on its frame: FarmTv.rect_uv). The tally's console carries two more of it, plinths sunk.
 
 ## How far the button goes in (m), how long a press takes (s) and the part of it going down.
 const TRAVEL := 0.006

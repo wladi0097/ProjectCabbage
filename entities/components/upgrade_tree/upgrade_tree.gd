@@ -63,6 +63,9 @@ const OFF := Vector2(-1e9, -1e9)
 @export var glow := Color(0.846, 0.888, 0.888, 0.25)
 ## The projector lamp's slow shimmer on the nodes (pulse).
 @export var shimmer := false
+## Whether the hovered node's popup is drawn beside it (the projector, the farm TV). Off, the host
+## shows hovered() its own way (the depot sheet: in the map's screen-space hint slip).
+@export var popup_shown := true
 
 ## The tree's script (see above), set by the host.
 var rules: Variant
@@ -154,6 +157,11 @@ func _process(delta: float) -> void:
 		_layer.queue_redraw()
 	_layer.scale = stretch(_drawn_unit, unit)
 	_top.queue_redraw()
+
+
+## The id of the node under the mouse ("": none).
+func hovered() -> String:
+	return _hovered
 
 
 ## The view goes dark: hover and hold drop, and the ids marked NEW are handed back (seen now).
@@ -485,7 +493,8 @@ func _draw_top() -> void:
 			reach = box.size.x / 2.0
 		else:
 			_top.draw_circle(at, r, lit)
-		_draw_popup(rules.node_data(_hovered), at, reach, save, light, area)
+		if popup_shown:
+			_draw_popup(rules.node_data(_hovered), at, reach, save, light, area)
 	elif _hovered_theme >= 0:
 		var heading: Array = rules.THEMES[_hovered_theme]
 		var box := theme_plate(heading, wheel[1], r, font)

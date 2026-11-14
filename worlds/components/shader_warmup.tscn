@@ -52,8 +52,10 @@
 [ext_resource type="Material" path="res://assets/materials/room_wall_map.tres" id="50_room_wall_map"]
 [ext_resource type="Material" path="res://entities/field_line/field_line_lamps.tres" id="51_field_line_lamps"]
 [ext_resource type="Shader" path="res://assets/shaders/map_sheet.gdshader" id="52_map_sheet"]
-[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_belt.res" id="53_cabbage_belt"]
-[ext_resource type="Material" path="res://entities/cabbage/cabbage_belt.tres" id="54_cabbage_belt_paper"]
+[ext_resource type="Material" path="res://assets/materials/map_paper.tres" id="53_map_paper"]
+[ext_resource type="Material" path="res://assets/meshes/Army/army_plastic.tres" id="54_army_plastic"]
+[ext_resource type="Material" path="res://assets/meshes/Army/army_plastic_grey.tres" id="56_army_plastic_grey"]
+[ext_resource type="Material" path="res://assets/materials/cog_steel.tres" id="55_cog_steel"]
 
 [sub_resource type="BoxMesh" id="Box"]
 size = Vector3(0.12, 0.12, 0.12)
@@ -341,6 +343,12 @@ gi_mode = 0
 mesh = SubResource("Box")
 material_override = ExtResource("24_machine_paint_matte")
 
+[node name="MapPaper" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0840, -0.0420, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("53_map_paper")
+
 [node name="MugPrint" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.0560, -0.0420, 0)
 gi_mode = 0
@@ -431,12 +439,6 @@ gi_mode = 0
 mesh = SubResource("Box")
 material_override = ExtResource("51_field_line_lamps")
 
-[node name="CabbageBelt" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.1120, 0.0140, 0)
-gi_mode = 0
-mesh = ExtResource("53_cabbage_belt")
-material_override = ExtResource("54_cabbage_belt_paper")
-
 [node name="MapSheet" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.1120, -0.0140, 0)
 gi_mode = 0
@@ -478,6 +480,24 @@ transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0560, -0.0980, 0)
 gi_mode = 0
 mesh = SubResource("Box")
 material_override = ExtResource("43_tv_powder")
+
+[node name="ArmyPlastic" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0840, -0.0980, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("54_army_plastic")
+
+[node name="CogSteel" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.1120, -0.0980, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("55_cog_steel")
+
+[node name="ArmyPlasticGrey" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.1400, -0.0980, 0)
+gi_mode = 0
+mesh = SubResource("Box")
+material_override = ExtResource("56_army_plastic_grey")
 
 [node name="ResearchGlow" type="OmniLight3D" parent="."]
 light_bake_mode = 0

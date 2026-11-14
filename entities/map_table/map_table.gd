@@ -8,7 +8,7 @@ extends Node3D
 ##   opened and freed when it is left (one alive at a time: each is a 3200 x 1800 texture and page).
 ## - The world sheet (`Sheets/World`, WorldRegister) comes with its desk card (WORLD_CARD): a click
 ##   on a country there rolls that country's sheet out.
-## - The war sheet (`Sheets/War`, WarSheet: a placeholder) rolls out when a war order is stamped on a
+## - The war sheet (`Sheets/War`, WarSheet: the fight) rolls out when a declaration of war is stamped on a
 ##   farm of the open country sheet, and rolls away when the war is won or left.
 ## A sheet asks for another one with MapSheet.sheet_wanted; show_sheet(id) does the same from code.
 ## THE HOLDER across the top (`Holder`, props/chart_holder: one saddle) carries the rolled-up PARENT
@@ -24,12 +24,24 @@ extends Node3D
 ## company's coins, cabbages, Findings and farms in four windows. It is a desk card's doing
 ## (TALLY_CARD): not on the table until that is stamped, then it drops into its place the next time
 ## the camera is at the map (as a sheet's roll does, with the `TallyArrive` cue); a loaded save has it.
+## Above TO DESK stands TO FARM (`FarmButton`, the same button), once the shortcut card is stamped
+## (SHORTCUT_CARD). Once the tally has landed both buttons sit on its console instead (`Tally/Console`,
+## on_console: the loose plinths blink off at its thud); there TO FARM's socket is blanked off (no cap,
+## a bare plate) until its card. The click plates are the buttons' own (`Plate`), of whichever set stands.
+## to_farm(): to_farm() hands the camera to the farm TV (`farm_tv`, FarmTv.go_to_tv) in a dip
+## to dark (FarmTv.dip: no flight across the room); arrive() is the way back (the TV's TO MAP half).
 ## go_to_map() glides the camera over the sheet like the farm TV's pan (FarmTv.view_at) and
 ## back_to_desk() (the TO DESK button, Esc) glides it home; while it is away the hand hides and the OS
 ## cursor comes back (`Cursor`, FarmTv.away: the one "camera is off the desk" flag both share). A click on a
 ## spot of the open sheet, or on nothing at all, is the sheet's business (a country sheet's farm
-## sites and their deeds, the world sheet's countries, the war sheet's victory box). The corner has
+## sites and their deeds, the world sheet's countries, the war sheet's field). The corner has
 ## its own cold work light (`Lights`), faded in with the pan so the desk view keeps its look.
+## Right of the sheet stands the PERSONNEL DEPOT (`Depot`, entities/war/depot) once the war card is
+## stamped: it drops in the first time the camera is at the map after that (Depot.drop), lifts and
+## rattles its shutter when the mouse is on it, and a click on it (open_depot) swaps the open sheet
+## for the depot sheet (`Sheets/Depot`, DepotSheet), the sheet it replaced rolled up in the holder
+## (the way back). Figures in training train every frame,
+## wherever the camera is (WarRules.tick_training in _process).
 ## Sounds (cues in the scene): ViewIn as the light comes up, ViewOut as it starts to dim on the way
 ## home, Swap for a whole swap (one file, its hits on the steps below), Hover on anything the mouse
 ## takes hold of; the TO DESK button and the farm sites sound for themselves.
@@ -93,11 +105,16 @@ const HOVER_TIME := 0.12
 const ROLL_HALF := Vector2(1.6, 0.066)
 const BACK_HALF := Vector2(0.15, 0.065)
 const BACK := &"back"
+## What the mouse is on when it is on TO FARM (its plate the size of BACK's), and the card that brings it.
+const FARM := &"farm"
+const SHORTCUT_CARD := "farm_shortcut"
 ## What the mouse is on when it is on the roll in the holder (pick).
 const HOLDER := &"holder"
 ## The world sheet's and the war sheet's ids (MapSheet.id); a country's sheet has its country's id.
 const WORLD := &"world"
 const WAR := &"war"
+## The depot sheet's id, and what the mouse is on when it is on the depot.
+const DEPOT := &"depot"
 ## The desk card (UpgradeDesk.CARDS) that brings the world sheet.
 const WORLD_CARD := "world_map"
 ## A country's sheet: loaded when it is opened.
@@ -113,9 +130,12 @@ const ARRIVE_BOUNCE := 0.05
 ## drops from (m).
 const TALLY_CARD := "map_readout"
 const TALLY_FROM := 0.5
-## The hint slip for a spot of the open sheet lies with its top left corner on the sheet's
-## MapSheet.hint_pixel (off the land, so it never covers a site's tags) and is this wide (px), wrapping.
+## The hint slip for a spot of the open sheet is this wide (px), wrapping. It lies right beside the
+## hovered spot's token and tags (MapSheet.spot_box, beside), clear of them, HINT_GAP px off; a sheet
+## without spot boxes puts it on its MapSheet.hint_pixel. It stays HINT_MARGIN px inside the window.
 const SPOT_HINT_WIDTH := 400.0
+const HINT_GAP := 14.0
+const HINT_MARGIN := 8.0
 
 ## The sheet lying open (or on its way out during a swap), and whether a swap is running.
 var shown := &""
@@ -127,6 +147,9 @@ var _arrive_tween: Tween
 ## The sheet asked for during a swap (the last request wins), and the farm with it: swapped in right after.
 var _queued := &""
 var _queued_farm := &""
+var _queued_chosen := {}
+## The sheet the depot sheet was opened from: its parent, the way back.
+var _depot_from := &""
 ## The farm just won in a war: its moment plays on its country's sheet once that lies open again.
 var _won := &""
 ## What the mouse is on at the map: BACK, HOLDER, a spot on the open sheet, or nothing.
@@ -142,6 +165,14 @@ var _pan_tween: Tween
 var _swap_tween: Tween
 var _hover_tween: Tween
 var _camera: Camera3D
+## The camera glides in on what the open sheet wants read (MapSheet.focus: a paper, the negotiation
+## letter) and back when it is gone: `_zoom` 0 is the map view, 1 the camera at `_close` (the map
+## view's turn, slerped, so it never rolls; moved so the paper fills FOCUS_FILL of the screen,
+## centred). `_focus_at` is the middle of the paper it was worked out for.
+var _zoom := 0.0
+var _close := Transform3D()
+var _focus_at := Vector3.INF
+var _zoom_tween: Tween
 var _desk_view: Transform3D
 var _lamp_energy: Array[float] = []
 ## Each weight's place on its corner (its transform in the scene).
@@ -152,10 +183,17 @@ var _weight_rest: Array[Vector3] = []
 @onready var _slot: Marker3D = $Holder/Slot
 @onready var _world: MapSheet = $Sheets/World
 @onready var _war: War = $Sheets/War
-@onready var _back: Marker3D = $Back
-@onready var _button: Node3D = $DeskButton
-@onready var _stencil: Label3D = $DeskButton/Stencil
-@onready var _stencil_ink := _stencil.modulate
+@onready var _depot_sheet: DepotSheet = $Sheets/Depot
+@onready var _depot: Depot = $Depot
+## TO DESK and TO FARM: standing loose, and on the tally's console.
+@onready var _loose: Array[Node3D] = [$DeskButton, $FarmButton]
+@onready var _docked: Array[Node3D] = [$Tally/Console/DeskButton, $Tally/Console/FarmButton]
+@onready var _stencil_ink: Color = ($DeskButton/Stencil as Label3D).modulate
+## Whether the buttons sit on the tally's console (it has landed) rather than stand loose.
+var _on_console := false
+
+## The farm TV that TO FARM hands the camera to (MainStoryWorld); without one TO FARM does nothing.
+@export var farm_tv: FarmTv
 @onready var _lamps: Array[Light3D] = [$Lights/Key, $Lights/Fill]
 @onready var _cursor: Control = $Cursor
 @onready var _hint: Label = $HintLayer/Hint
@@ -192,28 +230,46 @@ func _ready() -> void:
 		_held.show()
 	_tally_here = tally_unlocked(SaveManager.save)
 	_tally.visible = _tally_here
+	_on_console = _tally_here
+	_depot.visible = Depot.standing(SaveManager.save)  # Landed before: there already, without the moment.
 	visible = unlocked(SaveManager.save)
+	_show_buttons()
 	_set_view(0.0)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	WarRules.tick_training(SaveManager.save, delta)  # The depot trains its staff wherever the player is.
 	visible = unlocked(SaveManager.save)
+	_show_buttons()
 	_cursor.visible = _view > 0.0
+	_follow_focus()
 	if _view >= 1.0 and _arrive_tween == null and not swapping:
 		if _held == null and parent_id(shown) != &"":
 			_arrive(_sheet_for(parent_id(shown)))  # The holder lacks the open sheet's parent: its roll drops in.
 		elif not _tally_here and tally_unlocked(SaveManager.save):
 			_arrive_tally()
+		elif Depot.drops(SaveManager.save):
+			_depot.drop()
+	if not Depot.unlocked(SaveManager.save):
+		_depot.hide()
 	_hint.visible = FarmTv.hint_shown(_hovered != &"", BossReport.up)
 	if _hint.visible:
 		var spot := _on_spot()
 		_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if spot else TextServer.AUTOWRAP_OFF
-		_hint.size = Vector2(SPOT_HINT_WIDTH if spot else 0.0, 0.0)  # As small as its text lets it.
-		_hint.position = _mouse_at + Vector2(18.0, 26.0)
+		var window := get_viewport().get_visible_rect().grow(-HINT_MARGIN)
+		var at := _mouse_at + Vector2(18.0, 26.0)
 		if spot:
-			_hint.position = _camera.unproject_position(sheet_of(shown).point_at(sheet_of(shown).hint_pixel()))
-			_hint.text = sheet_of(shown).hint(_hovered)  # Its price, and what is short, as they change.
+			var sheet := sheet_of(shown)
+			_hint.text = sheet.hint(_hovered)  # Its price, and what is short, as they change.
 			_hint.visible = _hint.text != ""  # A spot with nothing to say (a deed lies there).
+			var box := sheet.spot_box(_hovered)
+			at = _camera.unproject_position(sheet.point_at(sheet.hint_pixel()))
+			if box.has_area():
+				_hint.size = Vector2(SPOT_HINT_WIDTH, 0.0)  # Its height for this text.
+				at = beside(_on_screen_box(sheet, box), _hint.size, _on_screen_box(sheet,
+						Rect2(Vector2.ZERO, MapSheet.SIZE * MapSheet.PIXELS_PER_METRE)).intersection(window))
+		_hint.size = Vector2(SPOT_HINT_WIDTH if spot else 0.0, 0.0)  # As small as its text lets it.
+		_hint.position = keep_in(at, _hint.size, window)
 
 
 func _input(event: InputEvent) -> void:
@@ -230,14 +286,28 @@ func _input(event: InputEvent) -> void:
 		return
 	get_viewport().set_input_as_handled()  # Nothing behind the map view takes the mouse.
 	_mouse_at = mouse.position
+	var open := sheet_of(shown)
+	if open.has_method(&"take_mouse") and open.call(&"take_mouse", mouse, sheet_pixel(_camera.project_ray_origin(mouse.position), _camera.project_ray_normal(mouse.position))):
+		# The sheet's own controls have the mouse (the depot's research tree); the slip names what it is on.
+		_hover(open.call(&"hovered_spot") if open.has_method(&"hovered_spot") else &"")
+		return
 	_hover(pick(_camera.project_ray_origin(mouse.position), _camera.project_ray_normal(mouse.position)))
+	if mouse is InputEventMouseMotion:
+		sheet_of(shown).drag(sheet_pixel(_camera.project_ray_origin(mouse.position), _camera.project_ray_normal(mouse.position)))
 	var button := mouse as InputEventMouseButton
+	if button != null and not button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
+		sheet_of(shown).release(_hovered)  # What the sheet's spot dragged is let go.
 	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 		if _hovered == BACK:
-			_button.press()
+			buttons()[0].press()
 			back_to_desk()
+		elif _hovered == FARM:
+			buttons()[1].press()
+			to_farm()
 		elif _hovered == HOLDER:
 			show_sheet(_held.id)  # Back up one level.
+		elif _hovered == DEPOT:
+			open_depot()
 		else:
 			# A spot on the open sheet (a farm site, its deed's stamp box), or a click on nothing,
 			# which the sheet hears too (it puts a farm's deed away).
@@ -254,9 +324,16 @@ static func unlocked(save: SaveGame) -> bool:
 	return Events.chapter_3(save)
 
 
+## Whether TO FARM stands above TO DESK (and the TV's back key is split) for `save`: its card is stamped.
+static func shortcut(save: SaveGame) -> bool:
+	return save.stamped.has(SHORTCUT_CARD)
+
+
 ## Whether sheet `id` can lie on the table for `save`: the home country's always, the world sheet and
 ## every other country's once the world card (WORLD_CARD) is stamped. (The war sheet: show_sheet.)
 static func sheet_unlocked(id: StringName, save: SaveGame) -> bool:
+	if id == DEPOT:
+		return Depot.unlocked(save)
 	return id == World.HOME or ((id == WORLD or World.COUNTRIES.has(id)) and save.stamped.has(WORLD_CARD))
 
 
@@ -272,6 +349,21 @@ static func swap_time() -> float:
 	return POP_AT + POP_TIME
 
 
+## TO DESK and TO FARM that stand now: on the tally's console once it has landed, else the loose ones.
+func buttons() -> Array[Node3D]:
+	return _docked if _on_console else _loose
+
+
+## The loose buttons stand until the tally's console carries them; TO FARM only with its card (on the
+## console its socket stays, blanked off: no cap, a bare plate).
+func _show_buttons() -> void:
+	var farm := shortcut(SaveManager.save)
+	_loose[0].visible = not _on_console
+	_loose[1].visible = farm and not _on_console
+	_docked[1].get_node(^"Button").visible = farm
+	_docked[1].get_node(^"Stencil").visible = farm
+
+
 ## Whether the tally belongs on the table for `save`: its card (TALLY_CARD) is stamped.
 static func tally_unlocked(save: SaveGame) -> bool:
 	return save.stamped.has(TALLY_CARD)
@@ -283,11 +375,13 @@ func on_table(id: StringName) -> bool:
 
 
 ## The sheet one level up from sheet `id`, the one the holder carries while `id` lies open: the
-## war's country for the war sheet, the world sheet for a country once it is unlocked, none (&"")
-## at the top level.
+## war's country for the war sheet, the sheet it was opened from for the depot sheet, the world
+## sheet for a country once it is unlocked, none (&"") at the top level.
 func parent_id(id: StringName) -> StringName:
 	if id == WAR:
 		return World.country_of(_war.farm)
+	if id == DEPOT:
+		return _depot_from
 	return WORLD if id != WORLD and sheet_unlocked(WORLD, SaveManager.save) else &""
 
 
@@ -302,6 +396,29 @@ func go_to_map() -> void:
 	if _at_map or not unlocked(SaveManager.save) or _camera == null or (FarmTv.away and _view <= 0.0):
 		return
 	_pan(true)
+
+
+## The farm TV's TO MAP, in its dip's dark: the camera cuts to the last stretch of the desk's glide
+## here (FarmTv.SETTLE_FROM) and settles over the sheet from there.
+func arrive() -> void:
+	if _at_map or not unlocked(SaveManager.save) or _camera == null:
+		return
+	_view = FarmTv.SETTLE_FROM
+	_pan(true)
+	_set_view(_view)  # Now, not on the tween's first step: no frame shows the desk.
+
+
+## TO FARM: the screen dips to dark (FarmTv.dip), the light here is off and the camera at the farm TV.
+func to_farm() -> void:
+	if not _at_map or farm_tv == null or farm_tv.dipping():
+		return
+	_at_map = false  # Takes nothing meanwhile (the dip eats Esc and the mouse).
+	_hover(&"")
+	farm_tv.dip(func() -> void:
+		_pan(false)
+		_pan_tween.kill()
+		_set_view(0.0)
+		farm_tv.go_to_tv())
 
 
 ## Glides the camera home to the desk view.
@@ -323,21 +440,31 @@ func toggle_view() -> void:
 		go_to_map()
 
 
-## Rolls out sheet `id` (a MapSheet.id: "world", a country's, "war") in place of the one lying open;
-## the war sheet is for `farm`. The sheet already out changes nothing, nor does one that is locked
+## Rolls out sheet `id` (a MapSheet.id: "world", a country's, "war", "depot") in place of the one
+## lying open; the war sheet is for `farm`, with the figures `chosen` for it (unit id -> count,
+## already out of save.army: WarSheet.begin). The sheet already out changes nothing, nor does one that is locked
 ## (sheet_unlocked) or a war without a farm; asked during a swap, it is remembered (the last request
 ## wins) and swapped in as soon as the running swap is done.
-func show_sheet(id: StringName, farm: StringName = &"") -> void:
+func show_sheet(id: StringName, farm: StringName = &"", chosen := {}) -> void:
 	if not (sheet_unlocked(id, SaveManager.save) or (id == WAR and farm != &"")) or sheet_of(shown).busy():
 		return  # Not there, or a purchase plays out on the open sheet: it is not rolled up under it.
 	if swapping:
 		_queued = id
 		_queued_farm = farm
+		_queued_chosen = chosen
 	elif id != shown:
 		if id == WAR:
-			var country := _sheet_for(World.country_of(farm)) as FarmRegister
-			_war.begin(farm, country.site_title(farm), tr(country.title))
+			_war.begin(farm, chosen)
 		_swap(sheet_of(shown), _sheet_for(id))
+
+
+## A click on the depot: the depot sheet rolls out, the sheet lying open goes into the holder (the
+## way back). Not during a war, nor while the depot sheet is out already.
+func open_depot() -> void:
+	if shown == DEPOT or shown == WAR or swapping or not Depot.unlocked(SaveManager.save):
+		return
+	_depot_from = shown
+	show_sheet(DEPOT)
 
 
 ## The sheets alive: the world sheet, the war sheet and the country sheet loaded, if any.
@@ -382,23 +509,30 @@ func _on_wants(id: StringName, farm: StringName) -> void:
 	if shown == WAR and SaveManager.save.farms_owned.has(farm):
 		_won = farm
 		(_sheet_for(id) as FarmRegister).expect(farm)
-	show_sheet(id, farm)
+	var register := sheet_of(shown) as FarmRegister
+	show_sheet(id, farm, register.committed if id == WAR and register != null else {})
 
 
 ## A sheet that left the table: out of sight, and a country's sheet is freed.
 func _retire(sheet: MapSheet) -> void:
 	sheet.hide()
-	if sheet != _world and sheet != _war:
+	if sheet != _world and sheet != _war and sheet != _depot_sheet:
 		sheet.queue_free()
 
 
-## What a ray from the map camera is on: BACK (the TO DESK plate), HOLDER (the roll in the holder),
+## What a ray from the map camera is on: BACK (the TO DESK plate), FARM (TO FARM's, with its card),
+## HOLDER (the roll in the holder),
 ## a spot on the open sheet (MapSheet.spot_at: a farm site's id, a country's), or nothing.
 func pick(from: Vector3, dir: Vector3) -> StringName:
-	if FarmTv.on_glass(FarmTv.rect_uv(_back.global_transform, BACK_HALF, from, dir)):
+	var standing := buttons()
+	if FarmTv.on_glass(FarmTv.rect_uv((standing[0].get_node(^"Plate") as Node3D).global_transform, BACK_HALF, from, dir)):
 		return BACK
+	if shortcut(SaveManager.save) and FarmTv.on_glass(FarmTv.rect_uv((standing[1].get_node(^"Plate") as Node3D).global_transform, BACK_HALF, from, dir)):
+		return FARM
 	if _held != null and not swapping and FarmTv.on_glass(FarmTv.rect_uv(_slot.global_transform, ROLL_HALF, from, dir)):
 		return HOLDER
+	if _depot.hit(from, dir):
+		return DEPOT
 	return sheet_of(shown).spot_at(sheet_pixel(from, dir))
 
 
@@ -428,7 +562,7 @@ func _off() -> Transform3D:
 func _swap(old: MapSheet, new: MapSheet) -> void:
 	_hover(&"")
 	shown = new.id
-	SaveManager.save.map_sheet = String(parent_id(WAR) if new.id == WAR else new.id)
+	SaveManager.save.map_sheet = String(parent_id(new.id) if new.id in [WAR, DEPOT] else new.id)
 	swapping = true
 	var up := new == _held
 	var stow := parent_id(new.id) == old.id
@@ -518,6 +652,9 @@ func _arrive_tally() -> void:
 	_arrive_tween.tween_callback(_tally.show)
 	_arrive_tween.tween_property(_tally, "position", rest, ARRIVE_TIME).from(rest + Vector3.UP * TALLY_FROM) 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_arrive_tween.tween_callback(_tally_arrive_sound.cue.bind(_tally.global_position))
+	_arrive_tween.tween_callback(func() -> void:  # Its console takes the buttons: the loose ones blink off.
+		_on_console = true
+		_show_buttons())
 	_arrive_tween.tween_property(_tally, "scale", Vector3.ONE, SETTLE_TIME).from(WEIGHT_SQUASH) 			.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	_arrive_tween.finished.connect(func() -> void: _arrive_tween = null)
 
@@ -536,7 +673,7 @@ func _swap_done() -> void:
 	var next := _queued
 	_queued = &""
 	if next != &"":
-		show_sheet(next, _queued_farm)
+		show_sheet(next, _queued_farm, _queued_chosen)
 
 
 ## Weight `i` `k` of the way (0 on its corner .. 1 beside the sheet) along its hop.
@@ -563,16 +700,23 @@ func _hover(what: StringName) -> void:
 	_hovered = what
 	if what != &"":
 		_hover_sound.cue(_lay.global_position)
-	_stencil.modulate = Color(0.95, 0.97, 0.96) if what == BACK else _stencil_ink
+	for pair: Array[Node3D] in [_loose, _docked]:
+		(pair[0].get_node(^"Stencil") as Label3D).modulate = Color(0.95, 0.97, 0.96) if what == BACK else _stencil_ink
+		(pair[1].get_node(^"Stencil") as Label3D).modulate = Color(0.95, 0.97, 0.96) if what == FARM else _stencil_ink
 	if what == BACK:
 		_hint.text = "Back to the desk"
+	elif what == FARM:
+		_hint.text = "Straight to the farm"
 	elif what == HOLDER:
 		_hint.text = _held.hint_title()
+	elif what == DEPOT:
+		_hint.text = tr("Personnel depot")
 	elif what != &"":
 		_hint.text = sheet_of(shown).hint(what)
 		if shown == WORLD:
 			warm(what)  # The mouse is on a country: its sheet may be asked for next.
 	sheet_of(shown).hover(what)  # A spot on the open sheet lifts; anything else lets it down.
+	_depot.hover(what == DEPOT)
 	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND if what != &"" else DisplayServer.CURSOR_ARROW)
 	if swapping or _held == null or _arrive_tween != null:
 		return  # The rolls are flying, or the holder is empty: nothing is lifted.
@@ -584,7 +728,35 @@ func _hover(what: StringName) -> void:
 
 ## Whether the mouse is on a spot of the open sheet (not the plate, not the roll in the holder).
 func _on_spot() -> bool:
-	return _hovered != &"" and _hovered != BACK and _hovered != HOLDER
+	return not _hovered in [&"", BACK, FARM, HOLDER, DEPOT]
+
+
+## Where a hint slip `slip` big lies beside `spot` (on screen, px): to its right, else to its left,
+## below or above it, slid along that side to stay in `room` (the paper on screen, inside the
+## window); the first that fits wholly in `room`. None fits: the right one, pushed into `room`.
+static func beside(spot: Rect2, slip: Vector2, room: Rect2) -> Vector2:
+	var top := clampf(spot.position.y, room.position.y, room.end.y - slip.y)
+	var left := clampf(spot.position.x, room.position.x, room.end.x - slip.x)
+	var right := Vector2(spot.end.x + HINT_GAP, top)
+	for at: Vector2 in [right, Vector2(spot.position.x - HINT_GAP - slip.x, top),
+			Vector2(left, spot.end.y + HINT_GAP), Vector2(left, spot.position.y - HINT_GAP - slip.y)]:
+		if room.encloses(Rect2(at, slip)):
+			return at
+	return keep_in(right, slip, room)
+
+
+## `at` moved as little as it takes for a slip `slip` big there to lie inside `room`.
+static func keep_in(at: Vector2, slip: Vector2, room: Rect2) -> Vector2:
+	return Vector2(clampf(at.x, room.position.x, maxf(room.end.x - slip.x, room.position.x)),
+			clampf(at.y, room.position.y, maxf(room.end.y - slip.y, room.position.y)))
+
+
+## What art rect `box` of `sheet` covers on the screen (px).
+func _on_screen_box(sheet: MapSheet, box: Rect2) -> Rect2:
+	var out := Rect2(_camera.unproject_position(sheet.point_at(box.position)), Vector2.ZERO)
+	for corner: Vector2 in [Vector2(box.end.x, box.position.y), Vector2(box.position.x, box.end.y), box.end]:
+		out = out.expand(_camera.unproject_position(sheet.point_at(corner)))
+	return out
 
 
 func _menu_open() -> bool:
@@ -618,4 +790,80 @@ func _set_view(t: float) -> void:
 		_lamps[i].light_energy = _lamp_energy[i] * smoothstep(0.0, LIGHT_FULL, t)
 		_lamps[i].visible = t > 0.0
 	if _camera != null and (t > 0.0 or _pan_tween != null):
-		_camera.transform = FarmTv.view_at(_desk_view, _map_view.global_transform, t)
+		_camera.transform = _zoomed(FarmTv.view_at(_desk_view, _map_view.global_transform, t))
+
+## How long the camera takes to glide in on a paper or back (s), eased both ways: calm, no roll.
+const FOCUS_TIME := 0.4
+## The paper glided in on fills this much of the screen's height or width, whichever comes first.
+const FOCUS_FILL := 0.94
+
+
+## Keeps the camera on what the open sheet wants read: when its paper comes or goes (or moves), the
+## camera glides there, or back to the map view.
+func _follow_focus() -> void:
+	if _camera == null:
+		return
+	var sheet := sheet_of(shown)
+	var corners: PackedVector3Array = sheet.focus() if sheet != null and _at_map and not swapping else PackedVector3Array()
+	var at := Vector3.INF
+	if not corners.is_empty():
+		at = Vector3.ZERO
+		for corner in corners:
+			at += corner / corners.size()
+		if _focus_at.is_finite() and at.distance_to(_focus_at) < 0.001:
+			return
+		_close = close_view(_map_view.global_transform, corners, _camera.fov, _aspect(), FOCUS_FILL)
+	elif not _focus_at.is_finite():
+		return
+	_focus_at = at
+	if _zoom_tween != null:
+		_zoom_tween.kill()
+	_zoom_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_zoom_tween.tween_method(_set_zoom, _zoom, 0.0 if corners.is_empty() else 1.0, FOCUS_TIME)
+
+
+func _set_zoom(k: float) -> void:
+	_zoom = k
+	if _at_map and _view >= 1.0 and (_pan_tween == null or not _pan_tween.is_running()):
+		_camera.transform = _zoomed(FarmTv.view_at(_desk_view, _map_view.global_transform, _view))
+
+
+## `view` moved `_zoom` of the way to the close view: position lerped, turn slerped (one turn here,
+## so it never rolls).
+func _zoomed(view: Transform3D) -> Transform3D:
+	if _zoom <= 0.0:
+		return view
+	var turn := view.basis.get_rotation_quaternion().slerp(_close.basis.get_rotation_quaternion(), _zoom)
+	return Transform3D(Basis(turn).scaled(view.basis.get_scale()), view.origin.lerp(_close.origin, _zoom))
+
+
+func _aspect() -> float:
+	var size := get_viewport().get_visible_rect().size
+	return size.x / maxf(size.y, 1.0)
+
+
+## The camera of `view`'s turn that sees the paper with these corners (world) centred and filling
+## `fill` of the screen (a perspective camera of vertical `fov` degrees and `aspect`).
+static func close_view(view: Transform3D, corners: PackedVector3Array, fov: float, aspect: float, fill: float) -> Transform3D:
+	var middle := Vector3.ZERO
+	for corner in corners:
+		middle += corner / corners.size()
+	var back := view.basis.z.normalized()
+	var reach := tan(deg_to_rad(fov) / 2.0)
+	var near := 0.05
+	var far := view.origin.distance_to(middle) * 2.0
+	for step in 40:  # The distance at which the paper just fills the screen.
+		var distance := (near + far) / 2.0
+		var eye := Transform3D(view.basis, middle + back * distance)
+		var widest := 0.0
+		for corner in corners:
+			var p := eye.affine_inverse() * corner
+			if p.z >= -0.001:
+				widest = INF
+				break
+			widest = maxf(widest, maxf(absf(p.y) / (-p.z * reach), absf(p.x) / (-p.z * reach * aspect)))
+		if widest > fill:
+			near = distance
+		else:
+			far = distance
+	return Transform3D(view.basis, middle + back * far)

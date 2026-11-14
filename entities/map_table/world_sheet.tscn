@@ -7,6 +7,11 @@
 [ext_resource type="Script" path="res://entities/map_table/world_register.gd" id="4_register"]
 [ext_resource type="Shader" path="res://assets/shaders/country_spread.gdshader" id="6_spread"]
 
+[sub_resource type="ShaderMaterial" id="Spread_kohlmark"]
+shader = ExtResource("6_spread")
+shader_parameter/from = Vector2(945, 801)
+shader_parameter/reach = 0.0
+
 [sub_resource type="ShaderMaterial" id="Spread_ostrevia"]
 shader = ExtResource("6_spread")
 shader_parameter/from = Vector2(568, 512)
@@ -57,6 +62,7 @@ roll_name = "WORLD"
 texture = ExtResource("2_art")
 
 [node name="kohlmark" type="TextureRect" parent="Page/Sheet/Layers"]
+material = SubResource("Spread_kohlmark")
 layout_mode = 0
 offset_right = 3200.0
 offset_bottom = 1800.0

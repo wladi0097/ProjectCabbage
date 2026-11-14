@@ -1478,3 +1478,55 @@ func test_the_wide_sheet_sounds_when_it_starts_to_run_out_after_the_pause_not_wh
 	SaveManager.save = real
 	assert_object(sfx.stream).is_same(projector.widen_sound)
 	assert_bool(sfx.playing).is_true()
+
+
+const WAR_NODES := ["war_time_1", "war_time_2", "war_time_3", "war_training_1", "war_training_2", "war_training_3",
+		"war_cap_1", "war_cap_2", "war_cap_3", "war_retreat_1", "war_retreat_2", "war_retreat_3", "war_retreat_4", "war_retreat_5"]
+
+
+func test_the_war_branch_shows_only_once_hostile_acquisitions_are_authorised() -> void:
+	var unauthorised := _stamped_but(["war_mode", "stars"])
+	var authorised := _stamped_but(["stars"])
+	for id: String in WAR_NODES:
+		assert_bool(Projector.is_shown(id, unauthorised)).override_failure_message(id).is_false()
+		assert_bool(Projector.is_shown(id, authorised)).override_failure_message(id).is_true()
+
+
+func test_each_war_chain_steps_up_from_the_war_chest_one_node_after_the_other() -> void:
+	for chain: Array in [["war_time_", 3], ["war_training_", 3], ["war_cap_", 3], ["war_retreat_", 5]]:
+		var parent := "coin_limit_5"  # CENTRAL RESERVE: the war is paid from it.
+		var price := 0
+		for step in range(1, int(chain[1]) + 1):
+			var node := Projector.node_data("%s%d" % [chain[0], step])
+			assert_str(node.parent).override_failure_message(node.id).is_equal(parent)
+			assert_int(node.price).override_failure_message(node.id).is_greater(price)
+			assert_bool(node.has("mul") or node.has("add")).override_failure_message(node.id).is_false()  # WarRules reads tree_bought.
+			parent = node.id
+			price = node.price
+		assert_dict(Projector.node_data("%s%d" % [chain[0], int(chain[1]) + 1])).is_empty()
+
+
+func test_the_retreat_chain_needs_the_withdrawal_protocol() -> void:
+	var save := _stamped_but(["retreat", "stars"])
+	save.coins = 100000000
+	save.tree_bought = PackedStringArray(["coin_limit_1", "coin_limit_2", "coin_limit_3", "coin_limit_4", "coin_limit_5"])
+	assert_bool(Projector.is_shown("war_retreat_1", save)).is_true()  # Shown, with a padlock naming the form.
+	assert_str(Projector.locked_by("war_retreat_1", save)).is_equal("retreat")
+	assert_bool(Projector.buy("war_retreat_1", save)).is_false()
+	assert_bool(Projector.buy("war_time_1", save)).is_true()  # The other chains need only the war card.
+	save.stamped.append("retreat")
+	assert_bool(Projector.buy("war_retreat_1", save)).is_true()
+
+
+func test_every_war_node_has_english_and_german_text_and_never_says_units() -> void:
+	var german := {}
+	var table := FileAccess.open("res://ressources/translations/game.csv", FileAccess.READ)
+	while not table.eof_reached():
+		var row := table.get_csv_line()
+		if row.size() >= 3 and not row[2].is_empty():
+			german[row[0]] = true
+	for id: String in WAR_NODES:
+		var node := Projector.node_data(id)
+		for text: String in [node.title, node.body]:
+			assert_bool(german.has(text)).override_failure_message("%s: no German for %s" % [id, text]).is_true()
+			assert_bool(text.to_lower().contains("unit")).override_failure_message("%s says units" % id).is_false()

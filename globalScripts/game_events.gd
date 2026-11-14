@@ -67,6 +67,11 @@ const EVENTS := {
 	## (UpgradeDesk "no_taxes" needs the same farms).
 	home_country = {home_farms = HOME_SITES, report = {re = "THE COUNTRY IS OURS",
 		body = "Every farm in Kohlmark now belongs to the company. A country that grows nothing but our cabbages is, for practical purposes, ours. The board has reviewed the constitution and found it amendable. From today we write the laws. The first one is on your desk."}},
+	## Chapter 3's war line: the first law is stamped (the home farms were the field associates' tutorials)
+	## and BIGGER_ARMIES farms are owned. Deals EXPAND THE FIELD WORKFORCE (UpgradeDesk "bigger_armies",
+	## `event`: army cap +2, read by WarRules).
+	bigger_armies_memo = {card = "no_taxes", farms = BIGGER_ARMIES, report = {re = "WE NEED BIGGER ARMIES",
+		body = "The board has reviewed the war reports. The victories are adequate. The armies are not: a war fought by a handful of staff is a meeting. The field workforce is to be expanded. The requisition is in your tray. Keep the paperwork for the fallen in order."}},
 	## Once per save: a form in the tray has been affordable for PROGRESS_AFTER play seconds with none
 	## approved (progress_due; UpgradeDesk ticks save.progress_wait). Changes nothing but the paperwork.
 	## Last, so it never jumps ahead of a story note due at the same moment.
@@ -77,6 +82,8 @@ const EVENTS := {
 ## channel 1, one lamp each on the FieldLine), and how many of the home ones their owners sell.
 const FARMS := 24
 const HOME_SELLERS := 5
+## Farms owned (the first law stamped) when the board asks for bigger armies (bigger_armies_memo).
+const BIGGER_ARMIES := 10
 ## The home country's farm sites (the country sheet, FarmRegister): how many there are, and what
 ## their ids start with ("K-1".."K-8"; a farm abroad has another prefix).
 const HOME_SITES := 8
@@ -95,8 +102,8 @@ const SHOCK_AFTER_FARM := 40
 ## The desk cards that may still be left when the tray counts as run dry (tray_dry): dear ones the
 ## player saves up for anyway (the desk lamp, the mat allowance), and optional ones a player may
 ## never want (the behaviour memos, the no-effect ledger; in chapter 3, long after the tray ran dry,
-## the handling schedule and the map table's holdings indicator). Nothing else needs any of them.
-const DRY_LEFT := ["golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger", "hand_schedule", "map_readout"]
+## the handling schedule, the map table's holdings indicator and the farm shortcut). Nothing else needs any of them.
+const DRY_LEFT := ["golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger", "hand_schedule", "map_readout", "farm_shortcut"]
 const Demo := preload("res://globalScripts/demo.gd")
 
 

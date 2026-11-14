@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://entities/map_table/farm_deed.gd" id="1_deed"]
+[ext_resource type="PackedScene" path="res://entities/map_table/negotiation_letter.tscn" id="letter_scene"]
 [ext_resource type="Shader" path="res://assets/shaders/map_sheet.gdshader" id="2_shader"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_slide_1.wav" id="sfx_deed_slide_1"]
@@ -11,9 +12,6 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_refuse_1.wav" id="sfx_deed_refuse_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_refuse_2.wav" id="sfx_deed_refuse_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_roll.wav" id="sfx_deed_roll"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_dial_1.wav" id="sfx_deed_dial_1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_dial_2.wav" id="sfx_deed_dial_2"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_dial_3.wav" id="sfx_deed_dial_3"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_mood_stamp_1.wav" id="sfx_deed_mood_stamp_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_mood_stamp_2.wav" id="sfx_deed_mood_stamp_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_offer_taken_1.wav" id="sfx_deed_offer_taken_1"]
@@ -22,6 +20,18 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_envelope_2.wav" id="sfx_deed_envelope_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_price_up.wav" id="sfx_deed_price_up"]
 
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_dial_1.wav" id="sfx_count_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_dial_2.wav" id="sfx_count_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_dial_3.wav" id="sfx_count_3"]
+
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_count"]
+random_pitch = 1.04
+random_volume_offset_db = 1.0
+streams_count = 3
+stream_0/stream = ExtResource("sfx_count_1")
+stream_1/stream = ExtResource("sfx_count_2")
+stream_2/stream = ExtResource("sfx_count_3")
 [sub_resource type="AudioStreamRandomizer" id="Rand_slide"]
 random_pitch = 1.06
 random_volume_offset_db = 1.5
@@ -43,14 +53,6 @@ random_volume_offset_db = 1.0
 streams_count = 2
 stream_0/stream = ExtResource("sfx_deed_refuse_1")
 stream_1/stream = ExtResource("sfx_deed_refuse_2")
-
-[sub_resource type="AudioStreamRandomizer" id="Rand_dial"]
-random_pitch = 1.05
-random_volume_offset_db = 1.0
-streams_count = 3
-stream_0/stream = ExtResource("sfx_deed_dial_1")
-stream_1/stream = ExtResource("sfx_deed_dial_2")
-stream_2/stream = ExtResource("sfx_deed_dial_3")
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_mood"]
 random_pitch = 1.05
@@ -220,7 +222,7 @@ theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 76
 theme_override_constants/line_spacing = -10
-text = "Weiler Marsh Holding"
+text = "Ballhead Moor Holding"
 vertical_alignment = 1
 autowrap_mode = 2
 
@@ -327,6 +329,44 @@ text = "SHORT 9,000"
 horizontal_alignment = 2
 vertical_alignment = 1
 
+[node name="ScoutHead" type="Label" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 44.0
+offset_top = 462.0
+offset_right = 404.0
+offset_bottom = 496.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "DEFENCES ON RECORD"
+vertical_alignment = 1
+
+[node name="ScoutFrame" type="Panel" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 42.0
+offset_top = 498.0
+offset_right = 406.0
+offset_bottom = 742.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="Defences" type="Label" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 44.0
+offset_top = 740.0
+offset_right = 404.0
+offset_bottom = 776.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 21
+text = "CANNONS 2   MORTARS 1"
+vertical_alignment = 1
+clip_text = true
+
 [node name="Rule2" type="ColorRect" parent="Page/Form"]
 layout_mode = 0
 offset_left = 44.0
@@ -336,203 +376,50 @@ offset_bottom = 556.0
 mouse_filter = 2
 color = Color(0.11, 0.125, 0.118, 1)
 
-[node name="Offer" type="Control" parent="Page/Form"]
-layout_mode = 3
-anchors_preset = 0
+[node name="Start" type="Panel" parent="Page/Form"]
+visible = false
+layout_mode = 0
 offset_left = 44.0
-offset_top = 566.0
-offset_right = 484.0
-offset_bottom = 766.0
-mouse_filter = 2
-
-[node name="Mood" type="Control" parent="Page/Form"]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 500.0
-offset_top = 566.0
+offset_top = 596.0
 offset_right = 776.0
-offset_bottom = 766.0
-mouse_filter = 2
-
-[node name="Head" type="Label" parent="Page/Form/Offer"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = -8.0
-offset_right = 355.0
-offset_bottom = 36.0
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 40
-text = "CABBAGES OFFERED"
-vertical_alignment = 1
-
-[node name="Round" type="Label" parent="Page/Form/Offer"]
-layout_mode = 0
-offset_left = 355.0
-offset_top = -8.0
-offset_right = 440.0
-offset_bottom = 36.0
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 40
-text = "1 / 5"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="Less" type="Panel" parent="Page/Form/Offer"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 48.0
-offset_right = 80.0
-offset_bottom = 128.0
+offset_bottom = 736.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("BoxLine")
 
-[node name="Word" type="Label" parent="Page/Form/Offer/Less"]
+[node name="Word" type="Label" parent="Page/Form/Start"]
 layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 80.0
-offset_bottom = 80.0
+offset_left = 20.0
+offset_right = 712.0
+offset_bottom = 140.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 60
-text = "<"
+text = "START HAGGLING"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Value" type="Panel" parent="Page/Form/Offer"]
-layout_mode = 0
-offset_left = 88.0
-offset_top = 48.0
-offset_right = 352.0
-offset_bottom = 128.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("FrameLine")
-
-[node name="Number" type="Label" parent="Page/Form/Offer/Value"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 264.0
-offset_bottom = 80.0
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 56
-text = "$150,000"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="More" type="Panel" parent="Page/Form/Offer"]
-layout_mode = 0
-offset_left = 360.0
-offset_top = 48.0
-offset_right = 440.0
-offset_bottom = 128.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("BoxLine")
-
-[node name="Word" type="Label" parent="Page/Form/Offer/More"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 80.0
-offset_bottom = 80.0
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 60
-text = ">"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Submit" type="Panel" parent="Page/Form/Offer"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 136.0
-offset_right = 440.0
-offset_bottom = 200.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("BoxLine")
-
-[node name="Word" type="Label" parent="Page/Form/Offer/Submit"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 440.0
-offset_bottom = 64.0
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 40
-text = "SUBMIT OFFER"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Closed" type="Label" parent="Page/Form/Offer"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 48.0
-offset_right = 440.0
-offset_bottom = 200.0
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 44
-text = "NO FURTHER OFFERS"
-visible = false
-autowrap_mode = 2
-vertical_alignment = 1
-
-[node name="Head" type="Label" parent="Page/Form/Mood"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = -8.0
-offset_right = 276.0
-offset_bottom = 36.0
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 40
-text = "OWNER'S MOOD"
-vertical_alignment = 1
-
-[node name="Imprint" type="Panel" parent="Page/Form/Mood"]
+[node name="StaffHead" type="Label" parent="Page/Form"]
 visible = false
 layout_mode = 0
-offset_left = 10.0
-offset_top = 60.0
-offset_right = 276.0
-offset_bottom = 172.0
-rotation = -0.1
-pivot_offset = Vector2(133, 56)
-mouse_filter = 2
-theme_override_styles/panel = SubResource("ImprintLine")
-
-[node name="Word" type="Label" parent="Page/Form/Mood/Imprint"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 266.0
-offset_bottom = 112.0
-auto_translate_mode = 2
+offset_left = 420.0
+offset_top = 462.0
+offset_right = 776.0
+offset_bottom = 496.0
 theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
-theme_override_font_sizes/font_size = 42
-text = "UNIMPRESSED"
-horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "STAFF COMMITTED"
 vertical_alignment = 1
 
-[node name="Divider" type="ColorRect" parent="Page/Form"]
+[node name="Staff" type="Control" parent="Page/Form"]
+visible = false
 layout_mode = 0
-offset_left = 491.0
-offset_top = 556.0
-offset_right = 493.0
+offset_left = 420.0
+offset_top = 500.0
+offset_right = 776.0
 offset_bottom = 776.0
 mouse_filter = 2
-color = Color(0.11, 0.125, 0.118, 1)
 
 [node name="Rule3" type="ColorRect" parent="Page/Form"]
 layout_mode = 0
@@ -555,21 +442,6 @@ theme_override_font_sizes/font_size = 40
 text = "The seller confirms that the transfer is voluntary."
 vertical_alignment = 2
 autowrap_mode = 2
-
-[node name="Log" type="Label" parent="Page/Form"]
-layout_mode = 0
-offset_left = 44.0
-offset_top = 786.0
-offset_right = 484.0
-offset_bottom = 1004.0
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 34
-text = "$150,000  CONSIDERED"
-visible = false
-theme_override_constants/line_spacing = -9
-vertical_alignment = 0
 
 [node name="Reason" type="Label" parent="Page/Form"]
 visible = false
@@ -660,6 +532,11 @@ extra_cull_margin = 0.3
 mesh = SubResource("DeedPlane")
 material_override = SubResource("DeedMat")
 
+[node name="Figures" type="Node3D" parent="."]
+
+[node name="Scout" type="Node3D" parent="."]
+visible = false
+
 [node name="Stamp" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.23, 0, 0.895)
 visible = false
@@ -687,6 +564,10 @@ cast_shadow = 0
 mesh = SubResource("RingMesh")
 surface_material_override/0 = SubResource("RingMat")
 
+[node name="Haggle" parent="." instance=ExtResource("letter_scene")]
+transform = Transform3D(0.99955, 0, -0.029996, 0, 1, 0, 0.029996, 0, 0.99955, -0.374, 0.006, 0.024)
+visible = false
+
 [node name="Slide" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_slide")
 bus = &"SFX"
@@ -706,11 +587,6 @@ min_interval = 0.15
 [node name="Roll" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("sfx_deed_roll")
 volume_db = -6.0
-bus = &"SFX"
-script = ExtResource("sfx_cue")
-
-[node name="Dial" type="AudioStreamPlayer3D" parent="."]
-stream = SubResource("Rand_dial")
 bus = &"SFX"
 script = ExtResource("sfx_cue")
 
@@ -734,3 +610,9 @@ script = ExtResource("sfx_cue")
 stream = ExtResource("sfx_deed_price_up")
 bus = &"SFX"
 script = ExtResource("sfx_cue")
+
+[node name="Count" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_count")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+min_interval = 0.05

@@ -116,10 +116,11 @@ func test_the_sheets_carry_their_title_blocks_farm_names_and_country_names() -> 
 		assert_array(texts).override_failure_message(id).contains([_labels_json().country_maps[id].capital.name])
 		for site: Dictionary in _farm_sites(id):
 			assert_array(texts).contains([site.name])  # Its name tag; the price tag is FarmRegister's.
-	assert_array(_texts(_sheet("kohlmark"))).contains(["KOHLMARK - NATIONAL FARM REGISTER", "KOHLBURG"])
+	assert_array(_texts(_sheet("kohlmark"))).contains(["KOHLMARK - NATIONAL FARM REGISTER", "WIRSINGEN"])
 	assert_array(_texts(_sheet("world"))).contains(
 			["WORLD MARKETS - GENERAL CHART", "Kohlmark", "The Lower Provinces", "Endmark Isle", "Grey Sea"])
-	assert_array(_texts(_sheet("war"))).contains(["WAR", "FIELD DISPATCH", "DECLARE VICTORY", "FORM 9-T  THEATRE OF OPERATIONS"])
+	assert_array(_texts(_sheet("war"))).contains(["FORM 9-T  THEATRE OF OPERATIONS", "THEATRE OF OPERATIONS - FARM SITE",
+			"PERSONNEL IN THEATRE", "START"])
 
 
 func test_lettering_too_small_to_read_from_the_map_camera_is_left_off_outside_the_title_block() -> void:
@@ -140,7 +141,7 @@ func test_the_product_is_called_cabbage_on_every_sheet_never_unit() -> void:
 
 func test_names_and_numbers_are_left_as_they_are_in_every_language() -> void:
 	for label in _labels(_sheet("kohlmark")):
-		if label.text in ["Brasswold Holding", "KOHLBURG", "N", "20 km", "1 : 240 000"]:
+		if label.text in ["Rotkohlheim Holding", "WIRSINGEN", "N", "20 km", "1 : 240 000"]:
 			assert_int(label.auto_translate_mode).override_failure_message(label.text).is_equal(Node.AUTO_TRANSLATE_MODE_DISABLED)
 		if label.text in ["KOHLMARK - NATIONAL FARM REGISTER", "SHEET", "Trunk Road B-12"]:
 			assert_int(label.auto_translate_mode).override_failure_message(label.text).is_not_equal(Node.AUTO_TRANSLATE_MODE_DISABLED)
@@ -211,8 +212,11 @@ func test_more_art_can_be_laid_over_a_sheets_base_under_its_lettering() -> void:
 		var page := sheet.get_node("Page/Sheet")
 		assert_int(page.get_node("Art").get_index()).is_equal(0)
 		assert_int(page.get_node("Layers").get_index()).is_equal(1)
-		for label in _labels(sheet):
-			assert_int(label.get_index()).is_greater(1)
+		for label in _labels(sheet):  # Lettering in a group (the war sheet's tray rows): the group's place.
+			var top: Node = label
+			while top.get_parent() != page:
+				top = top.get_parent()
+			assert_int(top.get_index()).is_greater(1)
 
 
 func test_a_sheet_is_printed_again_when_the_language_changes() -> void:
@@ -238,7 +242,7 @@ func test_a_rolled_sheet_wears_its_name_tag_and_an_open_one_does_not() -> void:
 func test_a_token_stands_on_each_farm_site_and_one_on_each_country_of_the_world() -> void:
 	assert_int(_sheet("kohlmark").thing_count()).is_equal(8)
 	assert_int(_sheet("world").thing_count()).is_equal(9)
-	assert_int(_sheet("war").thing_count()).is_equal(0)
+	assert_int(_sheet("war").thing_count()).is_equal(1)  # Its fighting map, standing up as one.
 	for thing: Node3D in _sheet("sulvania").get_node("Things").get_children():
 		assert_float(thing.position.x).is_between(-MapSheet.SIZE.x / 2.0, MapSheet.SIZE.x / 2.0)
 		assert_float(thing.position.z).is_between(0.0, MapSheet.SIZE.y)

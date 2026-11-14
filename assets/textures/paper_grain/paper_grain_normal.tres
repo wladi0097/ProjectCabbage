@@ -1,0 +1,14 @@
+[gd_resource type="NoiseTexture2D" format=3 uid="uid://ds7kj8k4rdhxn"]
+
+[sub_resource type="FastNoiseLite" id="Fibre"]
+seed = 7
+frequency = 0.045
+fractal_lacunarity = 2.3
+fractal_gain = 0.55
+
+[resource]
+noise = SubResource("Fibre")
+seamless = true
+as_normal_map = true
+seamless_blend_skirt = 0.2
+bump_strength = 4.0

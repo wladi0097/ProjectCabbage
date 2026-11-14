@@ -12,6 +12,10 @@ extends Node3D
 ## are their pilot windows, lit for the channel showing) switch the glass
 ## between `screen_scene` (the fields) and `tree_scene` (the farm tree, locked until its card) with
 ## STATIC_TIME of static; the channel is kept in save.farm_channel.
+## Once the shortcut card is stamped (MapTable.shortcut) the BACK key is split in two (`Corner/Tv/Split`
+## shows, the plain `Stencil` hides): its top half is TO DESK as before, its bottom half TO MAP
+## (to_map: a dip to dark, `Dip`, and the camera is at the map table, `map`, the set off).
+## go_to_tv() is the map's way here (its TO FARM button, in the same dip).
 
 const CARD := "family_farm"
 ## The glass in the model: centre, normal +Z, half size (m), and the viewport it shows (px).
@@ -24,6 +28,12 @@ const WARP := 0.06
 ## face centre and half size (m), as the glass; the click target takes in its chrome rim.
 const BACK_CENTRE := Vector3(0.404063, 0.21, 0.263)
 const BACK_HALF := Vector2(0.024, 0.045)
+## The split BACK key's halves (MapTable.shortcut): TO DESK on top, TO MAP below, each this half size.
+const SPLIT_BACK_CENTRE := Vector3(0.404063, 0.2325, 0.263)
+const MAP_CENTRE := Vector3(0.404063, 0.1875, 0.263)
+const SPLIT_HALF := Vector2(0.024, 0.0225)
+## The TO MAP stencil hovered: the oxblood of the map table's buttons (pale ink would vanish on the key).
+const MAP_HOVER_INK := Color(0.6, 0.1, 0.08)
 ## The CH 1 / CH 2 keys at the top of the panel, as BACK (the model's CZ), rim included.
 const CHANNEL_CENTRES: Array[Vector3] = [Vector3(0.404063, 0.47, 0.263), Vector3(0.404063, 0.385, 0.263)]
 const CHANNEL_HALF := Vector2(0.023, 0.039)
@@ -55,6 +65,13 @@ const REMOTE_LIFT := 0.03
 const REMOTE_TILT := 0.14
 const REMOTE_HOVER_TIME := 0.15
 const STATIC_TIME := 0.12
+## The shortcuts (TO FARM, TO MAP) do not fly the camera across the room (twice the desk glides' way and
+## a half turn with a roll, in the same time: it made players sick). The screen dips to dark over
+## DIP_OUT s, the camera cuts to SETTLE_FROM of the way along the destination's own glide from the
+## desk, and the rest of that glide (its last, small stretch) plays as the dark lifts over DIP_IN s.
+const DIP_OUT := 0.15
+const DIP_IN := 0.25
+const SETTLE_FROM := 0.85
 ## A channel key's pilot window glow (a pale phosphor green, the keys' material): off, the channel
 ## showing (times the set's power: dark with the set off), hovered.
 const BUTTON_GLOW: Array[float] = [0.0, 1.4, 4.5]
@@ -73,9 +90,14 @@ static var away := false
 
 @export var screen_scene: PackedScene
 @export var tree_scene: PackedScene
+## The map table TO MAP hands the camera to (MainStoryWorld); without one the key is never split.
+@export var map: MapTable
 
 var _lamp_energy: Array[float] = []
 var _back_hover := false
+var _map_hover := false
+## The shortcuts' dip to dark (dip), while it runs.
+var _dip_tween: Tween
 ## The channel button under the mouse (1, 2; 0 none), the channels' screens, seconds of static left.
 var _channel_hover := 0
 var _channels: Array[CanvasItem] = []
@@ -107,8 +129,17 @@ var _desk_view: Transform3D
 @onready var _lamps: Array[OmniLight3D] = [$Corner/Lamp, $Corner/Fill, $Corner/Step, $Corner/Wash]
 ## Shown while the camera is off the desk: the hand hides and the OS cursor comes back.
 @onready var _cursor: Control = $Cursor
+## The shortcuts' dark (dip), over everything; clear (alpha 0) otherwise.
+@onready var _dark: ColorRect = $Dip/Dark
 ## The hint slip that follows the mouse over the BACK button.
 @onready var _hint: Label = $HintLayer/Hint
+## The plain TO DESK stencil, and the split key's divider and two stencils (shown instead once split).
+@onready var _stencil: Label3D = $Corner/Tv/Stencil
+@onready var _split: Node3D = $Corner/Tv/Split
+@onready var _map_stencil: Label3D = $Corner/Tv/Split/MapStencil
+@onready var _map_ink := _map_stencil.modulate
+## The TO MAP half's arrow (the BACK arrow's mesh), lit like it on hover.
+@onready var _map_arrow: MeshInstance3D = $Corner/Tv/Split/MapArrow
 ## The burst of static over the glass on a channel switch, and the channel buttons.
 @onready var _static: CanvasItem = $ScreenViewport/Static
 @onready var _buttons: Array[MeshInstance3D] = [$Corner/Tv/Channel1, $Corner/Tv/Channel2]  # their pilot windows
@@ -137,9 +168,11 @@ func _ready() -> void:
 	_remote.visible = owned
 	_corner.visible = owned
 	_set_power(0.0)
+	_show_split()
 
 
 func _process(delta: float) -> void:
+	_show_split()
 	if _at_tv:
 		SaveManager.save.tv_seconds += delta
 	_static_left = maxf(_static_left - delta, 0.0)
@@ -150,9 +183,10 @@ func _process(delta: float) -> void:
 	for i in _lamps.size():
 		_lamps[i].light_energy = _lamp_energy[i] * smoothstep(0.0, 0.5, _view)  # Up early: the corner reads mid-pan.
 		_lamps[i].visible = _view > 0.0
-	_hint.visible = hint_shown(_back_hover, BossReport.up)
+	_hint.visible = hint_shown(_back_hover or _map_hover, BossReport.up)
 	if _hint.visible:
-		var below := _camera.unproject_position(back_frame() * Vector3(0.0, -BACK_HALF.y - 0.07, 0.0))
+		var key := map_frame() if _map_hover else back_frame()
+		var below := _camera.unproject_position(key * Vector3(0.0, -back_half().y - 0.07, 0.0))
 		_hint.position = below - Vector2(_hint.size.x / 2.0, 0.0)
 	_screen.render_target_update_mode = SubViewport.UPDATE_ALWAYS if _view > 0.0 else SubViewport.UPDATE_DISABLED
 	var hum := _view * _power
@@ -168,6 +202,9 @@ func _input(event: InputEvent) -> void:
 	# _input, not _unhandled_input: the pause menu (later in the tree) would take Esc first.
 	# A boss report is up: it takes the mouse (and Esc goes to the pause menu), not the TV.
 	# The pause menu is open (Esc during a report's flight can open it): its buttons take the mouse.
+	if dipping():
+		get_viewport().set_input_as_handled()  # Esc or a click mid-shortcut must not catch the camera mid-cut.
+		return
 	if not takes_input(_at_tv, BossReport.up, _menu_open()):
 		return
 	if event.is_action_pressed("ui_cancel"):
@@ -181,7 +218,8 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 	var from := _camera.project_ray_origin(mouse.position)
 	var dir := _camera.project_ray_normal(mouse.position)
-	_hover_back(on_glass(rect_uv(back_frame(), BACK_HALF, from, dir)))
+	_hover_back(on_glass(rect_uv(back_frame(), back_half(), from, dir)))
+	_hover_map(split() and on_glass(rect_uv(map_frame(), SPLIT_HALF, from, dir)))
 	_hover_channel(_channel_at(from, dir))
 	var uv := glass_uv(screen_frame(), from, dir)
 	var was_on := _on_glass
@@ -200,6 +238,10 @@ func _input(event: InputEvent) -> void:
 	_set_cursor()
 	var button := mouse as InputEventMouseButton
 	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
+		if _map_hover:
+			$Click.cue(map_frame().origin)
+			to_map()
+			return
 		if _channel_hover > 0:
 			$Click.cue(channel_frame(_channel_hover).origin)
 			_switch(_channel_hover)
@@ -299,7 +341,7 @@ func _set_cursor() -> void:
 	var glass: int = Input.CURSOR_ARROW
 	if hovered != null:
 		glass = hovered.get_cursor_shape()
-	var shape := tv_cursor(_back_hover or _channel_hover > 0, _on_glass, glass as Input.CursorShape)
+	var shape := tv_cursor(_back_hover or _map_hover or _channel_hover > 0, _on_glass, glass as Input.CursorShape)
 	DisplayServer.cursor_set_shape(int(shape) as DisplayServer.CursorShape)
 
 
@@ -313,9 +355,68 @@ func screen_frame() -> Transform3D:
 	return _corner.global_transform * Transform3D(Basis(), SCREEN_CENTRE)
 
 
-## The BACK button's face in the world, as screen_frame.
+## The BACK button's face in the world (its top half once split), as screen_frame.
 func back_frame() -> Transform3D:
-	return _corner.global_transform * Transform3D(Basis(), BACK_CENTRE)
+	return _corner.global_transform * Transform3D(Basis(), SPLIT_BACK_CENTRE if split() else BACK_CENTRE)
+
+
+## The BACK button's click target's half size: the whole key, or its top half once split.
+func back_half() -> Vector2:
+	return SPLIT_HALF if split() else BACK_HALF
+
+
+## The TO MAP half's face in the world (the split key's bottom half), as screen_frame.
+func map_frame() -> Transform3D:
+	return _corner.global_transform * Transform3D(Basis(), MAP_CENTRE)
+
+
+## Whether the BACK key is split into TO DESK and TO MAP: the shortcut card is stamped and there is a
+## map table to go to.
+func split() -> bool:
+	return map != null and MapTable.shortcut(SaveManager.save)
+
+
+## The map's TO FARM, in the dip's dark: the camera cuts to the last stretch of the desk's glide to
+## the TV (SETTLE_FROM) and settles on the set from there.
+func go_to_tv() -> void:
+	if _at_tv:
+		return
+	_view = SETTLE_FROM
+	_pan(true)
+	_set_view(_view)  # Now, not on the tween's first step: no frame shows the desk.
+
+
+## TO MAP: the screen dips to dark, the set is off and the camera at the map table (MapTable.arrive).
+func to_map() -> void:
+	if not _at_tv or not split() or dipping():
+		return
+	_at_tv = false  # Takes nothing meanwhile (the dip eats Esc and the mouse).
+	dip(func() -> void:
+		leave()
+		map.arrive())
+
+
+## The shortcuts' way across the room: the screen goes dark over DIP_OUT s, `cut` moves the camera,
+## and the dark lifts over DIP_IN s. Input is eaten until it is done.
+func dip(cut: Callable) -> void:
+	_dip_tween = create_tween()
+	_dip_tween.tween_property(_dark, "color:a", 1.0, DIP_OUT)
+	_dip_tween.tween_callback(cut)
+	_dip_tween.tween_property(_dark, "color:a", 0.0, DIP_IN)
+	_dip_tween.finished.connect(func() -> void: _dip_tween = null)
+
+
+## Whether a shortcut's dip is running.
+func dipping() -> bool:
+	return _dip_tween != null
+
+
+## In a shortcut's dark: the set is off and the corner unlit at once, the camera handed on.
+func leave() -> void:
+	_pan(false)
+	_tween.kill()
+	_set_power(0.0)
+	_set_view(0.0)
 
 
 ## Whether the TV takes Esc and the mouse: only at the TV with no boss report up and no menu open.
@@ -399,6 +500,7 @@ func _pan(to_tv: bool) -> void:
 		_screen.notification(NOTIFICATION_VP_MOUSE_EXIT)
 	if not to_tv:
 		_hover_back(false)
+		_hover_map(false)
 		_hover_channel(0)
 		_set_cursor()
 
@@ -450,4 +552,25 @@ func _hover_back(on: bool) -> void:
 	_back_hover = on
 	_arrow.emission_energy_multiplier = 2.4 if on else 0.0
 	_arrow_mesh.position.z = ARROW_LIFT if on else 0.0
+	if on:
+		_hint.text = "Back to the desk"
 	_set_cursor()
+
+
+## Lights the TO MAP stencil and turns the cursor into a pointing hand while the mouse is on it.
+func _hover_map(on: bool) -> void:
+	if on == _map_hover:
+		return
+	_map_hover = on
+	_map_stencil.modulate = MAP_HOVER_INK if on else _map_ink
+	(_map_arrow.material_override as StandardMaterial3D).emission_energy_multiplier = 2.4 if on else 0.0
+	_map_arrow.position.z = ARROW_LIFT if on else 0.0
+	if on:
+		_hint.text = "Straight to the map"
+	_set_cursor()
+
+
+func _show_split() -> void:
+	var on := split()
+	_split.visible = on
+	_stencil.visible = not on

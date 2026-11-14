@@ -1,0 +1,80 @@
+[gd_scene format=3]
+
+[sub_resource type="StyleBoxFlat" id="SlipPaper"]
+bg_color = Color(0.88, 0.875, 0.8, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.11, 0.125, 0.118, 0.55)
+shadow_color = Color(0.11, 0.125, 0.118, 0.3)
+shadow_size = 5
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="ImprintLine"]
+draw_center = false
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.416, 0.169, 0.157, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="ReplySlip" type="Panel"]
+offset_right = 732.0
+offset_bottom = 84.0
+pivot_offset = Vector2(366, 42)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("SlipPaper")
+
+[node name="Imprint" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 198.0
+offset_bottom = 42.0
+rotation = -0.06
+pivot_offset = Vector2(95, 18)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("ImprintLine")
+
+[node name="Word" type="Label" parent="Imprint"]
+layout_mode = 0
+offset_right = 190.0
+offset_bottom = 36.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 26
+text = "UNIMPRESSED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="About" type="Label" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 44.0
+offset_right = 206.0
+offset_bottom = 82.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 22
+text = "re: 60 cabbages"
+
+[node name="Line" type="Label" parent="."]
+layout_mode = 0
+offset_left = 214.0
+offset_top = 0.0
+offset_right = 724.0
+offset_bottom = 84.0
+auto_translate_mode = 2
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_type_variation = &"FormLabel"
+theme_override_font_sizes/font_size = 27
+text = "Is this a joke? Double it."
+vertical_alignment = 1
+autowrap_mode = 3

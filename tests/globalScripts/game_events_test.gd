@@ -483,3 +483,25 @@ func test_the_home_countrys_farm_sites_are_the_ones_on_its_own_sheet() -> void:
 	for site in sites:
 		assert_bool(site.begins_with(Events.HOME_PREFIX)).override_failure_message(site).is_true()
 	assert_int(Events.HOME_SELLERS).is_less(Events.HOME_SITES)
+
+
+func test_the_board_asks_for_bigger_armies_once_the_first_law_is_stamped_and_ten_farms_are_ours() -> void:
+	var save := SaveGame.new()
+	save.reports = PackedStringArray(["welcome", "first_farm", "no_more_sellers", "home_country"])
+	for n in Events.BIGGER_ARMIES:
+		save.farms_owned.append("F-%d" % n)
+	assert_bool(Events.due("bigger_armies_memo", save)).is_false()  # The farms, but no law yet.
+	save.stamped.append("no_taxes")
+	save.farms_owned.resize(Events.BIGGER_ARMIES - 1)
+	assert_bool(Events.due("bigger_armies_memo", save)).is_false()  # The law, one farm short.
+	save.farms_owned.append("F-last")
+	assert_array(Report.due(save)).is_equal(["bigger_armies_memo"])
+	assert_str(Report.report("bigger_armies_memo").re).is_equal("WE NEED BIGGER ARMIES")
+	assert_str(Report.report("bigger_armies_memo").body).contains("in your tray")
+	save.reports.append("bigger_armies_memo")
+	assert_array(Report.due(save)).is_empty()
+
+
+func test_the_bigger_armies_paper_comes_after_the_home_country_is_ours_and_before_the_last_farm() -> void:
+	assert_int(Events.BIGGER_ARMIES).is_greater(Events.HOME_SITES)
+	assert_int(Events.BIGGER_ARMIES).is_less(Events.FARMS)

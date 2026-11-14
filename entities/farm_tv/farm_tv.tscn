@@ -16,6 +16,7 @@
 [ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="7_font"]
 [ext_resource type="PackedScene" path="res://entities/farm_tree/farm_tree.tscn" id="8_tree"]
 [ext_resource type="Shader" path="res://assets/shaders/tv_static.gdshader" id="9_static"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/farm_tv_arrow.res" id="10_arrow"]
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_thud"]
 random_pitch = 1.03
@@ -51,6 +52,13 @@ emission_enabled = true
 emission = Color(0.66, 0.74, 0.72, 1)
 emission_energy_multiplier = 0.0
 
+[sub_resource type="StandardMaterial3D" id="MapArrow"]
+albedo_color = Color(0.14, 0.15, 0.14, 1)
+roughness = 0.7
+emission_enabled = true
+emission = Color(0.66, 0.74, 0.72, 1)
+emission_energy_multiplier = 0.0
+
 [sub_resource type="ShaderMaterial" id="StaticNoise"]
 shader = ExtResource("9_static")
 
@@ -67,6 +75,14 @@ roughness = 0.7
 emission_enabled = true
 emission = Color(0.56, 0.82, 0.6, 1)
 emission_energy_multiplier = 0.0
+
+[sub_resource type="StandardMaterial3D" id="SplitLine"]
+albedo_color = Color(0.1, 0.11, 0.1, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="SplitLineMesh"]
+material = SubResource("SplitLine")
+size = Vector3(0.042, 0.0016, 0.001)
 
 [sub_resource type="StyleBoxFlat" id="HintPaper"]
 content_margin_left = 10.0
@@ -174,6 +190,41 @@ line_spacing = -14.0
 autowrap_mode = 3
 width = 226.667
 
+[node name="Split" type="Node3D" parent="Corner/Tv"]
+visible = false
+
+[node name="Divider" type="MeshInstance3D" parent="Corner/Tv/Split"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.404063, 0.21, 0.2635)
+mesh = SubResource("SplitLineMesh")
+
+[node name="DeskStencil" type="Label3D" parent="Corner/Tv/Split"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.404063, 0.2425, 0.265)
+pixel_size = 0.00015
+modulate = Color(0.1, 0.11, 0.1, 1)
+text = "TO DESK"
+font = ExtResource("7_font")
+font_size = 48
+outline_size = 0
+
+[node name="MapArrow" type="MeshInstance3D" parent="Corner/Tv/Split"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.043, 0)
+mesh = ExtResource("10_arrow")
+material_override = SubResource("MapArrow")
+
+[node name="MapStencil" type="Label3D" parent="Corner/Tv/Split"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.404063, 0.1995, 0.265)
+pixel_size = 0.00015
+modulate = Color(0.1, 0.11, 0.1, 1)
+text = "TO MAP"
+font = ExtResource("7_font")
+font_size = 48
+outline_size = 0
+line_spacing = -14.0
+autowrap_mode = 3
+width = 226.667
+
 [node name="Channel1" parent="Corner/Tv" index="1"]
 material_override = SubResource("Channel1Key")
 
@@ -248,5 +299,17 @@ theme_override_colors/font_color = Color(0.13, 0.15, 0.14, 1)
 theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("HintPaper")
 text = "Back to the desk"
+
+[node name="Dip" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="Dark" type="ColorRect" parent="Dip"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.025, 0.024, 0)
 
 [editable path="Corner/Tv"]

@@ -110,13 +110,18 @@ func test_every_farm_that_is_not_bought_has_one_war_price() -> void:
 		assert_int(entry.wars.size()).override_failure_message(country).is_equal(entry.farms - bought)
 
 
+## Starting a war costs coins only: its cabbages go into the soldiers (WarRules.UNIT_PRICE).
+func test_starting_a_war_costs_coins_only() -> void:
+	for pair: Array in _ladder():
+		assert_array(pair[1].keys()).override_failure_message(str(pair)).is_equal(["coins"])
+
+
 func test_every_war_costs_more_than_the_one_before_it_nearest_country_first() -> void:
 	var ladder := _ladder()
 	assert_str(ladder[0][0]).is_equal("kohlmark")
 	assert_str(ladder[-1][0]).is_equal("endmark")
 	for i in range(1, ladder.size()):
 		assert_int(ladder[i][1].coins).override_failure_message("%s, war %d" % [ladder[i][0], i]).is_greater(ladder[i - 1][1].coins)
-		assert_int(ladder[i][1].stock).override_failure_message("%s, war %d" % [ladder[i][0], i]).is_greater_equal(ladder[i - 1][1].stock)
 
 
 func test_the_next_war_in_a_country_costs_by_how_many_of_its_farms_are_ours_whichever_is_next() -> void:
@@ -187,16 +192,6 @@ func test_every_drawn_sea_lane_needs_the_sea_lanes_card() -> void:
 		assert_array(WorldRegister.COUNTRIES[StringName(lane.a)].sea).override_failure_message(lane.id).contains([StringName(lane.b)])
 		assert_array(WorldRegister.COUNTRIES[StringName(lane.b)].sea).override_failure_message(lane.id).contains([StringName(lane.a)])
 	assert_str(UpgradeDesk.card_data(WorldRegister.SEA_CARD).title).is_equal("SEA LANES")
-
-
-func test_a_wars_cabbages_fit_the_biggest_store_with_a_full_mat_of_condensed_cabbages_out() -> void:
-	var biggest := SaveGame.new().storage_cap
-	var condensed := 2  # The card CONDENSE CABBAGES.
-	for node: Dictionary in Projector.NODES:
-		biggest += int(node.get("add", {}).get("storage_cap", 0))
-		condensed += int(node.get("add", {}).get("condense", 0))
-	for step: Array in _ladder():
-		assert_int(step[1].stock + Projector.MAT_MAX * condensed).override_failure_message(step[0]).is_less_equal(biggest)
 
 
 func test_the_debug_key_gives_the_farms_abroad_nearest_country_first_after_the_home_sites() -> void:
@@ -287,42 +282,68 @@ func test_every_country_fills_at_least_a_third_of_its_own_sheet() -> void:
 		assert_float(float(maps[String(country)].coverage)).override_failure_message(country).is_greater_equal(1.0 / 3.0)
 
 
-func test_the_hint_slip_lies_in_the_sea_clear_of_every_country() -> void:
+func test_the_hint_slip_keeps_clear_of_a_countrys_token_its_count_and_its_name() -> void:
 	var sheet := _sheet()
-	# The slip at the map camera: 400 px wide and up to four lines, about 1.7 art pixels a screen pixel.
-	var slip := Rect2(sheet.hint_pixel(), Vector2(760, 240))
-	assert_bool(Rect2(Vector2.ZERO, MapSheet.SIZE * MapSheet.PIXELS_PER_METRE).encloses(slip)).is_true()
 	for country: StringName in WorldRegister.COUNTRIES:
-		for corner in sheet._outline(country).points:
-			assert_bool(slip.has_point(corner)).override_failure_message(country).is_false()
-		assert_bool(slip.has_point(sheet._pixel(country))).override_failure_message(country).is_false()
+		var box := sheet.spot_box(country)  # What the slip lies beside, never over.
+		assert_bool(box.has_point(sheet._pixel(country))).override_failure_message(country).is_true()
+		assert_bool(box.encloses(MapSheet.lettering(sheet._tag(country)))).override_failure_message(country).is_true()
+		var named := sheet.get_node("Page/Sheet").get_children().filter(
+				func(label: Node) -> bool: return label is Label and label.text == sheet._sites[country].title)
+		assert_int(named.size()).override_failure_message(country).is_greater_equal(1)
+		for label: Label in named:
+			assert_bool(box.encloses(MapSheet.lettering(label))).override_failure_message(country).is_true()
 
 
-func test_only_the_home_country_wears_the_cabbage_pattern_at_first_and_its_art_is_the_only_one_loaded() -> void:
-	var sheet := _sheet()
+func _patchy(sheet: WorldRegister, country: StringName) -> bool:
+	return (sheet._layer(country).material as ShaderMaterial).get_shader_parameter("patchy")
+
+
+func test_at_first_only_the_home_country_shows_patches_of_cabbage_and_its_art_is_the_only_one_loaded() -> void:
+	var sheet := _sheet()  # Five of Kohlmark's eight, nothing abroad.
 	for country: StringName in WorldRegister.COUNTRIES:
 		var home := country == WorldRegister.HOME
 		assert_bool(sheet._layer(country).visible).override_failure_message(country).is_equal(home)
 		assert_bool(sheet._layer(country).texture != null).override_failure_message(country).is_equal(home)
-		assert_bool(sheet._sites[country].owned).override_failure_message(country).is_false()  # Five of eight.
+		assert_bool(sheet._sites[country].owned).override_failure_message(country).is_false()
+	assert_bool(_patchy(sheet, WorldRegister.HOME)).is_true()
 
 
-func test_a_country_turns_cabbage_green_on_the_world_sheet_when_all_its_farms_are_ours() -> void:
+func test_a_country_shows_one_of_three_looks_none_some_or_all_of_its_farms_never_a_percentage() -> void:
+	var save := _rich()
+	assert_int(WorldRegister.share(save, &"sulvania")).is_equal(WorldRegister.Share.NONE)
+	save.farms_owned.append("sulvania-2")
+	assert_int(WorldRegister.share(save, &"sulvania")).is_equal(WorldRegister.Share.SOME)
+	save.farms_owned.append("sulvania-1")  # Two of three: still the same look as one of three.
+	assert_int(WorldRegister.share(save, &"sulvania")).is_equal(WorldRegister.Share.SOME)
+	save.farms_owned.append("sulvania-3")
+	assert_int(WorldRegister.share(save, &"sulvania")).is_equal(WorldRegister.Share.ALL)
+	assert_int(WorldRegister.share(save, WorldRegister.HOME)).is_equal(WorldRegister.Share.SOME)  # Five of eight.
+	_own(save, [WorldRegister.HOME])
+	assert_int(WorldRegister.share(save, WorldRegister.HOME)).is_equal(WorldRegister.Share.ALL)
+
+
+func test_a_country_shows_fully_green_only_when_every_farm_is_ours() -> void:
 	var sheet := _sheet()
+	var layer := sheet._layer(&"veldmark")
+	assert_bool(layer.visible).is_false()  # None ours: plain.
 	SaveManager.save.farms_owned.append("veldmark-1")
 	sheet._process(0.0)
-	assert_bool(sheet._layer(&"veldmark").visible).is_false()
+	assert_bool(layer.visible).is_true()  # One of two: patches.
+	assert_object(layer.texture).is_not_null()
+	assert_bool(_patchy(sheet, &"veldmark")).is_true()
+	assert_bool(sheet._sites[&"veldmark"].owned).is_false()
 	assert_str(sheet._tag(&"veldmark").text).is_equal("1/2")
 	SaveManager.save.farms_owned.append("veldmark-2")
 	sheet._process(0.0)
-	var layer := sheet._layer(&"veldmark")
-	assert_bool(layer.visible).is_true()
-	assert_object(layer.texture).is_not_null()
+	assert_bool(layer.visible).is_true()  # Both: wholly green.
+	assert_bool(_patchy(sheet, &"veldmark")).is_false()
 	assert_float((layer.material as ShaderMaterial).get_shader_parameter("reach")).is_equal(WorldRegister.FULL)
 	assert_bool(sheet._sites[&"veldmark"].owned).is_true()
 	assert_str(sheet._tag(&"veldmark").text).is_equal("2/2")
 	var loaded := _sheet()  # And after a reload.
 	assert_bool(loaded._layer(&"veldmark").visible).is_true()
+	assert_bool(_patchy(loaded, &"veldmark")).is_false()
 	assert_bool(loaded._sites[&"veldmark"].owned).is_true()
 
 

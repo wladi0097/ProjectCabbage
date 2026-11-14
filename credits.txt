@@ -12,6 +12,9 @@ Wladislaw Koschemako
 Johannes Neumann
 Wladislaw Koschemako
 
+# ---- 2D Artist and Capsule Designer
+Viktoria Zimmermann
+
 # ---- Textures
 ambientCG
 https://ambientcg.com/

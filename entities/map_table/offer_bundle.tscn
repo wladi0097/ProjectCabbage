@@ -1,0 +1,56 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/offer_bundle.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/cabbage.tres" id="2_cabbage"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/coin.res" id="3_coin"]
+[ext_resource type="Material" path="res://assets/materials/coin.tres" id="4_coin_mat"]
+
+[node name="OfferBundle" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Cabbage" type="MeshInstance3D" parent="."]
+layers = 524289
+gi_mode = 0
+transform = Transform3D(0.45, 0, 0, 0, 0.45, 0, 0, 0, 0.45, 0, 0.03, 0)
+material_override = ExtResource("2_cabbage")
+
+[node name="Coins" type="Node3D" parent="."]
+visible = false
+
+[node name="Coin1" type="MeshInstance3D" parent="Coins"]
+gi_mode = 0
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0.0063, 0)
+mesh = ExtResource("3_coin")
+material_override = ExtResource("4_coin_mat")
+
+[node name="Coin2" type="MeshInstance3D" parent="Coins"]
+gi_mode = 0
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0.002, 0.0189, -0.001)
+mesh = ExtResource("3_coin")
+material_override = ExtResource("4_coin_mat")
+
+[node name="Coin3" type="MeshInstance3D" parent="Coins"]
+gi_mode = 0
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, -0.001, 0.0315, 0.002)
+mesh = ExtResource("3_coin")
+material_override = ExtResource("4_coin_mat")
+
+[node name="Coin4" type="MeshInstance3D" parent="Coins"]
+gi_mode = 0
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0.003, 0.0441, 0.001)
+mesh = ExtResource("3_coin")
+material_override = ExtResource("4_coin_mat")
+
+[node name="Coin5" type="MeshInstance3D" parent="Coins"]
+gi_mode = 0
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0.0567, -0.002)
+mesh = ExtResource("3_coin")
+material_override = ExtResource("4_coin_mat")
+
+[node name="Number" type="Decal" parent="."]
+visible = false
+size = Vector3(0.057, 0.096, 0.057)
+emission_energy = 0.6
+upper_fade = 0.0
+lower_fade = 0.0
+cull_mask = 524288

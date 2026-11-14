@@ -136,11 +136,26 @@ func test_clearing_a_plot_opens_one_more_empty_square_and_the_next_gets_dearer()
 	assert_int(FarmScreen.plot_price(save)).is_greater(FarmScreen.PLOT_PRICE)
 
 
-func test_plots_get_fifteen_percent_dearer_each() -> void:
+func test_plots_get_about_a_third_dearer_each() -> void:
 	var save := _farm()
 	save.farm_plots = 14
-	assert_int(FarmScreen.plot_price(save)).is_equal(roundi(150 * pow(1.15, 10)))
+	assert_int(FarmScreen.plot_price(save)).is_equal(roundi(150 * pow(1.32, 10)))
 	assert_int(FarmScreen.plot_price_of(14)).is_equal(FarmScreen.plot_price(save))
+
+
+func test_the_first_few_squares_stay_cheap() -> void:
+	for i in range(FarmScreen.START_PLOTS, FarmScreen.START_PLOTS + 4):
+		assert_int(FarmScreen.plot_price_of(i)).is_less_equal(400)
+
+
+func test_the_last_squares_cost_far_more_than_the_first() -> void:
+	var last := FarmScreen.plot_price_of(FarmScreen.MAX_PLOTS - 1)
+	assert_int(last).is_greater_equal(100 * FarmScreen.PLOT_PRICE)
+	assert_int(FarmScreen.plot_price_of(FarmScreen.MAX_PLOTS - 2)).is_greater_equal(10000)
+
+
+func test_the_last_square_fits_the_starting_purse() -> void:
+	assert_int(FarmScreen.plot_price_of(FarmScreen.MAX_PLOTS - 1)).is_less_equal(SaveGame.new().coin_limit)
 
 
 func test_no_plot_can_be_cleared_beyond_twenty_four_squares() -> void:

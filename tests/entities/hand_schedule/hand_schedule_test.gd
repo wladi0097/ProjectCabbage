@@ -198,7 +198,7 @@ func test_each_annex_costs_more_than_the_one_before() -> void:
 func test_the_switch_is_on_the_desk_only_once_the_schedule_is_stamped_and_its_lamp_is_lit_while_anything_is_struck() -> void:
 	var schedule: HandSchedule = auto_free(SCHEDULE.instantiate())
 	add_child(schedule)
-	var switch: LightSwitch = schedule.get_node("Switch")
+	var switch: CogSwitch = schedule.get_node("Switch")
 	assert_bool(switch.visible).override_failure_message("before the card").is_false()
 
 	SaveManager.save.stamped.append(HandSchedule.CARD)
@@ -218,5 +218,5 @@ func test_a_click_on_the_switch_brings_up_the_paper() -> void:
 	add_child(schedule)
 	var sheet: Control = schedule.get_node("Schedule/Sheet")
 	assert_bool(sheet.visible).is_false()
-	(schedule.get_node("Switch") as LightSwitch).flicked.emit()
+	(schedule.get_node("Switch") as CogSwitch).flicked.emit()
 	assert_bool(sheet.visible).is_true()

@@ -433,7 +433,7 @@ Auto-buy waits for the base pack price or lower
 Auto-buy only pays the base pack price or less
 (it used to pay up to 150%), unless stock runs out.","Die Bestellung wartet auf einen fairen Preis.
 Autokauf zahlt nur noch den Grundpreis oder weniger
-(bisher bis 150%), außer der Bestand geht aus."
+(bisher bis 150%), außer wenn der Bestand ausgeht."
 HIRE ASSOCIATE IX,HIRE ASSOCIATE IX,HILFSKRAFT IX
 "Desks are now shared in shifts.
 One more hired hand throws cabbages out of the
@@ -967,7 +967,7 @@ Effective: ,Effective: ,Wirkung:
 ROTTEN CABBAGES IN THE SUPPLY CHAIN,ROTTEN CABBAGES IN THE SUPPLY CHAIN,FAULE KOHLKÖPFE IN DER LIEFERKETTE
 Some suppliers ship rotten cabbages. You can tell them by their colour. Never sell one: the street takes it and fines us 10× your price. Throw them into the waste bin at the bottom of your mat.,Some suppliers ship rotten cabbages. You can tell them by their colour. Never sell one: the street takes it and fines us 10× your price. Throw them into the waste bin at the bottom of your mat.,Einige Lieferanten liefern faule Kohlköpfe. Sie erkennen sie an der Farbe. Verkaufen Sie nie einen: Die Straße beschlagnahmt ihn und berechnet uns das Zehnfache Ihres Preises. Werfen Sie sie in den Abfalleimer unten an Ihrer Matte.
 THE STREET HAS MOODS,THE STREET HAS MOODS,DIE STRASSE HAT LAUNEN
-"Market research confirms the street's mood changes every minute. A price that sold everything a minute ago may now be refused. Watch your slate and adjust. Feelings are not our policy, but they are our problem.","The street's mood changes every minute. A price that sold everything a minute ago may now be refused. Watch your slate and adjust. Feelings are not our policy, but they are our problem.","Die Laune der Straße ändert sich jede Minute. Ein Preis, zu dem eben noch alles verkauft wurde, kann jetzt abgelehnt werden. Behalten Sie Ihre Tafel im Blick und passen Sie an. Gefühle sind nicht unsere Politik, wohl aber unser Problem."
+"Market research confirms the street's mood changes every minute. A price that sold everything a minute ago may now be refused. Watch your slate and adjust. Feelings are not our policy, but they are our problem.","The street's mood changes every minute. A price that sold everything a minute ago may now be refused. Watch your slate and adjust. Feelings are not our policy, but they are our problem.","Die Laune der Straße ändert sich jede Minute. Ein Preis, zu dem eben noch alles verkauft wurde, wird jetzt womöglich abgelehnt. Behalten Sie Ihre Tafel im Blick und passen Sie den Preis an. Gefühle sind keine Firmenpolitik, wohl aber unser Problem."
 WHOLESALE PRICES REACT TO YOU,WHOLESALE PRICES REACT TO YOU,DER GROSSHANDEL REAGIERT AUF SIE
 You may now order packs at the supply console. Every pack you order pushes next minute's pack price up. Panic buying will be invoiced accordingly. Spread your orders and watch the ticker.,You may now order packs at the supply console. Each pack you buy raises the pack price for the next minute. Panic buying will be invoiced accordingly. Spread out your orders and watch the ticker.,Sie dürfen jetzt am Bestellpult Lieferungen bestellen. Jede Bestellung erhöht den Preis für die nächste Minute. Panikkäufe werden entsprechend berechnet. Verteilen Sie Ihre Bestellungen und beobachten Sie die Preisanzeige.
 THE RESEARCH LAB TAKES THE WINDOW,THE RESEARCH LAB TAKES THE WINDOW,DAS LABOR BEANSPRUCHT EIN FENSTERDRITTEL
@@ -2004,6 +2004,15 @@ GRATEFUL,GRATEFUL,DANKBAR
 Cabbages offered are not returned.,Cabbages offered are not returned.,Gebotene Kohlköpfe werden nicht erstattet.
 Envelopes are not returned.,Envelopes are not returned.,Umschläge werden nicht erstattet.
 Half of a refused offer is returned.,Half of a refused offer is returned.,Von einem abgelehnten Angebot wird die Hälfte erstattet.
+START HAGGLING,START HAGGLING,VERHANDLUNG AUFNEHMEN
+RESUME HAGGLING,RESUME HAGGLING,VERHANDLUNG FORTSETZEN
+NEGOTIATION RECORD,NEGOTIATION RECORD,VERHANDLUNGSPROTOKOLL
+FORM 3-N  NEGOTIATION RECORD,FORM 3-N  NEGOTIATION RECORD,FORMULAR 3-N  VERHANDLUNGSPROTOKOLL
+Make the owner an offer.,Make the owner an offer.,Machen Sie ein Angebot.
+Offer cabbages. Too few raise the price. Enough lower it.,Offer cabbages. Too few raise the price. Enough lower it.,Bieten Sie Kohlköpfe. Zu wenige erhöhen den Preis. Genug senken ihn.
+Offer coins in an envelope. Too little raises the price. Enough lowers it.,Offer coins in an envelope. Too little raises the price. Enough lowers it.,Bieten Sie Münzen im Umschlag. Zu wenig erhöht den Preis. Genug senkt ihn.
+PRICE NOW,PRICE NOW,PREIS AKTUELL
+BACK TO THE DEED,BACK TO THE DEED,ZURÜCK ZUR URKUNDE
 HANDLING ASSIGNMENT SCHEDULE,HANDLING ASSIGNMENT SCHEDULE,ZUTEILUNGSPLAN HANDHABUNG
 "Every cabbage has a rightful hand. This is now on file.
 Needs 2 farms. A switch at the bottom of the desk, between the lab hands and the hired hands, opens a schedule: lab hands left, hired hands right. Click a cabbage there and that kind of hand no longer touches it. Plain cabbages to start; more kinds on the projector.","Every cabbage has a rightful hand. This is now on file.
@@ -2224,45 +2233,45 @@ State Railway 2,State Railway 2,Staatsbahn 2
 1 of 9,1 of 9,1 von 9
 River Ostra,River Ostra,Fluss Ostra
 Trunk Road B-3,Trunk Road B-3,Fernstraße B-3
-Port Altenfurt,Port Altenfurt,Hafen Altenfurt
+Port Choysumsk,Port Choysumsk,Hafen Choysumsk
 OSTREVIA - NATIONAL FARM REGISTER,OSTREVIA - NATIONAL FARM REGISTER,OSTREVIA - NATIONALES HOFREGISTER
 Foreign farm sites scheduled for acquisition. Owners not consulted.,Foreign farm sites scheduled for acquisition. Owners not consulted.,"Ausländische Hofstandorte, zur Übernahme vorgesehen. Eigentümer nicht befragt."
 2 of 9,2 of 9,2 von 9
 Foreign,Foreign,Ausland
 River Veld,River Veld,Fluss Veld
 Trunk Road B-7,Trunk Road B-7,Fernstraße B-7
-Port Flachsen,Port Flachsen,Hafen Flachsen
+Port Drumhaven,Port Drumhaven,Hafen Drumhaven
 VELDMARK - NATIONAL FARM REGISTER,VELDMARK - NATIONAL FARM REGISTER,VELDMARK - NATIONALES HOFREGISTER
 3 of 9,3 of 9,3 von 9
 River Sul,River Sul,Fluss Sul
 Trunk Road B-9,Trunk Road B-9,Fernstraße B-9
-Port Salzgrund,Port Salzgrund,Hafen Salzgrund
+Port Calabresa,Port Calabresa,Hafen Calabresa
 SULVANIA - NATIONAL FARM REGISTER,SULVANIA - NATIONAL FARM REGISTER,SULVANIA - NATIONALES HOFREGISTER
 4 of 9,4 of 9,4 von 9
 River Asch,River Asch,Fluss Asch
 Trunk Road C-1,Trunk Road C-1,Fernstraße C-1
-Port Steinbruck,Port Steinbruck,Hafen Steinbruck
+Port Brusselbruck,Port Brusselbruck,Hafen Brusselbruck
 NORDHAL PROTECTORATE,NORDHAL PROTECTORATE,PROTEKTORAT NORDHAL
 FEDERATED MORROW,FEDERATED MORROW,FÖDERIERTES MORROW
 GRAULAND - NATIONAL FARM REGISTER,GRAULAND - NATIONAL FARM REGISTER,GRAULAND - NATIONALES HOFREGISTER
 5 of 9,5 of 9,5 von 9
 River Hal,River Hal,Fluss Hal
 Trunk Road C-4,Trunk Road C-4,Fernstraße C-4
-Port Eiswick,Port Eiswick,Hafen Eiswick
+Port Ormsvik,Port Ormsvik,Hafen Ormsvik
 NORDHAL PROTECTORATE - NATIONAL FARM REGISTER,NORDHAL PROTECTORATE - NATIONAL FARM REGISTER,PROTEKTORAT NORDHAL - NATIONALES HOFREGISTER
 6 of 9,6 of 9,6 von 9
 River Mor,River Mor,Fluss Mor
 Trunk Road C-2,Trunk Road C-2,Fernstraße C-2
-Port Zweckau,Port Zweckau,Hafen Zweckau
+Port Kalibau,Port Kalibau,Hafen Kalibau
 FEDERATED MORROW - NATIONAL FARM REGISTER,FEDERATED MORROW - NATIONAL FARM REGISTER,FÖDERIERTES MORROW - NATIONALES HOFREGISTER
 7 of 9,7 of 9,7 von 9
 Lower River,Lower River,Unterer Fluss
 The Drain,The Drain,Der Abfluss
-Port Unterburg,Port Unterburg,Hafen Unterburg
+Port Rutaburg,Port Rutaburg,Hafen Rutaburg
 THE LOWER PROVINCES - NATIONAL FARM REGISTER,THE LOWER PROVINCES - NATIONAL FARM REGISTER,DIE UNTEREN PROVINZEN - NATIONALES HOFREGISTER
 8 of 9,8 of 9,8 von 9
 Last Water,Last Water,Letztes Wasser
-Port Endhaven,Port Endhaven,Hafen Endhaven
+Port Dauerhaven,Port Dauerhaven,Hafen Dauerhaven
 ENDMARK ISLE - NATIONAL FARM REGISTER,ENDMARK ISLE - NATIONAL FARM REGISTER,INSEL ENDMARK - NATIONALES HOFREGISTER
 9 of 9,9 of 9,9 von 9
 AUTHORISE HOSTILE ACQUISITIONS,AUTHORISE HOSTILE ACQUISITIONS,FEINDLICHE ÜBERNAHMEN GENEHMIGEN
@@ -2279,3 +2288,261 @@ No country next to this one is wholly ours. Yet.,No country next to this one is 
 Declare victory. Cost: %s.,Declare victory. Cost: %s.,Sieg erklären. Kosten: %s.
 Declare victory. Cost: %s. Short: %s.,Declare victory. Cost: %s. Short: %s.,Sieg erklären. Kosten: %s. Es fehlen: %s.
 Hostile acquisition in progress. Owners notified by other means.,Hostile acquisition in progress. Owners notified by other means.,Feindliche Übernahme läuft. Eigentümer anderweitig benachrichtigt.
+FASTER TO OUR FARMS,FASTER TO OUR FARMS,SCHNELLER ZU UNSEREN HÖFEN
+"Time spent in corridors is not billable. The corridors have been shortened.
+A TO FARM button stands above TO DESK at the map table, and the TV's back key gets a TO MAP half: map to farm and back without passing the desk.","Time spent in corridors is not billable. The corridors have been shortened.
+A TO FARM button stands above TO DESK at the map table, and the TV's back key gets a TO MAP half: map to farm and back without passing the desk.","Zeit auf den Fluren ist nicht abrechenbar. Die Flure wurden gekürzt.
+Am Kartentisch steht über ZUM TISCH ein Knopf ZUM HOF, und die Zurück-Taste am Fernseher bekommt eine Hälfte ZUR KARTE: von der Karte zum Hof und zurück, ohne Umweg über den Tisch."
+TO FARM,TO FARM,ZUM HOF
+TO MAP,TO MAP,ZUR KARTE
+Straight to the farm,Straight to the farm,Direkt zum Hof
+Straight to the map,Straight to the map,Direkt zur Karte
+WE NEED BIGGER ARMIES,WE NEED BIGGER ARMIES,WIR BRAUCHEN GRÖSSERE ARMEEN
+The board has reviewed the war reports. The victories are adequate. The armies are not: a war fought by a handful of staff is a meeting. The field workforce is to be expanded. The requisition is in your tray. Keep the paperwork for the fallen in order.,The board has reviewed the war reports. The victories are adequate. The armies are not: a war fought by a handful of staff is a meeting. The field workforce is to be expanded. The requisition is in your tray. Keep the paperwork for the fallen in order.,Der Vorstand hat die Kriegsberichte geprüft. Die Siege sind ausreichend. Die Armeen sind es nicht: Ein Krieg mit einer Handvoll Mitarbeitern ist eine Besprechung. Die Feldbelegschaft wird aufgestockt. Die Anforderung liegt in Ihrem Eingangskorb. Halten Sie die Unterlagen der Gefallenen in Ordnung.
+HIRE COMPLIANCE OFFICERS,HIRE COMPLIANCE OFFICERS,COMPLIANCE-BEAUFTRAGTE EINSTELLEN
+"Every wall is a regulatory matter. Some are settled on contact.
+Needs 8 farms. Compliance officers join the personnel depot. Each walks to the nearest wall and settles it on contact, himself included.","Every wall is a regulatory matter. Some are settled on contact.
+Needs 8 farms. Compliance officers join the personnel depot. Each walks to the nearest wall and settles it on contact, himself included.","Jede Mauer ist eine Regelungsfrage. Manche werden bei Berührung geklärt.
+Braucht 8 Höfe. Compliance-Beauftragte kommen ins Personaldepot. Jeder geht zur nächsten Mauer und klärt sie bei Berührung, sich selbst eingeschlossen."
+EXPAND THE FIELD WORKFORCE,EXPAND THE FIELD WORKFORCE,DIE FELDBELEGSCHAFT AUFSTOCKEN
+"Headcount is the only strategy the board understands.
+Needs 10 farms. Two more staff of any kind may take the field in one war.","Headcount is the only strategy the board understands.
+Needs 10 farms. Two more staff of any kind may take the field in one war.","Personalstärke ist die einzige Strategie, die der Vorstand versteht.
+Braucht 10 Höfe. In jedem Krieg dürfen zwei Mitarbeiter mehr ins Feld, gleich welcher Art."
+AUTHORISE TACTICAL ADJUSTMENTS,AUTHORISE TACTICAL ADJUSTMENTS,TAKTISCHE ANPASSUNGEN GENEHMIGEN
+"The plan may now be revised while it fails.
+Needs 11 farms. Staff may still be placed on a landing spot after the attack has started.","The plan may now be revised while it fails.
+Needs 11 farms. Staff may still be placed on a landing spot after the attack has started.","Der Plan darf jetzt überarbeitet werden, während er scheitert.
+Braucht 11 Höfe. Mitarbeiter dürfen auch nach Beginn des Angriffs noch auf einen Landeplatz gesetzt werden."
+PROMOTE SENIOR ASSETS,PROMOTE SENIOR ASSETS,LEITENDE MITARBEITER BEFÖRDERN
+"Slow, expensive and very hard to remove. Like all senior staff.
+Needs 13 farms. Senior assets join the personnel depot. They ignore everything but the towers and take a great deal of punishment on the way.","Slow, expensive and very hard to remove. Like all senior staff.
+Needs 13 farms. Senior assets join the personnel depot. They ignore everything but the towers and take a great deal of punishment on the way.","Langsam, teuer und kaum zu entfernen. Wie alle leitenden Mitarbeiter.
+Braucht 13 Höfe. Leitende Mitarbeiter kommen ins Personaldepot. Sie beachten nichts außer den Türmen und stecken unterwegs sehr viel ein."
+STRATEGIC WITHDRAWAL PROTOCOL,STRATEGIC WITHDRAWAL PROTOCOL,PROTOKOLL ZUM STRATEGISCHEN RÜCKZUG
+"It is not a retreat. It is a return to head office.
+Needs 15 farms. A war can be called off with a RETREAT button. 30% of the staff placed come home; the rest are written off.","It is not a retreat. It is a return to head office.
+Needs 15 farms. A war can be called off with a RETREAT button. 30% of the staff placed come home; the rest are written off.","Es ist kein Rückzug. Es ist eine Rückkehr in die Zentrale.
+Braucht 15 Höfe. Ein Krieg kann mit einem RÜCKZUG-Knopf abgebrochen werden. 30% der eingesetzten Mitarbeiter kommen heim, der Rest wird abgeschrieben."
+COMMISSION CABBAGE-PULT CREWS,COMMISSION CABBAGE-PULT CREWS,KOHLSCHLEUDER-TRUPPS BEAUFTRAGEN
+"The cabbage has always been a projectile. Now it is a budget line.
+Needs 18 farms. Cabbage-pult crews join the personnel depot. They shell the nearest defence from a distance, and anything standing next to it.","The cabbage has always been a projectile. Now it is a budget line.
+Needs 18 farms. Cabbage-pult crews join the personnel depot. They shell the nearest defence from a distance, and anything standing next to it.","Der Kohlkopf war schon immer ein Geschoss. Jetzt ist er ein Haushaltsposten.
+Braucht 18 Höfe. Kohlschleuder-Trupps kommen ins Personaldepot. Sie beschießen die nächste Verteidigung aus der Ferne und alles, was daneben steht."
+EXTENDED MANDATE,EXTENDED MANDATE,ERWEITERTES MANDAT
+"The war has been granted an extension.
+Every fight lasts 105 s, not 90 s.","The war has been granted an extension.
+Every fight lasts 105 s, not 90 s.","Dem Krieg wurde eine Verlängerung gewährt.
+Jeder Kampf dauert 105 s statt 90 s."
+OVERTIME AUTHORISED,OVERTIME AUTHORISED,ÜBERSTUNDEN GENEHMIGT
+"Overtime is unpaid. It is also compulsory.
+Every fight lasts 120 s, not 105 s.","Overtime is unpaid. It is also compulsory.
+Every fight lasts 120 s, not 105 s.","Überstunden sind unbezahlt. Sie sind auch Pflicht.
+Jeder Kampf dauert 120 s statt 105 s."
+OPEN-ENDED ENGAGEMENT,OPEN-ENDED ENGAGEMENT,UNBEFRISTETER EINSATZ
+"No end date was ever agreed. This was deliberate.
+Every fight lasts 135 s, not 120 s.","No end date was ever agreed. This was deliberate.
+Every fight lasts 135 s, not 120 s.","Ein Enddatum wurde nie vereinbart. Mit Absicht.
+Jeder Kampf dauert 135 s statt 120 s."
+INDUCTION BOOKLET,INDUCTION BOOKLET,EINARBEITUNGSHEFT
+"Forty pages. Nobody reads past the first.
+Staff train 25% faster at the personnel depot.","Forty pages. Nobody reads past the first.
+Staff train 25% faster at the personnel depot.","Vierzig Seiten. Niemand liest über die erste hinaus.
+Mitarbeiter lernen im Personaldepot 25% schneller."
+ON-THE-JOB TRAINING,ON-THE-JOB TRAINING,TRAINING AM ARBEITSPLATZ
+"The job is the training. The training is the job.
+Staff train another 25% faster.","The job is the training. The training is the job.
+Staff train another 25% faster.","Die Arbeit ist das Training. Das Training ist die Arbeit.
+Mitarbeiter lernen noch einmal 25% schneller."
+ACCELERATED ONBOARDING,ACCELERATED ONBOARDING,BESCHLEUNIGTES ONBOARDING
+"Hired on Monday, deployed on Monday.
+Staff train another 25% faster.","Hired on Monday, deployed on Monday.
+Staff train another 25% faster.","Montags eingestellt, montags eingesetzt.
+Mitarbeiter lernen noch einmal 25% schneller."
+FIELD HEADCOUNT,FIELD HEADCOUNT,FELDPERSONALSTAND
+"The field has been found to hold more staff.
+The army cap is raised by 2.","The field has been found to hold more staff.
+The army cap is raised by 2.","Ins Feld passen nachweislich mehr Mitarbeiter.
+Die Truppenobergrenze steigt um 2."
+REGIONAL DIVISION,REGIONAL DIVISION,REGIONALE DIVISION
+"A division needs a regional manager. You.
+The army cap is raised by 2 more.","A division needs a regional manager. You.
+The army cap is raised by 2 more.","Eine Division braucht einen Regionalleiter. Sie.
+Die Truppenobergrenze steigt um weitere 2."
+STANDING WORKFORCE,STANDING WORKFORCE,STEHENDE BELEGSCHAFT
+"They are never sent home. There is no home.
+The army cap is raised by 2 more.","They are never sent home. There is no home.
+The army cap is raised by 2 more.","Sie werden nie heimgeschickt. Es gibt kein Heim.
+Die Truppenobergrenze steigt um weitere 2."
+EXIT INTERVIEWS,EXIT INTERVIEWS,AUSTRITTSGESPRÄCHE
+"Leaving is a process. The process saves lives.
+A retreat brings 40% of the placed staff home,
+not 30%.","Leaving is a process. The process saves lives.
+A retreat brings 40% of the placed staff home,
+not 30%.","Gehen ist ein Prozess. Der Prozess rettet Leben.
+Ein Rückzug bringt 40% der eingesetzten
+Mitarbeiter heim, nicht 30%."
+MARKED FIRE EXITS,MARKED FIRE EXITS,MARKIERTE NOTAUSGÄNGE
+"The exits are signposted. In green, naturally.
+A retreat brings 50% of the placed staff home,
+not 40%.","The exits are signposted. In green, naturally.
+A retreat brings 50% of the placed staff home,
+not 40%.","Die Ausgänge sind beschildert. In Grün, natürlich.
+Ein Rückzug bringt 50% der eingesetzten
+Mitarbeiter heim, nicht 40%."
+ORDERLY WITHDRAWAL,ORDERLY WITHDRAWAL,GEORDNETER ABZUG
+"Single file. No running. Mind the cannon.
+A retreat brings 60% of the placed staff home,
+not 50%.","Single file. No running. Mind the cannon.
+A retreat brings 60% of the placed staff home,
+not 50%.","Im Gänsemarsch. Nicht rennen. Vorsicht, Kanone.
+Ein Rückzug bringt 60% der eingesetzten
+Mitarbeiter heim, nicht 50%."
+STAFF SHUTTLE,STAFF SHUTTLE,PERSONALSHUTTLE
+"Departs every few seconds, under fire.
+A retreat brings 70% of the placed staff home,
+not 60%.","Departs every few seconds, under fire.
+A retreat brings 70% of the placed staff home,
+not 60%.","Fährt alle paar Sekunden, unter Beschuss.
+Ein Rückzug bringt 70% der eingesetzten
+Mitarbeiter heim, nicht 60%."
+NOBODY LEFT BEHIND,NOBODY LEFT BEHIND,NIEMAND BLEIBT ZURÜCK
+"Staff are assets. Assets are recovered.
+A retreat brings 80% of the placed staff home,
+not 70%.","Staff are assets. Assets are recovered.
+A retreat brings 80% of the placed staff home,
+not 70%.","Mitarbeiter sind Vermögenswerte. Vermögenswerte werden geborgen.
+Ein Rückzug bringt 80% der eingesetzten
+Mitarbeiter heim, nicht 70%."
+PERSONNEL IN THEATRE,PERSONNEL IN THEATRE,PERSONAL IM EINSATZGEBIET
+ENGAGEMENT CONTROL,ENGAGEMENT CONTROL,EINSATZSTEUERUNG
+TIME REMAINING,TIME REMAINING,VERBLEIBENDE ZEIT
+Overtime is not authorised.,Overtime is not authorised.,Überstunden sind nicht genehmigt.
+START,START,EINSATZBEGINN
+Commits all staff placed. No refunds.,Commits all staff placed. No refunds.,Bindet alles eingesetzte Personal. Keine Erstattung.
+ENGAGED,ENGAGED,IM EINSATZ
+RETREAT,RETREAT,RÜCKZUG
+Not authorised.,Not authorised.,Nicht genehmigt.
+%d%% of staff placed return,%d%% of staff placed return,%d%% des eingesetzten Personals kehren zurück
+ACQUISITION UNSUCCESSFUL,ACQUISITION UNSUCCESSFUL,ÜBERNAHME GESCHEITERT
+WITHDRAWN,WITHDRAWN,ZURÜCKGEZOGEN
+HP %d  ·  DAMAGE %d  ·  SPEED %s,HP %d  ·  DAMAGE %d  ·  SPEED %s,LP %d  ·  SCHADEN %d  ·  TEMPO %s
+TARGET: %s,TARGET: %s,ZIEL: %s
+DEFENCES,DEFENCES,VERTEIDIGUNG
+TOWERS,TOWERS,TÜRME
+WALLS,WALLS,MAUERN
+FORM 7-P  PERSONNEL REQUISITION,FORM 7-P  PERSONNEL REQUISITION,FORMULAR 7-P  PERSONALANFORDERUNG
+PERSONNEL DEPOT,PERSONNEL DEPOT,PERSONALDEPOT
+Personnel depot,Personnel depot,Personaldepot
+DEPOT,DEPOT,DEPOT
+"Field staff, issued against cabbages from stock.","Field staff, issued against cabbages from stock.","Außendienstpersonal, ausgegeben gegen Kohlköpfe aus dem Lager."
+Staff in training count towards the limit.,Staff in training count towards the limit.,Personal in Ausbildung wird angerechnet.
+PERSONNEL DEPOT - REQUISITIONS,PERSONNEL DEPOT - REQUISITIONS,PERSONALDEPOT - ANFORDERUNGEN
+"Staff are issued, not hired. Returns are not accepted.","Staff are issued, not hired. Returns are not accepted.","Personal wird ausgegeben, nicht eingestellt. Rückgaben sind ausgeschlossen."
+ISSUE,ISSUE,AUSGABE
+Hostile,Hostile,Feindlich
+Active,Active,Aktiv
+FIELD ASSOCIATE,FIELD ASSOCIATE,AUSSENDIENSTMITARBEITER
+field associate,field associate,Außendienstmitarbeiter
+REQUISITION,REQUISITION,ANFORDERN
+DEVELOPMENT PROGRAMME,DEVELOPMENT PROGRAMME,FÖRDERPROGRAMM
+HP %d,HP %d,LP %d
+DAMAGE %d,DAMAGE %d,SCHADEN %d
+SPEED %s,SPEED %s,TEMPO %s
+HP,HP,LP
+DAMAGE,DAMAGE,SCHADEN
+SPEED,SPEED,TEMPO
+RANGE,RANGE,REICHWEITE
+SPLASH,SPLASH,STREUUNG
+NEAREST DEFENCE,NEAREST DEFENCE,NÄCHSTE VERTEIDIGUNG
+TOWERS ONLY,TOWERS ONLY,NUR TÜRME
+WALLS FIRST,WALLS FIRST,MAUERN ZUERST
+READY %d,READY %d,BEREIT %d
+IN TRAINING %d,IN TRAINING %d,IN AUSBILDUNG %d
+NO ONE IN TRAINING,NO ONE IN TRAINING,NIEMAND IN AUSBILDUNG
+QUEUED,QUEUED,IN WARTESCHLANGE
+NEXT READY IN %d s,NEXT READY IN %d s,NÄCHSTER BEREIT IN %d s
+STAFF AT CAPACITY,STAFF AT CAPACITY,PERSONALOBERGRENZE ERREICHT
+NOT ENOUGH CABBAGES,NOT ENOUGH CABBAGES,NICHT GENUG KOHLKÖPFE
+STAFF %d / %d,STAFF %d / %d,PERSONAL %d / %d
+"Requisition one %s: %s cabbages, %d s of training.","Requisition one %s: %s cabbages, %d s of training.","Einen %s anfordern: %s Kohlköpfe, %d s Ausbildung."
+Staff at capacity: %d / %d.,Staff at capacity: %d / %d.,Personalobergrenze erreicht: %d / %d.
+Short: %s cabbages.,Short: %s cabbages.,Es fehlen %s Kohlköpfe.
+%s for every %s: ¶%s.,%s for every %s: ¶%s.,%s für jeden %s: ¶%s.
+Approved.,Approved.,Genehmigt.
+Needs %s first.,Needs %s first.,Erfordert zuerst %s.
+Short: ¶%s.,Short: ¶%s.,Es fehlen ¶%s.
+FORM 9-W  DECLARATION OF WAR,FORM 9-W  DECLARATION OF WAR,FORMULAR 9-W  KRIEGSERKLÄRUNG
+COST OF WAR,COST OF WAR,KRIEGSKOSTEN
+DEFENCES ON RECORD,DEFENCES ON RECORD,ERFASSTE VERTEIDIGUNG
+STAFF COMMITTED,STAFF COMMITTED,EINGESETZTES PERSONAL
+HAVE %d,HAVE %d,BESTAND %d
+CANNONS %d,CANNONS %d,KANONEN %d
+MORTARS %d,MORTARS %d,MÖRSER %d
+WOODEN WALLS,WOODEN WALLS,HOLZMAUERN
+STONE WALLS,STONE WALLS,STEINMAUERN
+STEEL WALLS,STEEL WALLS,STAHLMAUERN
+%s. Not for sale. Cost of war: %s. Click to declare war.,%s. Not for sale. Cost of war: %s. Click to declare war.,"%s. Unverkäuflich. Kriegskosten: %s. Klicken, um den Krieg zu erklären."
+STATUS,STATUS,STATUS
+FORM 3-N  NEGOTIATION,FORM 3-N  NEGOTIATION,FORMULAR 3-N  VERHANDLUNG
+Owner: %s,Owner: %s,Eigentümer: %s
+"Drag cabbages from the crate onto your offer, then send it. Too few raise the price. Enough lower it.","Drag cabbages from the crate onto your offer, then send it. Too few raise the price. Enough lower it.",Ziehen Sie Kohlköpfe aus der Kiste auf Ihr Angebot und senden Sie es ab. Zu wenige erhöhen den Preis. Genug senken ihn.
+"Put coins from the purse in the envelope, then pass it. Too little raises the price. Enough lowers it.","Put coins from the purse in the envelope, then pass it. Too little raises the price. Enough lowers it.",Legen Sie Münzen aus der Kasse in den Umschlag und reichen Sie ihn weiter. Zu wenig erhöht den Preis. Genug senkt ihn.
+re: %s,re: %s,betr.: %s
+OFFER %d OF %d,OFFER %d OF %d,ANGEBOT %d VON %d
+YOUR OFFER,YOUR OFFER,IHR ANGEBOT
+SEND OFFER,SEND OFFER,ANGEBOT SENDEN
+IN STOCK %s,IN STOCK %s,IM LAGER %s
+IN THE PURSE %s,IN THE PURSE %s,IN DER KASSE %s
+Is this a joke? Double it.,Is this a joke? Double it.,Soll das ein Witz sein? Verdoppeln Sie.
+My grandfather planted these rows. I want more than this.,My grandfather planted these rows. I want more than this.,Mein Großvater hat diese Reihen gepflanzt. Ich will mehr als das.
+I have framed better offers. Not many.,I have framed better offers. Not many.,Ich habe schon bessere Angebote eingerahmt. Nicht viele.
+Closer. Not close.,Closer. Not close.,Näher. Nicht nah.
+My accountant laughed. Briefly.,My accountant laughed. Briefly.,Mein Buchhalter hat gelacht. Kurz.
+More. Considerably more.,More. Considerably more.,Mehr. Deutlich mehr.
+Almost. My accountant is listening.,Almost. My accountant is listening.,Fast. Mein Buchhalter hört zu.
+Nearly. Do not stop now.,Nearly. Do not stop now.,Beinahe. Hören Sie jetzt nicht auf.
+A little more and I stop pretending.,A little more and I stop pretending.,"Etwas mehr, und ich höre auf, mich zu zieren."
+Acceptable. The price comes down.,Acceptable. The price comes down.,Annehmbar. Der Preis sinkt.
+Fine. I will come down. Do not get used to it.,Fine. I will come down. Do not get used to it.,Gut. Ich gehe runter. Gewöhnen Sie sich nicht daran.
+My wife says yes. I say a smaller yes.,My wife says yes. I say a smaller yes.,Meine Frau sagt ja. Ich sage ein kleineres Ja.
+Fine. Sign before I change my mind.,Fine. Sign before I change my mind.,"Gut. Unterschreiben Sie, bevor ich es mir anders überlege."
+Generous. Suspiciously generous.,Generous. Suspiciously generous.,Großzügig. Verdächtig großzügig.
+You overpaid. I will not mention it again.,You overpaid. I will not mention it again.,Sie haben zu viel bezahlt. Ich erwähne es nicht noch einmal.
+What envelope? I see no envelope.,What envelope? I see no envelope.,Welcher Umschlag? Ich sehe keinen Umschlag.
+This must have fallen out of a very small pocket.,This must have fallen out of a very small pocket.,Das muss aus einer sehr kleinen Tasche gefallen sein.
+I do not count anything this thin.,I do not count anything this thin.,So etwas Dünnes zähle ich nicht.
+It is light. Paper weighs more.,It is light. Paper weighs more.,Er ist leicht. Papier wiegt mehr.
+Weighed. Found wanting.,Weighed. Found wanting.,Gewogen und zu leicht befunden.
+The envelope is warm. The contents are not.,The envelope is warm. The contents are not.,Der Umschlag ist warm. Der Inhalt nicht.
+Considered. A heavier envelope is easier to consider.,Considered. A heavier envelope is easier to consider.,Erwogen. Ein schwererer Umschlag erwägt sich leichter.
+Nearly persuasive.,Nearly persuasive.,Beinahe überzeugend.
+Thicker envelopes close faster.,Thicker envelopes close faster.,Dickere Umschläge schließen schneller.
+Understood. The price was a clerical error.,Understood. The price was a clerical error.,Verstanden. Der Preis war ein Schreibfehler.
+I see we understand each other.,I see we understand each other.,"Wie ich sehe, verstehen wir uns."
+The committee is satisfied. I am the committee.,The committee is satisfied. I am the committee.,Der Ausschuss ist zufrieden. Ich bin der Ausschuss.
+Gratitude noted. The paperwork will be quick.,Gratitude noted. The paperwork will be quick.,Dank vermerkt. Der Papierkram geht schnell.
+Very generous. The file has been misplaced.,Very generous. The file has been misplaced.,Sehr großzügig. Die Akte ist verlegt worden.
+My nephew will remember your name.,My nephew will remember your name.,Mein Neffe wird sich Ihren Namen merken.
+BODY ARMOUR,BODY ARMOUR,SCHUTZWESTE
+HEAVIER CLIPBOARDS,HEAVIER CLIPBOARDS,SCHWERERE KLEMMBRETTER
+TIME AND MOTION,TIME AND MOTION,ZEIT UND BEWEGUNG
+HAZARD BRIEFING,HAZARD BRIEFING,GEFAHRENUNTERWEISUNG
+"Cardboard, laminated. Still issued.
+Field associates take 30% more damage before they fall.","Cardboard, laminated. Still issued.
+Field associates take 30% more damage before they fall.","Karton, laminiert. Wird weiterhin ausgegeben.
+Außendienstmitarbeiter halten 30 % mehr Schaden aus, bevor sie fallen."
+"The clipboard is now a weapon. It always was.
+Field associates hit 30% harder.","The clipboard is now a weapon. It always was.
+Field associates hit 30% harder.","Das Klemmbrett ist jetzt eine Waffe. Das war es schon immer.
+Außendienstmitarbeiter treffen 30 % härter."
+"Every step has been measured. Some were cut.
+Field associates walk 25% faster.","Every step has been measured. Some were cut.
+Field associates walk 25% faster.","Jeder Schritt wurde vermessen. Einige wurden gestrichen.
+Außendienstmitarbeiter gehen 25 % schneller."
+"The hazards were briefed. The briefing was mandatory.
+Field associates take another 30% more damage before they fall.","The hazards were briefed. The briefing was mandatory.
+Field associates take another 30% more damage before they fall.","Die Gefahren wurden unterwiesen. Die Unterweisung war Pflicht.
+Außendienstmitarbeiter halten weitere 30 % mehr Schaden aus, bevor sie fallen."
+HIRE AND TRAIN,HIRE AND TRAIN,EINSTELLEN UND AUSBILDEN
+Cost: ¶%s.,Cost: ¶%s.,Kosten: ¶%s.

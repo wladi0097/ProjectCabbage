@@ -261,15 +261,31 @@ extends Resource
 @export var farm_channel := 1
 ## Chapter 3's farms bought on the map: the ids of the farm sites owned (.size(): how many farms).
 @export var farms_owned := PackedStringArray()
-## The negotiation for the next farm (FarmRegister): every offer made so far, in order (cabbages, or
-## coins for a bribe), and the coin price they have left it at (0: still the asking price). Both
-## start over when the farm is bought. What the owner has in mind is never saved: it follows from
-## `created` and the farms owned, so reloading cannot change it.
+## The negotiations for the next farm (FarmRegister.haggle), one per owner: site id -> {price = the
+## coin price his offers have left it at (0: still the asking price), offers = every offer made to
+## him, in order (PackedInt32Array: cabbages, or coins for a bribe)}. All start over when a farm is
+## bought. What an owner has in mind is never saved: it follows from `created`, the farms owned and
+## the site, so reloading cannot change it.
+@export var haggles := {}
+## From when one owner at a time was haggled with: his offers, the price they left and his site. Only
+## read to migrate (FarmRegister.haggle moves them into `haggles` and clears them).
 @export var haggle_offers := PackedInt32Array()
 @export var haggle_price := 0
+@export var haggle_site := ""
 ## The map sheet that lay open last at the map table (MapTable: "world", or a country's id; "": the
 ## home country's). A war sheet is not kept: its country's is.
 @export var map_sheet := ""
+# The war (entities/war/, research/war-contract.md): soldiers bought at the PERSONNEL DEPOT.
+## Trained figures ready to fight: unit id (WarRules.UNITS) -> count. A war takes its figures out
+## of here (WarSheet.begin) and puts survivors back.
+@export var army := {}
+## Figures in training, a queue trained front first (WarRules.tick_training): each {unit, left =
+## seconds}. They count toward the army cap.
+@export var army_training := []
+## Depot research nodes bought (WarRules.RESEARCH ids, paid in Findings), in order.
+@export var unit_research := PackedStringArray()
+## The depot's first drop onto the map table has played.
+@export var depot_dropped := false
 ## The CH1 squares made farm squares, one per farm owned, picked by the player (FarmScreen.place_farm),
 ## and how many times a plain square's cabbages each farm square harvests (CH2's FARM OUTPUT raises it).
 @export var farm_squares := PackedInt32Array()

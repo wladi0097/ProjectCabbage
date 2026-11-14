@@ -4,7 +4,6 @@
 [ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
 [ext_resource type="Material" path="res://assets/materials/cabbage.tres" id="3_mat"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="4_cue"]
-[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_belt.res" id="5_belt"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_1.wav" id="sfx_cabbage_bump_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_2.wav" id="sfx_cabbage_bump_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_3.wav" id="sfx_cabbage_bump_3"]
@@ -57,6 +56,7 @@ angular_damp = 4.0
 script = ExtResource("1_script")
 
 [node name="Mesh" type="MeshInstance3D" parent="."]
+layers = 524289
 gi_mode = 0
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
 material_override = ExtResource("3_mat")
@@ -64,12 +64,14 @@ material_override = ExtResource("3_mat")
 [node name="Shape" type="CollisionShape3D" parent="."]
 shape = SubResource("Ball")
 
-[node name="Belt" type="MeshInstance3D" parent="."]
+[node name="Number" type="Decal" parent="."]
 top_level = true
 visible = false
-gi_mode = 0
-extra_cull_margin = 0.05
-mesh = ExtResource("5_belt")
+size = Vector3(0.152, 0.32, 0.152)
+emission_energy = 0.6
+upper_fade = 0.0
+lower_fade = 0.0
+cull_mask = 524288
 
 [node name="Interactable" type="Node" parent="."]
 script = ExtResource("2_interactable")

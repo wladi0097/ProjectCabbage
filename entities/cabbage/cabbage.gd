@@ -44,10 +44,23 @@ const GOLD_MATERIAL := preload("res://assets/materials/cabbage_gold.tres")
 const HEFT_MAX := 8
 const CONDENSED_WEIGHT := 0.33
 const CONDENSED_PITCH := 0.2
-## It wears a paper belt round its middle printed with what it holds (×4), counts up to BELT_MOST
-## (rows of the print atlas). The belt stays upright to the camera while the cabbage rolls inside it,
-## and its paper hugs the leaves turned into it (assets/shaders/cabbage_belt.gdshader).
-const BELT_MOST := 32
+## What it holds shows as a number projected onto its leaves (the Number decal, only on the cabbage
+## render layer), upright to the camera however it rolls: white digits (DIGITS, DIGIT_W wide, set
+## DIGIT_STEP apart) on a NUMBER_SIZE square, tinted by count_colour.
+const DIGITS := preload("res://assets/textures/cabbage_number/cabbage_number_digits.png")
+const DIGIT_W := 120
+const DIGIT_STEP := 96
+const NUMBER_SIZE := 256
+## The decal sits this far toward the camera from the centre, so it prints the near side only.
+const NUMBER_LIFT := 0.1
+## The number's tint by count: 2-3, 4-7, 8-15, 16-31, 32 and up. Cold pale inks, bright, never loud.
+const COUNT_COLOURS: Array[Color] = [
+	Color(0.93, 0.95, 0.94),  # paper white
+	Color(0.56, 0.78, 1.0),  # ice blue
+	Color(1.0, 0.8, 0.44),  # docket amber
+	Color(1.0, 0.56, 0.5),  # warning salmon
+	Color(0.78, 0.62, 1.0),  # carbon-copy lilac
+]
 ## Let go by the hand near the bin (RottenBin.let_go_over), it may drop in for this long (a drop or
 ## a short toss lands by then).
 const BIN_GRACE := 1.0
@@ -84,7 +97,7 @@ var research := false
 var golden := false
 ## How many cabbages from stock it holds: 1, or more for a condensed one (desk card condense,
 ## CabbageFeeder.condensed): it leaves the stock, sells, is analysed and is counted as that many, and
-## wears a paper belt printed ×2. Set before it enters the tree, like rotten. Minis and rotten ones: always 1.
+## shows a number (2) on its leaves. Set before it enters the tree, like rotten. Minis and rotten ones: always 1.
 var units := 1
 ## Last thrown by a hired hand (Associate._throw), not the player: SaleWindow counts its sale as the hand's.
 var lobbed := false
@@ -119,25 +132,28 @@ var _spin := 0.0:
 		_spin = angle
 		_pose()
 var _spinning: Tween
-## Which of MESHES it wears (the belt's shader reads that mesh's reach).
-var _shape := 0
+## One digits texture per count shown so far, shared by every cabbage holding that many.
+static var _count_textures := {}
 
 
-## A condensed cabbage's paper belt (top level: placed every frame, it never rolls with the body).
-@onready var _belt: MeshInstance3D = $Belt
+## A condensed cabbage's count (top level: placed every frame, it never rolls with the body).
+@onready var _number: Decal = $Number
 @onready var _layer := collision_layer
 @onready var _mask := collision_mask
 
 
 func _ready() -> void:
 	add_to_group(&"cabbages")
-	_shape = randi() % MESHES.size()
-	$Mesh.mesh = MESHES[_shape]
+	$Mesh.mesh = MESHES[randi() % MESHES.size()]
 	var size := randf_range(1.0 - SIZE_SPREAD, 1.0 + SIZE_SPREAD) * (MINI_SCALE if mini else 1.0)
 	mass *= size * size * size * heft(units)
 	max_accel /= pow(heft(units), CONDENSED_WEIGHT)
-	_belt.visible = units > 1
+	_number.visible = units > 1
 	set_process(units > 1)
+	if units > 1:
+		_number.texture_albedo = count_texture(units)
+		_number.texture_emission = _number.texture_albedo
+		_number.modulate = count_colour(units)
 	_look = Basis.from_euler(Vector3(randf(), randf(), randf()) * TAU).scaled(Vector3.ONE * 1.5 * size)
 	if rotten:
 		$Mesh.material_override = ROTTEN_MATERIAL
@@ -177,28 +193,41 @@ static func heavy_pitch(count: int) -> float:
 	return pow(heft(count), -CONDENSED_PITCH)
 
 
-## The printed count on a condensed cabbage's belt: its row of the print atlas.
-static func belt_row(count: int) -> int:
-	return clampi(count, 0, BELT_MOST)
+## The tint of the number on a cabbage holding `count`: one colour per doubling (COUNT_COLOURS).
+static func count_colour(count: int) -> Color:
+	var doublings := String.num_int64(maxi(count, 2), 2).length() - 2  # 2-3: 0, 4-7: 1, 8-15: 2 ...
+	return COUNT_COLOURS[mini(doublings, COUNT_COLOURS.size() - 1)]
 
 
-## The belt's turn: its axis along the camera's `up`, its front (a printed count) turned `toward` the camera.
-static func belt_basis(up: Vector3, toward: Vector3) -> Basis:
-	var front := (toward - up * toward.dot(up)).normalized()
-	return Basis(up.cross(front), up, front)
+## The digits of `count`, white, centred on a square (made once per count, then shared).
+static func count_texture(count: int) -> Texture2D:
+	if not _count_textures.has(count):
+		var digits := DIGITS.get_image()
+		digits.convert(Image.FORMAT_RGBA8)
+		var text := str(count)
+		var square := Image.create_empty(NUMBER_SIZE, NUMBER_SIZE, false, Image.FORMAT_RGBA8)
+		var left := (NUMBER_SIZE - DIGIT_W - DIGIT_STEP * (text.length() - 1)) / 2.0
+		var top := (NUMBER_SIZE - digits.get_height()) / 2.0
+		for i in text.length():
+			square.blend_rect(digits, Rect2i(text[i].to_int() * DIGIT_W, 0, DIGIT_W, digits.get_height()),
+					Vector2i(int(left) + i * DIGIT_STEP, int(top)))
+		square.generate_mipmaps()
+		_count_textures[count] = ImageTexture.create_from_image(square)
+	return _count_textures[count]
 
 
-## A condensed cabbage's belt, every frame after the physics: round its centre, upright to the camera,
-## squashed with it in a grab; the shader learns how the cabbage is turned inside it.
+## The number's turn for a camera turned `view`: it projects along the view (decal -y away from the
+## camera) with the digits' tops toward the camera's up.
+static func number_basis(view: Basis) -> Basis:
+	var turn := view.orthonormalized()
+	return Basis(turn.x, turn.z, -turn.y)
+
+
+## A condensed cabbage's number, every frame: just in front of its centre, facing the camera.
 func _process(_delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
-	var level := Basis.IDENTITY if camera == null else 			belt_basis(camera.global_basis.y, global_position.direction_to(camera.global_position))
-	_belt.global_transform = Transform3D(Basis.from_scale(squish_scale(_squish)) * level, global_position)
-	var turn := Basis(Vector3.UP, _spin) * global_basis.orthonormalized() * _look.orthonormalized()
-	var rows := (turn.inverse() * level).transposed()
-	_belt.set_instance_shader_parameter(&"to_mesh_x", Vector4(rows.x.x, rows.x.y, rows.x.z, _look.get_scale().x))
-	_belt.set_instance_shader_parameter(&"to_mesh_y", Vector4(rows.y.x, rows.y.y, rows.y.z, _shape))
-	_belt.set_instance_shader_parameter(&"to_mesh_z", Vector4(rows.z.x, rows.z.y, rows.z.z, belt_row(units)))
+	var level := Basis.IDENTITY if camera == null else number_basis(camera.global_basis)
+	_number.global_transform = Transform3D(level, global_position + level.y * NUMBER_LIFT)
 
 
 ## Whether it came out of the stock (and so leaves it when sold, binned or analysed): minis and

@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://entities/hand_schedule/hand_schedule.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://entities/components/light_switch.tscn" id="2_switch"]
+[ext_resource type="PackedScene" path="res://entities/components/cog_switch.tscn" id="2_switch"]
 [ext_resource type="PackedScene" path="res://entities/hand_schedule/handling_sheet.tscn" id="3_sheet"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/schedule_switch.wav" id="4_click"]
 
@@ -9,7 +9,7 @@
 script = ExtResource("1_script")
 
 [node name="Switch" parent="." instance=ExtResource("2_switch")]
-transform = Transform3D(2.05, 0, 0, 0, 0, 2.05, 0, -2.05, 0, -0.08, 0.757, 1.13)
+transform = Transform3D(2.05, 0, 0, 0, 0, 2.05, 0, -2.05, 0, -0.08, 0.757, 1.15)
 visible = false
 tooltip = "Handling schedule switch. Click to open the schedule: which cabbages lab hands and hired hands may not touch. The lamp is lit while anything is struck."
 

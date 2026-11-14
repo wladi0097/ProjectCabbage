@@ -1,0 +1,12 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://bhiu7gwd6yrky"]
+
+[ext_resource type="Texture2D" path="res://assets/textures/paper_grain/paper_grain_normal.tres" id="1_normal"]
+
+[resource]
+vertex_color_use_as_albedo = true
+metallic_specular = 0.08
+roughness = 0.95
+normal_enabled = true
+normal_scale = 0.25
+normal_texture = ExtResource("1_normal")
+uv1_scale = Vector3(4, 4, 4)

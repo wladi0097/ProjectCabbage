@@ -7,9 +7,11 @@
 [ext_resource type="PackedScene" path="res://entities/map_table/map_flash.tscn" id="5_flash"]
 [ext_resource type="Shader" path="res://assets/shaders/farm_parcels.gdshader" id="6_parcels"]
 [ext_resource type="PackedScene" path="res://entities/map_table/farm_deed.tscn" id="7_deed"]
+[ext_resource type="Texture2D" path="res://assets/textures/map_parcels/kohlmark.png" id="8_parcels"]
 
 [sub_resource type="ShaderMaterial" id="ParcelInk"]
 shader = ExtResource("6_parcels")
+shader_parameter/parcels = ExtResource("8_parcels")
 
 [node name="KohlmarkSheet" instance=ExtResource("1_sheet")]
 script = ExtResource("4_register")
@@ -39,7 +41,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Brasswold Holding"
+text = "Rotkohlheim Holding"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -69,7 +71,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Mittelfeld Holding"
+text = "Kohlrabach Holding"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -99,7 +101,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Brasswold Farm"
+text = "Rotkohlheim Farm"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -129,7 +131,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Ostfurt Holding"
+text = "Spitzfurt Holding"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -159,7 +161,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Grauhaven Holding"
+text = "Grünkohlen Holding"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -189,7 +191,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Ostfurt Farm"
+text = "Spitzfurt Farm"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -219,7 +221,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Sennick Holding"
+text = "Filderau Holding"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -249,7 +251,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Ostfurt Estate"
+text = "Spitzfurt Estate"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -279,7 +281,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 47
-text = "KOHLBURG"
+text = "WIRSINGEN"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -399,7 +401,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "I. Brasswold"
+text = "I. Rotkohlheim"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -414,7 +416,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "II. Kalden"
+text = "II. Kaletten"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -429,7 +431,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "III. Ostfurt"
+text = "III. Spitzfurt"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -444,7 +446,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "IV. Weiler Marsh"
+text = "IV. Ballhead Moor"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -459,7 +461,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "V. Grauhaven"
+text = "V. Grünkohlen"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -474,7 +476,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "VI. Sennick"
+text = "VI. Filderau"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -489,7 +491,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "VII. Mittelfeld"
+text = "VII. Kohlrabach"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -1196,42 +1198,42 @@ vertical_alignment = 1
 [node name="T01" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(0.8519, 0, -0.3973, 0, 0.9400, 0, 0.3973, 0, 0.8519, 0.174, 0.002, 1.084)
 site = &"K-1"
-title = "Brasswold Holding"
+title = "Rotkohlheim Holding"
 
 [node name="T02" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(0.9781, 0, 0.2079, 0, 1.0000, 0, -0.2079, 0, 0.9781, 0.354, 0.002, 0.574)
 site = &"K-2"
-title = "Mittelfeld Holding"
+title = "Kohlrabach Holding"
 
 [node name="T03" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(1.0598, 0, -0.0185, 0, 1.0600, 0, 0.0185, 0, 1.0598, -0.006, 0.002, 0.484)
 site = &"K-3"
-title = "Brasswold Farm"
+title = "Rotkohlheim Farm"
 
 [node name="T04" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(0.9412, 0, -0.2347, 0, 0.9700, 0, 0.2347, 0, 0.9412, -0.336, 0.002, 0.904)
 site = &"K-4"
-title = "Ostfurt Holding"
+title = "Spitzfurt Holding"
 
 [node name="T05" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(0.9481, 0, 0.4025, 0, 1.0300, 0, -0.4025, 0, 0.9481, 0.624, 0.002, 1.114)
 site = &"K-5"
-title = "Grauhaven Holding"
+title = "Grünkohlen Holding"
 
 [node name="T06" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(0.9257, 0, 0.1632, 0, 0.9400, 0, -0.1632, 0, 0.9257, -0.366, 0.002, 1.324)
 site = &"K-6"
-title = "Ostfurt Farm"
+title = "Spitzfurt Farm"
 
 [node name="T07" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(0.9986, 0, -0.0523, 0, 1.0000, 0, 0.0523, 0, 0.9986, -0.666, 0.002, 0.754)
 site = &"K-7"
-title = "Sennick Holding"
+title = "Filderau Holding"
 
 [node name="T08" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(1.0189, 0, -0.2922, 0, 1.0600, 0, 0.2922, 0, 1.0189, -0.756, 0.002, 1.174)
 site = &"K-8"
-title = "Ostfurt Estate"
+title = "Spitzfurt Estate"
 
 [node name="Flash" parent="." instance=ExtResource("5_flash")]
 visible = false

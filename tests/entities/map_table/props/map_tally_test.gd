@@ -59,7 +59,7 @@ func test_the_tally_prints_its_numbers_as_the_price_tags_and_the_field_line_do()
 func test_the_tally_changes_when_a_farm_is_bought() -> void:
 	var tally := _tally()
 	tally.live = true
-	assert_bool(FarmRegister.buy(SaveManager.save, &"K-3")).is_true()
+	assert_bool(FarmRegister.buy(SaveManager.save, &"K-2")).is_true()
 	tally.show_save(SaveManager.save)
 	assert_array(_shown(tally)).is_equal(["24K", "450", "3,120", "1/24"])
 	# What the farm cost and the farm itself flick over; the Findings it did not touch stay still.

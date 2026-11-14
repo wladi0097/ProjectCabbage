@@ -55,7 +55,7 @@ var _shown_on := true
 
 @onready var _model: HandModel = $Hand
 ## The on/off switch lies on the desk right of the slate (price_slate.tscn).
-@onready var _switch: LightSwitch = slate.get_node(^"ConsultantSwitch")
+@onready var _switch: CogSwitch = slate.get_node(^"ConsultantSwitch")
 @onready var _sheet: MandateSheet = $Mandate/Sheet
 
 

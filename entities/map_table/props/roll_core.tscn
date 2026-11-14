@@ -4,20 +4,24 @@
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_roll_band.res" id="2_band"]
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_roll_tag.res" id="3_tag"]
 [ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="4_font"]
+[ext_resource type="Material" path="res://assets/materials/map_paper.tres" id="5_paper"]
 
 [node name="RollCore" type="Node3D"]
 
 [node name="Model" type="MeshInstance3D" parent="."]
 gi_mode = 0
 mesh = ExtResource("1_core")
+surface_material_override/0 = ExtResource("5_paper")
 
 [node name="Band" type="MeshInstance3D" parent="."]
 gi_mode = 0
 mesh = ExtResource("2_band")
+surface_material_override/0 = ExtResource("5_paper")
 
 [node name="Tag" type="MeshInstance3D" parent="."]
 gi_mode = 0
 mesh = ExtResource("3_tag")
+surface_material_override/0 = ExtResource("5_paper")
 
 [node name="Name" type="Label3D" parent="Tag"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0798, 0)

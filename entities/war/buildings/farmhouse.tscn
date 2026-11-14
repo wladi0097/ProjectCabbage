@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_farmhouse.res" id="1_mesh"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_farmhouse_rubble.res" id="2_rubble"]
+
+[sub_resource type="BoxShape3D" id="Box"]
+size = Vector3(0.464, 0.16, 0.464)
+
+[node name="Farmhouse" type="Node3D"]
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("1_mesh")
+
+[node name="Rubble" type="MeshInstance3D" parent="."]
+visible = false
+gi_mode = 0
+mesh = ExtResource("2_rubble")
+
+[node name="Body" type="StaticBody3D" parent="."]
+
+[node name="Shape" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+shape = SubResource("Box")

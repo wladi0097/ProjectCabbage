@@ -300,15 +300,41 @@ Needs every farm in Kohlmark (8). The 19% tax on cabbages is abolished and the c
 	{id = "sea_lanes", price = 200000, currency = "findings", also = {coins = 12000000}, farms = 13, title = "SEA LANES", needs = ["no_taxes"],
 		body = "Water is not a border. It is a delay.
 Needs 13 farms. The sea lanes drawn on the world chart are opened: farms in a country across a lane from one that is wholly ours can be attacked."},
+	# The war line (research/war-contract.md): beside the main line from the first law on (the home
+	# farms 6 to 8 are the field associates' tutorials), one card after the other, spread over the
+	# farms taken abroad by `farms`. No effect here: WarRules (entities/war/war_rules.gd) reads
+	# save.stamped (unit types, army cap, mid-round placing, the retreat share). EXPAND THE FIELD
+	# WORKFORCE is dealt by the boss's WE NEED BIGGER ARMIES paper (GameEvents "bigger_armies_memo").
+	# Parked 2026-11-14: the unit cards unit_compliance, unit_senior and unit_pult are out (their copy,
+	# figures and WarRules data are kept) until the unit types are planned with the user.
+	# Prices paced with the fights (tools/pace.py ch3, war pass 2026-11-14).
+	{id = "bigger_armies", price = 4000000, farms = 10, title = "EXPAND THE FIELD WORKFORCE", event = "bigger_armies_memo", needs = ["no_taxes"],
+		body = "Headcount is the only strategy the board understands.
+Needs 10 farms. Two more staff of any kind may take the field in one war."},
+	{id = "tactics", price = 4500000, farms = 11, title = "AUTHORISE TACTICAL ADJUSTMENTS", needs = ["no_taxes"],
+		body = "The plan may now be revised while it fails.
+Needs 11 farms. Staff may still be placed on a landing spot after the attack has started."},
+	{id = "retreat", price = 7000000, farms = 15, title = "STRATEGIC WITHDRAWAL PROTOCOL", needs = ["tactics"],
+		body = "It is not a retreat. It is a return to head office.
+Needs 15 farms. A war can be called off with a RETREAT button. 30% of the staff placed come home; the rest are written off."},
 	# Chapter 3's end (`priority`, the end-of-chapter rule), last in the chain, so it reaches the tray
 	# only once the card before it is stamped: `farms` is a requirement, not a price: the
 	# company must own that many farms (save.farms_owned; all GameEvents.FARMS of them), none is spent
 	# (costs, spendable, pay). Stamped, the alpha's end popup comes (ui/sub/alpha_end); chapter 4 later.
 	# The farms are the wall (the last one is the final island); the coins and Findings on top are a
 	# last lap. PROVISIONAL price (tools/pace.py ch3).
-	{id = "stars", price = 10000000, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes"],
+	{id = "stars", price = 10000000, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "retreat"],
 		body = "There is nothing left to buy down here.
 Needs all 24 farms: the field line counts them. Stamped, the board looks up."},
+	# Optional (no card needs it; one of GameEvents.DRY_LEFT). No effect here: the map table puts TO
+	# FARM over TO DESK and the farm TV splits its back key into TO DESK / TO MAP
+	# (MapTable.SHORTCUT_CARD). Dealt with NEGOTIATION, when farms are bought with cabbages and the
+	# player shuttles between the map and the farm. Last in the queue, after the chain's end, so left
+	# in the tray with the other two optional cards it never holds back a chain card. $30,000: a
+	# comfort, about 25 s of income then (tools/pace.py `ch3`).
+	{id = "farm_shortcut", price = 30000, title = "FASTER TO OUR FARMS", needs = ["negotiation"],
+		body = "Time spent in corridors is not billable. The corridors have been shortened.
+A TO FARM button stands above TO DESK at the map table, and the TV's back key gets a TO MAP half: map to farm and back without passing the desk."},
 ]
 const OFFERED := 3
 const Events := preload("res://globalScripts/game_events.gd")
@@ -634,9 +660,9 @@ static func timed(card: Dictionary) -> bool:
 
 ## The only events a card may be dealt by: started by what the player does, never by a timer (the
 ## warning: the tray has run dry; the promotion and chapter 3's opening: a card is stamped; the war
-## card: the fifth farm is owned). No upgrade card waits on a timer. Chapter 3's other cards follow
+## card: the fifth farm is owned; the workforce card: the first law and Events.BIGGER_ARMIES farms). No upgrade card waits on a timer. Chapter 3's other cards follow
 ## each other by `needs` alone.
-const UNTIMED_EVENTS := ["supply_warning", "promotion", "invest_in_growth", "no_more_sellers"]
+const UNTIMED_EVENTS := ["supply_warning", "promotion", "invest_in_growth", "no_more_sellers", "bigger_armies_memo"]
 ## NO MORE TAXES ON CABBAGES (card no_taxes): what the street's full-sale price is multiplied by.
 const TAX_FREE := 1.19
 ## Cards cash_holding and archive_capacity: what the coin and the Findings limit are multiplied by.
@@ -1147,9 +1173,14 @@ func _bottom_out() -> void:
 	squash.tween_property($Press/Model, "scale", Vector3.ONE, 0.25).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
 
+## Esc closes the approved list, in _input so it gets Esc before the in-game menu (as the ledger does).
 ## Debug builds only: double-clicking a card on offer stamps it for free (the first click drops it, so
 ## the second lands while it flies back: any double click right after a drop counts).
 func _input(event: InputEvent) -> void:
+	if $Approved.visible and event.is_action_pressed("ui_cancel"):
+		$Approved.visible = false
+		get_viewport().set_input_as_handled()
+		return
 	var click := event as InputEventMouseButton
 	if click == null or not click.pressed or not click.double_click or _dropped not in _offered:
 		return

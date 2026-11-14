@@ -1,0 +1,30 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_a.res" id="1_mesh"]
+[ext_resource type="Material" path="res://assets/materials/cabbage.tres" id="2_mat"]
+
+[sub_resource type="PhysicsMaterial" id="Leafy"]
+friction = 0.9
+bounce = 0.25
+
+[sub_resource type="SphereShape3D" id="Ball"]
+radius = 0.016
+
+[node name="ShotCabbage" type="RigidBody3D"]
+collision_layer = 256
+collision_mask = 257
+mass = 0.05
+physics_material_override = SubResource("Leafy")
+freeze = true
+freeze_mode = 1
+linear_damp = 2.0
+angular_damp = 3.0
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+gi_mode = 0
+transform = Transform3D(0.22, 0, 0, 0, 0.22, 0, 0, 0, 0.22, 0, 0, 0)
+mesh = ExtResource("1_mesh")
+material_override = ExtResource("2_mat")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("Ball")

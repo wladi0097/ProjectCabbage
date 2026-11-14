@@ -1,0 +1,48 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_wall_steel_post.res" id="1_post"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_wall_steel_arm.res" id="2_arm"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_wall_steel_rubble.res" id="3_rubble"]
+
+[sub_resource type="BoxShape3D" id="Box"]
+size = Vector3(0.05, 0.076, 0.05)
+
+[node name="WallSteel" type="Node3D"]
+
+[node name="Post" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("1_post")
+
+[node name="Arms" type="Node3D" parent="."]
+
+[node name="East" type="MeshInstance3D" parent="Arms"]
+gi_mode = 0
+mesh = ExtResource("2_arm")
+
+[node name="North" type="MeshInstance3D" parent="Arms"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0)
+visible = false
+gi_mode = 0
+mesh = ExtResource("2_arm")
+
+[node name="West" type="MeshInstance3D" parent="Arms"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+gi_mode = 0
+mesh = ExtResource("2_arm")
+
+[node name="South" type="MeshInstance3D" parent="Arms"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, 0)
+visible = false
+gi_mode = 0
+mesh = ExtResource("2_arm")
+
+[node name="Rubble" type="MeshInstance3D" parent="."]
+visible = false
+gi_mode = 0
+mesh = ExtResource("3_rubble")
+
+[node name="Body" type="StaticBody3D" parent="."]
+
+[node name="Shape" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.038, 0)
+shape = SubResource("Box")

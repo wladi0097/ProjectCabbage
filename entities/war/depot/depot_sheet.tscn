@@ -1,0 +1,170 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://entities/map_table/map_sheet.tscn" id="1_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/maps/depot_map.svg" id="2_art"]
+[ext_resource type="Script" path="res://entities/war/depot/depot_sheet.gd" id="3_depot"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_refuse_1.wav" id="sfx_refuse_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_refuse_2.wav" id="sfx_refuse_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/schedule_stamp_1.wav" id="sfx_research_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/schedule_stamp_2.wav" id="sfx_research_2"]
+
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_1.wav" id="sfx_hire_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_2.wav" id="sfx_hire_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_press_jam_1.wav" id="sfx_jam_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_press_jam_2.wav" id="sfx_jam_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_set_down_1.wav" id="sfx_land_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_set_down_2.wav" id="sfx_land_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_set_down_3.wav" id="sfx_land_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_press_hop.wav" id="sfx_hop"]
+[ext_resource type="Material" path="res://assets/meshes/Army/army_plastic_grey.tres" id="5_grey"]
+[sub_resource type="AudioStreamRandomizer" id="Rand_denied"]
+random_pitch = 1.03
+random_volume_offset_db = 1.0
+streams_count = 2
+stream_0/stream = ExtResource("sfx_refuse_1")
+stream_1/stream = ExtResource("sfx_refuse_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_research"]
+random_pitch = 1.04
+random_volume_offset_db = 1.0
+streams_count = 2
+stream_0/stream = ExtResource("sfx_research_1")
+stream_1/stream = ExtResource("sfx_research_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_hire"]
+random_pitch = 1.04
+random_volume_offset_db = 1.0
+streams_count = 2
+stream_0/stream = ExtResource("sfx_hire_1")
+stream_1/stream = ExtResource("sfx_hire_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_jam"]
+random_pitch = 1.03
+random_volume_offset_db = 1.0
+streams_count = 2
+stream_0/stream = ExtResource("sfx_jam_1")
+stream_1/stream = ExtResource("sfx_jam_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_land"]
+random_pitch = 1.06
+random_volume_offset_db = 1.0
+streams_count = 3
+stream_0/stream = ExtResource("sfx_land_1")
+stream_1/stream = ExtResource("sfx_land_2")
+stream_2/stream = ExtResource("sfx_land_3")
+
+[node name="DepotSheet" instance=ExtResource("1_sheet")]
+script = ExtResource("3_depot")
+id = &"depot"
+title = "Personnel depot"
+roll_name = "DEPOT"
+grey_plastic = ExtResource("5_grey")
+
+[node name="Art" parent="Page/Sheet" index="0"]
+texture = ExtResource("2_art")
+
+[node name="Columns" type="Control" parent="Page/Sheet"]
+layout_mode = 0
+offset_right = 3200.0
+offset_bottom = 1800.0
+mouse_filter = 2
+
+[node name="FormLine" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2300.0
+offset_top = 1492.0
+offset_right = 3080.0
+offset_bottom = 1564.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 26
+text = "FORM 7-P  PERSONNEL REQUISITION"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2300.0
+offset_top = 1374.0
+offset_right = 2938.0
+offset_bottom = 1492.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 56
+text = "PERSONNEL DEPOT"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Staff" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2310.0
+offset_top = 1566.0
+offset_right = 2760.0
+offset_bottom = 1680.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 60
+text = "STAFF 0 / 3"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="StaffNote" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2760.0
+offset_top = 1570.0
+offset_right = 3070.0
+offset_bottom = 1676.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 19
+text = "Staff in training count towards the limit."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+[node name="L26" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2944.0
+offset_top = 1440.0
+offset_right = 3074.0
+offset_bottom = 1494.0
+rotation = -0.24435
+pivot_offset = Vector2(65, 27)
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 31
+text = "FILED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+
+[node name="Denied" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_denied")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Research" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_research")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Hire" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_hire")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Jam" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_jam")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Land" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_land")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Hop" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_hop")
+bus = &"SFX"
+script = ExtResource("sfx_cue")

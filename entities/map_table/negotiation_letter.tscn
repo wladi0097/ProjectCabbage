@@ -1,0 +1,419 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/negotiation_letter.gd" id="1_letter"]
+[ext_resource type="Shader" path="res://assets/shaders/map_sheet.gdshader" id="2_shader"]
+[ext_resource type="PackedScene" path="res://entities/map_table/offer_bundle.tscn" id="3_bundle"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_1.wav" id="sfx_bump_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_2.wav" id="sfx_bump_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_3.wav" id="sfx_bump_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_land_1.wav" id="sfx_coin_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/coin_land_2.wav" id="sfx_coin_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_slide_1.wav" id="sfx_slide_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_slide_2.wav" id="sfx_slide_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_slide_3.wav" id="sfx_slide_3"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_thud"]
+random_pitch = 1.12
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_bump_1")
+stream_1/stream = ExtResource("sfx_bump_2")
+stream_2/stream = ExtResource("sfx_bump_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_clink"]
+random_pitch = 1.08
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_coin_1")
+stream_1/stream = ExtResource("sfx_coin_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_slide"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_slide_1")
+stream_1/stream = ExtResource("sfx_slide_2")
+stream_2/stream = ExtResource("sfx_slide_3")
+
+[sub_resource type="StyleBoxFlat" id="FrameLine"]
+draw_center = false
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.11, 0.125, 0.118, 1)
+
+[sub_resource type="StyleBoxFlat" id="BoxLine"]
+bg_color = Color(0.77, 0.74, 0.62, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.11, 0.125, 0.118, 1)
+
+[sub_resource type="StyleBoxFlat" id="BoxLineHot"]
+bg_color = Color(0.92, 0.9, 0.8, 1)
+border_width_left = 9
+border_width_top = 9
+border_width_right = 9
+border_width_bottom = 9
+border_color = Color(0.416, 0.169, 0.157, 1)
+
+[sub_resource type="PlaneMesh" id="LetterPlane"]
+size = Vector2(0.82, 1.04)
+center_offset = Vector3(0.41, 0, 0.52)
+
+[sub_resource type="ShaderMaterial" id="LetterMat"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/open = 1.0
+shader_parameter/sheet_length = 1.04
+shader_parameter/core = 0.02
+shader_parameter/pitch = 0.006
+shader_parameter/lift = 0.0
+shader_parameter/back_color = Color(0.66, 0.63, 0.53, 1)
+
+[sub_resource type="StandardMaterial3D" id="TrayMetal"]
+albedo_color = Color(0.33, 0.36, 0.34, 1)
+metallic = 0.35
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="TrayBase"]
+size = Vector3(0.22, 0.008, 0.2)
+
+[sub_resource type="BoxMesh" id="TrayLong"]
+size = Vector3(0.22, 0.034, 0.01)
+
+[sub_resource type="BoxMesh" id="TrayShort"]
+size = Vector3(0.01, 0.034, 0.2)
+
+[node name="NegotiationLetter" type="Node3D"]
+script = ExtResource("1_letter")
+hot_box = SubResource("BoxLineHot")
+box_line = SubResource("BoxLine")
+
+[node name="Page" type="SubViewport" parent="."]
+disable_3d = true
+size = Vector2i(820, 1040)
+render_target_update_mode = 1
+
+[node name="Form" type="Control" parent="Page"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 820.0
+offset_bottom = 1040.0
+mouse_filter = 2
+
+[node name="Paper" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_right = 820.0
+offset_bottom = 1040.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.71, 1)
+
+[node name="Frame" type="Panel" parent="Page/Form"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 798.0
+offset_bottom = 1018.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="FormLine" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 36.0
+offset_right = 776.0
+offset_bottom = 84.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 42
+text = "FORM 3-N  NEGOTIATION"
+vertical_alignment = 1
+
+[node name="Owner" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 80.0
+offset_right = 776.0
+offset_bottom = 136.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 38
+text = "Owner: H. Wirsing"
+vertical_alignment = 1
+
+[node name="PriceHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 138.0
+offset_right = 400.0
+offset_bottom = 190.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "PRICE NOW"
+vertical_alignment = 1
+
+[node name="Price" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 300.0
+offset_top = 138.0
+offset_right = 776.0
+offset_bottom = 190.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 36
+text = "$152,000 + 1,520 cabbages"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Rule1" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 194.0
+offset_right = 776.0
+offset_bottom = 198.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Opening" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 212.0
+offset_right = 776.0
+offset_bottom = 470.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+theme_override_constants/line_spacing = -6
+text = "Drag cabbages from the crate onto your offer, then send it."
+vertical_alignment = 0
+autowrap_mode = 3
+
+[node name="Note" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 480.0
+offset_right = 776.0
+offset_bottom = 604.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 36
+text = "Cabbages offered are not returned."
+vertical_alignment = 2
+autowrap_mode = 3
+
+[node name="Slips" type="Control" parent="Page/Form"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 44.0
+offset_top = 200.0
+offset_right = 776.0
+offset_bottom = 620.0
+mouse_filter = 2
+
+[node name="Rule2" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 622.0
+offset_right = 776.0
+offset_bottom = 626.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Pile" type="Panel" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 630.0
+offset_right = 520.0
+offset_bottom = 912.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxLine")
+
+[node name="Head" type="Label" parent="Page/Form/Pile"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 6.0
+offset_right = 300.0
+offset_bottom = 52.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 34
+text = "OFFER 1 OF 5"
+vertical_alignment = 1
+
+[node name="Total" type="Label" parent="Page/Form/Pile"]
+layout_mode = 0
+offset_left = 160.0
+offset_top = 6.0
+offset_right = 462.0
+offset_bottom = 52.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "0 cabbages"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Closed" type="Label" parent="Page/Form/Pile"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 60.0
+offset_right = 476.0
+offset_bottom = 270.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 44
+text = "NO FURTHER OFFERS"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Send" type="Panel" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 922.0
+offset_right = 520.0
+offset_bottom = 1002.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxLine")
+
+[node name="Word" type="Label" parent="Page/Form/Send"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 476.0
+offset_bottom = 80.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "SEND OFFER"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Crate" type="Panel" parent="Page/Form"]
+layout_mode = 0
+offset_left = 540.0
+offset_top = 630.0
+offset_right = 776.0
+offset_bottom = 852.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxLine")
+
+[node name="Stock" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 540.0
+offset_top = 856.0
+offset_right = 776.0
+offset_bottom = 904.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "IN STOCK 14,748"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Return" type="Panel" parent="Page/Form"]
+layout_mode = 0
+offset_left = 540.0
+offset_top = 912.0
+offset_right = 776.0
+offset_bottom = 1002.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxLine")
+
+[node name="Word" type="Label" parent="Page/Form/Return"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 0.0
+offset_right = 226.0
+offset_bottom = 90.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_constants/line_spacing = -6
+text = "BACK TO THE DEED"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Paper" type="MeshInstance3D" parent="."]
+gi_mode = 0
+extra_cull_margin = 0.3
+mesh = SubResource("LetterPlane")
+material_override = SubResource("LetterMat")
+
+[node name="Crate" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.658, 0, 0.741)
+
+[node name="Base" type="MeshInstance3D" parent="Crate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0)
+gi_mode = 0
+mesh = SubResource("TrayBase")
+material_override = SubResource("TrayMetal")
+
+[node name="Back" type="MeshInstance3D" parent="Crate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.017, -0.095)
+gi_mode = 0
+mesh = SubResource("TrayLong")
+material_override = SubResource("TrayMetal")
+
+[node name="Front" type="MeshInstance3D" parent="Crate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.017, 0.095)
+gi_mode = 0
+mesh = SubResource("TrayLong")
+material_override = SubResource("TrayMetal")
+
+[node name="Left" type="MeshInstance3D" parent="Crate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.105, 0.017, 0)
+gi_mode = 0
+mesh = SubResource("TrayShort")
+material_override = SubResource("TrayMetal")
+
+[node name="Right" type="MeshInstance3D" parent="Crate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.105, 0.017, 0)
+gi_mode = 0
+mesh = SubResource("TrayShort")
+material_override = SubResource("TrayMetal")
+
+[node name="Bundles" type="Node3D" parent="Crate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, 0)
+
+[node name="Bundle1" parent="Crate/Bundles" instance=ExtResource("3_bundle")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.046, 0, -0.044)
+
+[node name="Bundle2" parent="Crate/Bundles" instance=ExtResource("3_bundle")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.046, 0, -0.04)
+
+[node name="Bundle3" parent="Crate/Bundles" instance=ExtResource("3_bundle")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.042, 0, 0.046)
+
+[node name="Bundle4" parent="Crate/Bundles" instance=ExtResource("3_bundle")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.048, 0, 0.044)
+
+[node name="Bundles" type="Node3D" parent="."]
+
+[node name="Thud" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_thud")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Clink" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_clink")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Slide" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_slide")
+bus = &"SFX"
+script = ExtResource("sfx_cue")

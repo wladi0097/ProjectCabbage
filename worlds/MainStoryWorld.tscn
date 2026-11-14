@@ -30,11 +30,11 @@
 [ext_resource type="PackedScene" path="res://worlds/components/coffee_mug.tscn" id="coffee_mug"]
 [ext_resource type="PackedScene" path="res://ui/sub/debug_starts.tscn" id="debug_starts_1"]
 [ext_resource type="PackedScene" path="res://entities/farm_tv/farm_tv.tscn" id="farm_tv_1"]
-[ext_resource type="PackedScene" path="res://entities/map_table/map_table.tscn" id="map_table_1"]
+[ext_resource type="Script" uid="uid://dxyunm1sh0a2w" path="res://worlds/components/field_exchange.gd" id="field_exchange_1"]
 [ext_resource type="PackedScene" path="res://entities/field_line/field_line.tscn" id="field_line_1"]
-[ext_resource type="Script" path="res://worlds/components/field_exchange.gd" id="field_exchange_1"]
-[ext_resource type="PackedScene" path="res://entities/consultant/consultant.tscn" id="mgr_consultant"]
 [ext_resource type="PackedScene" path="res://entities/hand_schedule/hand_schedule.tscn" id="hand_schedule_1"]
+[ext_resource type="PackedScene" uid="uid://cbkjwrhjqpbe6" path="res://entities/map_table/map_table.tscn" id="map_table_1"]
+[ext_resource type="PackedScene" path="res://entities/consultant/consultant.tscn" id="mgr_consultant"]
 [ext_resource type="PackedScene" path="res://entities/manager/manager.tscn" id="mgr_manager"]
 [ext_resource type="PackedScene" path="res://entities/mini_drop/mini_drop.tscn" id="mini_drop_1"]
 [ext_resource type="Material" path="res://assets/materials/prior_cover_1.tres" id="prior_cover_1"]
@@ -64,10 +64,10 @@
 [ext_resource type="AudioStream" uid="uid://bxe3gjijfkysf" path="res://assets/audio/effects/coin_deposit_1.wav" id="sfx_coin_deposit_1"]
 [ext_resource type="AudioStream" uid="uid://c7oewpivfqmbt" path="res://assets/audio/effects/coin_deposit_2.wav" id="sfx_coin_deposit_2"]
 [ext_resource type="AudioStream" uid="uid://cwa0pheh5fb70" path="res://assets/audio/effects/coin_deposit_3.wav" id="sfx_coin_deposit_3"]
-[ext_resource type="AudioStream" uid="uid://68bbg5xw06t1" path="res://assets/audio/effects/coin_return_1.wav" id="sfx_coin_return_1"]
-[ext_resource type="AudioStream" uid="uid://cunasb3j5nubi" path="res://assets/audio/effects/coin_return_2.wav" id="sfx_coin_return_2"]
 [ext_resource type="AudioStream" uid="uid://c1k1glyx6wyap" path="res://assets/audio/effects/coin_land_1.wav" id="sfx_coin_land_1"]
 [ext_resource type="AudioStream" uid="uid://cmixmtnt1wv5u" path="res://assets/audio/effects/coin_land_2.wav" id="sfx_coin_land_2"]
+[ext_resource type="AudioStream" uid="uid://68bbg5xw06t1" path="res://assets/audio/effects/coin_return_1.wav" id="sfx_coin_return_1"]
+[ext_resource type="AudioStream" uid="uid://cunasb3j5nubi" path="res://assets/audio/effects/coin_return_2.wav" id="sfx_coin_return_2"]
 [ext_resource type="AudioStream" uid="uid://dc4ljvl6l0dq2" path="res://assets/audio/effects/tally_tick_1.wav" id="sfx_tally_tick_1"]
 [ext_resource type="AudioStream" uid="uid://bbbo22sd4tyyy" path="res://assets/audio/effects/tally_tick_2.wav" id="sfx_tally_tick_2"]
 [ext_resource type="AudioStream" uid="uid://bgi2p7dr0c3b" path="res://assets/audio/effects/tally_tick_3.wav" id="sfx_tally_tick_3"]
@@ -413,7 +413,7 @@ max_polyphony = 3
 bus = &"SFX"
 script = ExtResource("13_cue")
 
-[node name="Return" type="AudioStreamPlayer3D" parent="Coins"]
+[node name="Return" type="AudioStreamPlayer3D" parent="Coins" unique_id=64562979]
 stream = SubResource("Rand_coin_return")
 bus = &"SFX"
 script = ExtResource("13_cue")
@@ -449,7 +449,7 @@ memo = NodePath("../MilestoneMemo")
 [node name="Consultant" parent="." unique_id=1828805438 node_paths=PackedStringArray("slate") instance=ExtResource("mgr_consultant")]
 slate = NodePath("../PriceSlate")
 
-[node name="HandSchedule" parent="." instance=ExtResource("hand_schedule_1")]
+[node name="HandSchedule" parent="." unique_id=709739280 instance=ExtResource("hand_schedule_1")]
 
 [node name="GoldenLamp" parent="." unique_id=701713720 node_paths=PackedStringArray("desk_light") instance=ExtResource("sales_lamp")]
 transform = Transform3D(1.323, 0, 0.4578, 0, 1.4, 0, -0.4578, 0, 1.323, 2, 0.76, -0.68)
@@ -498,14 +498,16 @@ transform = Transform3D(1.1615535, 0, 1.6281255, 0, 2, 0, -1.6281255, 0, 1.16155
 bus = &"SFX"
 script = ExtResource("ambience_1")
 
-[node name="FarmTv" parent="." unique_id=2045536916 instance=ExtResource("farm_tv_1")]
+[node name="FarmTv" parent="." unique_id=2045536916 node_paths=PackedStringArray("map") instance=ExtResource("farm_tv_1")]
+map = NodePath("../MapTable")
 
-[node name="MapTable" parent="." unique_id=1203377451 instance=ExtResource("map_table_1")]
+[node name="MapTable" parent="." unique_id=1203377451 node_paths=PackedStringArray("farm_tv") instance=ExtResource("map_table_1")]
+farm_tv = NodePath("../FarmTv")
 
-[node name="FieldLine" parent="." instance=ExtResource("field_line_1")]
+[node name="FieldLine" parent="." unique_id=1069308587 instance=ExtResource("field_line_1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.772, 1)
 
-[node name="FieldExchange" type="Node" parent="." node_paths=PackedStringArray("line", "map")]
+[node name="FieldExchange" type="Node" parent="." unique_id=1032232356 node_paths=PackedStringArray("line", "map")]
 script = ExtResource("field_exchange_1")
 line = NodePath("../FieldLine")
 map = NodePath("../MapTable")

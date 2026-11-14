@@ -61,9 +61,10 @@ const START_SEEDS := 10
 const SEED_PACKS := [[10, 50], [50, 220]]
 ## The desk card that adds the AUTO SEED switch (auto_seed).
 const AUTO_CARD := "standing_seed_order"
-## Clearing a plot: the first costs PLOT_PRICE, each next PLOT_STEP times more.
+## Clearing a plot: the first costs PLOT_PRICE, each next PLOT_STEP times more ($150 up to ~$29k for
+## the 24th: the first few are bought in the farm's first minutes, the last ones close chapter 2).
 const PLOT_PRICE := 150
-const PLOT_STEP := 1.15
+const PLOT_STEP := 1.32
 ## Workers at speed 1.0 (save.farm_hand_speed / farm_tractor_speed multiply both walking and work):
 ## a farm hand walks HAND_SPEED px/s across the 1512 px screen (a square is ~157 px apart, the field
 ## ~5 s to the far corner) and plants for HAND_WORK s; a tractor drives TRACTOR_SPEED px/s and

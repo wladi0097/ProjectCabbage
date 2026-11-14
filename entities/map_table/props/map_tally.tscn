@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/icons/cabbage_icon.svg" id="4_cabbage"]
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_farm_token_base.res" id="5_token"]
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_farm_token_for_sale.res" id="6_token_look"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/desk_button.tscn" id="7_button"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/map_tally_flap_1.wav" id="sfx_map_tally_flap_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/map_tally_flap_2.wav" id="sfx_map_tally_flap_2"]
@@ -115,6 +116,17 @@ mesh = ExtResource("5_token")
 [node name="Look" type="MeshInstance3D" parent="Signs/Farms"]
 gi_mode = 0
 mesh = ExtResource("6_token_look")
+
+[node name="Console" type="Node3D" parent="."]
+
+[node name="DeskButton" parent="Console" instance=ExtResource("7_button")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.037, -0.535)
+
+[node name="FarmButton" parent="Console" instance=ExtResource("7_button")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.037, -0.675)
+
+[node name="Stencil" parent="Console/FarmButton"]
+text = "TO FARM"
 
 [node name="Tick" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_tick")

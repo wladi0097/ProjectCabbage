@@ -236,3 +236,176 @@ func test_the_screen_is_only_rendered_while_the_camera_is_off_the_desk() -> void
 	farm_tv._set_view(0.0)  # Back at the desk.
 	farm_tv._process(0.0)
 	assert_int(farm_tv.screen_viewport().render_target_update_mode).is_equal(SubViewport.UPDATE_DISABLED)
+
+
+## A farm TV and the map table wired to each other (as in MainStoryWorld), in a chapter 3 save,
+## with the desk camera; the save before is put back by the caller (after_shortcut).
+var _saved: SaveGame
+
+
+func _tv_and_map(shortcut: bool) -> Array:
+	_saved = SaveManager.save
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["family_farm", "consolidation"])
+	if shortcut:
+		save.stamped.append(MapTable.SHORTCUT_CARD)
+	SaveManager.save = save
+	FarmTv.away = false
+	var camera := Camera3D.new()
+	camera.transform = desk
+	add_child(auto_free(camera))
+	camera.make_current()
+	var set_scene: FarmTv = auto_free(load("res://entities/farm_tv/farm_tv.tscn").instantiate())
+	add_child(set_scene)
+	var map: MapTable = auto_free(load("res://entities/map_table/map_table.tscn").instantiate())
+	add_child(map)
+	set_scene.map = map
+	map.farm_tv = set_scene
+	set_scene._process(0.0)
+	return [set_scene, map, camera]
+
+
+func after_test() -> void:
+	if _saved != null:
+		SaveManager.save = _saved
+		_saved = null
+	FarmTv.away = false
+
+
+func _hits(frame: Transform3D, half: Vector2) -> bool:
+	return FarmTv.on_glass(FarmTv.rect_uv(frame, half, frame.origin + frame.basis.z, -frame.basis.z))
+
+
+func test_the_back_key_is_split_into_to_desk_and_to_map_only_once_the_farm_shortcut_card_is_stamped() -> void:
+	var plain: FarmTv = _tv_and_map(false)[0]
+	assert_bool(plain.split()).is_false()
+	assert_bool(plain.get_node("Corner/Tv/Split").visible).is_false()
+	assert_bool(plain.get_node("Corner/Tv/Stencil").visible).is_true()
+	assert_vector(plain.back_half()).is_equal(FarmTv.BACK_HALF)  # The whole key is TO DESK.
+	SaveManager.save.stamped.append(MapTable.SHORTCUT_CARD)
+	plain._process(0.0)
+	assert_bool(plain.split()).is_true()
+	assert_bool(plain.get_node("Corner/Tv/Split").visible).is_true()
+	assert_bool(plain.get_node("Corner/Tv/Stencil").visible).is_false()
+	assert_str((plain.get_node("Corner/Tv/Split/DeskStencil") as Label3D).text).is_equal("TO DESK")
+	assert_str((plain.get_node("Corner/Tv/Split/MapStencil") as Label3D).text).is_equal("TO MAP")
+
+
+func test_the_split_keys_halves_share_the_old_key_top_to_desk_bottom_to_map() -> void:
+	var top := FarmTv.BACK_CENTRE.y + FarmTv.BACK_HALF.y
+	var bottom := FarmTv.BACK_CENTRE.y - FarmTv.BACK_HALF.y
+	assert_float(FarmTv.SPLIT_BACK_CENTRE.y + FarmTv.SPLIT_HALF.y).is_equal_approx(top, 0.0001)
+	assert_float(FarmTv.MAP_CENTRE.y - FarmTv.SPLIT_HALF.y).is_equal_approx(bottom, 0.0001)
+	assert_float(FarmTv.SPLIT_BACK_CENTRE.y - FarmTv.SPLIT_HALF.y).is_equal_approx(FarmTv.MAP_CENTRE.y + FarmTv.SPLIT_HALF.y, 0.0001)
+	assert_float(FarmTv.MAP_CENTRE.x).is_equal(FarmTv.BACK_CENTRE.x)
+	var tv_set: FarmTv = _tv_and_map(true)[0]
+	assert_bool(_hits(tv_set.map_frame(), FarmTv.SPLIT_HALF)).is_true()
+	assert_bool(_hits(tv_set.back_frame(), tv_set.back_half())).is_true()
+	var map_face := tv_set.map_frame()  # The TO MAP half's centre is not on the TO DESK half.
+	assert_bool(FarmTv.on_glass(FarmTv.rect_uv(tv_set.back_frame(), tv_set.back_half(), map_face.origin + map_face.basis.z, -map_face.basis.z))).is_false()
+
+
+func test_each_split_half_shows_its_stencil_over_the_same_arrow_inside_its_own_half() -> void:
+	var tv_set: FarmTv = _tv_and_map(true)[0]
+	var halves := [
+		[FarmTv.SPLIT_BACK_CENTRE, tv_set.get_node("Corner/Tv/BackArrow"), tv_set.get_node("Corner/Tv/Split/DeskStencil")],
+		[FarmTv.MAP_CENTRE, tv_set.get_node("Corner/Tv/Split/MapArrow"), tv_set.get_node("Corner/Tv/Split/MapStencil")],
+	]
+	var size := (halves[0][1] as MeshInstance3D).get_aabb().size
+	for half: Array in halves:
+		var centre: Vector3 = half[0]
+		var arrow: MeshInstance3D = half[1]
+		var box := arrow.get_aabb()
+		box.position += arrow.position
+		assert_vector(box.size).is_equal_approx(size, Vector3.ONE * 0.0001)  # The same arrow.
+		assert_float(box.position.y).is_greater(centre.y - FarmTv.SPLIT_HALF.y)
+		assert_float(box.end.y).is_less((half[2] as Label3D).position.y - 0.003)  # Under its stencil...
+		assert_float((half[2] as Label3D).position.y).is_less(centre.y + FarmTv.SPLIT_HALF.y - 0.005)  # ...both on the key.
+
+
+## The farm TV, the map and the camera with the camera at the TV.
+func _at_tv(shortcut: bool) -> Array:
+	var both := _tv_and_map(shortcut)
+	var tv_set: FarmTv = both[0]
+	tv_set._pan(true)
+	tv_set._tween.custom_step(10.0)
+	return both
+
+
+func _esc() -> InputEventAction:
+	var esc := InputEventAction.new()
+	esc.action = &"ui_cancel"
+	esc.pressed = true
+	return esc
+
+
+func test_the_shortcut_to_the_map_dips_to_dark_instead_of_flying_across_the_room() -> void:
+	var both := _at_tv(true)
+	var tv_set: FarmTv = both[0]
+	var map: MapTable = both[1]
+	var camera: Camera3D = both[2]
+	var dark: ColorRect = tv_set.get_node("Dip/Dark")
+	var at_tv := camera.transform
+	assert_float(dark.color.a).is_equal(0.0)
+	tv_set.to_map()
+	tv_set._dip_tween.custom_step(FarmTv.DIP_OUT * 0.5)
+	# Going dark, and the camera has not moved at all.
+	assert_float(dark.color.a).is_between(0.2, 0.8)
+	assert_bool(camera.transform.is_equal_approx(at_tv)).is_true()
+	tv_set._dip_tween.custom_step(FarmTv.DIP_OUT * 0.5 + 0.001)
+	# Dark: the camera has cut to the last small stretch of the desk's own glide to the map.
+	assert_float(dark.color.a).is_greater(0.95)
+	var map_view: Transform3D = map.get_node("View").global_transform
+	assert_bool(camera.transform.is_equal_approx(FarmTv.view_at(desk, map_view, FarmTv.SETTLE_FROM))).is_true()
+	assert_float(camera.transform.origin.distance_to(map_view.origin)).is_less(0.25)
+
+
+func test_the_shortcut_ends_at_the_map_view_with_the_set_off_and_home_from_there_as_ever() -> void:
+	var both := _at_tv(true)
+	var tv_set: FarmTv = both[0]
+	var map: MapTable = both[1]
+	var camera: Camera3D = both[2]
+	tv_set.to_map()
+	tv_set._dip_tween.custom_step(10.0)
+	map._pan_tween.custom_step(10.0)
+	assert_bool(camera.transform.is_equal_approx(map.get_node("View").global_transform)).is_true()
+	assert_float((tv_set.get_node("Dip/Dark") as ColorRect).color.a).is_equal(0.0)
+	assert_bool(tv_set.dipping()).is_false()
+	assert_float(tv_set._power).is_equal(0.0)
+	assert_float(tv_set._view).is_equal(0.0)
+	assert_bool(map.is_away()).is_true()
+	assert_bool(FarmTv.away).is_true()
+	map.back_to_desk()
+	map._pan_tween.custom_step(10.0)
+	assert_bool(camera.transform.is_equal_approx(desk)).is_true()
+	assert_bool(FarmTv.away).is_false()
+
+
+func test_esc_during_the_shortcut_does_not_jump_the_camera() -> void:
+	var both := _at_tv(true)
+	var tv_set: FarmTv = both[0]
+	var map: MapTable = both[1]
+	var camera: Camera3D = both[2]
+	var at_tv := camera.transform
+	tv_set.to_map()
+	tv_set._dip_tween.custom_step(FarmTv.DIP_OUT * 0.5)
+	tv_set._input(_esc())  # In the dark: eaten.
+	assert_bool(camera.transform.is_equal_approx(at_tv)).is_true()
+	tv_set._dip_tween.custom_step(10.0)
+	# Esc as the camera settles at the map: home from where it is, on the desk's glide, no jump.
+	var settling := camera.transform
+	map.back_to_desk()
+	map._pan_tween.custom_step(0.02)
+	assert_float(camera.transform.origin.distance_to(settling.origin)).is_less(0.1)
+	map._pan_tween.custom_step(10.0)
+	assert_bool(camera.transform.is_equal_approx(desk)).is_true()
+	assert_bool(FarmTv.away).is_false()
+
+
+func test_to_map_does_nothing_before_the_card() -> void:
+	var both := _at_tv(false)
+	var tv_set: FarmTv = both[0]
+	tv_set.to_map()
+	assert_bool(tv_set.dipping()).is_false()
+	assert_bool((both[1] as MapTable).is_away()).is_false()
+	assert_bool(FarmTv.away).is_true()  # Still at the TV.

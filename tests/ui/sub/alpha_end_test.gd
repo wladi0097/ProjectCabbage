@@ -57,4 +57,6 @@ func test_the_stars_card_is_chapter_threes_last_card_and_needs_every_farm_in_the
 	assert_int(card.farms).is_equal(Report.Events.FARMS)
 	assert_int(Report.Events.FARMS).is_equal(FieldLine.LAMPS)
 	assert_bool(card.get("priority", false)).is_true()
-	assert_dict(UpgradeDesk.CARDS[-1]).is_equal(card)
+	# Last but for optional cards (nothing waits for them), which may queue behind it.
+	var chain := UpgradeDesk.CARDS.filter(func(c: Dictionary) -> bool: return not c.id in UpgradeDesk.Events.DRY_LEFT)
+	assert_dict(chain[-1]).is_equal(card)

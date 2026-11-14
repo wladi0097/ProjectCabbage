@@ -477,7 +477,7 @@ func test_no_upgrade_card_waits_on_a_timer() -> void:
 		assert_bool(card.has("after_harvest")).override_failure_message("%s waits on farm time" % card.id).is_false()
 		if card.has("event"):
 			assert_array(UpgradeDesk.UNTIMED_EVENTS).override_failure_message("%s waits on the event %s" % [card.id, card.event]) 					.contains([card.event])
-	assert_array(UpgradeDesk.UNTIMED_EVENTS).is_equal(["supply_warning", "promotion", "invest_in_growth", "no_more_sellers"])
+	assert_array(UpgradeDesk.UNTIMED_EVENTS).is_equal(["supply_warning", "promotion", "invest_in_growth", "no_more_sellers", "bigger_armies_memo"])
 	# The promotions start on a stamp alone, never on a flag a clock could set.
 	assert_bool(UpgradeDesk.Events.EVENTS.promotion.has("flag")).is_false()
 	assert_bool(UpgradeDesk.Events.EVENTS.invest_in_growth.has("flag")).is_false()
@@ -1247,12 +1247,18 @@ func test_the_stamp_tag_tells_the_player_to_pull_the_handle() -> void:
 	assert_str((desk._tag as Label3D).text).is_equal("PULL TO STAMP")
 
 
-const CHAPTER_3 := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm", "negotiation", "rejected_goods", "hand_schedule", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "stars"]
+const CHAPTER_3 := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm", "negotiation", "rejected_goods", "hand_schedule", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "tactics", "retreat", "stars", "farm_shortcut"]
 ## Chapter 3's chain as it is dealt: each entry arrives once the one before it is stamped, a group all at once.
 const CHAPTER_3_DEALS := [["market_intelligence"], ["cash_holding", "big_ideas", "archive_capacity"], ["condense", "structured_farm"],
 		["negotiation"], ["rejected_goods"], ["bribery"], ["war_mode"], ["world_map"], ["no_taxes"], ["sea_lanes"], ["stars"]]
 ## Its optional cards, beside the chain: nothing waits for them.
-const CHAPTER_3_OPTIONAL := ["map_readout", "hand_schedule"]
+const CHAPTER_3_OPTIONAL := ["map_readout", "hand_schedule", "farm_shortcut"]
+## The war line, beside the main line from the first law on, one card after the other; stars waits for it.
+const CHAPTER_3_WAR := ["tactics", "retreat"]
+## Unit types parked 2026-11-14 (figures, stats and copy kept): their cards are never dealt.
+const PARKED_UNIT_CARDS := ["unit_compliance", "unit_senior", "unit_pult"]
+## The war line's card dealt by the boss's paper.
+const WAR_EVENT_CARD := "bigger_armies"
 
 
 func test_the_market_intelligence_card_comes_only_after_chapter_twos_last_card_and_first_in_the_tray() -> void:
@@ -1385,11 +1391,11 @@ func test_chapter_threes_cards_come_one_after_the_other_but_for_two_groups_that_
 	var chain := []
 	for deal: Array in CHAPTER_3_DEALS:
 		chain.append_array(deal)
-	assert_array(chain + CHAPTER_3_OPTIONAL).contains_exactly_in_any_order(CHAPTER_3)
+	assert_array(chain + CHAPTER_3_OPTIONAL + CHAPTER_3_WAR + [WAR_EVENT_CARD]).contains_exactly_in_any_order(CHAPTER_3)
 	assert_array(CHAPTER_3_DEALS.filter(func(deal: Array) -> bool: return deal.size() > 1)).is_equal(
 			[["cash_holding", "big_ideas", "archive_capacity"], ["condense", "structured_farm"]])
 	for farms: int in [UpgradeDesk.Events.HOME_SELLERS, UpgradeDesk.Events.FARMS]:  # The war card waits for the fifth (its event).
-		var save := _all_stamped_but(chain)  # The optional cards out of the way.
+		var save := _all_stamped_but(chain)  # The optional cards and the war line out of the way.
 		for i in farms:
 			save.farms_owned.append("F-%d" % i)
 		for deal: Array in CHAPTER_3_DEALS:
@@ -1460,6 +1466,7 @@ func test_nothing_waits_on_the_holdings_indicator() -> void:
 		assert_bool(node.get("needs", []).has("map_readout")).override_failure_message(node.id + " waits for it").is_false()
 	# Left in the tray to the end, the chain still runs through beside it.
 	var save := _all_stamped_but(CHAPTER_3)
+	save.stamped.append_array(CHAPTER_3_WAR + [WAR_EVENT_CARD])  # The war line beside the chain, out of the way.
 	save.farms_owned = _home_farms(UpgradeDesk.Events.HOME_SELLERS)  # The war card's event.
 	for deal: Array in CHAPTER_3_DEALS:
 		for id: String in deal:
@@ -1468,10 +1475,10 @@ func test_nothing_waits_on_the_holdings_indicator() -> void:
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(CHAPTER_3_OPTIONAL)
 
 
-func test_only_chapter_threes_first_card_and_the_war_card_are_dealt_by_an_event() -> void:
+func test_only_chapter_threes_first_card_the_war_card_and_the_workforce_card_are_dealt_by_an_event() -> void:
 	for id: String in CHAPTER_3:
 		var card := UpgradeDesk.card_data(id)
-		assert_bool(card.has("event")).override_failure_message(id).is_equal(id in ["market_intelligence", "war_mode"])
+		assert_bool(card.has("event")).override_failure_message(id).is_equal(id in ["market_intelligence", "war_mode", WAR_EVENT_CARD])
 		assert_bool(card.has("tree")).override_failure_message(id).is_false()
 
 
@@ -1484,7 +1491,9 @@ func test_the_stars_card_reaches_the_tray_only_once_the_first_law_and_the_sea_la
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["sea_lanes"])
 	save.stamped.append("sea_lanes")
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["stars"])
-	assert_dict(UpgradeDesk.CARDS[-1]).is_equal(UpgradeDesk.card_data("stars"))
+	# The chain's last card; only an optional card (which nothing waits for) may come after it.
+	var chain := UpgradeDesk.CARDS.filter(func(c: Dictionary) -> bool: return not c.id in UpgradeDesk.Events.DRY_LEFT)
+	assert_dict(chain[-1]).is_equal(UpgradeDesk.card_data("stars"))
 
 
 func test_only_chapter_changing_cards_are_priority_forms() -> void:
@@ -1741,3 +1750,119 @@ func test_structured_farm_is_affordable_under_the_findings_limit_the_archive_car
 	var save := SaveGame.new()
 	UpgradeDesk.apply("archive_capacity", save)
 	assert_int(UpgradeDesk.card_data("structured_farm").price).is_less_equal(save.findings_limit)
+
+
+func test_faster_to_our_farms_is_dealt_with_negotiation_as_a_comfort_paid_in_coins() -> void:
+	var card := UpgradeDesk.card_data("farm_shortcut")
+	assert_str(card.title).is_equal("FASTER TO OUR FARMS")
+	assert_array(card.needs).is_equal(["negotiation"])  # Farms are bought with cabbages: map and farm in turn.
+	assert_dict(UpgradeDesk.costs(card)).is_equal({coins = int(card.price)})
+	assert_str(MapTable.SHORTCUT_CARD).is_equal("farm_shortcut")
+	var save := _all_stamped_but(CHAPTER_3)
+	save.stamped.append_array(["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm"])
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).not_contains(["farm_shortcut"])
+	save.stamped.append("negotiation")
+	assert_array(_next(save.stamped, UpgradeDesk.OFFERED, save)).is_equal(["rejected_goods", "hand_schedule", "farm_shortcut"])
+	var stamped := SaveGame.new()
+	UpgradeDesk.apply("farm_shortcut", stamped)  # No number changes: the map table and the TV read the stamp.
+	assert_int(stamped.coin_limit).is_equal(SaveGame.new().coin_limit)
+
+
+func test_nothing_waits_on_faster_to_our_farms() -> void:
+	assert_array(UpgradeDesk.Events.DRY_LEFT).contains(["farm_shortcut"])
+	for other: Dictionary in UpgradeDesk.CARDS:
+		assert_bool(other.get("needs", []).has("farm_shortcut")).override_failure_message(other.id + " waits for it").is_false()
+	for node: Dictionary in Projector.NODES + FarmTree.NODES:
+		assert_bool(node.get("needs", []).has("farm_shortcut")).override_failure_message(node.id + " waits for it").is_false()
+
+
+## The war line: after the first law (the home farms 6 to 8 are fought with field associates alone),
+## one card after the other beside the sea lanes, each needing more farms; stars waits for its end.
+func test_the_war_line_starts_after_the_first_law_and_deals_one_card_at_a_time_beside_the_sea_lanes() -> void:
+	var save := _all_stamped_but(["no_taxes", "sea_lanes", "stars", WAR_EVENT_CARD] + CHAPTER_3_WAR)
+	save.farms_owned = _home_farms(UpgradeDesk.Events.HOME_SITES)  # Every home farm: no paper for bigger armies yet.
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["no_taxes"])
+	save.stamped.append("no_taxes")
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["sea_lanes", "tactics"])
+	save.stamped.append("sea_lanes")
+	for id: String in CHAPTER_3_WAR:
+		assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).override_failure_message(id).is_equal([id])
+		save.stamped.append(id)
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_empty()  # stars waits for the workforce card.
+	var farms := 0
+	for id: String in CHAPTER_3_WAR:  # Spread over the farms taken by war, the home ones' tutorials past.
+		var card := UpgradeDesk.card_data(id)
+		assert_int(card.farms).override_failure_message(id).is_greater(farms)
+		assert_array(UpgradeDesk.costs(card).keys()).override_failure_message(id).is_equal(["farms", "coins"])
+		farms = card.farms
+	assert_int(farms).is_less(UpgradeDesk.Events.FARMS)
+	assert_int(UpgradeDesk.card_data(CHAPTER_3_WAR[0]).farms).is_greater(UpgradeDesk.Events.HOME_SITES)
+	assert_array(UpgradeDesk.card_data("stars").needs).contains([CHAPTER_3_WAR[-1], WAR_EVENT_CARD])
+
+
+func test_the_parked_unit_types_have_no_card_on_the_desk() -> void:
+	for id: String in PARKED_UNIT_CARDS:
+		assert_dict(UpgradeDesk.card_data(id)).override_failure_message(id).is_empty()
+		for card: Dictionary in UpgradeDesk.CARDS:
+			assert_bool(card.get("needs", []).has(id)).override_failure_message(card.id + " waits for " + id).is_false()
+
+
+func test_the_bigger_armies_memo_deals_the_workforce_card() -> void:
+	var card := UpgradeDesk.card_data(WAR_EVENT_CARD)
+	assert_str(card.title).is_equal("EXPAND THE FIELD WORKFORCE")
+	assert_str(card.event).is_equal("bigger_armies_memo")
+	assert_dict(UpgradeDesk.costs(card)).is_equal({farms = UpgradeDesk.Events.BIGGER_ARMIES, coins = int(card.price)})
+	var save := _all_stamped_but([WAR_EVENT_CARD, "stars"])
+	for i in UpgradeDesk.Events.BIGGER_ARMIES - 1:
+		save.farms_owned.append("F-%d" % i)
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_empty()  # One farm short: no paper, no card.
+	save.farms_owned.append("F-last")
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal([WAR_EVENT_CARD])
+	save.stamped.append(WAR_EVENT_CARD)
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["stars"])
+
+
+func test_the_war_cards_are_forms_with_no_effect_of_their_own_the_war_rules_read_the_stamps() -> void:
+	for id: String in CHAPTER_3_WAR + [WAR_EVENT_CARD]:
+		var save := SaveGame.new()
+		var untouched := inst_to_dict(save)
+		UpgradeDesk.apply(id, save)
+		assert_dict(inst_to_dict(save)).override_failure_message(id).is_equal(untouched)
+		assert_bool(UpgradeDesk.card_data(id).get("priority", false)).override_failure_message(id).is_false()
+
+
+func test_every_war_card_and_its_paper_have_english_and_german_text() -> void:
+	var german := _german()
+	for id: String in CHAPTER_3_WAR + [WAR_EVENT_CARD]:
+		var card := UpgradeDesk.card_data(id)
+		for text: String in [card.title, card.body]:
+			assert_bool(german.has(text)).override_failure_message("%s: no German for %s" % [id, text]).is_true()
+			assert_bool(text.to_lower().contains("unit")).override_failure_message("%s says units" % id).is_false()
+	var paper: Dictionary = UpgradeDesk.Events.EVENTS.bigger_armies_memo.report
+	assert_bool(german.has(paper.re) and german.has(paper.body)).is_true()
+
+
+## English key -> German, from the translation table.
+func _german() -> Dictionary:
+	var out := {}
+	var table := FileAccess.open("res://ressources/translations/game.csv", FileAccess.READ)
+	while not table.eof_reached():
+		var row := table.get_csv_line()
+		if row.size() >= 3 and not row[2].is_empty():
+			out[row[0]] = row[2]
+	return out
+
+
+func test_esc_closes_the_approved_list_before_the_pause_menu_can_take_it() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["price_slate"])
+	SaveManager.save = save
+	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
+	add_child(desk)
+	desk._open_approved()
+	var esc := InputEventAction.new()
+	esc.action = "ui_cancel"
+	esc.pressed = true
+	desk._input(esc)  # _input runs before any _unhandled_input, so the menu never sees this Esc.
+	assert_bool(get_viewport().is_input_handled()).is_true()
+	assert_bool(desk.get_node("Approved").visible).is_false()

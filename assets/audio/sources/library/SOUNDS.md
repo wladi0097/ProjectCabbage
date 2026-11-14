@@ -183,7 +183,7 @@ Prompt: "A heavy cabbage tossed hard back in through an open window from outside
 | `press_lever_take_2.wav` | iron press lever creak | 0.80s | -4 dB | 0.03s | — |
 | `press_lever_take_3.wav` | iron press lever creak | 0.80s | 0 dB | 0.19s | press_lever_1 |
 | `press_lever_take_4.wav` | iron press lever creak | 0.80s | -18 dB | 0.41s | — |
-| `press_stamp_take_1.wav` | press stamp thunk on paper | 0.68s | -3 dB | 0.06s | — (old press_stamp_2, replaced 2026-11-07) |
+| `press_stamp_take_1.wav` | press stamp thunk on paper | 0.68s | -3 dB | 0.06s | — (old press_stamp_2, replaced 2026-11-07), war_lost |
 | `press_stamp_take_2.wav` | press stamp thunk on paper | 0.68s | -8 dB | 0.02s | — |
 | `press_stamp_take_3.wav` | press stamp thunk on paper | 0.68s | -2 dB | 0.19s | — |
 | `press_stamp_take_4.wav` | press stamp thunk on paper | 0.68s | -1 dB | 0.06s | press_stamp_1, press_stamp_2 (new mix) |
@@ -296,7 +296,7 @@ Prompt: "A heavy cabbage tossed hard back in through an open window from outside
 | File | Prompt | Length | Peak dB | Peak at | Used in |
 | --- | --- | --- | --- | --- | --- |
 | `projector_stamp_GDEl.wav` | (above) | 0.48s | -7.3 dB | 0.08s | projector_approve |
-| `projector_stamp_6MLX.wav` | (above) | 0.48s | -7.7 dB | 0.01s | — |
+| `projector_stamp_6MLX.wav` | (above) | 0.48s | -7.7 dB | 0.01s | war_start |
 | `projector_stamp_ywTm.wav` | (above) | 0.48s | -8.7 dB | 0.01s | — |
 | `projector_stamp_ZL35.wav` | (above) | 0.48s | -9.3 dB | 0.02s | — |
 
@@ -470,7 +470,7 @@ All four near-silent (true peaks -28 to -39 dB; "muted" in the prompt is likely 
 
 | `fine_buzz_pUE9.wav` | (above) | 0.88s | -0.6 dB | 0.57s | fine_notice_1 (cut 0.4 s) |
 | `fine_buzz_B8yv.wav` | (above) | 0.88s | -2.7 dB | 0.48s | fine_notice_2 (cut 0.4 s) |
-| `fine_buzz_27oD.wav` | (above) | 0.88s | -2.8 dB | 0.54s | — |
+| `fine_buzz_27oD.wav` | (above) | 0.88s | -2.8 dB | 0.54s | war_lost (cut 0.55 s) |
 | `fine_buzz_f1Z4.wav` | (above) | 0.88s | -9.9 dB | 0.21s | — |
 
 ## Farm TV (2026-11-07)
@@ -561,7 +561,7 @@ All four came out steady (no surge); grow_pulse shapes them with `afade=t=in:d=0
 
 | File | Prompt | Length | Peak dB | Peak at | Used in |
 | --- | --- | --- | --- | --- | --- |
-| `gold_bell_IJ8B.wav` | (above) | 1.20s | -19.4 dB (true -13.8) | 0.01s | — |
+| `gold_bell_IJ8B.wav` | (above) | 1.20s | -19.4 dB (true -13.8) | 0.01s | war_won |
 | `gold_bell_VGWb.wav` | (above) | 1.20s | -31.6 dB (true -30.6) | 0.00s | — (near-silent) |
 | `gold_bell_v1iX.wav` | (above) | 1.20s | -18.0 dB (true -17.7) | 0.00s | golden_sale_1 |
 | `gold_bell_vEFF.wav` | (above) | 1.20s | -21.1 dB (true -16.0) | 0.02s | golden_sale_2 |
@@ -739,10 +739,10 @@ All three are faint high crackle (8 kHz peak -30 to -35 dB, true -9 to -19): the
 
 | File | Prompt | Length | Peak dB | Peak at | Used in |
 | --- | --- | --- | --- | --- | --- |
-| `relay_tick_OuCe.wav` | (above) | 0.48s | -10.6 dB (true -3.5) | 0.04s | field_line_relay_1 |
-| `relay_tick_XOIT.wav` | (above) | 0.48s | -15.5 dB (true -4.2) | 0.02s | field_line_relay_2 |
-| `relay_tick_Y6Fm.wav` | (above) | 0.48s | -21.4 dB (true -7.2) | 0.19s | field_line_open (click) |
-| `relay_tick_hApg.wav` | (above) | 0.48s | -15.2 dB (true -5.9) | 0.02s | field_line_relay_3 |
+| `relay_tick_OuCe.wav` | (above) | 0.48s | -10.6 dB (true -3.5) | 0.04s | field_line_relay_1, war_press_jam_1 |
+| `relay_tick_XOIT.wav` | (above) | 0.48s | -15.5 dB (true -4.2) | 0.02s | field_line_relay_2, war_press_jam_1 |
+| `relay_tick_Y6Fm.wav` | (above) | 0.48s | -21.4 dB (true -7.2) | 0.19s | field_line_open (click), war_press_jam_2 |
+| `relay_tick_hApg.wav` | (above) | 0.48s | -15.2 dB (true -5.9) | 0.02s | field_line_relay_3, war_press_jam_2 |
 
 ### console_lift (2026-11-13)
 > A heavy enamel steel desk terminal lifted quickly off a steel shelf, a short metallic scrape and creak with a loose cable rattle, no impact, close-mic, dry
@@ -782,7 +782,7 @@ All three near-silent (true -25 to -31 dB): not used. "Stamp" prompts keep comin
 | File | Prompt | Length | Peak dB | Peak at | Used in |
 | --- | --- | --- | --- | --- | --- |
 | `deed_stamp2_WMwg.wav` | (above) | 0.60s | 0.0 dB (true 0.0) | 0.08s | deed_stamp_1 |
-| `deed_stamp2_abD3.wav` | (above) | 0.60s | -2.1 dB (true -2.2) | 0.01s | — |
+| `deed_stamp2_abD3.wav` | (above) | 0.60s | -2.1 dB (true -2.2) | 0.01s | war_won |
 | `deed_stamp2_lOF0.wav` | (above) | 0.60s | -1.9 dB (true -1.4) | 0.08s | deed_stamp_2 |
 
 ### deed_curl (2026-11-14)
@@ -1003,3 +1003,273 @@ All three near-silent (true -33 to -41 dB, "damped ... dull muted"): not used.
 | `seed_tick_V977.wav` | (above) | 0.48s | -7.6 dB (true -0.8) | 0.29s | — |
 | `seed_tick_fXzA.wav` | (above) | 0.48s | -7.0 dB (true -0.0) | 0.05s | farm_seed_tick |
 | `seed_tick_tnzw.wav` | (above) | 0.48s | -27.0 dB (true -26.2) | 0.07s | — |
+
+## War phase (2026-11-14)
+
+### depot_fall
+> A heavy small wooden box falling fast through the air past the ear, short low steady air rush getting louder, no impact, close-mic, dry
+Every take decays from its start; war_depot_drop reverses the first 0.42 s of 0hxy to rise into the thud.
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `depot_fall_0hxy.wav` | (above) | 0.68s | true -0.0 dB | — | — |
+| `depot_fall_1QYq.wav` | (above) | 0.68s | true -0.0 dB | — | — |
+| `depot_fall_5C06.wav` | (above) | 0.68s | true 0.0 dB | — | — |
+
+### depot_shutter
+> A small corrugated tin roller shutter jerked up a short way in its rails, a loud quick tinny metal rattle catching twice, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `depot_shutter_Oav5.wav` | (above) | 0.48s | true -3.3 dB | — | war_depot_rattle_2 |
+| `depot_shutter_RfNc.wav` | (above) | 0.48s | true -0.5 dB | — | war_depot_rattle_1 |
+| `depot_shutter_uHmz.wav` | (above) | 0.48s | true -2.8 dB | — | — |
+
+### depot_thud
+> A heavy wooden model hut with a corrugated metal shutter dropped onto a thick wooden desk, one loud deep solid thud with a short tinny metal rattle, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `depot_thud_JGOE.wav` | (above) | 0.80s | true -0.5 dB | — | war_depot_drop |
+| `depot_thud_rXw7.wav` | (above) | 0.80s | true 0.0 dB | — | — |
+| `depot_thud_yll5.wav` | (above) | 0.80s | true -0.3 dB | — | — |
+
+### press_clank
+> A small steel injection mould slamming shut, one loud heavy metallic clank, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `press_clank_5cg4.wav` | (above) | 0.48s | true -1.1 dB | — | — |
+| `press_clank_WXqP.wav` | (above) | 0.48s | true 0.0 dB | — | war_press_buy_1 (dropped) |
+| `press_clank_uNkD.wav` | (above) | 0.48s | true 0.0 dB | — | war_press_buy_2 (dropped) |
+
+### press_hiss
+> A short loud burst of hydraulic steam hiss from a small machine valve, fading out, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `press_hiss_UWzj.wav` | (above) | 0.80s | true -0.9 dB | — | war_press_buy_1 (dropped) |
+| `press_hiss_Xrdc.wav` | (above) | 0.80s | true -0.9 dB | — | war_press_buy_2 (dropped) |
+| `press_hiss_ak4t.wav` | (above) | 0.80s | true -3.1 dB | — | — |
+
+### press_hopper
+> A small cabbage dropped into a steel hopper funnel, one loud dull leafy thud on sheet metal, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `press_hopper_40Ar.wav` | (above) | 0.48s | true 0.0 dB | — | war_press_buy_1 (dropped), war_press_buy_2 (dropped) |
+| `press_hopper_XQ6b.wav` | (above) | 0.48s | true -0.8 dB | — | war_press_buy_1 (dropped), war_press_buy_2 (dropped) |
+| `press_hopper_aO45.wav` | (above) | 0.48s | true -0.0 dB | — | war_press_buy_1 (dropped), war_press_buy_2 (dropped) |
+
+### press_jam
+> A small steel machine jamming, one loud grinding metallic clunk then a short shaking rattle, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `press_jam_HOQ1.wav` | (above) | 0.80s | true -1.7 dB | — | war_press_jam_2 |
+| `press_jam_gj5G.wav` | (above) | 0.80s | true -2.6 dB | — | war_press_jam_1 |
+| `press_jam_nicE.wav` | (above) | 0.80s | true 0.0 dB | — | — |
+
+### press_lever_lift
+> A steel machine lever flipped up, one loud short metallic clack with a tiny rattle, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `press_lever_lift_6saC.wav` | (above) | 0.48s | true -2.8 dB | — | — |
+| `press_lever_lift_AzDa.wav` | (above) | 0.48s | true -2.0 dB | — | — |
+| `press_lever_lift_YcsE.wav` | (above) | 0.48s | true -1.0 dB | — | war_press_lever (dropped) |
+
+### press_pop
+> A small soft plastic toy figure popped out of a steel mould, one loud hollow plastic pop, short, close-mic, dry
+Two of three quiet (true -15 to -19 dB).
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `press_pop_3FhI.wav` | (above) | 0.48s | true -18.6 dB | — | — |
+| `press_pop_kxKg.wav` | (above) | 0.48s | true -15.2 dB | — | — |
+| `press_pop_slQK.wav` | (above) | 0.48s | true -3.6 dB | — | war_press_buy_1 (dropped), war_press_buy_2 (dropped) |
+
+### press_ratchet
+> A heavy steel lever pulled slowly down, steady loud ratchet clicking, no impact, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `press_ratchet_NBwh.wav` | (above) | 0.80s | true -5.9 dB | — | — |
+| `press_ratchet_Z4IF.wav` | (above) | 0.80s | true 0.0 dB | — | war_press_ratchet (dropped) |
+| `press_ratchet_iXop.wav` | (above) | 0.80s | true -0.8 dB | — | — |
+
+### war_cannon
+> A small cast-iron toy cannon on a wooden desk firing a little ball, one loud punchy spring-loaded thump with a hollow metal pop, short, close-mic, dry
+All three near-silent (true -38 to -44 dB): "toy cannon ... spring-loaded thump" failed; war_cannon2/3 asked for a popgun and a signal cannon.
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_cannon_U65Q.wav` | (above) | 0.60s | true -38.3 dB | — | — |
+| `war_cannon_iulj.wav` | (above) | 0.60s | true -44.4 dB | — | — |
+| `war_cannon_sSIw.wav` | (above) | 0.60s | true -38.1 dB | — | — |
+
+### war_cannon2
+> A cork popgun fired on a wooden desk, one loud sharp hollow pop with a short thump, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_cannon2_1SRl.wav` | (above) | 0.48s | true -16.1 dB | — | war_cannon_3 |
+| `war_cannon2_92TC.wav` | (above) | 0.48s | true -10.3 dB | — | war_cannon_2 |
+| `war_cannon2_aAHz.wav` | (above) | 0.48s | true -31.5 dB | — | — |
+
+### war_cannon3
+> A small brass signal cannon firing a blank, one loud short dry boom, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_cannon3_CnHG.wav` | (above) | 0.60s | true -4.6 dB | — | war_cannon_1 |
+| `war_cannon3_EIaZ.wav` | (above) | 0.60s | true -14.2 dB | — | — |
+| `war_cannon3_KHOR.wav` | (above) | 0.60s | true -27.6 dB | — | — |
+
+### war_collapse
+> A small wooden model building collapsing on a desk, a loud short crumbling clatter of small wooden blocks and grit settling, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_collapse_bs1b.wav` | (above) | 1.00s | true 0.0 dB | — | — |
+| `war_collapse_dByB.wav` | (above) | 1.00s | true 0.0 dB | — | war_collapse_1 |
+| `war_collapse_fm3E.wav` | (above) | 1.00s | true -0.3 dB | — | war_collapse_2 |
+
+### war_hit
+> A small fresh cabbage thrown hard into a hard plastic toy figure, one loud leafy slap with a hollow plastic knock, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_hit_CAqw.wav` | (above) | 0.48s | true -0.0 dB | — | war_hit_1 |
+| `war_hit_KloP.wav` | (above) | 0.48s | true 0.0 dB | — | war_hit_3 |
+| `war_hit_i5i4.wav` | (above) | 0.48s | true -0.6 dB | — | war_hit_2 |
+
+### war_land
+> A small cabbage dropped onto a paper map on a wooden desk, one dull leafy thud then a short soft roll over paper, close-mic, dry
+Two of three near-silent; war_land2 failed too (true -26 to -41 dB). Land also plays cabbage_bump_2/3.
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_land_EYw9.wav` | (above) | 0.60s | true -9.3 dB | — | war_land |
+| `war_land_On56.wav` | (above) | 0.60s | true -30.4 dB | — | — |
+| `war_land_j0pW.wav` | (above) | 0.60s | true -38.5 dB | — | — |
+
+### war_land2
+> A small fresh cabbage dropped onto a wooden desk, one loud dull leafy thud, short, close-mic, dry
+All near-silent (true -26 to -41 dB): not used.
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_land2_DnL2.wav` | (above) | 0.48s | true -41.0 dB | — | — |
+| `war_land2_TkPq.wav` | (above) | 0.48s | true -26.4 dB | — | — |
+| `war_land2_yIG2.wav` | (above) | 0.48s | true -35.8 dB | — | — |
+
+### war_mortar
+> A small steel toy mortar tube on a wooden desk launching a ball upward, one loud deep hollow tube thunk, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_mortar_H1rr.wav` | (above) | 0.68s | true -8.5 dB | — | war_mortar_2 |
+| `war_mortar_nZ5V.wav` | (above) | 0.68s | true -1.2 dB | — | war_mortar_1 |
+| `war_mortar_wKCB.wav` | (above) | 0.68s | true -22.0 dB | — | — |
+
+### war_pickup
+> A small hard plastic toy soldier figure picked up off a paper map on a wooden desk, one short crisp plastic click and a tiny paper scuff, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_pickup_dMw7.wav` | (above) | 0.48s | true -10.3 dB | — | war_pick_up_1 |
+| `war_pickup_r0r4.wav` | (above) | 0.48s | true -9.2 dB | — | war_pick_up_2 |
+| `war_pickup_sZGH.wav` | (above) | 0.48s | true -8.6 dB | — | war_press_hop |
+
+### war_setdown
+> A small hard plastic toy figure set down firmly on a paper map over a thick wooden desk, one loud crisp plastic tap with a dull wooden knock, short, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_setdown_CRNj.wav` | (above) | 0.48s | true -3.3 dB | — | war_press_buy_1 (dropped), war_set_down_3 |
+| `war_setdown_GvN2.wav` | (above) | 0.48s | true -0.3 dB | — | war_press_hop, war_set_down_1 |
+| `war_setdown_vNUI.wav` | (above) | 0.48s | true -0.5 dB | — | war_press_buy_2 (dropped), war_set_down_2 |
+
+### war_strike
+> A hard plastic toy figure knocked sharply against a small wooden model building, one loud short plastic knock, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_strike_Cn5O.wav` | (above) | 0.48s | true -36.3 dB | — | — |
+| `war_strike_MYzN.wav` | (above) | 0.48s | true -3.7 dB | — | war_strike_1 |
+| `war_strike_fViy.wav` | (above) | 0.48s | true -0.4 dB | — | war_strike_2 |
+
+### war_tick
+> A single loud tick of an old mechanical office wall clock, one crisp dry metallic tick, then silence, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_tick_4o0O.wav` | (above) | 0.48s | true -40.4 dB | — | — |
+| `war_tick_SDbM.wav` | (above) | 0.48s | true -9.2 dB | — | war_tick_1 |
+| `war_tick_nJYk.wav` | (above) | 0.48s | true -11.6 dB | — | war_tick_2 |
+
+### war_topple
+> A small hard plastic toy soldier figure falling over flat onto a wooden desk, one loud short plastic clatter with a little bounce, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_topple_0QTE.wav` | (above) | 0.60s | true -0.3 dB | — | war_topple_1 |
+| `war_topple_1Y59.wav` | (above) | 0.60s | true 0.0 dB | — | war_topple_2 |
+| `war_topple_eyEX.wav` | (above) | 0.60s | true -0.7 dB | — | war_topple_3 |
+
+### war_wall_steel
+> A small steel plate model wall knocked over flat onto a wooden desk, one loud heavy metallic clank with a short ring, close-mic, dry
+All near-silent (true -24 to -37 dB); war_wall_steel2 ("heavy steel plate dropped flat") worked.
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_wall_steel_0RnB.wav` | (above) | 0.80s | true -24.0 dB | — | — |
+| `war_wall_steel_S2cd.wav` | (above) | 0.80s | true -37.1 dB | — | — |
+| `war_wall_steel_UsW5.wav` | (above) | 0.80s | true -28.4 dB | — | — |
+
+### war_wall_steel2
+> A heavy steel plate dropped flat onto a wooden desk, one loud metallic clank with a short ring, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_wall_steel2_tCU8.wav` | (above) | 0.80s | true -1.3 dB | — | war_wall_steel_2 |
+| `war_wall_steel2_vneL.wav` | (above) | 0.80s | true -3.6 dB | — | — |
+| `war_wall_steel2_xO9p.wav` | (above) | 0.80s | true -0.0 dB | — | war_wall_steel_1 |
+
+### war_wall_stone
+> A small model wall of stone blocks knocked down on a wooden desk, one loud short gritty clatter of small stones, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_wall_stone_HWpq.wav` | (above) | 0.80s | true -0.4 dB | — | war_wall_stone_1 |
+| `war_wall_stone_UMSo.wav` | (above) | 0.80s | true -3.6 dB | — | — |
+| `war_wall_stone_aV8Y.wav` | (above) | 0.80s | true -2.6 dB | — | war_wall_stone_2 |
+
+### war_wall_wood
+> A small wooden model fence snapping apart, one loud dry wooden splinter crack and tiny pieces dropping, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_wall_wood_N1z7.wav` | (above) | 0.68s | true -0.1 dB | — | war_wall_wood_2 |
+| `war_wall_wood_UK2W.wav` | (above) | 0.68s | true 0.0 dB | — | war_wall_wood_1 |
+| `war_wall_wood_qCPB.wav` | (above) | 0.68s | true 0.0 dB | — | — |
+
+### war_whistle_retreat
+> An old brass police whistle blown three times, short short long, loud, tired and flat, no music, close-mic, dry
+None came out as three blasts: each is one steady ~0.9 s blast.
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_whistle_retreat_MLO8.wav` | (above) | 1.28s | true -0.9 dB | — | — |
+| `war_whistle_retreat_Nn5Q.wav` | (above) | 1.28s | true 0.0 dB | — | war_retreat |
+| `war_whistle_retreat_QSpe.wav` | (above) | 1.28s | true 0.0 dB | — | — |
+
+### war_whistle_start
+> A single short sharp blast of an old brass referee whistle, loud, flat and official, no music, close-mic, dry
+
+| File | Prompt | Length | Peak dB | Peak at | Used in |
+| --- | --- | --- | --- | --- | --- |
+| `war_whistle_start_03aK.wav` | (above) | 0.80s | true -0.2 dB | — | — |
+| `war_whistle_start_f8WI.wav` | (above) | 0.80s | true -0.3 dB | — | — |
+| `war_whistle_start_rQDr.wav` | (above) | 0.80s | true -0.2 dB | — | war_start |

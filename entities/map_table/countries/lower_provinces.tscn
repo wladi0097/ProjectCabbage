@@ -7,9 +7,11 @@
 [ext_resource type="PackedScene" path="res://entities/map_table/map_flash.tscn" id="5_flash"]
 [ext_resource type="Shader" path="res://assets/shaders/farm_parcels.gdshader" id="6_parcels"]
 [ext_resource type="PackedScene" path="res://entities/map_table/farm_deed.tscn" id="7_deed"]
+[ext_resource type="Texture2D" path="res://assets/textures/map_parcels/lower_provinces.png" id="8_parcels"]
 
 [sub_resource type="ShaderMaterial" id="ParcelInk"]
 shader = ExtResource("6_parcels")
+shader_parameter/parcels = ExtResource("8_parcels")
 
 [node name="LowerProvincesSheet" instance=ExtResource("1_sheet")]
 script = ExtResource("4_register")
@@ -38,7 +40,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Province A Holding"
+text = "Brassica A Holding"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -68,7 +70,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Province B Holding"
+text = "Brassica B Holding"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -98,7 +100,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 47
-text = "UNTERBURG"
+text = "RUTABURG"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -157,7 +159,7 @@ pivot_offset = Vector2(700, 60)
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "Port Unterburg"
+text = "Port Rutaburg"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -172,7 +174,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "I. Province A"
+text = "I. Brassica A"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -187,7 +189,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "II. Province B"
+text = "II. Brassica B"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -202,7 +204,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "III. Province C"
+text = "III. Brassica C"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -875,12 +877,12 @@ vertical_alignment = 1
 [node name="T01" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(0.8519, 0, -0.3973, 0, 0.9400, 0, 0.3973, 0, 0.8519, -0.516, 0.002, 0.244)
 site = &"lower_provinces-1"
-title = "Province A Holding"
+title = "Brassica A Holding"
 
 [node name="T02" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(0.9781, 0, 0.2079, 0, 1.0000, 0, -0.2079, 0, 0.9781, 0.774, 0.002, 0.304)
 site = &"lower_provinces-2"
-title = "Province B Holding"
+title = "Brassica B Holding"
 
 [node name="Flash" parent="." instance=ExtResource("5_flash")]
 visible = false

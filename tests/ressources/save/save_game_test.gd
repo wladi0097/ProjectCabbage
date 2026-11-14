@@ -175,7 +175,11 @@ func _another_value(save: SaveGame, field: String) -> Variant:
 			return PackedFloat32Array([1.5, -1.0])
 		TYPE_PACKED_INT32_ARRAY:
 			return PackedInt32Array([3, 7])
+		TYPE_DICTIONARY:
+			return {field_associate = 3, senior_asset = 1}
 		TYPE_ARRAY:
+			if field == "army_training":
+				return [{unit = "field_associate", left = 12.5}]
 			if field == "farm_seed_clocks":
 				var clocks: Array[PackedFloat32Array] = [PackedFloat32Array([12.5, 3.0]), PackedFloat32Array()]
 				return clocks
@@ -297,8 +301,12 @@ func test_nothing_in_the_game_costs_more_than_the_highest_limit_of_its_currency(
 		bills[card.id] = UpgradeDesk.costs(card)
 	for node: Dictionary in Projector.NODES + FarmTree.NODES:
 		bills[node.id] = {UpgradeTree.currency_of(node): node.price}
+	var farms := SaveGame.new()
+	farms.stamped = PackedStringArray(["negotiation", "bribery"])
 	for nth in FarmRegister.PRICES.size():
-		bills["farm %d" % (nth + 1)] = FarmRegister.PRICES[nth]
+		farms.farms_owned.resize(nth)
+		for site: StringName in FarmRegister.WORTH:
+			bills["farm %d at %s" % [nth + 1, site]] = FarmRegister.asking(farms, site)
 	for country: StringName in WorldRegister.COUNTRIES:
 		for nth in WorldRegister.COUNTRIES[country].wars.size():
 			bills["war %d in %s" % [nth + 1, country]] = WorldRegister.COUNTRIES[country].wars[nth]
@@ -338,8 +346,9 @@ func test_chapter_3_never_asks_for_more_than_the_limit_its_cards_so_far_allow() 
 	for id: String in ["condense", "structured_farm"]:
 		assert_array(UpgradeDesk.card_data(id).needs).override_failure_message(id).contains(["cash_holding", "big_ideas", "archive_capacity"])
 	var start := SaveGame.new()
-	assert_int(FarmRegister.PRICES[0].coins).is_greater(start.coin_limit)
-	assert_int(FarmRegister.PRICES[0].coins).is_less_equal(start.coin_limit * UpgradeDesk.LIMIT_RAISE)
+	for site: StringName in FarmRegister.WORTH:  # The cheapest site and the dearest.
+		assert_int(FarmRegister.asking(start, site).coins).override_failure_message(site).is_greater(start.coin_limit)
+		assert_int(FarmRegister.asking(start, site).coins).override_failure_message(site).is_less_equal(start.coin_limit * UpgradeDesk.LIMIT_RAISE)
 	# The projector's steps wait for the wide sheet, CH2's for the archive card.
 	assert_array(Projector.node_data("coin_limit_1").needs).contains(["big_ideas", "cash_holding"])
 	assert_array(FarmTree.node_data("archive_1").needs).contains(["archive_capacity"])
@@ -397,14 +406,20 @@ func test_every_farm_of_the_world_can_be_owned_and_the_last_card_is_reachable_un
 				moved = true
 		for country: StringName in by_rank:
 			for farm in WorldRegister.farm_ids(country):
-				if not moved and not FarmRegister.war_bill(save, StringName(farm)).is_empty() and WarSheet.win(save, StringName(farm), out):
+				var bill := FarmRegister.war_bill(save, StringName(farm))
+				if not moved and not bill.is_empty() and UpgradeDesk.affords(save, bill, out):
+					for paid_in: String in bill:  # The declaration pays; the war is won.
+						UpgradeDesk.pay(save, paid_in, bill[paid_in], out)
+					WarSheet.win(save, StringName(farm))
 					order.append(farm)
 					moved = true
 	assert_int(save.farms_owned.size()).is_equal(UpgradeDesk.Events.FARMS)
 	assert_bool(UpgradeDesk.Events.chapter_3_done(save)).is_true()
 	assert_array(order.slice(0, 4)).is_equal(["K-6", "K-7", "K-8", "no_taxes"])  # The country, then its first law.
-	assert_str(order[-1]).is_equal("stars")
-	assert_str(order[-2]).is_equal("endmark-1")  # The final island falls last.
+	# An optional card queued behind the chain (GameEvents.DRY_LEFT) may still be bought after it.
+	var chain := order.filter(func(id: Variant) -> bool: return not str(id) in UpgradeDesk.Events.DRY_LEFT)
+	assert_str(chain[-1]).is_equal("stars")
+	assert_str(chain[-2]).is_equal("endmark-1")  # The final island falls last.
 	# Nothing across the water before the sea lanes.
 	for country: StringName in [&"grauland", &"lower_provinces", &"morrow", &"nordhal", &"endmark"]:
 		for farm in WorldRegister.farm_ids(country):

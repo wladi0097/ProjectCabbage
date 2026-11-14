@@ -2,17 +2,18 @@ extends MapSheet
 ## The world sheet: the nine countries, and the way into each one's own sheet. Each country has one
 ## holding point, a MapBuilding under `Things` (its `site` is the country's id, its `title` the
 ## name), a click outline `Page/Sheet/Outlines/<id>` (a Line2D, shown while the country is hovered),
-## its cabbage-pattern overlay `Page/Sheet/Layers/<id>` (its art is loaded when the country is all
+## its cabbage-pattern overlay `Page/Sheet/Layers/<id>` (its art is loaded once a farm there is
 ## ours: each is a 3200 x 1800 texture) and a count tag `Page/Sheet/Count_<id>` ("0/2": farms owned
 ## of its farms). tools/make_map_sheets.py writes all of them from reports/maps/labels.json;
 ## COUNTRIES below is the same data as the rules need it (a test holds the two together).
 ## At the map: a country is hovered (its outline shows, its token lifts, the hint slip names it and
 ## its farms: no price, nothing is bought here) and clicked: its own sheet rolls out (`sheet_wanted`,
-## MapTable), where its farms are taken one at a time (FarmRegister). A country turns
-## cabbage-pattern green once ALL its farms are ours; the home country (HOME) wears it from the start.
+## MapTable), where its farms are taken one at a time (FarmRegister). A country shows one of three
+## looks (share): plain while none of its farms is ours, patches of the cabbage pattern once some
+## are, wholly cabbage-pattern green only once ALL are.
 ## The rules of the world (static, read by FarmRegister, WarSheet, the debug key and the tests):
 ## which farms a country holds (farm_ids), which country a farm lies in (country_of), whether a
-## country's farms can be attacked (reach) and what the stand-in victory over the next one costs
+## country's farms can be attacked (reach) and what starting the war on the next one costs
 ## (war_price). No class_name: whoever needs the rules preloads this script (as props/map_tally.gd),
 ## so nothing waits for the editor to register a new global class.
 
@@ -24,32 +25,31 @@ const HOME := &"kohlmark"
 const SEA_CARD := "sea_lanes"
 ## Every country: how many farms it holds, how far it is from home (`rank`, reports/maps/labels.json
 ## `distance_rank`), the countries it borders by `land` and the ones across a drawn `sea` lane, and
-## `wars`: what the stand-in victory over each of its farms that cannot be bought costs, in coins
-## and in cabbages from stock, in the order they are taken (at home the last three; abroad all).
-## Paced in tools/pace.py (`python tools/pace.py ch3`, 2026-11-14): one ladder from the sixth farm to
-## the 23rd, $3M + 5,000 cabbages up to $9M + 11,800, rising with the country's distance from home
-## and within it, the cabbages most (a store-filling harvest drive between wars: farms land about a
-## minute apart, 54 to 78 min into chapter 3); war starts cheaper than the fifth farm's asking price
-## (taking costs less than paying). The final island costs the whole purse and almost the whole store.
+## `wars`: what starting a war on each of its farms that cannot be bought costs, in coins only (the
+## cabbages go into the soldiers, WarRules.UNIT_PRICE), in the order they are taken (at home the last
+## three; abroad all). Paced in tools/pace.py with the fights (`python tools/pace.py ch3`, war pass
+## 2026-11-14): one ladder from the sixth farm to the 23rd, $3M up to $9M, rising with the country's
+## distance from home and within it; farms land about 90 s apart (a fight is the floor), 47 to 85 min
+## into chapter 3. The final island costs the whole purse.
 const COUNTRIES: Dictionary = {
 	&"kohlmark": {farms = 8, rank = 0, land = [&"ostrevia", &"sulvania", &"veldmark"], sea = [],
-		wars = [{coins = 3000000, stock = 5000}, {coins = 3400000, stock = 5400}, {coins = 3700000, stock = 5800}]},
+		wars = [{coins = 3000000}, {coins = 3400000}, {coins = 3700000}]},
 	&"veldmark": {farms = 2, rank = 1, land = [&"kohlmark", &"ostrevia", &"sulvania"], sea = [],
-		wars = [{coins = 4100000, stock = 6200}, {coins = 4400000, stock = 6600}]},
+		wars = [{coins = 4100000}, {coins = 4400000}]},
 	&"ostrevia": {farms = 2, rank = 2, land = [&"kohlmark", &"veldmark"], sea = [],
-		wars = [{coins = 4800000, stock = 7000}, {coins = 5100000, stock = 7400}]},
+		wars = [{coins = 4800000}, {coins = 5100000}]},
 	&"sulvania": {farms = 3, rank = 3, land = [&"kohlmark", &"veldmark"], sea = [&"grauland", &"lower_provinces"],
-		wars = [{coins = 5500000, stock = 7800}, {coins = 5800000, stock = 8200}, {coins = 6200000, stock = 8600}]},
+		wars = [{coins = 5500000}, {coins = 5800000}, {coins = 6200000}]},
 	&"grauland": {farms = 2, rank = 4, land = [&"morrow", &"nordhal"], sea = [&"sulvania"],
-		wars = [{coins = 6500000, stock = 9000}, {coins = 6900000, stock = 9400}]},
+		wars = [{coins = 6500000}, {coins = 6900000}]},
 	&"lower_provinces": {farms = 2, rank = 5, land = [], sea = [&"morrow", &"sulvania"],
-		wars = [{coins = 7200000, stock = 9800}, {coins = 7600000, stock = 10200}]},
+		wars = [{coins = 7200000}, {coins = 7600000}]},
 	&"morrow": {farms = 2, rank = 6, land = [&"grauland", &"nordhal"], sea = [&"lower_provinces"],
-		wars = [{coins = 7900000, stock = 10600}, {coins = 8300000, stock = 11000}]},
+		wars = [{coins = 7900000}, {coins = 8300000}]},
 	&"nordhal": {farms = 2, rank = 7, land = [&"grauland", &"morrow"], sea = [&"endmark"],
-		wars = [{coins = 8600000, stock = 11400}, {coins = 9000000, stock = 11800}]},
+		wars = [{coins = 8600000}, {coins = 9000000}]},
 	&"endmark": {farms = 1, rank = 8, land = [], sea = [&"nordhal"],
-		wars = [{coins = 16000000, stock = 14500}]},
+		wars = [{coins = 16000000}]},
 }
 ## Why a country's farms cannot be attacked, as a war order's strip prints it (translation keys).
 const NOT_ADJACENT := "NOT ADJACENT"
@@ -59,12 +59,15 @@ const REASONS := {
 	NOT_ADJACENT: "No country next to this one is wholly ours. Yet.",
 	NO_SEA_LANES: "The sea is not ours to cross yet.",
 }
-## The hint slip's corner on the art (px): the sea bottom left, clear of every country (hint_pixel).
-const SEA_HINT_PIXEL := Vector2(110.0, 1530.0)
+## A country's token on the art, around its holding point (px).
+const TOKEN := Rect2(-110, -110, 220, 220)
 ## The overlay art of a country that is ours.
 const OWNED_ART := "res://assets/sprites/maps/world_owned/%s.svg"
 ## An owned country's overlay reaches FULL px from its holding point (all of the sheet).
 const FULL := 5000.0
+
+## The three looks of a country on the world sheet (share).
+enum Share { NONE, SOME, ALL }
 
 ## The holding points by country id, and where each stands at rest (on the sheet).
 var _sites: Dictionary[StringName, MapBuilding] = {}
@@ -119,6 +122,15 @@ static func owns_all(save: SaveGame, country: StringName) -> bool:
 	return farms_of(save, country) == COUNTRIES[country].farms
 
 
+## How much of `country` the world sheet paints ours: none of its farms (plain), some (patches of
+## the cabbage pattern, the same however many) or all (wholly green). Never by percentage.
+static func share(save: SaveGame, country: StringName) -> Share:
+	var owned := farms_of(save, country)
+	if owned == 0:
+		return Share.NONE
+	return Share.ALL if owned == COUNTRIES[country].farms else Share.SOME
+
+
 ## Why the farms of `country` cannot be attacked by `save` right now, as a war order's strip prints
 ## it; "" when they can. At home always. Abroad a country must border, by land, one in which every
 ## farm is ours; across a drawn sea lane only once SEA_CARD is stamped, with the same rule for the
@@ -139,7 +151,7 @@ static func reason(save: SaveGame, country: StringName) -> String:
 	return TranslationServer.translate(REASONS.get(reach(save, country), ""))
 
 
-## What the stand-in victory over the next farm of `country` costs `save`, {currency: amount} as
+## What starting the war on the next farm of `country` costs `save` (coins), {currency: amount} as
 ## UpgradeDesk.costs: its `wars` ladder, by how many of its farms are already ours (any of its
 ## farms can be the next). Empty while its farms are still bought (at home, the first
 ## GameEvents.HOME_SELLERS) or once all are ours.
@@ -190,11 +202,13 @@ func refresh() -> void:
 		tag.text = tag_text(save, country)
 		tag.add_theme_color_override(&"font_color", FarmRegister.OXBLOOD if ours else _ink)
 		var layer := _layer(country)
-		layer.visible = ours or country == HOME
+		var shown := share(save, country)
+		layer.visible = shown != Share.NONE
 		if layer.visible and layer.texture == null:
 			layer.texture = load(OWNED_ART % country)
-		if layer.material != null:
-			(layer.material as ShaderMaterial).set_shader_parameter(&"reach", FULL)
+		var ink := layer.material as ShaderMaterial
+		ink.set_shader_parameter(&"reach", FULL)
+		ink.set_shader_parameter(&"patchy", shown == Share.SOME)
 		_outline(country).visible = country == _hot
 	reprint()
 
@@ -206,8 +220,15 @@ func spot_at(pixel: Vector2) -> StringName:
 	return &""
 
 
-func hint_pixel() -> Vector2:
-	return SEA_HINT_PIXEL
+## A country's token, its count tag and its name: the hint slip lies beside them, never over them.
+func spot_box(spot: StringName) -> Rect2:
+	if not _sites.has(spot):
+		return Rect2()
+	var box := Rect2(TOKEN.position + _pixel(spot), TOKEN.size).merge(lettering(_tag(spot)))
+	for label in $Page/Sheet.get_children():
+		if label is Label and label.text == _sites[spot].title:
+			box = box.merge(lettering(label))
+	return box
 
 
 func hint(spot: StringName) -> String:

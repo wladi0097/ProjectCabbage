@@ -10,30 +10,39 @@ extends Node3D
 ## negotiation's band (print_haggle; empty on a deed nobody haggles over), then the small print and
 ## the stamp box (STAMP_BOX). A farm nobody sells gets the NOT FOR SALE strip across it, a line
 ## saying why, and no stamp box.
-## The negotiation's band (FarmRegister has the rules): left, `Page/Form/Offer`: what is offered (a
-## dial: the `<` and `>` boxes, LESS_BOX and MORE_BOX, around the typed amount), which round it is
-## and the SUBMIT OFFER box (OFFER_BOX); right, `Page/Form/Mood`: the owner's mood after the last
-## offer, stamped (MOODS: the only clue, the number he has in mind is never printed). The price
-## line reprints with every offer, ASKED beside its head once it has moved, and the small print
-## gives way to the list of offers made, each with its mood. A bribe is the same band in coins.
+## A deed that is haggled over (FarmRegister has the rules) has one box in its band, START HAGGLING
+## (HAGGLE_BOX), which lays the negotiation letter over it: `Haggle` (NegotiationLetter, its own
+## scene: the owner, the reply slips, the offer and the crate), lying HAGGLE_LIFT over the deed,
+## turned HAGGLE_TURN, its top left corner at deed pixel HAGGLE_AT (page: deed pixel to its own).
 ## The stamp (`Stamp`: a cast-iron head on a knob) comes down on the box (strike), prints ACQUIRED
 ## (imprint: its own heavy slam, a ring, the paper gives) and lifts away (lift_stamp).
+## A DECLARATION OF WAR (the paper of a farm taken by war that can be attacked: FarmRegister) prints
+## the war's coin price, its scouting view (print_scout) and, under STAFF COMMITTED,
+## one row per unit type the depot deals in (print_staff, depot_order_row.tscn): the figure standing
+## on the paper in 3D (`Figures`), how many are ready, and the [-] n [+] boxes (staff_box_at) that
+## choose how many go. Beside them the scouting view (print_scout): the farm's fighting map in
+## miniature on the paper (`Scout`), its defences counted under it.
 ## Sound moments, one cue each: Slide (it slides in or away), Strike (the stamp lands), Denied (the
 ## stamp refused, an offer that missed: a jammed lever's dead clunk), Roll (it rolls itself up), Dial
-## (the dial turned a notch), MoodStamp (the mood stamped), Agreed (an offer that landed), PriceUp
+## (unused), MoodStamp (the mood stamped), Agreed (an offer that landed), PriceUp
 ## (an offer that missed: the price retyped upward), Envelope (a bribe passed across).
 
 const SIZE := Vector2(0.82, 1.04)
 const PIXELS_PER_METRE := 1000.0
-## The stamp box on the form (px from its top left corner): where a click stamps.
+## The stamp box on the form (px from its top left corner): where a click stamps; START HAGGLING.
 const STAMP_BOX := Rect2(500, 790, 280, 210)
-## The negotiation's boxes on the form (px): the dial's two and SUBMIT OFFER; BOXES names all four
-## (box_at: the spots FarmRegister takes clicks on). The mood stamp lands on MOOD_AT.
-const LESS_BOX := Rect2(44, 614, 80, 80)
-const MORE_BOX := Rect2(404, 614, 80, 80)
-const OFFER_BOX := Rect2(44, 702, 440, 64)
-const BOXES := {&"deed_stamp": STAMP_BOX, &"deed_less": LESS_BOX, &"deed_more": MORE_BOX, &"deed_offer": OFFER_BOX}
-const MOOD_AT := Vector2(638, 682)
+const HAGGLE_BOX := Rect2(44, 596, 732, 140)
+## The boxes a click takes (box_at: the spots FarmRegister takes clicks on): on the deed, and on the
+## record while it lies over it.
+const DEED_BOXES := {&"deed_stamp": STAMP_BOX, &"deed_haggle": HAGGLE_BOX}
+const HAGGLE_BOXES := NegotiationLetter.BOXES
+## Where the record lies on the deed (`Haggle`'s transform says the same): its top left corner (deed
+## px), turned this far (rad, clockwise seen from above) and this high over it (m).
+const HAGGLE_AT := Vector2(36, 24)
+const HAGGLE_TURN := 0.03
+const HAGGLE_LIFT := 0.006
+## The record's page to the deed's pixels.
+const HAGGLE_PAGE := Transform2D(HAGGLE_TURN, HAGGLE_AT)
 ## The small print of a deed nobody haggles over.
 const SMALL_PRINT := "The seller confirms that the transfer is voluntary."
 ## The paper's forms (letter; translation keys): the deed of transfer, and the WAR ORDER for a farm
@@ -42,10 +51,27 @@ const SMALL_PRINT := "The seller confirms that the transfer is voluntary."
 ## its small print, what the stamp prints and what the strip of one that cannot be stamped says.
 const FORMS := {
 	&"deed": {form = "FORM 3-D  DEED OF TRANSFER", head = "PURCHASE PRICE", note = SMALL_PRINT, seal = "ACQUIRED", strip = "NOT FOR SALE"},
-	&"war": {form = "FORM 9-W  WAR ORDER", head = "ESTIMATED COST OF VICTORY", note = "The owner's signature is not required.", seal = "WAR", strip = "NOT FOR SALE"},
+	&"war": {form = "FORM 9-W  DECLARATION OF WAR", head = "COST OF WAR", note = "The owner's signature is not required.", seal = "WAR", strip = "NOT FOR SALE"},
 }
 ## The owner's five moods as stamped (FarmRegister.Mood, worst first), by what is offered: cabbages
 ## from stock, or coins in an envelope.
+## A declaration's staff rows (depot_order_row.tscn): the first one's top left corner on the form
+## (px), each this high, and its [-] and [+] boxes in the row. A figure stands FIGURE_SCALE times
+## its fighting size on the row's `Stand` point.
+const STAFF_AT := Vector2(420, 500)
+const ROW_HEIGHT := 90.0
+const LESS_IN_ROW := Rect2(186, 38, 50, 50)
+const MORE_IN_ROW := Rect2(296, 38, 50, 50)
+const FIGURE_SCALE := 0.5
+## The scouting view: the farm's fighting map in miniature, its grid's top left corner on this form
+## pixel, scaled to fill SCOUT_WIDTH px across.
+const SCOUT_AT := Vector2(44, 500)
+const SCOUT_WIDTH := 360.0
+const STAFF_ROW := preload("res://entities/war/depot/depot_order_row.tscn")
+const SOLDIER := "res://entities/war/soldiers/%s.tscn"
+## A declaration's spots (box_at): "staff_less:<unit>", "staff_more:<unit>".
+const STAFF_LESS := "staff_less:"
+const STAFF_MORE := "staff_more:"
 const MOODS := {
 	"stock": ["INSULTED", "UNIMPRESSED", "LISTENING", "INTRIGUED", "DELIGHTED"],
 	"coins": ["UNSEEN", "WEIGHED", "CONSIDERED", "UNDERSTOOD", "GRATEFUL"],
@@ -58,6 +84,8 @@ const STAMP_FROM := 1.6
 ## The ring of the stamp's hit spreads to this many times its size while it fades.
 const RING_TO := 1.8
 const RING_TIME := 0.32
+## The ring lies this high over what the stamp hits (m).
+const RING_Y := 0.004
 ## Sliding, the paper is turned this far (rad) and squares up as it arrives.
 const SLIDE_TURN := 0.22
 
@@ -69,6 +97,8 @@ const SLIDE_TURN := 0.22
 var site := &""
 var bill := {}
 var stamped := false
+## The negotiation record lies over the deed (its boxes take the clicks).
+var haggling := false
 ## 1 lies flat, 0 is all rolled up at its top edge.
 var open := 1.0:
 	set(value):
@@ -78,6 +108,7 @@ var open := 1.0:
 var _moving: Tween
 var _stamping: Tween
 var _blinking: Tween
+var _haggle_moving: Tween
 
 @onready var _page: SubViewport = $Page
 @onready var _paper: ShaderMaterial = $Paper.material_override
@@ -92,22 +123,23 @@ var _blinking: Tween
 @onready var _box: Panel = $Page/Form/Box
 @onready var _box_line: StyleBox = _box.get_theme_stylebox(&"panel")
 @onready var _asked: Label = $Page/Form/Asked
-@onready var _log: Label = $Page/Form/Log
-@onready var _offer: Control = $Page/Form/Offer
-@onready var _offer_head: Label = $Page/Form/Offer/Head
-@onready var _round: Label = $Page/Form/Offer/Round
-@onready var _number: Label = $Page/Form/Offer/Value/Number
-@onready var _submit_word: Label = $Page/Form/Offer/Submit/Word
-@onready var _closed: Label = $Page/Form/Offer/Closed
-@onready var _mood: Control = $Page/Form/Mood
-@onready var _divider: Control = $Page/Form/Divider
-@onready var _mood_imprint: Control = $Page/Form/Mood/Imprint
-@onready var _mood_word: Label = $Page/Form/Mood/Imprint/Word
-## The boxes a click takes, by spot (BOXES).
-@onready var _boxes: Dictionary[StringName, Panel] = {&"deed_stamp": _box, &"deed_less": $Page/Form/Offer/Less,
-		&"deed_more": $Page/Form/Offer/More, &"deed_offer": $Page/Form/Offer/Submit}
+@onready var _start: Control = $Page/Form/Start
+@onready var _start_word: Label = $Page/Form/Start/Word
+@onready var _haggle: Node3D = $Haggle
+@onready var _haggle_rest := _haggle.position
+## The negotiation letter (its own scene) lying over the deed.
+@onready var negotiation: NegotiationLetter = _haggle
+## The boxes a click takes on the deed, by spot (DEED_BOXES; the letter has its own).
+@onready var _boxes: Dictionary[StringName, Panel] = {&"deed_stamp": _box, &"deed_haggle": $Page/Form/Start}
 @onready var _imprint: Control = $Page/Form/Imprint
 @onready var _strip: Control = $Page/Form/Strip
+@onready var _defences: Label = $Page/Form/Defences
+@onready var _staff_head: Label = $Page/Form/StaffHead
+@onready var _staff: Control = $Page/Form/Staff
+@onready var _figures: Node3D = $Figures
+@onready var _scout: Node3D = $Scout
+## The map the scouting view shows now ("": none).
+var _scouted := ""
 @onready var _stamp: Node3D = $Stamp
 @onready var _stamp_rest := _stamp.position
 @onready var _ring: MeshInstance3D = $Ring
@@ -115,7 +147,6 @@ var _blinking: Tween
 @onready var _strike_sound: SoundCue = $Strike
 @onready var _denied_sound: SoundCue = $Denied
 @onready var _roll_sound: SoundCue = $Roll
-@onready var _dial_sound: SoundCue = $Dial
 @onready var _mood_sound: SoundCue = $MoodStamp
 @onready var _agreed_sound: SoundCue = $Agreed
 @onready var _envelope_sound: SoundCue = $Envelope
@@ -134,6 +165,7 @@ func _notification(what: int) -> void:
 ## Prints the form onto the paper again: after any of its lettering changed.
 func reprint() -> void:
 	_page.render_target_update_mode = SubViewport.UPDATE_ONCE
+	negotiation.reprint()
 
 
 ## Whether form pixel `pixel` (from the deed's top left corner) is in the stamp box.
@@ -141,12 +173,44 @@ static func in_stamp_box(pixel: Vector2) -> bool:
 	return STAMP_BOX.has_point(pixel)
 
 
-## The spot of BOXES that form pixel `pixel` is in, or &"".
-static func box_at(pixel: Vector2) -> StringName:
-	for spot: StringName in BOXES:
-		if (BOXES[spot] as Rect2).has_point(pixel):
+## The spot that deed pixel `pixel` (from the deed's top left corner) is in, or &"": a box of the
+## negotiation record while it lies over the deed (`record`) and the pixel is on it, else a box of
+## the deed.
+static func box_at(pixel: Vector2, record := false) -> StringName:
+	var on_record := record and on_paper(page(pixel))
+	var boxes: Dictionary = HAGGLE_BOXES if on_record else DEED_BOXES
+	var at := page(pixel) if on_record else pixel
+	for spot: StringName in boxes:
+		if (boxes[spot] as Rect2).has_point(at):
 			return spot
 	return &""
+
+
+## The declaration's [-] or [+] box at deed pixel `pixel` (STAFF_LESS / STAFF_MORE + the unit), with
+## a row for each of `units` in order; &"" off them.
+static func staff_box_at(pixel: Vector2, units: Array[String]) -> StringName:
+	for i in units.size():
+		var row := STAFF_AT + Vector2(0.0, i * ROW_HEIGHT)
+		if Rect2(row + LESS_IN_ROW.position, LESS_IN_ROW.size).has_point(pixel):
+			return StringName(STAFF_LESS + units[i])
+		if Rect2(row + MORE_IN_ROW.position, MORE_IN_ROW.size).has_point(pixel):
+			return StringName(STAFF_MORE + units[i])
+	return &""
+
+
+## Deed pixel `pixel` on the negotiation record's own page.
+static func page(pixel: Vector2) -> Vector2:
+	return HAGGLE_PAGE.affine_inverse() * pixel
+
+
+## Whether `pixel` of a paper of SIZE (from its top left corner) is on it.
+static func on_paper(pixel: Vector2) -> bool:
+	return Rect2(Vector2.ZERO, SIZE * PIXELS_PER_METRE).has_point(pixel)
+
+
+## Whether deed pixel `pixel` is on the deed, or on the record lying over it (`record`).
+static func covers(pixel: Vector2, record := false) -> bool:
+	return on_paper(pixel) or (record and on_paper(page(pixel)))
 
 
 ## Farm `at` as a form prints it: "K-3" at home, the country's initial abroad ("ostrevia-1": "O-1").
@@ -174,6 +238,8 @@ func fill(called: String, at: StringName, price: Dictionary, lacks := {}, reason
 	_box.visible = not price.is_empty()
 	_small_print.visible = not price.is_empty()
 	($Page/Form/PriceHead as Label).visible = not price.is_empty()
+	print_staff([])
+	print_scout("")
 	hot(&"")
 	print_price(price, lacks)
 	print_haggle()
@@ -202,67 +268,135 @@ func print_price(price: Dictionary, lacks := {}) -> void:
 	reprint()
 
 
-## Prints the negotiation's band: what is offered (`paid_in`: "stock" cabbages, "coins" a bribe; "":
-## nobody haggles over this deed, the band stays empty), the `amount` on the dial, the `offers` made
-## so far with the owner's mood after each (`moods`, FarmRegister.Mood), how many more he hears
-## (`left`; 0: the dial and SUBMIT OFFER give way to NO FURTHER OFFERS), the coin price first
-## `asked` (printed once the price has moved) and the small print's `note` (a key; until the first offer).
-func print_haggle(paid_in := "", amount := 0, offers := PackedInt32Array(), moods: Array[int] = [], left := 0, asked := 0, note := SMALL_PRINT) -> void:
-	var on := paid_in != ""
-	_small_print.text = note  # The label translates it.
-	_offer.visible = on
-	_mood.visible = on
-	_divider.visible = on
-	_log.visible = on and not offers.is_empty()
-	_asked.visible = on and bill.get("coins", asked) != asked
-	if not on:
+## Prints a declaration's staff: one row per `rows` entry ({unit, name, have, take}, in order), its
+## figure standing on the row; none (empty) hides the whole section.
+func print_staff(rows: Array) -> void:
+	_staff_head.visible = not rows.is_empty()
+	_staff.visible = not rows.is_empty()
+	_figures.visible = not rows.is_empty()
+	if rows.is_empty():
+		reprint()
 		return
-	_small_print.visible = offers.is_empty()
-	_asked.text = tr("ASKED %s") % ("$" + FarmScreen._thousands(asked))
-	_offer_head.text = tr("CABBAGES OFFERED" if paid_in == "stock" else "IN THE ENVELOPE")
-	_round.text = "%d / %d" % [offers.size() + mini(left, 1), offers.size() + left]
-	_number.text = amount_text(paid_in, amount)
-	_submit_word.text = tr("SUBMIT OFFER" if paid_in == "stock" else "PASS THE ENVELOPE")
-	_closed.visible = left <= 0
-	for part: String in ["Less", "Value", "More", "Submit"]:
-		(_offer.get_node(part) as Control).visible = left > 0
-	_mood_imprint.visible = not moods.is_empty()
-	var lines := PackedStringArray()
-	for i in offers.size():
-		lines.append("%s  %s" % [amount_text(paid_in, offers[i]), tr(MOODS[paid_in][moods[i]])])
-	_log.text = "\n".join(lines)
-	if not moods.is_empty():
-		_mood_word.text = tr(MOODS[paid_in][moods[-1]])
+	var units := rows.map(func(row: Dictionary) -> String: return row.unit)
+	for old in _staff.get_children():  # A type no longer on the paper.
+		if not units.has(String(old.name)):
+			old.free()
+	for figure in _figures.get_children():
+		if not units.has(String(figure.name)):
+			figure.free()
+	for i in rows.size():
+		var row: Dictionary = rows[i]
+		var line := _staff.get_node_or_null(NodePath(row.unit)) as Control
+		if line == null:
+			line = STAFF_ROW.instantiate()
+			line.name = row.unit
+			_staff.add_child(line)
+			var figure: Node3D = (load(SOLDIER % row.unit) as PackedScene).instantiate()
+			figure.name = row.unit
+			figure.scale = Vector3.ONE * FIGURE_SCALE
+			_figures.add_child(figure)
+		line.position = Vector2(0.0, i * ROW_HEIGHT)
+		(line.get_node("Name") as Label).text = row.name
+		(line.get_node("Have") as Label).text = tr("HAVE %d") % row.have
+		(line.get_node("Take") as Label).text = str(row.take)
+		var stand := STAFF_AT + line.position + (line.get_node("Stand") as Control).position
+		(_figures.get_node(NodePath(row.unit)) as Node3D).position = Vector3(stand.x / PIXELS_PER_METRE - SIZE.x / 2.0, 0.0, stand.y / PIXELS_PER_METRE)
 	reprint()
 
 
-## The box under the mouse (`spot` of BOXES; &"": none): its frame goes heavy and oxblood.
+## Shows the scouting view of fighting map `map` (a WarMap scene; "": none, hidden): the map in
+## miniature and its defences counted under it.
+func print_scout(map: String) -> void:
+	var on := map != ""
+	for part: String in ["ScoutHead", "ScoutFrame", "Defences"]:
+		($Page/Form.get_node(part) as Control).visible = on
+	($Page/Form/Rule2 as Control).visible = not on
+	_scout.visible = on
+	if on and map != _scouted:
+		for old in _scout.get_children():
+			old.free()
+		var shown: WarMap = (load(map) as PackedScene).instantiate()
+		_scout.add_child(shown)
+		var fit := SCOUT_WIDTH / (shown.grid_size.x * WarMap.CELL * PIXELS_PER_METRE)
+		shown.scale = Vector3.ONE * fit
+		shown.position = Vector3(SCOUT_AT.x / PIXELS_PER_METRE - SIZE.x / 2.0, 0.0, SCOUT_AT.y / PIXELS_PER_METRE)
+		_scouted = map
+	if on:  # Again each time: the words follow the language.
+		_defences.text = defences_text((_scout.get_child(0) as WarMap).layout())
+	reprint()
+
+
+## A fighting map's defences counted, as the scouting view prints them: "CANNONS 2  MORTARS 1  WOODEN
+## WALLS" (`layout`: WarMap.layout).
+static func defences_text(layout: Array) -> String:
+	var count := {}
+	for building: Dictionary in layout:
+		count[building.kind] = int(count.get(building.kind, 0)) + 1
+	var words := PackedStringArray()
+	for kind: String in ["cannon", "mortar"]:
+		if count.has(kind):
+			words.append(TranslationServer.translate({cannon = "CANNONS %d", mortar = "MORTARS %d"}[kind]) % count[kind])
+	for wall: String in ["wall_wood", "wall_stone", "wall_steel"]:
+		if count.has(wall):
+			words.append(TranslationServer.translate({wall_wood = "WOODEN WALLS", wall_stone = "STONE WALLS", wall_steel = "STEEL WALLS"}[wall]))
+	return "  ".join(words)
+
+
+## A declaration's count of staff turned a notch: the dial's click.
+func count_tick() -> void:
+	($Count as SoundCue).cue(global_position)
+
+
+## Prints the negotiation: what is offered (`paid_in`: "stock" cabbages, "coins" a bribe; "": nobody
+## haggles over this deed, its band stays empty), a bundle's size, the owner's name, his replies so
+## far (`replies`: each {offered, mood, line} in words, NegotiationLetter.print_letter), how many more
+## offers he hears (`left`), the coin price first `asked` (ASKED beside the price once it has moved),
+## what is in stock or the purse (`have`) and the letter's small print, `note` (a key). The deed's
+## band says START HAGGLING, after an offer how it stands. Call it after print_price: the letter
+## prints the price as it stands.
+func print_haggle(paid_in := "", size := 0, owner_name := "", replies: Array = [], left := 0, asked := 0, have := 0, note := "Cabbages offered are not returned.") -> void:
+	var on := paid_in != ""
+	_start.visible = on
+	var moved: bool = on and bill.get("coins", asked) != asked
+	_asked.visible = moved
+	if not on:
+		return
+	_start_word.text = tr("START HAGGLING" if replies.is_empty() else ("RESUME HAGGLING" if left > 0 else "NEGOTIATION RECORD"))
+	_asked.text = tr("ASKED %s") % ("$" + FarmScreen._thousands(asked))
+	negotiation.print_letter(paid_in, size, owner_name, bill, replies, left, have, note)
+	reprint()
+
+
+## The box under the mouse (`spot` of DEED_BOXES or HAGGLE_BOXES; &"": none): its frame goes heavy and oxblood.
 func hot(spot: StringName) -> void:
 	for box: StringName in _boxes:
 		_boxes[box].add_theme_stylebox_override(&"panel", hot_box if box == spot else _box_line)
+	negotiation.hot(spot)
+	for row in _staff.get_children():
+		for side: String in ["Less", "More"]:
+			var key := (STAFF_LESS if side == "Less" else STAFF_MORE) + String(row.name)
+			(row.get_node(side) as Panel).add_theme_stylebox_override(&"panel", hot_box if spot == StringName(key) else _box_line)
 	reprint()
 
 
-## The dial turned a notch.
-func tick() -> void:
-	_dial_sound.cue(global_position)
-
-
 ## The stamp refused: what is short flashes red twice, to a jammed lever's dead clunk.
-func blink() -> void:
+func blink(staff := false) -> void:
 	_denied_sound.cue(global_position)
 	if _blinking != null:
 		_blinking.kill()
 	_blinking = create_tween()
 	for colour: Color in [INK, DENIED_RED, INK, DENIED_RED]:
-		_blinking.tween_callback(_ink_short.bind(colour))
+		_blinking.tween_callback(_ink_short.bind(colour, staff))
 		_blinking.tween_interval(BLINK_TIME)
+	_blinking.tween_callback(_ink_short.bind(DENIED_RED, false))  # STAFF COMMITTED goes back to ink.
 
 
 ## Slides flat over the sheet from `from` to `to` (in the parent's space) in `time` s, squaring up
 ## as it arrives; `away` slides it off instead and hides it at the end.
 func slide(from: Vector3, to: Vector3, time: float, away := false) -> void:
 	_still()
+	if not away:
+		shut_haggle()  # A deed comes in on its own; the record waits for START HAGGLING.
 	open = 1.0
 	show()
 	_slide_sound.cue(global_position)
@@ -274,18 +408,55 @@ func slide(from: Vector3, to: Vector3, time: float, away := false) -> void:
 		_moving.chain().tween_callback(hide)
 
 
-## The stamp comes down on form pixel `on` (the stamp box; MOOD_AT for a mood) in `time` s, from
+## The negotiation record slides over the deed (`up`) from `from` m to the deed's side (along its
+## x), or off it that way and is gone, in `time` s, to the deed's slide.
+func lay_haggle(up: bool, from: float, time: float) -> void:
+	haggling = up
+	if _haggle_moving != null:
+		_haggle_moving.kill()
+	_haggle.show()
+	_slide_sound.cue(global_position)
+	var off := _haggle_rest + Vector3.RIGHT * from
+	_haggle.position = off if up else _haggle_rest
+	_haggle_moving = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT if up else Tween.EASE_IN)
+	_haggle_moving.tween_property(_haggle, "position", _haggle_rest if up else off, time)
+	if not up:
+		negotiation.clear()  # What lay on the offer goes back to the crate.
+		_haggle_moving.tween_callback(_haggle.hide)
+
+
+## Where the negotiation letter rests on the deed (the deed's own space).
+func letter_rest() -> Transform3D:
+	return Transform3D(_haggle.basis, _haggle_rest)
+
+
+## The record is gone at once.
+func shut_haggle() -> void:
+	haggling = false
+	if _haggle_moving != null:
+		_haggle_moving.kill()
+	_haggle.hide()
+	_haggle.position = _haggle_rest
+	negotiation.clear()
+
+
+## The stamp comes down on the owner's newest reply slip on the letter in `time` s.
+func strike_mood(time: float) -> void:
+	strike(time, HAGGLE_PAGE * negotiation.stamp_spot(), HAGGLE_LIFT)
+
+
+## The stamp comes down on deed pixel `on` (the stamp box), `lift` m over the deed, in `time` s, from
 ## STAMP_FROM above it.
-func strike(time: float, on := STAMP_BOX.get_center()) -> void:
+func strike(time: float, on := STAMP_BOX.get_center(), lift := 0.0) -> void:
 	if _stamping != null:
 		_stamping.kill()
-	var at := Vector3(on.x / PIXELS_PER_METRE - SIZE.x / 2.0, 0.0, on.y / PIXELS_PER_METRE)
+	var at := Vector3(on.x / PIXELS_PER_METRE - SIZE.x / 2.0, lift, on.y / PIXELS_PER_METRE)
 	_stamp.position = at + Vector3.UP * _stamp_rest.y
-	_ring.position = at + Vector3.UP * _ring.position.y
+	_ring.position = at + Vector3.UP * RING_Y
 	_stamp.scale = Vector3.ONE
 	_stamp.show()
 	_stamping = create_tween()
-	_stamping.tween_property(_stamp, "position:y", _stamp_rest.y, time).from(_stamp_rest.y + STAMP_FROM) \
+	_stamping.tween_property(_stamp, "position:y", at.y + _stamp_rest.y, time).from(at.y + _stamp_rest.y + STAMP_FROM) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 
@@ -329,7 +500,7 @@ func lift_stamp(time: float) -> void:
 		_stamping.kill()
 	_stamping = create_tween()
 	_stamping.tween_property(_stamp, "scale", Vector3.ONE, 0.08)
-	_stamping.parallel().tween_property(_stamp, "position:y", _stamp_rest.y + STAMP_FROM, time) \
+	_stamping.parallel().tween_property(_stamp, "position:y", _stamp.position.y + STAMP_FROM, time) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_stamping.tween_callback(_stamp.hide)
 
@@ -338,6 +509,9 @@ func lift_stamp(time: float) -> void:
 ## parent's space) in `drop_time` s and is gone.
 func roll_away(to: Vector3, roll_time: float, drop_time: float) -> void:
 	_still()
+	shut_haggle()
+	_figures.hide()  # They would stand in the air over the rolled paper.
+	_scout.hide()
 	_roll_sound.cue(global_position)
 	_moving = create_tween()
 	_moving.tween_property(self, "open", 0.0, roll_time).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
@@ -345,9 +519,10 @@ func roll_away(to: Vector3, roll_time: float, drop_time: float) -> void:
 	_moving.tween_callback(hide)
 
 
-func _ink_short(colour: Color) -> void:
+func _ink_short(colour: Color, staff := false) -> void:
 	for label: Label in [_coins_short, _cabbages_short]:
 		label.add_theme_color_override(&"font_color", colour)
+	_staff_head.add_theme_color_override(&"font_color", colour if staff else INK)
 	reprint()
 
 

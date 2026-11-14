@@ -50,9 +50,11 @@ func _table_with_world() -> MapTable:
 	return _table()
 
 
-## A save at war: five home farms, the war card, a purse and a store that pay for any war.
+## A save at war: five home farms, the war card, a purse and a store that pay for any war, three
+## field associates ready.
 func _at_war() -> void:
 	var save := SaveManager.save
+	save.army = {field_associate = 3}
 	save.stamped.append_array(["negotiation", "bribery", "war_mode"])
 	save.farms_owned = PackedStringArray(["K-1", "K-2", "K-3", "K-4", "K-5"])
 	save.coin_limit = 100000000
@@ -109,13 +111,26 @@ func _click(table: MapTable, at: Vector2) -> void:
 	table._input(click)
 
 
-## Lays out the war order for `farm` on the open country sheet and stamps it, to the war sheet.
+## Lays out the declaration of war for `farm` on the open country sheet (every figure ready goes)
+## and stamps it, to the war sheet.
 func _start_war(table: MapTable, farm: StringName) -> void:
 	var country := table.sheet_of(table.shown) as FarmRegister
 	country.press(farm)
 	country.press(FarmRegister.STAMP)
 	country._dealing.custom_step(10.0)
 	_finish(table)
+
+
+## Fights the war on the open war sheet to a win: three field associates on its first landing spot.
+func _win_war(table: MapTable) -> WarSheet:
+	var war := table.sheet_of(&"war") as WarSheet
+	war.begin(war.farm, {field_associate = 3})
+	for i in 3:
+		war.place("field_associate", 0)
+	war.start_fight()
+	war.fight.tick(WarRules.fight_seconds(SaveManager.save))
+	war._process(0.0)
+	return war
 
 
 func test_only_the_home_countrys_sheet_is_on_the_map_table_when_it_opens() -> void:
@@ -270,14 +285,23 @@ func test_starting_a_war_rolls_out_the_war_sheet_for_that_farm() -> void:
 	assert_int(SaveManager.save.farms_owned.size()).is_equal(5)
 
 
-func test_leaving_the_war_sheet_without_winning_costs_nothing() -> void:
+func test_losing_the_war_costs_only_what_the_declaration_paid() -> void:
 	_at_war()
 	var table := _table()
-	var coins := SaveManager.save.coins
+	var coins := SaveManager.save.coins - int(WorldRegister.COUNTRIES[HOME].wars[0].coins)
 	var stock := SaveManager.save.stock
 	_start_war(table, &"K-7")
 	_at_map(table)
+	var war := table.sheet_of(&"war") as WarSheet
+	war.begin(war.farm, {field_associate = 1})
 	_click(table, _camera.unproject_position(table.get_node("Holder/Slot").global_position))
+	_finish(table)
+	assert_str(table.shown).is_equal(&"war")  # No way out while the war is on.
+	war.place("field_associate", 0)
+	war.start_fight()
+	war.fight.tick(WarRules.fight_seconds(SaveManager.save))
+	war._process(0.0)
+	war._dealing.custom_step(10.0)
 	_finish(table)
 	assert_str(table.shown).is_equal(HOME)
 	assert_int(SaveManager.save.coins).is_equal(coins)
@@ -289,13 +313,9 @@ func test_leaving_the_war_sheet_without_winning_costs_nothing() -> void:
 func test_winning_the_war_takes_that_one_farm_and_its_moment_plays_back_on_its_country_sheet() -> void:
 	_at_war()
 	var table := _table()
-	var bill: Dictionary = WorldRegister.COUNTRIES[HOME].wars[0]
-	var coins := SaveManager.save.coins
 	_start_war(table, &"K-7")
-	var war := table.sheet_of(&"war") as WarSheet
-	war.press(WarSheet.VICTORY)
+	var war := _win_war(table)
 	assert_array(Array(SaveManager.save.farms_owned)).is_equal(["K-1", "K-2", "K-3", "K-4", "K-5", "K-7"])
-	assert_int(SaveManager.save.coins).is_equal(coins - bill.coins)
 	assert_bool(FarmRegister.lamp_held).is_true()  # The Field Line waits for the moment.
 	war._dealing.custom_step(10.0)
 	_finish(table)
@@ -317,8 +337,7 @@ func test_a_war_abroad_comes_back_to_that_country_with_the_world_in_the_holder_a
 	assert_str(table.held()).is_equal(&"world")
 	_start_war(table, &"ostrevia-2")
 	assert_str(table.held()).is_equal(&"ostrevia")  # The world roll made room.
-	(table.sheet_of(&"war") as WarSheet).press(WarSheet.VICTORY)
-	(table.sheet_of(&"war") as WarSheet)._dealing.custom_step(10.0)
+	_win_war(table)._dealing.custom_step(10.0)
 	_finish(table)
 	assert_str(table.shown).is_equal(&"ostrevia")
 	assert_str(table.held()).is_equal(&"")
@@ -394,34 +413,67 @@ func test_the_roll_in_the_holder_rests_in_its_saddle_clear_of_the_desk_the_wall_
 		assert_float(absf(weight.position.x - core.x)).is_greater(0.061 + 0.028)  # The weight's and the core tube's radius.
 
 
-func test_the_hint_slip_for_a_farm_site_lies_clear_of_every_sites_disc_and_tags_in_every_country() -> void:
+## Hovers farm site `site` of the open sheet and lets the table place the hint slip.
+func _hover_site(table: MapTable, sheet: FarmRegister, site: StringName) -> void:
+	var move := InputEventMouseMotion.new()
+	move.position = _camera.unproject_position(sheet.point_at(sheet._pixel(site)))
+	table._input(move)
+	table._process(0.0)
+
+
+func test_a_farms_hint_lies_beside_that_farm() -> void:
 	var table := _table()
 	_at_map(table)
 	var home := table.sheet_of(HOME) as FarmRegister
-	var move := InputEventMouseMotion.new()
-	move.position = _camera.unproject_position(home.point_at(_k1(home)))
-	table._input(move)
-	table._process(0.0)
+	_hover_site(table, home, &"K-1")
 	assert_bool(table._hint.visible).is_true()
-	var corner := _camera.unproject_position(home.point_at(home.hint_pixel()))
-	assert_bool(table._hint.position.is_equal_approx(corner)).is_true()
-	# On the art (1 px = 1 mm): the slip at its width, padded, and six lines tall.
-	var art_per_px := 1000.0 / _camera.unproject_position(home.point_at(Vector2(1000, 0))).distance_to(
-			_camera.unproject_position(home.point_at(Vector2.ZERO)))
+	var site := table._on_screen_box(home, home.spot_box(&"K-1"))
+	var slip := Rect2(table._hint.position, table._hint.size)
+	assert_bool(site.grow(MapTable.HINT_GAP + 1.0).intersects(slip)).override_failure_message("%s, %s" % [site, slip]).is_true()
+
+
+func test_a_hint_near_the_sheet_edge_flips_to_stay_on_the_paper() -> void:
+	var paper := Rect2(0, 0, 1000, 600)
+	var slip := Vector2(400, 200)
+	# Room on the right: there, level with the farm's top.
+	assert_vector(MapTable.beside(Rect2(100, 100, 100, 100), slip, paper)).is_equal(Vector2(200 + MapTable.HINT_GAP, 100))
+	# At the right edge: on the left instead.
+	assert_vector(MapTable.beside(Rect2(800, 100, 100, 100), slip, paper)).is_equal(Vector2(800 - MapTable.HINT_GAP - 400, 100))
+	# At the bottom edge: slid up beside it, still on the paper.
+	var low := MapTable.beside(Rect2(100, 500, 100, 80), slip, paper)
+	assert_bool(paper.encloses(Rect2(low, slip))).is_true()
+	assert_bool(Rect2(low, slip).intersects(Rect2(100, 500, 100, 80))).is_false()
+	# Too wide for either side: below it.
+	assert_vector(MapTable.beside(Rect2(350, 100, 300, 100), slip, paper)).is_equal(Vector2(350, 200 + MapTable.HINT_GAP))
+
+
+func test_the_hint_never_covers_the_hovered_farms_tags() -> void:
+	var table := _table()
+	_at_map(table)
+	var home := table.sheet_of(HOME) as FarmRegister
+	for site: StringName in home._sites:  # As the table lays it, with its real text.
+		_hover_site(table, home, site)
+		var slip := Rect2(table._hint.position, table._hint.size)
+		assert_bool(slip.intersects(table._on_screen_box(home, home.spot_box(site)))).override_failure_message(site).is_false()
+		assert_bool(get_viewport().get_visible_rect().encloses(slip)).override_failure_message(site).is_true()
+	# Every country's sites, lying where the home sheet lies: the slip at its width and six lines.
+	var window := get_viewport().get_visible_rect().grow(-MapTable.HINT_MARGIN)
 	for id: StringName in WorldRegister.COUNTRIES:
 		var country: FarmRegister = auto_free(load(MapTable.COUNTRY_SCENE % id).instantiate())
 		add_child(country)
-		var slip := Rect2(country.hint_pixel(), Vector2(MapTable.SPOT_HINT_WIDTH + 20.0, 6.0 * 34.0 + 20.0) * art_per_px)
-		assert_bool(MapSheet.on_paper(slip.end)).is_true()
-		for thing: MapBuilding in country.get_node("Things").get_children():
-			var hit := Rect2(FarmRegister.HIT.position + Vector2(thing.position.x + 1.6, thing.position.z) * 1000.0, FarmRegister.HIT.size)
-			assert_bool(slip.intersects(hit)).override_failure_message("%s: the slip covers %s" % [id, thing.title]).is_false()
+		country.global_transform = home.global_transform
+		var room := table._on_screen_box(country, Rect2(Vector2.ZERO, MapSheet.SIZE * MapSheet.PIXELS_PER_METRE)).intersection(window)
+		for site: StringName in country._sites:
+			var box := table._on_screen_box(country, country.spot_box(site))
+			var slip := Rect2(MapTable.beside(box, Vector2(MapTable.SPOT_HINT_WIDTH, 6.0 * 34.0), room), Vector2(MapTable.SPOT_HINT_WIDTH, 6.0 * 34.0))
+			assert_bool(slip.intersects(box)).override_failure_message("%s: the slip covers %s" % [id, site]).is_false()
+			assert_bool(room.encloses(slip)).override_failure_message("%s: %s runs off" % [id, site]).is_true()
 
 
 func test_the_map_view_shows_the_to_desk_plate_the_weights_beside_the_sheet_and_the_roll_in_the_holder_with_its_tag() -> void:
 	var table := _table_with_world()
 	var points: Array[Vector3] = []
-	var back := (table.get_node("Back") as Node3D).global_position
+	var back := (table.get_node("DeskButton/Plate") as Node3D).global_position
 	for side: float in [-1.0, 1.0]:
 		points.append(back + Vector3(0.0, 0.0, MapTable.BACK_HALF.x * side))
 	for weight: Node3D in table.get_node("Weights").get_children():  # Hopped aside during a swap.
@@ -451,7 +503,7 @@ func test_a_click_on_a_farm_token_lands_on_that_farm_at_home_and_abroad() -> voi
 func test_a_click_at_the_map_finds_the_to_desk_plate_the_roll_in_the_holder_and_the_farm_sites_but_not_the_bare_sheet() -> void:
 	var table := _table_with_world()
 	var eye: Vector3 = table.get_node("View").global_position
-	assert_str(table.pick(eye, table.get_node("Back").global_position - eye)).is_equal(MapTable.BACK)
+	assert_str(table.pick(eye, table.get_node("DeskButton/Plate").global_position - eye)).is_equal(MapTable.BACK)
 	assert_str(table.pick(eye, table.get_node("Holder/Slot").global_position - eye)).is_equal(MapTable.HOLDER)
 	var country := table.sheet_of(HOME)
 	var site: MapBuilding = country.get_node("Things").get_child(0)
@@ -591,7 +643,7 @@ func test_the_open_sheet_takes_more_than_three_quarters_of_the_screens_height() 
 func test_the_to_desk_button_goes_in_when_clicked_and_lies_where_the_click_is_taken() -> void:
 	var table := _table()
 	var button: Node3D = table.get_node("DeskButton")
-	var back: Vector3 = table.get_node("Back").global_position
+	var back: Vector3 = table.get_node("DeskButton/Plate").global_position
 	assert_float(Vector2(button.global_position.x, button.global_position.z).distance_to(Vector2(back.x, back.z))).is_less(0.001)
 	table.go_to_map()
 	table._pan_tween.custom_step(10.0)
@@ -658,15 +710,16 @@ func test_a_save_with_the_holdings_indicators_card_stamped_has_it_on_the_table_w
 	assert_bool((table.get_node("TallyArrive") as SoundCue).playing).is_false()
 
 
-func test_the_holdings_indicator_stands_below_the_to_desk_button_and_clear_of_the_sheet() -> void:
+func test_the_holdings_indicator_stands_where_the_loose_buttons_stood_and_clear_of_the_sheet() -> void:
 	SaveManager.save.stamped.append(MapTable.TALLY_CARD)
 	var table := _table()
 	var tally: Node3D = table.get_node("Tally")
 	var box := tally.global_transform * (tally.get_node("Model") as MeshInstance3D).get_aabb()
 	var button: Node3D = table.get_node("DeskButton")
 	var plinth := button.global_transform * (button.get_node("Plinth") as MeshInstance3D).get_aabb()
-	# Screen-up is +X (the wall), screen-right is +Z: below the button, left of the paper (z 0.15).
-	assert_float(box.end.x).is_less(plinth.position.x - 0.03)
+	# Screen-up is +X (the wall), screen-right is +Z: its console reaches up to the loose buttons'
+	# place, left of the paper (z 0.15).
+	assert_float(box.end.x).is_greater(plinth.get_center().x)
 	assert_float(box.end.z).is_less(0.15 - 0.03)
 	assert_float(plinth.end.z).is_less(0.15 - 0.03)
 	for corner: Vector3 in [box.position, box.end, plinth.position, plinth.end]:
@@ -759,7 +812,7 @@ func test_a_click_on_a_farm_site_at_the_map_lays_out_its_deed_and_a_click_on_its
 	table._input(move)
 	assert_str(table._hovered).is_equal(&"K-1")
 	assert_str(table._hint.text).contains(country.hint(&"K-1").get_slice(".", 0))
-	assert_str(table._hint.text).contains("60,000")
+	assert_str(table._hint.text).contains("84,000")  # K-1, beside the head office (FarmRegister.WORTH)
 	var click := InputEventMouseButton.new()
 	click.position = at
 	click.button_index = MOUSE_BUTTON_LEFT
@@ -773,12 +826,13 @@ func test_a_click_on_a_farm_site_at_the_map_lays_out_its_deed_and_a_click_on_its
 	table._input(click)
 	assert_str(table._hovered).is_equal(FarmRegister.STAMP)
 	assert_array(Array(SaveManager.save.farms_owned)).is_equal(["K-1"])
-	assert_int(SaveManager.save.coins).is_equal(1000000 - FarmRegister.PRICES[0].coins)
+	assert_int(SaveManager.save.coins).is_equal(1000000 - roundi(FarmRegister.PRICES[0].coins * FarmRegister.worth(&"K-1")))
 	country._dealing.custom_step(10.0)
 	move.position = at
 	table._input(move)
 	table._process(0.0)
-	assert_str(table._hint.text).is_equal(FarmRegister.hint_text(SaveManager.save, &"K-1", (country.get_node("Things").get_child(0) as MapBuilding).title))  # The slip again: ours.
+	assert_str(table._hovered).is_equal(&"")  # Ours now: the farm no longer reacts to the mouse.
+	assert_bool(table._hint.visible).is_false()
 	table.back_to_desk()
 	assert_str(country._hot).is_equal(&"")  # Let down when the camera leaves.
 
@@ -879,3 +933,356 @@ func test_the_things_are_tucked_away_before_the_sheet_starts_to_roll() -> void:
 	var country := table.sheet_of(HOME)
 	assert_float(country.open).is_equal(1.0)
 	assert_bool(country.thing_up(0)).is_false()  # The first of the wave is already down.
+
+
+## The map table and the farm TV wired to each other, as in MainStoryWorld.
+func _table_and_tv() -> Array:
+	SaveManager.save.stamped.append("family_farm")
+	var tv: FarmTv = auto_free(load("res://entities/farm_tv/farm_tv.tscn").instantiate())
+	add_child(tv)
+	var table := _table()
+	table.farm_tv = tv
+	tv.map = table
+	return [table, tv]
+
+
+func _ray_at(marker: Node3D) -> Array:
+	var at := marker.global_position
+	return [at + Vector3.UP, Vector3.DOWN]
+
+
+func test_to_farm_stands_above_to_desk_only_once_the_farm_shortcut_card_is_stamped() -> void:
+	var table := _table()
+	var farm: Node3D = table.get_node("FarmButton/Plate")
+	var ray := _ray_at(farm)
+	assert_bool(table.get_node("FarmButton").visible).is_false()
+	assert_str(table.pick(ray[0], ray[1])).is_not_equal(MapTable.FARM)
+	SaveManager.save.stamped.append(MapTable.SHORTCUT_CARD)
+	table._process(0.0)
+	assert_bool(table.get_node("FarmButton").visible).is_true()
+	assert_str(table.pick(ray[0], ray[1])).is_equal(MapTable.FARM)
+	var back := _ray_at(table.get_node("DeskButton/Plate"))
+	assert_str(table.pick(back[0], back[1])).is_equal(MapTable.BACK)  # TO DESK is still TO DESK.
+	# On top of it in the map view: further up the screen (+X), on the same column, its plates apart.
+	var desk_button: Node3D = table.get_node("DeskButton")
+	var farm_button: Node3D = table.get_node("FarmButton")
+	assert_float(farm_button.position.x - desk_button.position.x).is_greater(MapTable.BACK_HALF.y * 2.0)
+	assert_float(farm_button.position.z).is_equal_approx(desk_button.position.z, 0.001)
+	assert_str((farm_button.get_node("Stencil") as Label3D).text).is_equal("TO FARM")
+
+
+## The map table and the farm TV wired, the shortcut stamped, the camera at the map.
+func _shortcut_at_map() -> Array:
+	var both := _table_and_tv()
+	SaveManager.save.stamped.append(MapTable.SHORTCUT_CARD)
+	var table: MapTable = both[0]
+	table.go_to_map()
+	table._pan_tween.custom_step(10.0)
+	return both
+
+
+func test_the_shortcut_to_the_farm_dips_to_dark_instead_of_flying_across_the_room() -> void:
+	var both := _shortcut_at_map()
+	var table: MapTable = both[0]
+	var tv: FarmTv = both[1]
+	var dark: ColorRect = tv.get_node("Dip/Dark")
+	var at_map := _camera.transform
+	table.to_farm()
+	assert_bool(FarmTv.away).is_true()
+	tv._dip_tween.custom_step(FarmTv.DIP_OUT * 0.5)
+	# Going dark, and the camera has not moved at all.
+	assert_float(dark.color.a).is_between(0.2, 0.8)
+	assert_bool(_camera.transform.is_equal_approx(at_map)).is_true()
+	tv._dip_tween.custom_step(FarmTv.DIP_OUT * 0.5 + 0.001)
+	# Dark: the camera has cut to the last small stretch of the desk's own glide to the TV.
+	assert_float(dark.color.a).is_greater(0.95)
+	var view := get_viewport().get_visible_rect().size
+	var tv_view := FarmTv.tv_view(tv.screen_frame(), view.x / view.y)
+	assert_bool(_camera.transform.is_equal_approx(FarmTv.view_at(table._desk_view, tv_view, FarmTv.SETTLE_FROM))).is_true()
+	assert_float(_camera.transform.origin.distance_to(tv_view.origin)).is_less(0.25)
+
+
+func test_the_shortcut_ends_at_the_farm_view() -> void:
+	var both := _shortcut_at_map()
+	var table: MapTable = both[0]
+	var tv: FarmTv = both[1]
+	table.to_farm()
+	tv._dip_tween.custom_step(10.0)
+	tv._tween.custom_step(10.0)
+	table._process(0.0)
+	var view := get_viewport().get_visible_rect().size
+	assert_bool(_camera.transform.is_equal_approx(FarmTv.tv_view(tv.screen_frame(), view.x / view.y))).is_true()
+	assert_float((tv.get_node("Dip/Dark") as ColorRect).color.a).is_equal(0.0)
+	assert_bool(table.is_away()).is_false()
+	assert_bool((table.get_node("Lights/Key") as Light3D).visible).is_false()  # The map's light is off.
+	assert_bool(FarmTv.away).is_true()  # At the TV: the hand stays away.
+
+
+func test_esc_during_the_shortcut_to_the_farm_does_not_jump_the_camera() -> void:
+	var both := _shortcut_at_map()
+	var table: MapTable = both[0]
+	var tv: FarmTv = both[1]
+	var at_map := _camera.transform
+	table.to_farm()
+	tv._dip_tween.custom_step(FarmTv.DIP_OUT * 0.5)
+	var esc := InputEventAction.new()
+	esc.action = &"ui_cancel"
+	esc.pressed = true
+	table._input(esc)  # The map has let go: nothing.
+	tv._input(esc)  # The dip eats it.
+	assert_bool(_camera.transform.is_equal_approx(at_map)).is_true()
+	assert_bool(tv.dipping()).is_true()
+	tv._dip_tween.custom_step(10.0)
+	tv._tween.custom_step(10.0)
+	var view := get_viewport().get_visible_rect().size
+	assert_bool(_camera.transform.is_equal_approx(FarmTv.tv_view(tv.screen_frame(), view.x / view.y))).is_true()
+
+
+func test_to_farm_does_nothing_without_a_farm_tv_to_go_to() -> void:
+	var table := _table()
+	SaveManager.save.stamped.append(MapTable.SHORTCUT_CARD)
+	table.go_to_map()
+	table._pan_tween.custom_step(10.0)
+	table.to_farm()  # No farm TV wired: the camera stays at the map.
+	assert_bool(table.is_away()).is_true()
+
+
+func test_the_depot_stays_away_until_hostile_acquisitions_are_authorised() -> void:
+	var table := _table()
+	_at_map(table)
+	assert_bool((table.get_node("Depot") as Node3D).visible).is_false()
+	assert_bool(MapTable.sheet_unlocked(MapTable.DEPOT, SaveManager.save)).is_false()
+	table.open_depot()
+	_finish(table)
+	assert_str(table.shown).is_equal(HOME)
+
+
+func test_the_depot_drops_in_the_first_time_the_camera_is_at_the_map_and_only_then() -> void:
+	SaveManager.save.stamped.append("war_mode")
+	var table := _table()
+	var depot := table.get_node("Depot") as Depot
+	assert_bool(depot.visible).is_false()  # Not at the desk.
+	_at_map(table)
+	assert_bool(depot.dropping()).is_true()
+	assert_bool(SaveManager.save.depot_dropped).is_true()
+	depot._drop_tween.custom_step(10.0)
+	assert_bool(depot.visible).is_true()
+	assert_bool((depot.get_node("Drop") as SoundCue).playing).is_true()
+	table.queue_free()
+	FarmTv.away = false
+	var again := _table()  # A reload: it stands there already, without the moment.
+	assert_bool((again.get_node("Depot") as Node3D).visible).is_true()
+	_at_map(again)
+	assert_bool((again.get_node("Depot") as Depot).dropping()).is_false()
+
+
+func test_the_depot_stands_right_of_the_sheet_and_whole_inside_the_frame_at_16_9() -> void:
+	var table := _table()
+	var depot := table.get_node("Depot") as Node3D
+	var box := depot.global_transform * (depot.get_node("Body") as MeshInstance3D).get_aabb()
+	assert_float(box.position.z).is_greater(3.29)  # Right of the paper's printed frame.
+	for corner: Vector3 in [box.position, box.end, Vector3(box.position.x, box.end.y, box.end.z), Vector3(box.end.x, box.end.y, box.position.z)]:
+		var at := _on_screen(table, corner)
+		assert_float(maxf(absf(at.x), absf(at.y))).override_failure_message("%s is off the screen" % corner).is_less(0.98)
+
+
+func test_a_click_on_the_depot_rolls_out_the_depot_sheet_and_the_holder_leads_back() -> void:
+	SaveManager.save.stamped.append("war_mode")
+	SaveManager.save.depot_dropped = true
+	var table := _table()
+	_at_map(table)
+	var depot := (table.get_node("Depot") as Node3D).global_position + Vector3.UP * 0.06
+	assert_str(table.pick(_camera.project_ray_origin(_camera.unproject_position(depot)), _camera.project_ray_normal(_camera.unproject_position(depot)))).is_equal(MapTable.DEPOT)
+	_click(table, _camera.unproject_position(depot))
+	_finish(table)
+	assert_str(table.shown).is_equal(MapTable.DEPOT)
+	assert_str(table.held()).is_equal(HOME)  # The sheet it replaced, rolled up: the way back.
+	assert_str(SaveManager.save.map_sheet).is_equal(String(HOME))  # A reload opens the country again.
+	_at_map(table)
+	_click(table, _camera.unproject_position(table.get_node("Holder/Slot").global_position))
+	_finish(table)
+	assert_str(table.shown).is_equal(HOME)
+	assert_str(table.held()).is_equal(&"")
+
+
+func test_staff_train_every_frame_wherever_the_camera_is() -> void:
+	SaveManager.save.stamped.append("war_mode")
+	SaveManager.save.storage_cap = 100000
+	SaveManager.save.stock = 50000
+	var table := _table()
+	assert_bool(WarRules.buy(SaveManager.save, "field_associate")).is_true()
+	table._process(WarRules.training_seconds(SaveManager.save, "field_associate") + 0.1)  # At the desk.
+	assert_dict(SaveManager.save.army).is_equal({field_associate = 1})
+	assert_bool(SaveManager.save.army_training.is_empty()).is_true()
+
+
+func test_the_camera_glides_in_on_the_negotiation_letter_without_rolling_and_back_when_it_closes() -> void:
+	SaveManager.save.coins = 1000000
+	SaveManager.save.storage_cap = 5000
+	SaveManager.save.stock = 5000
+	SaveManager.save.stamped.append("negotiation")
+	SaveManager.save.farms_owned = PackedStringArray(["K-1"])
+	var table := _table()
+	table.go_to_map()
+	table._pan_tween.custom_step(10.0)
+	var map_view := _camera.transform
+	var country := table.sheet_of(HOME) as FarmRegister
+	country.press(&"K-2")
+	table._process(0.0)
+	assert_float(table._zoom).is_equal(0.0)  # The deed alone: no glide.
+	country.press(FarmRegister.HAGGLE)
+	table._process(0.0)
+	table._zoom_tween.custom_step(FarmRegister.DEED_SLIDE_TIME)
+	assert_float(table._zoom).is_between(0.01, 0.99)  # Eased, not a jump.
+	table._zoom_tween.custom_step(MapTable.FOCUS_TIME)
+	assert_float(table._zoom).is_equal(1.0)
+	assert_float(_camera.quaternion.angle_to(map_view.basis.get_rotation_quaternion())).is_less(0.001)  # No roll, no turn.
+	assert_float(_camera.position.distance_to(map_view.origin)).is_greater(0.3)  # Closer in.
+	# The letter fills most of the screen now: its corners are on screen, far apart.
+	var corners := country.focus()
+	var size := table.get_viewport().get_visible_rect().size
+	var ys: Array[float] = []
+	for corner in corners:
+		var at := _camera.unproject_position(corner)
+		assert_bool(Rect2(Vector2.ZERO, size).grow(1.0).has_point(at)).override_failure_message(str(at)).is_true()
+		ys.append(at.y)
+	assert_float(ys.max() - ys.min()).is_greater(size.y * 0.8)
+	# Clicks still find the letter's boxes through the moved camera.
+	var deed := country.get_node("Deed") as FarmDeed
+	deed._moving.custom_step(10.0)
+	deed._haggle_moving.custom_step(10.0)  # The letter at rest, where the camera glided to.
+	var hit_at := _camera.unproject_position((country.get_node("Deed/Haggle") as Node3D).global_transform * NegotiationLetter.point(NegotiationLetter.SEND_BOX.get_center()))
+	var move := InputEventMouseMotion.new()
+	move.position = hit_at
+	table._input(move)
+	assert_bool(table._hovered == FarmRegister.SEND).override_failure_message("hovered [%s] at %s" % [table._hovered, hit_at]).is_true()
+	country.press(FarmRegister.RETURN)  # The letter goes: the camera glides back.
+	table._process(0.0)
+	table._zoom_tween.custom_step(MapTable.FOCUS_TIME)
+	assert_float(table._zoom).is_equal(0.0)
+	assert_bool(_camera.transform.is_equal_approx(map_view)).is_true()
+
+
+func test_before_the_holdings_indicator_the_buttons_stand_alone() -> void:
+	SaveManager.save.stamped.append(MapTable.SHORTCUT_CARD)
+	var table := _table()
+	_at_map(table)
+	assert_bool((table.get_node("Tally") as Node3D).visible).is_false()
+	assert_bool((table.get_node("DeskButton") as Node3D).visible).is_true()
+	assert_bool((table.get_node("FarmButton") as Node3D).visible).is_true()
+	assert_array(table.buttons()).is_equal([table.get_node("DeskButton"), table.get_node("FarmButton")])
+	var back := _ray_at(table.get_node("DeskButton/Plate"))
+	assert_str(table.pick(back[0], back[1])).is_equal(MapTable.BACK)
+
+
+func test_with_the_holdings_indicator_the_buttons_sit_on_its_console() -> void:
+	SaveManager.save.stamped.append_array([MapTable.TALLY_CARD, MapTable.SHORTCUT_CARD])
+	var table := _table()
+	_at_map(table)
+	var tally: Node3D = table.get_node("Tally")
+	var desk: Node3D = tally.get_node("Console/DeskButton")
+	var farm: Node3D = tally.get_node("Console/FarmButton")
+	assert_bool((table.get_node("DeskButton") as Node3D).visible).is_false()
+	assert_bool((table.get_node("FarmButton") as Node3D).visible).is_false()
+	assert_bool(desk.is_visible_in_tree()).is_true()
+	assert_bool(farm.is_visible_in_tree()).is_true()
+	assert_array(table.buttons()).is_equal([desk, farm])
+	# On the tally's own housing, above its windows (screen-up is +X), TO FARM above TO DESK.
+	var box := tally.global_transform * (tally.get_node("Model") as MeshInstance3D).get_aabb()
+	for button: Node3D in [desk, farm]:
+		assert_bool(box.has_point(button.global_position)).is_true()
+		assert_float(button.global_position.x).is_greater((tally.get_node("Windows/Coins") as Node3D).global_position.x)
+	assert_float(farm.global_position.x - desk.global_position.x).is_greater(MapTable.BACK_HALF.y * 2.0)
+	assert_str((farm.get_node("Stencil") as Label3D).text).is_equal("TO FARM")
+
+
+func test_the_console_takes_the_buttons_over_at_the_holdings_indicators_landing_thud() -> void:
+	var table := _table()
+	_at_map(table)
+	SaveManager.save.stamped.append(MapTable.TALLY_CARD)
+	table._process(0.0)
+	table._arrive_tween.custom_step(MapTable.ARRIVE_AFTER + 0.01)
+	assert_bool((table.get_node("DeskButton") as Node3D).visible).is_true()  # Still loose while it falls.
+	assert_array(table.buttons()).is_equal([table.get_node("DeskButton"), table.get_node("FarmButton")])
+	table._arrive_tween.custom_step(MapTable.ARRIVE_TIME + 0.01)
+	assert_bool((table.get_node("TallyArrive") as SoundCue).playing).is_true()
+	assert_bool((table.get_node("DeskButton") as Node3D).visible).is_false()
+	assert_object(table.buttons()[0]).is_same(table.get_node("Tally/Console/DeskButton"))
+
+
+func test_to_farm_on_the_console_shows_only_after_its_card() -> void:
+	SaveManager.save.stamped.append(MapTable.TALLY_CARD)
+	var table := _table()
+	_at_map(table)
+	var farm: Node3D = table.get_node("Tally/Console/FarmButton")
+	var ray := _ray_at(farm.get_node("Plate"))
+	# Its socket stands blanked off: no cap, a bare plate, and nothing to click.
+	assert_bool(farm.is_visible_in_tree()).is_true()
+	assert_bool((farm.get_node("Button") as Node3D).visible).is_false()
+	assert_bool((farm.get_node("Stencil") as Node3D).visible).is_false()
+	assert_str(table.pick(ray[0], ray[1])).is_not_equal(MapTable.FARM)
+	SaveManager.save.stamped.append(MapTable.SHORTCUT_CARD)
+	table._process(0.0)
+	assert_bool((farm.get_node("Button") as Node3D).visible).is_true()
+	assert_bool((farm.get_node("Stencil") as Node3D).visible).is_true()
+	assert_str(table.pick(ray[0], ray[1])).is_equal(MapTable.FARM)
+	assert_bool((table.get_node("FarmButton") as Node3D).visible).is_false()  # Not the loose one.
+
+
+func test_the_console_buttons_still_take_the_camera_where_they_say() -> void:
+	SaveManager.save.stamped.append(MapTable.TALLY_CARD)
+	var both := _shortcut_at_map()
+	var table: MapTable = both[0]
+	var tv: FarmTv = both[1]
+	table._process(0.0)
+	var desk: Node3D = table.get_node("Tally/Console/DeskButton")
+	var farm: Node3D = table.get_node("Tally/Console/FarmButton")
+	# Hovered, a plate's stencil lightens and its slip says where it goes.
+	var hover := InputEventMouseMotion.new()
+	hover.position = _camera.unproject_position((farm.get_node("Plate") as Node3D).global_position)
+	table._input(hover)
+	assert_str(table._hovered).is_equal(MapTable.FARM)
+	assert_str((table.get_node("HintLayer/Hint") as Label).text).is_equal("Straight to the farm")
+	assert_float((farm.get_node("Stencil") as Label3D).modulate.v).is_greater((desk.get_node("Stencil") as Label3D).modulate.v)
+	_click(table, hover.position)
+	assert_bool(tv.dipping()).is_true()  # TO FARM: the dip to the farm TV.
+	await get_tree().create_timer(desk.PRESS_TIME * desk.DOWN).timeout
+	assert_float((farm.get_node("Button") as Node3D).position.y).is_less(0.0)
+	tv._dip_tween.custom_step(10.0)
+	tv._tween.custom_step(10.0)
+	# Back at the map, TO DESK on the console glides home.
+	table.arrive()
+	table._pan_tween.custom_step(10.0)
+	var back := _camera.unproject_position((desk.get_node("Plate") as Node3D).global_position)
+	hover.position = back
+	table._input(hover)
+	assert_str((table.get_node("HintLayer/Hint") as Label).text).is_equal("Back to the desk")
+	_click(table, back)
+	assert_bool(table._at_map).is_false()
+	assert_bool((desk.get_node("Press") as SoundCue).playing).is_true()
+
+
+func test_the_depot_research_trees_hover_text_shows_in_the_screen_space_hint_slip() -> void:
+	SaveManager.save.stamped.append("war_mode")
+	SaveManager.save.depot_dropped = true
+	var table := _table()
+	_at_map(table)
+	table.open_depot()
+	_finish(table)
+	var sheet := table.sheet_of(MapTable.DEPOT) as DepotSheet
+	var tree := sheet._columns["field_associate"].get_node("Tree") as UpgradeTree
+	var wheel: Array = tree._wheel()
+	var node: Vector2 = sheet._art_rect(tree).position + wheel[0] + DepotResearch.node_data("fa_hp_1").at * wheel[1]
+	var move := InputEventMouseMotion.new()
+	move.position = _camera.unproject_position(sheet.point_at(node))
+	tree._process(0.0)  # Lays the tree out (which nodes show).
+	tree._hover(node - sheet._art_rect(tree).position)  # What the page's GUI hands the tree (it takes pushed input on its next frame).
+	table._input(move)
+	table._process(0.0)
+	assert_bool(table._hint.visible).is_true()
+	assert_str(table._hint.text).contains("BODY ARMOUR")
+	assert_bool(table._hint.get_parent() is CanvasLayer).is_true()  # Over the 3D view, at screen size.
+	move.position = _camera.unproject_position(sheet.point_at(Vector2(2600, 700)))  # Bare paper.
+	table._input(move)
+	table._process(0.0)
+	assert_bool(table._hint.visible).is_false()

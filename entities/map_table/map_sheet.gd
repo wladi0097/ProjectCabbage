@@ -35,7 +35,8 @@ const PITCH := 0.008
 ## still whole enough to wear its label band.
 const CAP := 0.055
 const BAND_UNTIL := 0.02
-## Where the hint slip for a spot of the open sheet lies (hint_pixel): top left, in the sea.
+## Where the hint slip for a spot of the open sheet lies when the sheet has no spot_box (hint_pixel):
+## top left, in the sea.
 const HINT_PIXEL := Vector2(110.0, 300.0)
 ## The name tag's lettering is set this big (Label3D font size), and smaller for a name longer than
 ## TAG_CHARS, so it stays on the card.
@@ -142,10 +143,22 @@ func hint(_spot: StringName) -> String:
 	return ""
 
 
-## Where the hint slip for a spot lies: its top left corner on this art pixel, on a part of the sheet
-## where it covers no spot (HINT_PIXEL unless the sheet knows better).
+## Where the hint slip for a spot lies when the sheet has no spot_box for it: its top left corner on
+## this art pixel, on a part of the sheet where it covers no spot (HINT_PIXEL unless the sheet knows better).
 func hint_pixel() -> Vector2:
 	return HINT_PIXEL
+
+
+## What spot `spot` covers of the art (px): its token and its tags. The hint slip lies right beside
+## it (MapTable.beside). An empty Rect2: the slip lies at hint_pixel instead.
+func spot_box(_spot: StringName) -> Rect2:
+	return Rect2()
+
+
+## What `tag` (a Label on the page, its lettering centred in it) covers with its lettering (px).
+static func lettering(tag: Label) -> Rect2:
+	var text := tag.get_minimum_size()
+	return Rect2(tag.position + (tag.size - text) / 2.0, text)
 
 
 func hover(_spot: StringName) -> void:
@@ -153,6 +166,23 @@ func hover(_spot: StringName) -> void:
 
 
 func press(_spot: StringName) -> void:
+	pass
+
+
+## The mouse moved over the open sheet, to art pixel `pixel` ((-1, -1): off it): what is dragged
+## follows (FarmRegister: a bundle onto the negotiation letter).
+func drag(_pixel: Vector2) -> void:
+	pass
+
+
+## The corners (world) of a paper on the sheet the camera should glide in on to be read (MapTable:
+## the negotiation letter); empty for none.
+func focus() -> PackedVector3Array:
+	return PackedVector3Array()
+
+
+## The left button came up with the mouse on `spot` (&"": on nothing): what is dragged is let go.
+func release(_spot: StringName) -> void:
 	pass
 
 

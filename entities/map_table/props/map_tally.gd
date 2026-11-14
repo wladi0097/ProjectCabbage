@@ -5,6 +5,8 @@ extends Node3D
 ## (the cabbage sign, green), Findings (¶, cold cyan) and farms owned of all there are. A black plate
 ## left of each window carries its sign; no words. Farms are bought at the map, where the desk's own
 ## counters are out of sight.
+## Its housing runs on up into a console deck (`Console`) carrying TO DESK and TO FARM (desk_button
+## instances, plinths sunk into the deck); MapTable shows and clicks them once the tally has landed.
 ## The windows print the save as the map's price tags and the Field Line do (readout): they follow
 ## it every frame. While the camera is at the map (`live`, set by MapTable) a window whose number
 ## changes flicks its flaps over (FLICK_TIME, the new flap coming up out of the dark) with one `Tick`,

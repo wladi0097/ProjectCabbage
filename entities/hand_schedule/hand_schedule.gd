@@ -21,7 +21,7 @@ const NODES := {research = "schedule_research", mini = "schedule_mini", golden =
 ## What the switch's toggle and lamp show (anything struck).
 var _shown_on := false
 
-@onready var _switch: LightSwitch = $Switch
+@onready var _switch: CogSwitch = $Switch
 @onready var _sheet: HandlingSheet = $Schedule/Sheet
 
 

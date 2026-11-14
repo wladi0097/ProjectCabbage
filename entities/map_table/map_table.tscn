@@ -1,21 +1,22 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cbkjwrhjqpbe6"]
 
-[ext_resource type="Script" path="res://entities/map_table/map_table.gd" id="1_table"]
+[ext_resource type="Script" uid="uid://dsyyidl8ylmeb" path="res://entities/map_table/map_table.gd" id="1_table"]
 [ext_resource type="PackedScene" path="res://entities/map_table/world_sheet.tscn" id="3_world"]
 [ext_resource type="PackedScene" path="res://entities/map_table/war_sheet.tscn" id="4_war"]
 [ext_resource type="PackedScene" path="res://entities/map_table/props/drafting_weight.tscn" id="5_weight"]
 [ext_resource type="PackedScene" path="res://entities/map_table/props/chart_holder.tscn" id="6_holder"]
 [ext_resource type="PackedScene" path="res://entities/map_table/props/desk_button.tscn" id="7_button"]
 [ext_resource type="PackedScene" path="res://entities/map_table/props/map_tally.tscn" id="8_tally"]
-
-[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/map_swap.wav" id="sfx_map_swap"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/map_roll_arrive.wav" id="sfx_map_roll_arrive"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_console_drop"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/map_view_in.wav" id="sfx_map_view_in"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/map_view_out.wav" id="sfx_map_view_out"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_1.wav" id="sfx_card_hover_1"]
-[ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_2.wav" id="sfx_card_hover_2"]
+[ext_resource type="PackedScene" path="res://entities/war/depot/depot_sheet.tscn" id="9_depot_sheet"]
+[ext_resource type="PackedScene" path="res://entities/war/depot/depot.tscn" id="10_depot"]
+[ext_resource type="AudioStream" uid="uid://wbc8wcvrd8t7" path="res://assets/audio/effects/card_hover_1.wav" id="sfx_card_hover_1"]
+[ext_resource type="AudioStream" uid="uid://caca7dfoh7wp6" path="res://assets/audio/effects/card_hover_2.wav" id="sfx_card_hover_2"]
+[ext_resource type="AudioStream" uid="uid://dn2cg4mr1i7v4" path="res://assets/audio/effects/console_drop.wav" id="sfx_console_drop"]
+[ext_resource type="Script" uid="uid://s7bovuudwem5" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" uid="uid://dursii7dy4s12" path="res://assets/audio/effects/map_roll_arrive.wav" id="sfx_map_roll_arrive"]
+[ext_resource type="AudioStream" uid="uid://difrtt5kgibsk" path="res://assets/audio/effects/map_swap.wav" id="sfx_map_swap"]
+[ext_resource type="AudioStream" uid="uid://18l5un5kj1d6" path="res://assets/audio/effects/map_view_in.wav" id="sfx_map_view_in"]
+[ext_resource type="AudioStream" uid="uid://bp8emgxakjll8" path="res://assets/audio/effects/map_view_out.wav" id="sfx_map_view_out"]
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_hover"]
 random_pitch = 1.06
@@ -38,122 +39,134 @@ border_color = Color(0.391, 0.405, 0.398, 1)
 shadow_color = Color(0, 0, 0, 0.35)
 shadow_offset = Vector2(4, 4)
 
-[node name="MapTable" type="Node3D" groups=["map_table"]]
+[node name="MapTable" type="Node3D" unique_id=940005682 groups=["map_table"]]
 script = ExtResource("1_table")
 
-[node name="View" type="Marker3D" parent="."]
+[node name="View" type="Marker3D" parent="." unique_id=1828229201]
 transform = Transform3D(0, 0.9848, -0.1736, 0, 0.1736, 0.9848, 1, 0, 0, 4.1, 3.895, 1.585)
 
-[node name="Lay" type="Marker3D" parent="."]
+[node name="Lay" type="Marker3D" parent="." unique_id=1824233991]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.4, 0.752, 1.75)
 
-[node name="Holder" type="Node3D" parent="."]
+[node name="Holder" type="Node3D" parent="." unique_id=672634204]
 
-[node name="Slot" type="Marker3D" parent="Holder"]
+[node name="Slot" type="Marker3D" parent="Holder" unique_id=995157369]
 transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 5.56, 0.842, 1.75)
 
-[node name="ChartHolder" parent="Holder" instance=ExtResource("6_holder")]
+[node name="ChartHolder" parent="Holder" unique_id=353273894 instance=ExtResource("6_holder")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.56, 0.75, 1.75)
 
-[node name="Sheets" type="Node3D" parent="."]
+[node name="Sheets" type="Node3D" parent="." unique_id=508757220]
 
-[node name="World" parent="Sheets" instance=ExtResource("3_world")]
+[node name="World" parent="Sheets" unique_id=1346951433 instance=ExtResource("3_world")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.56, 0.768, 1.75)
 visible = false
 
-[node name="War" parent="Sheets" instance=ExtResource("4_war")]
+[node name="War" parent="Sheets" unique_id=2076605164 instance=ExtResource("4_war")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.56, 0.768, 1.75)
 visible = false
 
-[node name="Weights" type="Node3D" parent="."]
+[node name="Depot" parent="Sheets" unique_id=1776383369 instance=ExtResource("9_depot_sheet")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.56, 0.768, 1.75)
+visible = false
 
-[node name="TopLeft" parent="Weights" instance=ExtResource("5_weight")]
+[node name="Weights" type="Node3D" parent="." unique_id=1195833155]
+
+[node name="TopLeft" parent="Weights" unique_id=298274936 instance=ExtResource("5_weight")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.3, 0.753, 0.215)
 
-[node name="TopRight" parent="Weights" instance=ExtResource("5_weight")]
+[node name="TopRight" parent="Weights" unique_id=12548103 instance=ExtResource("5_weight")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.3, 0.753, 3.285)
 
-[node name="BottomLeft" parent="Weights" instance=ExtResource("5_weight")]
+[node name="BottomLeft" parent="Weights" unique_id=545317892 instance=ExtResource("5_weight")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.665, 0.753, 0.215)
 
-[node name="BottomRight" parent="Weights" instance=ExtResource("5_weight")]
+[node name="BottomRight" parent="Weights" unique_id=1252934593 instance=ExtResource("5_weight")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.665, 0.753, 3.285)
 
-[node name="Back" type="Marker3D" parent="."]
-transform = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 5.1, 0.757, -0.1)
-
-[node name="DeskButton" parent="." instance=ExtResource("7_button")]
+[node name="DeskButton" parent="." unique_id=1829969508 instance=ExtResource("7_button")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.1, 0.75, -0.1)
 
-[node name="Tally" parent="." instance=ExtResource("8_tally")]
+[node name="FarmButton" parent="." unique_id=668284100 instance=ExtResource("7_button")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.25, 0.75, -0.1)
+visible = false
+
+[node name="Stencil" parent="FarmButton"]
+text = "TO FARM"
+
+[node name="Tally" parent="." unique_id=1222538545 instance=ExtResource("8_tally")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.37, 0.75, -0.1)
 
-[node name="Lights" type="Node3D" parent="."]
+[node name="Depot" parent="." unique_id=2052589862 instance=ExtResource("10_depot")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.8, 0.75, 3.395)
 
-[node name="Key" type="SpotLight3D" parent="Lights"]
-light_bake_mode = 0
-transform = Transform3D(-0.6357, -0.7129, 0.2962, 0, 0.3837, 0.9234, -0.772, 0.587, -0.2439, 5.3, 3.4, 0.9)
+[node name="Lights" type="Node3D" parent="." unique_id=1076826414]
+
+[node name="Key" type="SpotLight3D" parent="Lights" unique_id=1124597362]
+transform = Transform3D(-0.80917436, -0.42674702, 0.40388596, -0.116634004, 0.79036605, 0.60143, -0.5758762, 0.43955487, -0.6893172, 5.5, 1.8209975, -0.15951538)
 light_color = Color(0.74, 0.84, 0.9, 1)
-light_energy = 2.0
+light_energy = 1.6
 light_specular = 0.2
+light_bake_mode = 0
 shadow_enabled = true
-spot_range = 5.0
+shadow_bias = 0.02
+shadow_normal_bias = 0.6
+spot_range = 6.0
 spot_attenuation = 0.4
-spot_angle = 48.0
+spot_angle = 62.0
 spot_angle_attenuation = 0.25
 
-[node name="Fill" type="OmniLight3D" parent="Lights"]
-light_bake_mode = 0
+[node name="Fill" type="OmniLight3D" parent="Lights" unique_id=822642041]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4, 2.4, 1.75)
 light_color = Color(0.55, 0.62, 0.68, 1)
 light_energy = 0.45
 light_specular = 0.0
+light_bake_mode = 0
 omni_range = 4.5
 
-[node name="Swap" type="AudioStreamPlayer3D" parent="."]
+[node name="Swap" type="AudioStreamPlayer3D" parent="." unique_id=1646213327]
 stream = ExtResource("sfx_map_swap")
 bus = &"SFX"
 script = ExtResource("sfx_cue")
 
-[node name="Arrive" type="AudioStreamPlayer3D" parent="."]
+[node name="Arrive" type="AudioStreamPlayer3D" parent="." unique_id=789804484]
 stream = ExtResource("sfx_map_roll_arrive")
 bus = &"SFX"
 script = ExtResource("sfx_cue")
 
-[node name="TallyArrive" type="AudioStreamPlayer3D" parent="."]
+[node name="TallyArrive" type="AudioStreamPlayer3D" parent="." unique_id=364927855]
 stream = ExtResource("sfx_console_drop")
 bus = &"SFX"
 script = ExtResource("sfx_cue")
 
-[node name="ViewIn" type="AudioStreamPlayer3D" parent="."]
+[node name="ViewIn" type="AudioStreamPlayer3D" parent="." unique_id=242452974]
 stream = ExtResource("sfx_map_view_in")
 bus = &"SFX"
 script = ExtResource("sfx_cue")
 
-[node name="ViewOut" type="AudioStreamPlayer3D" parent="."]
+[node name="ViewOut" type="AudioStreamPlayer3D" parent="." unique_id=1483532709]
 stream = ExtResource("sfx_map_view_out")
 bus = &"SFX"
 script = ExtResource("sfx_cue")
 
-[node name="Hover" type="AudioStreamPlayer3D" parent="."]
+[node name="Hover" type="AudioStreamPlayer3D" parent="." unique_id=2073783064]
 stream = SubResource("Rand_hover")
 pitch_scale = 0.85
 bus = &"SFX"
 script = ExtResource("sfx_cue")
 min_interval = 0.08
 
-[node name="Cursor" type="Control" parent="." groups=["blocks_hand"]]
+[node name="Cursor" type="Control" parent="." unique_id=449644636 groups=["blocks_hand"]]
 visible = false
 layout_mode = 3
 anchors_preset = 0
 mouse_filter = 2
 
-[node name="HintLayer" type="CanvasLayer" parent="."]
+[node name="HintLayer" type="CanvasLayer" parent="." unique_id=620789717]
 layer = 15
 
-[node name="Hint" type="Label" parent="HintLayer"]
+[node name="Hint" type="Label" parent="HintLayer" unique_id=237626243]
 visible = false
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.13, 0.15, 0.14, 1)
 theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("HintPaper")

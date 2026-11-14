@@ -7,9 +7,11 @@
 [ext_resource type="PackedScene" path="res://entities/map_table/map_flash.tscn" id="5_flash"]
 [ext_resource type="Shader" path="res://assets/shaders/farm_parcels.gdshader" id="6_parcels"]
 [ext_resource type="PackedScene" path="res://entities/map_table/farm_deed.tscn" id="7_deed"]
+[ext_resource type="Texture2D" path="res://assets/textures/map_parcels/endmark.png" id="8_parcels"]
 
 [sub_resource type="ShaderMaterial" id="ParcelInk"]
 shader = ExtResource("6_parcels")
+shader_parameter/parcels = ExtResource("8_parcels")
 
 [node name="EndmarkSheet" instance=ExtResource("1_sheet")]
 script = ExtResource("4_register")
@@ -38,7 +40,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 25
-text = "Letztfeld Holding"
+text = "Lagerweiss Holding"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -68,7 +70,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 47
-text = "ENDHAVEN"
+text = "DAUERHAVEN"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -112,7 +114,7 @@ pivot_offset = Vector2(700, 60)
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "Port Endhaven"
+text = "Port Dauerhaven"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -127,7 +129,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "I. Letztfeld"
+text = "I. Lagerweiss"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -142,7 +144,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "II. Schlusswick"
+text = "II. Collardwick"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -815,7 +817,7 @@ vertical_alignment = 1
 [node name="T01" parent="Things" instance=ExtResource("3_thing")]
 transform = Transform3D(0.8519, 0, -0.3973, 0, 0.9400, 0, 0.3973, 0, 0.8519, 0.054, 0.002, 0.364)
 site = &"endmark-1"
-title = "Letztfeld Holding"
+title = "Lagerweiss Holding"
 
 [node name="Flash" parent="." instance=ExtResource("5_flash")]
 visible = false
