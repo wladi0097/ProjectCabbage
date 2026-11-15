@@ -16,7 +16,8 @@ extends Node3D
 ## QA bay: it rests at the left end of the bottom edge, and only while the bay has room
 ## takes a unit (never a rotten one; minis are fine, they yield little) and tosses it into the bay's
 ## mouth. Hand 0 staffs both kinds. After the desk card lab_priority research hands go for research
-## units first and money hands leave them alone.
+## units first, and money hands leave them alone while the schedule strikes them (HandSchedule.forbidden:
+## the memo's stamp strikes them, the schedule can clear it).
 ## Golden units are the player's: no hand touches one until the projector node for its kind is bought
 ## (GOLD_SALE for money hands, GOLD_LAB for research hands; takes_golden).
 ## With TWO-HANDED POLICY (save.hand_trip 2) a money hand that has thrown goes straight for a second
@@ -229,8 +230,8 @@ static func add_hand(save: SaveGame) -> void:
 ## The nearest cabbage to `from` that rests on the mat and nobody has: not held by the player, not
 ## claimed by another hand, not sold, out of the window or frozen (rolling down the ramp, carried),
 ## not flying, not stray; and not rotten while `skip_rotten` (the spoilage memo, before hands bin).
-## A `for_research` hand never takes a rotten one. Under `lab` (desk card lab_priority) money hands never
-## take research units and research hands take them first. A golden one only while `golden` (takes_golden).
+## A `for_research` hand never takes a rotten one. Under `lab` (desk card lab_priority) research hands
+## take research units first. A golden one only while `golden` (takes_golden).
 ## Never one whose kind is in `forbidden` (the handling schedule's list for this kind of hand,
 ## HandSchedule.forbidden): the schedule only takes away, on top of every rule above.
 static func pick_target(cabbages: Array, from: Vector3, held: Interactable, claimed: Array = [], skip_rotten := false,
@@ -239,7 +240,7 @@ static func pick_target(cabbages: Array, from: Vector3, held: Interactable, clai
 	var best_score := INF
 	for cabbage: Cabbage in cabbages:
 		var interactable := cabbage.get_node("Interactable") as Interactable
-		if claimed.has(cabbage) or ((skip_rotten or for_research) and cabbage.rotten) or (lab and not for_research and cabbage.research) \
+		if claimed.has(cabbage) or ((skip_rotten or for_research) and cabbage.rotten) \
 				or (cabbage.golden and not golden) or forbidden.has(HandSchedule.kind_of(cabbage)) \
 				or cabbage.sold or cabbage.away or cabbage.freeze or cabbage.in_flight or not interactable.enabled \
 				or held == interactable or cabbage.linear_velocity.length() > REST_SPEED \
@@ -279,9 +280,10 @@ static func bin_for(target: Cabbage, hands_bin: int, bin: RottenBin) -> RottenBi
 	return bin if target.rotten and hands_bin > 0 and bin != null and bin.visible else null
 
 
-## Hands leave rotten units alone: the spoilage memo is stamped and they don't bin them yet.
+## Hands leave rotten units alone: the spoilage memo is stamped and they don't bin them yet, or the
+## quarantine card (Cabbage.SHIELD_CARD) is stamped: then no hand ever touches one, binning or not.
 static func skips_rotten(save: SaveGame) -> bool:
-	return save.stamped.has("spoilage_memo") and save.hands_bin == 0
+	return save.stamped.has(Cabbage.SHIELD_CARD) or (save.stamped.has("spoilage_memo") and save.hands_bin == 0)
 
 
 ## Hands of this kind may take golden units: their projector node (GOLD_SALE / GOLD_LAB) is bought.

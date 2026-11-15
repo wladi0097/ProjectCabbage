@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Two hands closing a deal, cuffs from either side, in white ink lines: a modulate inks it to
+       the print around it. The deed's START HAGGLING sign. -->
+  <g fill="#fff">
+    <path d="M1 20 L11 18 L15 40 L3 44 Z"/>
+    <path d="M63 20 L53 18 L49 40 L61 44 Z"/>
+  </g>
+  <g fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M51 23 L39 21 Q35 21 32 24 L24 31 Q22 34 25 35.5 Q28 37 30.5 34 L34.5 30"/>
+    <path d="M13 25 L19 38 Q21 42.5 26 42.5 L39 42.5 Q43.5 42.5 43.5 39 Q43.5 36 40.5 36"/>
+    <path d="M43.5 39 Q47 39 47 35.5 Q47 32.5 44 32.5 L37.5 32.5"/>
+    <path d="M47 35.5 Q50 34.5 49.5 31.5 Q49 29 46 29 L40 29"/>
+    <path d="M49.5 31.5 Q51.5 29.5 50.5 27 L50 24"/>
+  </g>
+</svg>

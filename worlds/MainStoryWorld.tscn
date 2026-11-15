@@ -45,6 +45,7 @@
 [ext_resource type="PackedScene" path="res://entities/rotten_bin/rotten_bin.tscn" id="sales_bin"]
 [ext_resource type="PackedScene" uid="uid://h1fle8wtkkts" path="res://entities/catch_combo/catch_combo.tscn" id="sales_combo"]
 [ext_resource type="PackedScene" path="res://entities/golden_lamp/golden_lamp.tscn" id="sales_lamp"]
+[ext_resource type="PackedScene" path="res://entities/golden_lamp/research_light.tscn" id="research_light"]
 [ext_resource type="PackedScene" path="res://entities/window_targets/window_targets.tscn" id="sales_targets"]
 [ext_resource type="AudioStream" uid="uid://bvegj1jwuv651" path="res://assets/audio/effects/cabbage_refused_1.wav" id="sfx_cabbage_refused_1"]
 [ext_resource type="AudioStream" uid="uid://ccccks88k3uru" path="res://assets/audio/effects/cabbage_refused_2.wav" id="sfx_cabbage_refused_2"]
@@ -453,6 +454,10 @@ slate = NodePath("../PriceSlate")
 
 [node name="GoldenLamp" parent="." unique_id=701713720 node_paths=PackedStringArray("desk_light") instance=ExtResource("sales_lamp")]
 transform = Transform3D(1.323, 0, 0.4578, 0, 1.4, 0, -0.4578, 0, 1.323, 2, 0.76, -0.68)
+desk_light = NodePath("../DeskLamp")
+
+[node name="ResearchLight" parent="." unique_id=1460385127 node_paths=PackedStringArray("desk_light") instance=ExtResource("research_light")]
+transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, -1.36, 0.76, -0.07)
 desk_light = NodePath("../DeskLamp")
 
 [node name="CatchCombo" parent="." unique_id=1336101039 instance=ExtResource("sales_combo")]

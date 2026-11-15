@@ -29,29 +29,29 @@ const SEA_CARD := "sea_lanes"
 ## `distance_rank`), the countries it borders by `land` and the ones across a drawn `sea` lane, and
 ## `wars`: what starting a war on each of its farms that cannot be bought costs, in coins only (the
 ## cabbages go into the soldiers, WarRules.UNIT_PRICE), in the order they are taken (at home the last
-## three; abroad all). Paced in tools/pace.py with the fights (`python tools/pace.py ch3`, war pass
-## 2026-11-14): one ladder from the sixth farm to the 23rd, $3M up to $9M, rising with the country's
-## distance from home and within it; farms land about 90 s apart (a fight is the floor), 47 to 85 min
-## into chapter 3. The final island costs the whole purse.
+## three; abroad all). Cheap enough to repeat a lost war (round 2 point 24): about $200K for the first
+## country's wars, about 13% more each war after, $1.65M for the last of Nordhal; the final island
+## $3M. Paced in tools/pace.py (`python tools/pace.py ch3`: every war costs at most WAR_MINUTES of
+## income when it is declared); the army and the fights set the war's pace, not its coins.
 const COUNTRIES: Dictionary = {
 	&"kohlmark": {farms = 8, rank = 0, land = [&"ostrevia", &"sulvania", &"veldmark"], sea = [],
-		wars = [{coins = 3000000}, {coins = 3400000}, {coins = 3700000}]},
+		wars = [{coins = 200000}, {coins = 230000}, {coins = 260000}]},
 	&"veldmark": {farms = 2, rank = 1, land = [&"kohlmark", &"ostrevia", &"sulvania"], sea = [],
-		wars = [{coins = 4100000}, {coins = 4400000}]},
+		wars = [{coins = 300000}, {coins = 340000}]},
 	&"ostrevia": {farms = 2, rank = 2, land = [&"kohlmark", &"veldmark"], sea = [],
-		wars = [{coins = 4800000}, {coins = 5100000}]},
+		wars = [{coins = 390000}, {coins = 440000}]},
 	&"sulvania": {farms = 3, rank = 3, land = [&"kohlmark", &"veldmark"], sea = [&"grauland", &"lower_provinces"],
-		wars = [{coins = 5500000}, {coins = 5800000}, {coins = 6200000}]},
+		wars = [{coins = 500000}, {coins = 560000}, {coins = 630000}]},
 	&"grauland": {farms = 2, rank = 4, land = [&"morrow", &"nordhal"], sea = [&"sulvania"],
-		wars = [{coins = 6500000}, {coins = 6900000}]},
+		wars = [{coins = 710000}, {coins = 800000}]},
 	&"lower_provinces": {farms = 2, rank = 5, land = [], sea = [&"morrow", &"sulvania"],
-		wars = [{coins = 7200000}, {coins = 7600000}]},
+		wars = [{coins = 900000}, {coins = 1000000}]},
 	&"morrow": {farms = 2, rank = 6, land = [&"grauland", &"nordhal"], sea = [&"lower_provinces"],
-		wars = [{coins = 7900000}, {coins = 8300000}]},
+		wars = [{coins = 1150000}, {coins = 1300000}]},
 	&"nordhal": {farms = 2, rank = 7, land = [&"grauland", &"morrow"], sea = [&"endmark"],
-		wars = [{coins = 8600000}, {coins = 9000000}]},
+		wars = [{coins = 1450000}, {coins = 1650000}]},
 	&"endmark": {farms = 1, rank = 8, land = [], sea = [&"nordhal"],
-		wars = [{coins = 16000000}]},
+		wars = [{coins = 3000000}]},
 }
 ## Why a country's farms cannot be attacked, as a war order's strip prints it (translation keys).
 const NOT_ADJACENT := "NOT ADJACENT"

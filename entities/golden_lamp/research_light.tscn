@@ -1,0 +1,117 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/golden_lamp/golden_lamp.gd" id="1_script"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/research_light_base.res" id="2_base"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/research_light_ring_1.res" id="3_ring1"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/research_light_ring_2.res" id="4_ring2"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/research_light_ring_3.res" id="5_ring3"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/research_light_core.res" id="6_core"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/lamp_on.wav" id="7_on"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/lamp_off.wav" id="8_off"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tray_drop.wav" id="9_thud"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="10_font"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="11_interactable"]
+
+[sub_resource type="BoxShape3D" id="LightShape"]
+size = Vector3(0.24, 0.26, 0.24)
+
+[node name="ResearchLight" type="Node3D"]
+script = ExtResource("1_script")
+card = "research_light"
+stats = "lab_lamp"
+color = Color(0.35, 0.9, 1, 1)
+dark_color = Color(0.46, 0.5, 0.52, 1)
+boost_group = &"qa_bay"
+boost_key = "lab_lamp"
+hint_text = "Research light. About every %d s it glows cyan for %d s: while it does, every cabbage taken into the research lab gives %s× the Findings."
+gold_node = "lab_lamp_gold"
+spin_speed = 0.25
+desk_tint = 0.22
+bulb_energy = 2.4
+light_energy = 0.7
+albedo_share = 0.0
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Base" type="MeshInstance3D" parent="Model"]
+gi_mode = 0
+mesh = ExtResource("2_base")
+
+[node name="Spin1" type="Node3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.135, 0)
+
+[node name="BulbRing1" type="MeshInstance3D" parent="Model/Spin1"]
+transform = Transform3D(1, 0, 0, 0, 0.927184, -0.374607, 0, 0.374607, 0.927184, 0, 0, 0)
+gi_mode = 0
+mesh = ExtResource("3_ring1")
+
+[node name="Spin2" type="Node3D" parent="Model"]
+transform = Transform3D(-0.5, 0, 0.866025, 0, 1, 0, -0.866025, 0, -0.5, 0, 0.135, 0)
+
+[node name="BulbRing2" type="MeshInstance3D" parent="Model/Spin2"]
+transform = Transform3D(1, 0, 0, 0, 0.71934, -0.694658, 0, 0.694658, 0.71934, 0, 0, 0)
+gi_mode = 0
+mesh = ExtResource("4_ring2")
+
+[node name="Spin3" type="Node3D" parent="Model"]
+transform = Transform3D(-0.5, 0, -0.866025, 0, 1, 0, 0.866025, 0, -0.5, 0, 0.135, 0)
+
+[node name="BulbRing3" type="MeshInstance3D" parent="Model/Spin3"]
+transform = Transform3D(1, 0, 0, 0, 0.438371, -0.898794, 0, 0.898794, 0.438371, 0, 0, 0)
+gi_mode = 0
+mesh = ExtResource("5_ring3")
+
+[node name="BulbCore" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.135, 0)
+gi_mode = 0
+mesh = ExtResource("6_core")
+
+[node name="Hit" type="StaticBody3D" parent="."]
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Hit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0)
+shape = SubResource("LightShape")
+
+[node name="Interactable" type="Node" parent="Hit"]
+script = ExtResource("11_interactable")
+
+[node name="Glow" type="OmniLight3D" parent="."]
+light_bake_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.16, 0)
+visible = false
+light_color = Color(0.35, 0.9, 1, 1)
+light_energy = 0.0
+omni_range = 1.2
+omni_attenuation = 1.2
+
+[node name="Tag" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.17, 0.2, -0.02)
+visible = false
+pixel_size = 0.0014
+billboard = 1
+no_depth_test = true
+render_priority = 2
+outline_render_priority = 1
+modulate = Color(0.35, 0.9, 1, 1)
+outline_modulate = Color(0.04, 0.06, 0.07, 0.9)
+text = "×5"
+font = ExtResource("10_font")
+font_size = 64
+outline_size = 16
+
+[node name="On" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("7_on")
+pitch_scale = 1.25
+bus = &"SFX"
+
+[node name="Off" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("8_off")
+pitch_scale = 1.25
+bus = &"SFX"
+
+[node name="Thud" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("9_thud")
+volume_db = -4.0
+bus = &"SFX"

@@ -372,7 +372,7 @@ shape = SubResource("FloorBox")
 
 [node name="Denied" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("sfx_refuse")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 
 [node name="Sounds" type="Node3D" parent="Field"]
@@ -380,7 +380,7 @@ script = ExtResource("sfx_cue")
 [node name="Cannon" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_Cannon")
 max_polyphony = 3
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.08
 max_instances = 3
@@ -388,7 +388,7 @@ max_instances = 3
 [node name="Mortar" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_Mortar")
 max_polyphony = 2
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.15
 max_instances = 2
@@ -398,7 +398,7 @@ stream = SubResource("Rand_Field_Sounds_Throw")
 volume_db = -4.0
 pitch_scale = 1.35
 max_polyphony = 3
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.1
 max_instances = 3
@@ -407,7 +407,7 @@ max_instances = 3
 stream = SubResource("Rand_Field_Sounds_Blast")
 pitch_scale = 0.75
 max_polyphony = 2
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.1
 max_instances = 2
@@ -415,7 +415,7 @@ max_instances = 2
 [node name="Hit" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_Hit")
 max_polyphony = 3
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.06
 max_instances = 3
@@ -423,7 +423,7 @@ max_instances = 3
 [node name="Land" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_Land")
 max_polyphony = 2
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.08
 max_instances = 2
@@ -431,7 +431,7 @@ max_instances = 2
 [node name="Strike" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_Strike")
 max_polyphony = 3
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.07
 max_instances = 3
@@ -439,7 +439,7 @@ max_instances = 3
 [node name="Topple" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_Topple")
 max_polyphony = 3
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.05
 max_instances = 3
@@ -447,7 +447,7 @@ max_instances = 3
 [node name="Collapse" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_Collapse")
 max_polyphony = 2
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.1
 max_instances = 2
@@ -455,7 +455,7 @@ max_instances = 2
 [node name="WallWood" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_WallWood")
 max_polyphony = 2
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.08
 max_instances = 2
@@ -463,7 +463,7 @@ max_instances = 2
 [node name="WallStone" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_WallStone")
 max_polyphony = 2
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.08
 max_instances = 2
@@ -471,46 +471,46 @@ max_instances = 2
 [node name="WallSteel" type="AudioStreamPlayer3D" parent="Field/Sounds"]
 stream = SubResource("Rand_Field_Sounds_WallSteel")
 max_polyphony = 2
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.08
 max_instances = 2
 
 [node name="Won" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_root_Won")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 
 [node name="Lost" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_root_Lost")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 
 [node name="PickUp" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_root_PickUp")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.05
 
 [node name="SetDown" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_root_SetDown")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.05
 
 [node name="Start" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_root_Start")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 
 [node name="Tick" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_root_Tick")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 
 [node name="Retreat" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_root_Retreat")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 
 [node name="Control" parent="." instance=ExtResource("8_control")]
@@ -528,7 +528,7 @@ transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0.3, 0.4)
 
 [node name="Beat" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_root_Beat")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 
 [node name="Glove" parent="." instance=ExtResource("12_glove")]

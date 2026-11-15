@@ -160,12 +160,12 @@ shape = SubResource("AbortHit")
 
 [node name="Press" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_press")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.08
 
 [node name="Denied" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_denied")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.15

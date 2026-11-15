@@ -41,9 +41,14 @@ extends MapSheet
 ## hands the box's parts to the table's hint slip (MapTable.hover_spot, hint).
 ## Sounds: a figure picked up (PickUp) and set down (SetDown), START (Start), the clock's last
 ## seconds (Tick, TICK_FROM), RETREAT (Retreat), the end's stamp (Won, Lost), a refusal (Denied); the report has its own.
+## Every war sound plays on the War bus; while a war is on (fight set) every other sound sits in the
+## background (duck: Music and SFX go down and muffled), eased in over DUCK_IN s and out over DUCK_OUT s.
+## The desk's glove (`Glove`) is the cursor the whole time the sheet takes the mouse: open over the
+## paper, closed on a figure held, the pointing finger tapping on START and ABORT.
 ## No class_name: whoever needs it preloads this script.
 
 const World := preload("res://entities/map_table/world_register.gd")
+const DeskHand := preload("res://globalScripts/hand.gd")
 
 ## The fight grid's top-left corner on the art (px): the paper's printed grid starts here too.
 const GRID_AT := Vector2(0.0, 20.0)
@@ -94,6 +99,19 @@ const ROUTE_CARD := "route_planning"
 ## The farmhouse of the last war drops from this high (m) in BEAT_TIME s, with a stamp's beat.
 const BEAT_FROM := 0.3
 const BEAT_TIME := 0.24
+## The duck at its full depth: Music and SFX this much quieter (dB) and low-passed down to DUCK_HZ
+## (from OPEN_HZ at rest, log-spaced), through each bus's Duck (AudioEffectAmplify) and
+## LowPassFilter in default_bus_layout.tres. Both are switched off at rest.
+const DUCK_DB := -12.0
+const DUCK_HZ := 800.0
+const OPEN_HZ := 20000.0
+const DUCKED: Array[StringName] = [&"Music", &"SFX"]
+const DUCK_IN := 0.6
+const DUCK_OUT := 1.0
+## The empty glove floats this high over the paper (m, under the mouse on screen); pointing, its
+## fingertip touches a button this far toward the player from the cap's middle (m), like the desk's.
+const HOVER := 0.16
+const TIP_BACK := 0.02
 
 ## The farm the war is for (&"": none yet).
 var farm := &""
@@ -129,6 +147,8 @@ var _path_spot := Vector2.INF
 var _path_wait := 0.0
 var _laying: Tween
 var _roll_at: Transform3D
+## How far the duck is in (0..1).
+var _ducked := 0.0
 
 @onready var _board: Node3D = $Things/Board
 @onready var _map: WarMap = $Things/Board/Map
@@ -167,6 +187,10 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_view.visible = open > 0.999
+	var ducked := move_toward(_ducked, 1.0 if fight != null else 0.0, delta / (DUCK_IN if fight != null else DUCK_OUT))
+	if ducked != _ducked:
+		_ducked = ducked
+		duck(ducked)
 	if fight == null:
 		return
 	_keep_away()
@@ -178,7 +202,7 @@ func _process(delta: float) -> void:
 	_took = taking
 	if _held != null:
 		_carry(delta)
-	_hold_glove(delta)
+	_hold_glove(delta, taking)
 	if fight.state == WarFight.State.RUNNING:
 		fight.tick(delta)
 	_view.follow(fight, delta)
@@ -480,7 +504,6 @@ func pick_up(holder: Node3D) -> bool:
 	_sway = Vector2.ZERO
 	_gripped = holder
 	_glove.pose = HandModel.Pose.GRAB
-	_glove.show()
 	_pick_up_sound.cue(_held.global_position)
 	return true
 
@@ -662,8 +685,6 @@ func _point(pixel: Vector2, part: StringName) -> void:
 		var table := _table()
 		if table != null:
 			table.hover_spot(_hot if _hot in [START, ABORT] else &"")
-	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_DRAG if _held != null \
-			else DisplayServer.CURSOR_POINTING_HAND if _hot != &"" else DisplayServer.CURSOR_ARROW)
 
 
 ## Nothing is hovered: the control box's glow and the table's hint slip go out.
@@ -703,19 +724,62 @@ func _carry(delta: float) -> void:
 	_held.rotation = Vector3(_sway.y, 0.0, -_sway.x)
 
 
-## The glove holds the figure carried by its head, swaying like the desk's hand, and opens over one
-## just set down until LET_GO is over; with nothing in it, it is hidden and the cursor comes back.
-func _hold_glove(delta: float) -> void:
+## The glove is the cursor while the sheet takes the mouse (`taking`) or holds a figure: it holds the
+## figure carried by its head, swaying like the desk's hand, and opens over one just set down until
+## LET_GO is over; over START or ABORT its fingertip taps the button (the desk's Hand.tap_lift);
+## anywhere else it floats open under the mouse. Otherwise it is hidden and the cursor comes back.
+func _hold_glove(delta: float, taking: bool) -> void:
 	_let_go -= delta
 	if _held == null and (_let_go <= 0.0 or not is_instance_valid(_gripped)):
 		_gripped = null
-	_glove.visible = _gripped != null
-	Hand.stand_in = _held != null
-	if _gripped == null:
+	_glove.visible = _held != null or taking
+	Hand.stand_in = _glove.visible
+	if not _glove.visible:
 		return
+	var up := global_basis.y.normalized()
+	if _gripped != null:
+		_glove.pose = HandModel.Pose.GRAB if _held != null else HandModel.Pose.OPEN
+		_glove_to(_gripped.global_transform * (Vector3.UP * GRIP), delta)
+	elif _hot in [START, ABORT]:
+		_glove.pose = HandModel.Pose.POINT
+		var tap := DeskHand.tap_lift(Time.get_ticks_msec() / 1000.0, Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT))
+		_glove_to(_control.part_position(_hot) + up * tap + global_basis.z.normalized() * TIP_BACK, delta)
+	else:
+		_glove.pose = HandModel.Pose.OPEN
+		_glove_to(_hover_point(up), delta)
+
+
+## Puts the glove's anchor for its pose on `target` (global).
+func _glove_to(target: Vector3, delta: float) -> void:
 	# HandModel offsets its anchor in its parent's space: undo the sheet's turn on it.
-	var anchor := _glove.basis * (HandModel.ANCHORS[_glove.pose] as Vector3)
-	_glove.move_to(_gripped.global_transform * (Vector3.UP * GRIP) + anchor - _glove.global_basis * anchor, delta)
+	var anchor := HandModel.ANCHORS[_glove.pose] as Vector3
+	_glove.move_to(target + _glove.basis * anchor - _glove.global_basis * anchor, delta)
+
+
+## Where the empty glove floats: HOVER over the paper, under the mouse on screen.
+func _hover_point(up: Vector3) -> Vector3:
+	var camera := get_viewport().get_camera_3d()
+	var hit: Variant = null
+	if camera != null:
+		var mouse := get_viewport().get_mouse_position()
+		hit = Plane(up, global_position + up * HOVER).intersects_ray(camera.project_ray_origin(mouse), camera.project_ray_normal(mouse))
+	return hit if hit != null else global_transform * _local(_mouse_pixel) + up * HOVER
+
+
+## Music and SFX `k` of the way into the background (0: as they are, 1: DUCK_DB down, low-passed to
+## DUCK_HZ). Never touches a bus's volume: the sliders own those.
+static func duck(k: float) -> void:
+	for bus_name in DUCKED:
+		var bus := AudioServer.get_bus_index(bus_name)
+		for i in AudioServer.get_bus_effect_count(bus) if bus >= 0 else 0:
+			var effect := AudioServer.get_bus_effect(bus, i)
+			if effect is AudioEffectAmplify:
+				(effect as AudioEffectAmplify).volume_db = DUCK_DB * k
+			elif effect is AudioEffectLowPassFilter:
+				(effect as AudioEffectLowPassFilter).cutoff_hz = OPEN_HZ * pow(DUCK_HZ / OPEN_HZ, k)
+			else:
+				continue
+			AudioServer.set_bus_effect_enabled(bus, i, k > 0.0)
 
 
 ## While a figure is held every zone glows, the one it would land in the most.
@@ -803,6 +867,9 @@ func _site_title() -> String:
 
 func _exit_tree() -> void:
 	Hand.stand_in = false
+	if _ducked > 0.0:
+		_ducked = 0.0
+		duck(0.0)  # The scene left: the other sounds come back at once.
 	if _dealing != null:
 		FarmRegister.lamp_held = false  # An end cut off (the scene left) holds no lamp.
 

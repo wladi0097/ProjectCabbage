@@ -13,8 +13,9 @@ signal sold(cabbage: Cabbage, coins: int)
 signal refused(cabbage: Cabbage)
 ## A refused cabbage is thrown back in through the window (AWAY_TIME after `refused`).
 signal thrown_back(cabbage: Cabbage)
-## A rotten unit went out: `fine` coins were taken from the tally (all of it if it was short).
-signal fined(cabbage: Cabbage, fine: int)
+## A rotten unit went out (or `burst` on the desk, Cabbage.burst): `fine` coins were taken from the
+## tally (all of it if it was short).
+signal fined(cabbage: Cabbage, fine: int, burst: bool)
 
 const Feeder := preload("res://worlds/components/cabbage_feeder.gd")
 const Slate := preload("res://entities/price_slate/price_slate.gd")
@@ -175,11 +176,7 @@ func _judge(cabbage: Cabbage) -> void:
 	if cabbage.rotten:
 		# Inspected at the window and confiscated: no refusal, no coins, a fine.
 		cabbage.suck_out(out, SUCK_TIME)
-		cabbage.leave_stock(save)
-		var fine := fine_for(price, save.coins)
-		save.coins -= fine
-		save.fines += 1
-		fined.emit(cabbage, fine)
+		fine(cabbage)
 		return
 	if not _buys(acceptance_for(Slate.acceptance(save), cabbage.mini)):
 		save.refusals += 1
@@ -206,6 +203,17 @@ func _judge(cabbage: Cabbage) -> void:
 	count_seller(save, cabbage.lobbed, cabbage.units)
 	sold.emit(cabbage, paid)
 	coins.throw_in_after(THROW_DELAY, Vector3(x, throw_from.y, throw_from.z), paid)
+
+
+## A rotten `cabbage` is fined, sold at the window or `burst` on the desk: it leaves the stock and
+## fine_for the chalked price comes off the tally.
+func fine(cabbage: Cabbage, burst := false) -> void:
+	var save := SaveManager.save
+	cabbage.leave_stock(save)
+	var taken := fine_for(save.sale_price, save.coins)
+	save.coins -= taken
+	save.fines += 1
+	fined.emit(cabbage, taken, burst)
 
 
 ## A sale goes to whoever threw it last: a hired hand (`lobbed`) or the player; a condensed

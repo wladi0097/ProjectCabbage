@@ -75,7 +75,7 @@ func _draw() -> void:
 	draw_string(FONT, Vector2(x, 22), tr("OFFER DECLINED"), HORIZONTAL_ALIGNMENT_CENTER, w, 12, Color(INK, 0.6 * alpha))
 	# The asked price in red, struck through twice.
 	var red := Color(RED, alpha)
-	var text := "$%d" % _price
+	var text := "$" + Num.text(_price)
 	var font_size := 44
 	var width := FONT.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 	var left := -width / 2.0

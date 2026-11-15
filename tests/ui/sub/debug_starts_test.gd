@@ -134,10 +134,9 @@ func test_no_start_point_holds_more_than_its_limits_and_each_has_the_limits_its_
 			if save.stamped.has(card):
 				UpgradeDesk.apply(card, fresh)
 		for node: Dictionary in Projector.NODES:
-			if node.get("add", {}).has("coin_limit") and save.tree_bought.has(node.id):
-				UpgradeTree.apply_effect(node, fresh)
-		for node: Dictionary in FarmTree.NODES:
-			if node.get("add", {}).has("findings_limit") and save.farm_bought.has(node.id):
+			# An ARCHIVE step from before it moved to the projector is still in farm_bought (save.migration 8 moves it).
+			var bought: bool = save.tree_bought.has(node.id) or (node.id.begins_with("archive_") and save.farm_bought.has(node.id))
+			if (node.get("add", {}).has("coin_limit") or node.get("add", {}).has("findings_limit")) and bought:
 				UpgradeTree.apply_effect(node, fresh)
 		assert_int(save.coin_limit).override_failure_message(path).is_equal(fresh.coin_limit)
 		assert_int(save.findings_limit).override_failure_message(path).is_equal(fresh.findings_limit)

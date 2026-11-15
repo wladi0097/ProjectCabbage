@@ -40,8 +40,8 @@ func test_the_deed_names_the_farm_its_site_and_its_price_in_coins_and_cabbages()
 	assert_str(_text(deed, "FormLine")).is_equal("FORM 3-D  DEED OF TRANSFER")
 	assert_str(_text(deed, "Title")).is_equal("Kaletten Farm")
 	assert_str(_text(deed, "Site")).is_equal("FARM SITE K-8")
-	assert_str(_text(deed, "Coins")).is_equal("$1,500,000")
-	assert_str(_text(deed, "Cabbages")).is_equal("5,500 cabbages")
+	assert_str(_text(deed, "Coins")).is_equal("$1.5M")
+	assert_str(_text(deed, "Cabbages")).is_equal("5.500 cabbages")
 	assert_str(_text(deed, "CoinsShort")).is_empty()
 	assert_bool((deed.get_node("Page/Form/Box") as Control).visible).is_true()
 	assert_bool((deed.get_node("Page/Form/Strip") as Control).visible).is_false()
@@ -53,8 +53,8 @@ func test_the_price_on_the_deed_can_be_printed_again() -> void:
 	deed.fill("Kaletten Farm", &"K-8", {coins = 1500000, stock = 5500})
 	deed.print_price({coins = 1200000, stock = 5000}, {stock = 40})
 	assert_dict(deed.bill).is_equal({coins = 1200000, stock = 5000})
-	assert_str(_text(deed, "Coins")).is_equal("$1,200,000")
-	assert_str(_text(deed, "Cabbages")).is_equal("5,000 cabbages")
+	assert_str(_text(deed, "Coins")).is_equal("$1.2M")
+	assert_str(_text(deed, "Cabbages")).is_equal("5K cabbages")
 	assert_str(_text(deed, "CabbagesShort")).is_equal("SHORT 40")
 	assert_int((deed.get_node("Page") as SubViewport).render_target_update_mode).is_equal(SubViewport.UPDATE_ONCE)
 
@@ -214,24 +214,27 @@ func test_the_letter_names_the_owner_the_price_and_a_reply_slip_per_offer_with_i
 	deed.fill("Kaletten Farm", &"K-8", {coins = 200000, stock = 2000})
 	deed.print_haggle("stock", 25, "G. Lattich", [], 5, 200000, 30000, "Cabbages offered are not returned.")
 	assert_str(_record(deed, "Owner")).is_equal("Owner: G. Lattich")
-	assert_str(_record(deed, "Price")).is_equal("$200,000 + 2,000 cabbages")
+	assert_str(_record(deed, "Price")).is_equal("$200K")  # The letter: coins only.
 	assert_str(_record(deed, "Opening")).is_equal("Drag cabbages from the crate onto your offer, then send it. Too few raise the price. Enough lower it.")
 	assert_str(_record(deed, "Note")).is_equal("Cabbages offered are not returned.")
 	assert_str(_record(deed, "Pile/Head")).is_equal("OFFER 1 OF 5")
 	assert_str(_record(deed, "Pile/Total")).is_equal("0 cabbages")
 	assert_str(_record(deed, "Send/Word")).is_equal("SEND OFFER")
-	assert_str(_record(deed, "Stock")).is_equal("IN STOCK 30,000")
+	assert_str(_record(deed, "Stock")).is_equal("IN STOCK 30K")
 	assert_int(deed.get_node("Haggle/Page/Form/Slips").get_child_count()).is_equal(0)  # The first offer is blind.
 	assert_bool(_shown(deed, "Page/Form/Asked")).is_false()
 	deed.print_price({coins = 192000, stock = 1920})
-	deed.print_haggle("stock", 25, "G. Lattich", [{offered = 100, mood = "UNIMPRESSED", line = "Closer. Not close."}, {offered = 150, mood = "INTRIGUED", line = "Acceptable. The price comes down."}], 3, 200000, 29750)
-	assert_str(_record(deed, "Price")).is_equal("$192,000 + 1,920 cabbages")
+	deed.print_haggle("stock", 25, "G. Lattich", [{offered = 100, mood = "UNIMPRESSED", line = "Closer. Not close.", step = "+$16K", up = true}, {offered = 150, mood = "INTRIGUED", line = "Acceptable. The price comes down.", step = "-$24K", up = false}], 3, 200000, 29750)
+	assert_str(_record(deed, "Price")).is_equal("$192K")
 	assert_str(_record(deed, "Pile/Head")).is_equal("OFFER 3 OF 5")
 	var slips := deed.get_node("Haggle/Page/Form/Slips")
 	assert_int(slips.get_child_count()).is_equal(2)
 	assert_str((slips.get_child(0).get_node("Line") as Label).text).is_equal("Closer. Not close.")
 	assert_str((slips.get_child(0).get_node("Imprint/Word") as Label).text).is_equal("UNIMPRESSED")
 	assert_str((slips.get_child(0).get_node("About") as Label).text).is_equal("re: 100 cabbages")
+	assert_str((slips.get_child(0).get_node("Step") as Label).text).is_equal("+$16K")  # The price went up: oxblood.
+	assert_object((slips.get_child(0).get_node("Step") as Label).get_theme_color(&"font_color")).is_equal(FarmRegister.OXBLOOD)
+	assert_object((slips.get_child(1).get_node("Step") as Label).get_theme_color(&"font_color")).is_equal(FarmDeed.INK)
 	assert_str((slips.get_child(1).get_node("Imprint/Word") as Label).text).is_equal("INTRIGUED")  # The newest, under it.
 	assert_float((slips.get_child(1) as Control).position.y).is_greater((slips.get_child(0) as Control).position.y)
 	assert_bool(_shown(deed, "Haggle/Page/Form/Note")).is_false()  # The slips take its place.
@@ -260,7 +263,7 @@ func test_a_bribe_reads_in_coins_with_its_own_five_moods() -> void:
 	assert_str(_record(deed, "Stock")).is_equal("IN THE PURSE $6M")
 	assert_str(_record(deed, "Pile/Total")).is_equal("$0")
 	var slip := deed.get_node("Haggle/Page/Form/Slips").get_child(0)
-	assert_str((slip.get_node("About") as Label).text).is_equal("re: $100,000")
+	assert_str((slip.get_node("About") as Label).text).is_equal("re: $100K")
 	for words: Array in FarmDeed.MOODS.values():
 		assert_int(words.size()).is_equal(FarmRegister.Mood.size())
 	assert_array(FarmDeed.MOODS["stock"]).is_equal(["INSULTED", "UNIMPRESSED", "LISTENING", "INTRIGUED", "DELIGHTED"])
@@ -297,12 +300,12 @@ func test_everything_the_negotiation_prints_fits_in_english_and_german_and_says_
 			var label := deed.get_node(line[0]) as Label
 			if locale == "de":
 				assert_str(tr(line[1])).override_failure_message(line[1]).is_not_equal(line[1])
-			var text: String = tr(line[1]).replace("%d", "5").replace("%s", {"Owner: %s": "W. Kohlhaas", "IN STOCK %s": "30,000", "IN THE PURSE %s": "$10M"}.get(line[1], "$9,000,000"))
+			var text: String = tr(line[1]).replace("%d", "5").replace("%s", {"Owner: %s": "W. Kohlhaas", "IN STOCK %s": "30K", "IN THE PURSE %s": "$10M"}.get(line[1], "$9M"))
 			fits.call(label, text, label.size.x)
 		var price := deed.get_node("Haggle/Page/Form/Price") as Label  # The price beside its head.
-		fits.call(price, "$7,000,000 + " + tr("%s cabbages") % "12,600", price.size.x)
+		fits.call(price, "$7M + " + tr("%s cabbages") % "12.600", price.size.x)
 		var total := deed.get_node("Haggle/Page/Form/Pile/Total") as Label
-		fits.call(total, tr("%s cabbages") % "1,125", total.size.x)
+		fits.call(total, tr("%s cabbages") % "1.125", total.size.x)
 		for line: Array in [["Haggle/Page/Form/Return/Word", "BACK TO THE DEED"],
 				["Haggle/Page/Form/Opening", "Drag cabbages from the crate onto your offer, then send it. Too few raise the price. Enough lower it."],
 				["Haggle/Page/Form/Opening", "Put coins from the purse in the envelope, then pass it. Too little raises the price. Enough lowers it."],
@@ -335,6 +338,24 @@ func test_every_reply_line_fits_its_slip_in_full_in_english_and_german() -> void
 	# The longest line of all (German) still shows in full on two lines.
 	assert_float(font.get_multiline_string_size(longest, HORIZONTAL_ALIGNMENT_LEFT, said.size.x, size).y).is_less_equal(said.size.y)
 	assert_float(tallest).is_less_equal(said.size.y)
+
+
+func test_the_price_step_fits_its_column_right_of_the_reply_in_english_and_german() -> void:
+	var deed := _deed()
+	deed.print_haggle("coins", 15000, "R. Rübsam", [{offered = 225000, mood = "WEIGHED", line = "x", step = "+$1M", up = true}], 4, 1600000, 3000000)
+	var slip := deed.get_node("Haggle/Page/Form/Slips").get_child(0) as Control
+	var step := slip.get_node("Step") as Label
+	var said := slip.get_node("Line") as Label
+	assert_float(said.position.x + said.size.x).is_less_equal(step.position.x)  # Beside the reply, never on it.
+	assert_float(step.position.x + step.size.x).is_less_equal(slip.size.x)
+	var font := step.get_theme_font(&"font")
+	var size := step.get_theme_font_size(&"font_size")
+	for locale: String in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		for text: String in [FarmRegister.step_text(-1240000), FarmRegister.step_text(1600000), FarmRegister.step_text(0)]:
+			assert_float(font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_RIGHT, step.size.x, size).y).override_failure_message("%s in %s" % [text, locale]).is_less_equal(slip.size.y)
+			for part in text.split(" "):  # No word broken inside.
+				assert_float(font.get_string_size(part, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x).override_failure_message(part).is_less_equal(step.size.x)
 
 
 func test_the_stamp_comes_down_on_the_newest_reply_slip_and_a_mood_sounds_its_own_thump() -> void:

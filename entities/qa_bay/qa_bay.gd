@@ -74,8 +74,17 @@ const DESK_Y := 0.76
 const MICRO_SAMPLE := 8.0
 ## Jewel lamp sockets on the load gauge: the lab never has more benches.
 const MAX_BENCHES := 5
+## The projector node that lets the research light's boost count golden units too (boosted).
+const LAB_GOLD := "lab_lamp_gold"
+## The desk card that merges the Findings tokens lying on the desk like coins (CoinPile.merge_pick,
+## save.merge_every, merge_top): they fly together over the first of them and the next token up
+## pops out of the spot onto a patch with room.
+const MERGE_CARD := "token_merge"
 
 @export var window: SaleWindow
+## Every Findings multiplier running now, by who set it (the research light: "lab_lamp"), applied to a
+## unit as it is taken in (boosted).
+var boosts := {}
 @export var counter: Node3D
 ## The load gauge's jewel lenses: a free bench, a busy one.
 @export var lamp_free: Material
@@ -99,6 +108,8 @@ var _last_hand: Variant = null
 var _swept_to := Vector3.INF
 var _swept_rise := Vector3.ZERO
 var _landed := false
+## Seconds to the next merge (MERGE_CARD).
+var _merge_in := 0.0
 ## What the load gauge shows: (cabbages on the benches, benches).
 var _shown := Vector2i(-1, -1)
 var _progress := 0.0
@@ -151,6 +162,12 @@ func _process(delta: float) -> void:
 		_last_hand = now
 	else:
 		_last_hand = null
+	var save := SaveManager.save
+	if save.stamped.has(MERGE_CARD):
+		_merge_in -= delta
+		if _merge_in <= 0.0:
+			_merge_in = save.merge_every
+			merge_once(save.merge_top)
 	if _backlog > 0:
 		_time += delta
 		_retry -= delta
@@ -244,6 +261,16 @@ static func findings_for(cabbage: Cabbage, save: SaveGame) -> float:
 	return save.findings_per_cabbage * own
 
 
+## `worth` Findings times every factor in `factors`, except that a golden unit skips them until the
+## projector node LAB_GOLD is bought (like the golden lamp's GOLD STANDARD at the window).
+static func boosted(worth: float, is_golden: bool, factors: Dictionary, save: SaveGame) -> float:
+	if is_golden and not save.tree_bought.has(LAB_GOLD):
+		return worth
+	for factor: float in factors.values():
+		worth *= factor
+	return worth
+
+
 ## The whole Findings a unit worth `worth` yields with `owed` already on the tally, and the tally
 ## after it: [whole, owed]. Like SaleWindow's owed coins, fractions carry over to the next unit.
 static func tally(owed: float, worth: float) -> Array:
@@ -261,7 +288,7 @@ func _take(cabbage: Cabbage) -> int:
 	if cabbage.research:
 		save.research_units += cabbage.units
 	save.golden_analysed += cabbage.units * int(cabbage.golden)
-	var counted := tally(_owed, findings_for(cabbage, save))
+	var counted := tally(_owed, boosted(findings_for(cabbage, save), cabbage.golden, boosts, save))
 	_owed = counted[1]
 	return counted[0]
 
@@ -395,8 +422,64 @@ static func slip_template(value: int) -> String:
 	return "Slip%d" % CoinPile.DENOMINATIONS[CoinPile.tier(value)]
 
 
-## A slip worth `value` flies out onto patch `cell`, on top of the `below` m already piled there.
-func _eject_slip(value: int, delay: float, cell: Vector2i, below: float) -> void:
+## One merge, if the resting tokens hold one (CoinPile.merge_pick, newest first): they leave their
+## patches (the tokens above drop down), wobble once (CoinPile.shake_offset) and fly together over the
+## first of them, and the merged token
+## pops out of that spot onto the patch nearest the bay with room (or, with none, waits in the backlog).
+## True if any.
+func merge_once(top: int) -> bool:
+	var resting: Array[Node3D] = []
+	var values: Array[int] = []
+	for i in range(_slips.size() - 1, -1, -1):
+		if _slips[i].get_meta(&"resting") and _slips[i].has_meta(&"cell"):
+			resting.append(_slips[i])
+			values.append(_slips[i].get_meta(&"value"))
+	var pick := CoinPile.merge_pick(values, top)
+	if pick.is_empty():
+		return false
+	var group: Array[Node3D] = []
+	for at in pick:
+		group.append(resting[at])
+		resting[at].set_meta(&"resting", false)
+		resting[at].remove_meta(&"cell")
+	_restack()
+	var spot := group[0].global_position + Vector3.UP * CoinPile.MERGE_LIFT
+	var value := values[pick[0]] * pick.size()
+	var tween := create_tween().set_parallel()
+	for slip in group:
+		var rest := slip.global_position
+		tween.tween_method(func(t: float) -> void:
+			slip.global_position = rest + CoinPile.shake_offset(t),
+			0.0, 1.0, CoinPile.MERGE_SHAKE)
+	tween.chain()
+	for slip in group:
+		var from := slip.global_position
+		tween.tween_method(func(t: float) -> void:
+			slip.global_position = from.lerp(spot, ease(t, 2.0)) + Vector3.UP * CoinPile.MERGE_LIFT * 4.0 * t * (1.0 - t),
+			0.0, 1.0, CoinPile.MERGE_TIME)
+	tween.chain().tween_callback(_merged.bind(group, value, spot))
+	return true
+
+
+## The tokens of a merge have met at `spot`: they go, and one token worth `value` pops out of there.
+func _merged(group: Array[Node3D], value: int, spot: Vector3) -> void:
+	if not _slips.has(group[0]):
+		return  # Filed already: the game quit mid-merge (_file_pending).
+	for slip in group:
+		_slips.erase(slip)
+		slip.queue_free()
+	var thick := SLIP_HALF * 2.0 * (get_node(slip_template(value)) as Node3D).scale.y
+	var piles := _piles()
+	var cell: Variant = slip_cell(piles, thick)
+	if cell == null:
+		_backlog += value
+		return
+	_eject_slip(value, 0.0, cell, piles.get(cell, 0.0), spot)
+
+
+## A slip worth `value` flies out onto patch `cell`, on top of the `below` m already piled there:
+## out of the bay's slot, or popped out of `from` (a merge, swelling as it goes).
+func _eject_slip(value: int, delay: float, cell: Vector2i, below: float, from := Vector3.INF) -> void:
 	var slip: Node3D = get_node(slip_template(value)).duplicate()
 	var size := Basis.from_scale(slip.scale)
 	slip.top_level = true
@@ -406,7 +489,9 @@ func _eject_slip(value: int, delay: float, cell: Vector2i, below: float) -> void
 	slip.set_meta(&"thick", SLIP_HALF * 2.0 * slip.scale.y)
 	add_child(slip)
 	_slips.append(slip)
-	var from := to_global(Vector3(0.15, 0.08, 0.15))
+	var popped := from != Vector3.INF
+	if not popped:
+		from = to_global(Vector3(0.15, 0.08, 0.15))
 	# Loosely on its patch (a small token has room to sit off centre).
 	var loose := maxf(SLIP_CELL - 0.085 * slip.scale.x, 0.0) * 0.5
 	var spot := to_global(SLIP_AREA.position + Vector3(cell.x + 0.5, 0.0, cell.y + 0.5) * SLIP_CELL
@@ -420,7 +505,8 @@ func _eject_slip(value: int, delay: float, cell: Vector2i, below: float) -> void
 	tween.tween_callback(slip.show)
 	tween.tween_method(func(t: float) -> void:
 		slip.global_position = from.lerp(spot, t) + Vector3.UP * SLIP_LIFT * 4.0 * t * (1.0 - t)
-		slip.global_basis = global_basis * Basis(Vector3.UP, turn * t) * Basis(Vector3.RIGHT, TAU * (1.0 - t)) * size,
+		var swell := CoinPile.pop_scale(CoinPile.MERGE_POP * (1.0 - t)) if popped else 1.0
+		slip.global_basis = global_basis * Basis(Vector3.UP, turn * t) * Basis(Vector3.RIGHT, TAU * (1.0 - t)) * size * swell,
 		0.0, 1.0, SLIP_EJECT_TIME)
 	tween.tween_callback(_settle_slip.bind(slip))
 
@@ -493,14 +579,15 @@ func vacuum_at(point: Vector3, reach: float, room: int) -> Array[Node3D]:
 	return got
 
 
-## A coin vacuum empties its bag at `point`: the slips fly from there into the Findings counter.
-func file_from(slips: Array[Node3D], point: Vector3) -> void:
+## A coin vacuum empties its bag at `point`: the slips fly from there into the Findings counter, one
+## by one, or the whole bag at once with `bulk` (CoinPile.bag_delay).
+func file_from(slips: Array[Node3D], point: Vector3, bulk := false) -> void:
 	for i in slips.size():
 		if not is_instance_valid(slips[i]):
 			continue  # Filed already: the game quit while it was in the bag.
 		slips[i].global_position = point
 		slips[i].show()
-		_home(slips[i], i * CoinPile.HOME_STAGGER)
+		_home(slips[i], CoinPile.bag_delay(i, slips.size(), bulk))
 
 
 func _home(slip: Node3D, delay: float) -> void:

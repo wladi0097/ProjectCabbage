@@ -852,7 +852,7 @@ func test_a_click_on_a_farm_site_at_the_map_lays_out_its_deed_and_a_click_on_its
 	table._input(move)
 	assert_str(table._hovered).is_equal(&"K-1")
 	assert_str(table._hint.text).contains(country.hint(&"K-1").get_slice(".", 0))
-	assert_str(table._hint.text).contains("84,000")  # K-1, beside the head office (FarmRegister.WORTH)
+	assert_str(table._hint.text).contains("84K")  # K-1, beside the head office (FarmRegister.WORTH)
 	var click := InputEventMouseButton.new()
 	click.position = at
 	click.button_index = MOUSE_BUTTON_LEFT
@@ -1078,6 +1078,40 @@ func test_esc_during_the_shortcut_to_the_farm_does_not_jump_the_camera() -> void
 	assert_bool(_camera.transform.is_equal_approx(FarmTv.tv_view(tv.screen_frame(), view.x / view.y))).is_true()
 
 
+func test_the_first_farm_bought_takes_the_camera_to_the_farm_tv_once_its_deed_has_left_and_later_ones_do_not() -> void:
+	var both := _table_and_tv()  # No shortcut card: TO FARM is not on the table yet.
+	var table: MapTable = both[0]
+	var tv: FarmTv = both[1]
+	var save := SaveManager.save
+	save.stamped.append_array(["negotiation", "bribery"])
+	save.coins = 10000000
+	save.coin_limit = 100000000
+	save.storage_cap = 30000
+	save.stock = 30000
+	table.go_to_map()
+	table._pan_tween.custom_step(10.0)
+	var country := table.sheet_of(HOME) as FarmRegister
+	country.press(&"K-4")
+	country.press(FarmRegister.STAMP)
+	country._dealing.custom_step(FarmRegister.deed_gone_after() - 0.05)
+	assert_bool(tv.dipping()).is_false()  # The acquisition is seen at the map first.
+	country._dealing.custom_step(0.1)
+	assert_bool(tv.dipping()).is_true()  # The same dip as TO FARM.
+	tv._dip_tween.custom_step(10.0)
+	tv._tween.custom_step(10.0)
+	assert_bool(table.is_away()).is_false()
+	assert_bool(tv._at_tv).is_true()
+	tv._pan(false)  # Back at the desk, then at the map for the second farm.
+	tv._tween.custom_step(10.0)
+	table.go_to_map()
+	table._pan_tween.custom_step(10.0)
+	country.press(&"K-6")
+	country.press(FarmRegister.STAMP)
+	country._dealing.custom_step(10.0)
+	assert_bool(tv.dipping()).is_false()
+	assert_bool(table.is_away()).is_true()
+
+
 func test_to_farm_does_nothing_without_a_farm_tv_to_go_to() -> void:
 	var table := _table()
 	SaveManager.save.stamped.append(MapTable.SHORTCUT_CARD)
@@ -1143,6 +1177,25 @@ func test_a_click_on_the_depot_rolls_out_the_depot_sheet_and_the_holder_leads_ba
 	_finish(table)
 	assert_str(table.shown).is_equal(HOME)
 	assert_str(table.held()).is_equal(&"")
+
+
+func test_a_click_on_the_depot_while_its_sheet_is_open_brings_back_the_map_it_was_opened_from() -> void:
+	SaveManager.save.stamped.append("war_mode")
+	SaveManager.save.depot_dropped = true
+	var table := _table()
+	_at_map(table)
+	table.open_depot()
+	_finish(table)
+	assert_str(table.shown).is_equal(MapTable.DEPOT)
+	table.hover_spot(MapTable.DEPOT)
+	assert_str(table._hint.text).is_equal("Back to the map")
+	table.open_depot()
+	_finish(table)
+	assert_str(table.shown).is_equal(HOME)
+	assert_str(table.held()).is_equal(&"")
+	table.hover_spot(&"")
+	table.hover_spot(MapTable.DEPOT)
+	assert_str(table._hint.text).is_equal("Personnel depot")
 
 
 func test_staff_train_every_frame_wherever_the_camera_is() -> void:

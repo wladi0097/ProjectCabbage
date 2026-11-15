@@ -163,6 +163,13 @@ func part_at(from: Vector3, dir: Vector3) -> StringName:
 	return best
 
 
+## The middle of `part`'s cap top (world space), where a fingertip presses it; it sinks with the cap.
+func part_position(part: StringName) -> Vector3:
+	var cap := _start_cap if part == START else _abort_cap
+	var box := cap.get_aabb()
+	return cap.global_transform * Vector3(box.get_center().x, box.end.y, box.get_center().z)
+
+
 func _process(delta: float) -> void:
 	_clock += delta
 	for part: StringName in _press:

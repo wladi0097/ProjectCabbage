@@ -67,10 +67,10 @@ func test_the_interception_rate_is_rounded_and_zero_before_the_first_sale() -> v
 	assert_str(_summary(save, 0)["INTERCEPTION RATE"]).is_equal("67%")
 
 
-func test_a_huge_fortune_is_written_out_in_full() -> void:
+func test_a_huge_fortune_is_counted_in_millions() -> void:
 	var save := SaveGame.new()
 	save.coins = 2000000000
-	assert_str(_summary(save, 0)["COINS ON HAND"]).is_equal("$2000000000")
+	assert_str(_summary(save, 0)["COINS ON HAND"]).is_equal("$2000M")
 
 
 func test_requisitions_list_every_card_and_node_bought_newest_first_with_its_title_time_and_price() -> void:
@@ -177,7 +177,7 @@ func test_chart_scales_round_up_to_one_two_or_five_steps() -> void:
 
 
 func test_chart_ticks_carry_their_sign_and_thousands_separators() -> void:
-	assert_str(Ledger.tick_text(1200.0, 200.0, "$")).is_equal("$1,200")
+	assert_str(Ledger.tick_text(1200.0, 200.0, "$")).is_equal("$1.200")
 	assert_str(Ledger.tick_text(0.0, 200.0, "$")).is_equal("$0")
 	assert_str(Ledger.tick_text(1.5, 0.5, "¶")).is_equal("¶1.5")
 	assert_str(Ledger.tick_text(0.6000001, 0.2, "¶")).is_equal("¶0.6")
@@ -256,7 +256,7 @@ func test_a_card_paid_in_several_currencies_fills_a_row_each_but_counts_as_one_r
 	for cost: Array in [[15000, "coins"], [2000, "findings"], [900, "stock"]]:
 		save.playtest_log.append(save.log_entry(7900, "card", "consolidation", cost[0], cost[1]))
 	var reqs := Ledger.requisitions(save)
-	assert_array(reqs.map(func(row: Array) -> String: return row[2])).is_equal(["900", "¶2000", "$15000", "$12"])
+	assert_array(reqs.map(func(row: Array) -> String: return row[2])).is_equal(["900", "¶2K", "$15K", "$12"])
 	assert_int(Ledger.approved_total(reqs)).is_equal(2)
 
 
@@ -331,10 +331,10 @@ func test_the_scale_tops_out_over_the_best_reading_as_recorded() -> void:
 	assert_float(Ledger.scale_top(points)).is_greater_equal(Ledger.peak(points))
 
 
-func test_large_ticks_are_counted_in_thousands() -> void:
+func test_ticks_print_like_every_other_number() -> void:
 	assert_str(Ledger.tick_text(15000.0, 5000.0, "$")).is_equal("$15K")
-	assert_str(Ledger.tick_text(2500.0, 2500.0, "$")).is_equal("$2.5K")
-	assert_str(Ledger.tick_text(0.0, 5000.0, "$")).is_equal("$0K")
+	assert_str(Ledger.tick_text(2500.0, 2500.0, "$")).is_equal("$2.500")
+	assert_str(Ledger.tick_text(0.0, 5000.0, "$")).is_equal("$0")
 	assert_str(Ledger.tick_text(800.0, 200.0, "")).is_equal("800")
 
 
@@ -371,6 +371,6 @@ func test_the_summary_reports_coins_and_findings_earned_to_date_not_what_is_left
 	save.findings = 3
 	save.findings_earned = 980
 	var rows := _summary(save, 0)
-	assert_str(rows["COINS EARNED TO DATE"]).is_equal("$12,500")
+	assert_str(rows["COINS EARNED TO DATE"]).is_equal("$12.500")
 	assert_str(rows["FINDINGS EARNED TO DATE"]).is_equal("¶980")
 	assert_str(rows["COINS ON HAND"]).is_equal("$40")

@@ -526,3 +526,86 @@ func test_held_back_coins_come_in_as_the_fewest_coins_once_some_are_picked_up() 
 	assert_array(pile._coins.map(func(c: CoinPile.Coin) -> int: return c.value)).contains_exactly_in_any_order([1, 1, 10, 10, 10])
 	assert_int(pile.pending_value()).is_equal(32)
 	SaveManager.save = saved
+
+
+func test_five_one_dollar_coins_or_two_fives_merge_into_the_next_coin_up_and_the_smallest_go_first() -> void:
+	var ones: Array[int] = [1, 5, 1, 1, 5, 1, 1]
+	assert_array(CoinPile.merge_pick(ones, 100)).is_equal([0, 2, 3, 5, 6])
+	var fives: Array[int] = [1, 5, 10, 5]
+	assert_array(CoinPile.merge_pick(fives, 100)).is_equal([1, 3])
+	var few: Array[int] = [1, 1, 1, 1, 10]
+	assert_array(CoinPile.merge_pick(few, 100)).is_empty()  # Four $1 make no $5.
+
+
+func test_no_merge_makes_a_coin_above_the_highest_allowed() -> void:
+	var hundreds: Array[int] = [100, 100, 100, 100, 100]
+	assert_array(CoinPile.merge_pick(hundreds, 100)).is_empty()
+	assert_array(CoinPile.merge_pick(hundreds, 500)).has_size(5)
+	var tens_k: Array[int] = [10000, 10000]
+	assert_array(CoinPile.merge_pick(tens_k, 10000)).is_empty()  # Nothing past the $10K coin.
+
+
+func test_a_merge_flies_the_coins_together_and_the_first_pops_up_as_the_next_coin_worth_them_all() -> void:
+	var pile := _pile_with([[Vector2i(0, 0), [1, 1, 1]], [Vector2i(3, 0), [1, 1, 10]]])
+	assert_bool(pile.merge_once(100)).is_true()
+	assert_int(pile.pending_value()).is_equal(15)  # Nothing is lost or made while they fly.
+	var merging := pile._coins.filter(func(c: CoinPile.Coin) -> bool: return c.state == CoinPile.State.MERGING)
+	assert_array(merging).has_size(5)
+	assert_array(merging.filter(func(c: CoinPile.Coin) -> bool: return c.merged == 5)).has_size(1)
+	assert_array(pile._stacks[Vector2i(3, 0)]).has_size(1)  # The $10 is left, dropped onto the desk.
+	assert_bool(pile._stacks.has(Vector2i(0, 0))).is_false()
+	for coin: CoinPile.Coin in merging:
+		var first := coin.merged > 0
+		assert_bool(pile._merge_step(coin, CoinPile.MERGE_SHAKE)).is_false()  # The wobble first.
+		assert_bool(pile._merge_step(coin, CoinPile.MERGE_TIME)).is_true()
+		if first:
+			assert_int(coin.value).is_equal(5)
+			assert_int(coin.state).is_equal(CoinPile.State.FLYING)
+			assert_float(coin.velocity.y).is_greater(0.0)  # It hops up.
+		else:
+			pile._coins.erase(coin)
+	assert_int(pile.pending_value()).is_equal(15)
+	assert_bool(pile.merge_once(100)).is_false()  # One $5 and one $10: nothing more to merge.
+
+
+func test_merging_coins_wobble_once_in_place_about_three_millimetres_before_they_fly() -> void:
+	var pile := _pile_with([[Vector2i(0, 0), [1, 1, 1, 1, 1]]])
+	pile.merge_once(100)
+	var coin: CoinPile.Coin = pile._coins[2]
+	var rest := coin.from.origin
+	pile._merge_step(coin, CoinPile.MERGE_SHAKE * 0.25)
+	assert_float(coin.xf.origin.x - rest.x).is_equal_approx(0.003, 0.0002)  # Out to one side,
+	pile._merge_step(coin, CoinPile.MERGE_SHAKE * 0.5)
+	assert_float(coin.xf.origin.x - rest.x).is_equal_approx(-0.003, 0.0002)  # the other,
+	assert_bool(pile._merge_step(coin, CoinPile.MERGE_SHAKE * 0.25)).is_false()
+	assert_vector(coin.xf.origin).is_equal_approx(rest, Vector3.ONE * 0.0001)  # and back, once.
+	assert_float(coin.t).is_equal(0.0)  # Only now does the flight start.
+	assert_float(CoinPile.MERGE_SHAKE).is_between(0.15, 0.25)  # a slow wobble, not a buzz
+
+
+func test_a_merged_coin_jumps_once_and_lands_without_a_bounce() -> void:
+	var pile := _pile_with([[Vector2i(0, 0), [1, 1, 1, 1, 1]]])
+	pile.merge_once(100)
+	var first: CoinPile.Coin = pile._coins.filter(func(c: CoinPile.Coin) -> bool: return c.merged > 0)[0]
+	pile._merge_step(first, CoinPile.MERGE_SHAKE)
+	pile._merge_step(first, CoinPile.MERGE_TIME)
+	var bounces := [0]
+	pile.bounced.connect(func(_at: Vector3) -> void: bounces[0] += 1)
+	for _frame in 120:
+		if first.state != CoinPile.State.FLYING:
+			break
+		pile._fly(first, 1.0 / 60.0)
+	assert_int(first.state).is_equal(CoinPile.State.SETTLING)  # Down on the desk,
+	assert_int(bounces[0]).is_equal(0)  # after the one hop and no bounce.
+
+
+func test_bulk_discharge_sends_a_whole_bag_off_within_a_third_of_a_second_not_one_coin_at_a_time() -> void:
+	assert_float(CoinPile.bag_delay(49, 50, false)).is_greater(1.0)  # Trickled: about 1.5 s.
+	assert_float(CoinPile.bag_delay(49, 50, true)).is_less_equal(0.3)
+	assert_float(CoinPile.bag_delay(2, 3, true)).is_equal_approx(CoinPile.bag_delay(2, 3, false), 0.0001)  # A small bag is no slower.
+
+
+func test_a_merged_coin_swells_at_the_top_of_its_hop_and_is_its_own_size_before_and_after() -> void:
+	assert_float(CoinPile.pop_scale(CoinPile.MERGE_POP)).is_equal_approx(1.0, 0.001)
+	assert_float(CoinPile.pop_scale(CoinPile.MERGE_POP * 0.5)).is_equal_approx(1.0 + CoinPile.MERGE_SWELL, 0.001)
+	assert_float(CoinPile.pop_scale(0.0)).is_equal(1.0)

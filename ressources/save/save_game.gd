@@ -11,7 +11,7 @@ extends Resource
 ## The most coins and Findings the save may hold (earn): what comes in past it is lost, so nothing
 ## is hoarded through a chapter's end. $40,000 and ¶8,000 at the start; chapter 3's desk cards
 ## cash_holding and archive_capacity multiply them by 5, then the projector's TREASURY chain
-## (coin_limit_1..5, to $16M) and CH2's ARCHIVE chain (archive_1..5) raise them. A save holding more
+## (coin_limit_1..5, to $16M) and ARCHIVE chain (archive_1..5, in Findings) raise them. A save holding more
 ## (an old one) keeps it and earns nothing until it is under the limit again.
 @export var coin_limit := 40000
 @export var findings_limit := 8000
@@ -93,6 +93,8 @@ extends Resource
 @export var manager_raise := 1.25
 @export var quotas_met := 0
 @export var quotas_missed := 0
+## Quotas missed in a row (0 once one is met). From Manager.EASE_AFTER on, the next quota asks less.
+@export var quota_misses_row := 0
 ## The pricing consultant: seconds between its taps on the slate. Upgradeable (projector tree).
 ## Old saves' consultant_skill and consultant_markup are retired: loaded, read by nothing.
 @export var consultant_interval := 4.0
@@ -108,6 +110,11 @@ extends Resource
 @export var lamp_mult := 5.0
 @export var lamp_time := 20.0
 @export var lamp_every := 150.0
+## Research light (the golden lamp's twin, card research_light): Findings multiplier while it glows,
+## seconds it glows, mean seconds between glows.
+@export var lab_lamp_mult := 5.0
+@export var lab_lamp_time := 20.0
+@export var lab_lamp_every := 150.0
 ## Catch combo: the share of its steps a miss keeps (0 none, GRACE PERIOD 0.5), the most it
 ## multiplies a sale, and what each catch adds.
 @export var miss_keep := 0.0
@@ -147,6 +154,11 @@ extends Resource
 @export var vacuum_capacity := 8
 @export var vacuum_reach := 0.07
 @export var vacuum_rest := 4.0
+## Merging (desk cards coin_merge, token_merge): seconds between two merges of the coins, and of the
+## Findings tokens, lying on the desk, and the highest coin or token a merge makes (its value). The
+## projector's MERGING chains shorten the one and raise the other.
+@export var merge_every := 2.0
+@export var merge_top := 100
 ## Cabbages the QA bay analyses at once.
 @export var qa_slots := 1
 # Mini units, the tube and its lever (entities/mini_drop/): they start once the desk card
@@ -235,6 +247,9 @@ extends Resource
 ## hand_replant (farm tree, 0/1) the pulled square is replanted at once from the crate.
 @export var hand_yield := 2.0
 @export var hand_replant := 0
+## The share of GREEN THUMB's bonus a farm square pulled by hand gets (FarmScreen.hand_factor): 0.0
+## until CH2's chain under GREEN THUMB (0.25, 0.5, 1.0). Old saves start at 0 too (no free grant).
+@export var farm_hand_share := 0.0
 ## Managerial work (desk cards own_sales, own_research, dealt by GameEvents "promotion"): a unit the
 ## player flicks out of the window themself pays own_sale times (× the price), one they flick into
 ## the research lab yields own_lab times the Findings. Hired hands, lab hands and the tube get 1×.
@@ -245,6 +260,10 @@ extends Resource
 ## cabbage off the chute holds (Cabbage.units, CabbageFeeder.condensed): 1 before the card, 2 with it;
 ## the projector's CONDENSE II to IX raise it to 32. It counts that many times wherever it goes.
 @export var condense := 1
+## The same for blue research cabbages and golden ones, each its own projector chain (CONDENSATION):
+## 1 until CONDENSED SAMPLES (paid in Findings) / CONDENSED BULLION, then 2 up to 8 / 6.
+@export var research_condense := 1
+@export var golden_condense := 1
 ## Cabbages a hired hand throws out of the window per trip before it goes back to its spot
 ## (projector node TWO-HANDED POLICY: 2).
 @export var hand_trip := 1
@@ -275,6 +294,8 @@ extends Resource
 ## The map sheet that lay open last at the map table (MapTable: "world", or a country's id; "": the
 ## home country's). A war sheet is not kept: its country's is.
 @export var map_sheet := ""
+## The FIELD LINE's handset has been lifted once: until then it rings for attention (FieldLine.ringing).
+@export var field_line_answered := false
 # The war (entities/war/, research/war-contract.md): soldiers bought at the PERSONNEL DEPOT.
 ## Trained figures ready to fight: unit id (WarRules.UNITS) -> count. A war takes its figures out
 ## of here (WarSheet.begin) and puts survivors back.
@@ -351,7 +372,7 @@ extends Resource
 ## Saves from before that kept it here; loading one fills this, and SaveManager moves it to the file.
 var playtest_log: Array[Dictionary] = []
 
-const MIGRATION := 7
+const MIGRATION := 9
 ## The save field that caps each capped one (room, earn).
 const LIMITS := {&"coins": &"coin_limit", &"findings": &"findings_limit"}
 

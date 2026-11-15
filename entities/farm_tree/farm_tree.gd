@@ -86,6 +86,18 @@ The standing seed order buys the 50-seed pack instead of the 10."},
 	{id = "thumb_replant", parent = "thumb_yield", at = Vector2(0.0, -1.45), icon = "sprout", price = 900, currency = "findings",
 		add = {hand_replant = 1}, title = "ONE IN, ONE OUT",
 		body = "The hole is never left empty. It is policy.\nA square you pull out yourself is replanted at once from the crate. Tractor harvests still wait for a farm hand."},
+	# GREEN THUMB on farm squares (save.farm_hand_share, FarmScreen.hand_factor): a farm square pulled by
+	# hand gets none of GREEN THUMB's bonus until this chain, then 25%, 50%, all of it. Shown once a
+	# farm is owned; the last two wait for EXTEND THE ARCHIVE (they pass ¶8,000). ¶4,000 / ¶12,000 / ¶30,000 (tools/pace.py ch3: about 2-4k ¶ a minute at farms 1-2).
+	{id = "farm_hand_1", parent = "thumb_yield", at = Vector2(0.5, -1.42), icon = "hand", price = 4000, currency = "findings",
+		needs_farm = true, add = {farm_hand_share = 0.25}, title = "REGIONAL RECOGNITION",
+		body = "Your photograph has been forwarded to the estates.\nA farm square you pull by hand gets 25% of GREEN THUMB's bonus, not none."},
+	{id = "farm_hand_2", parent = "farm_hand_1", at = Vector2(0.5, -1.87), icon = "hand", price = 12000, currency = "findings",
+		needs = ["archive_capacity"], add = {farm_hand_share = 0.25}, title = "ESTATE WALKABOUT",
+		body = "You are seen in the fields. The fields are informed in advance.\nA farm square you pull by hand gets 50% of GREEN THUMB's bonus, not 25%."},
+	{id = "farm_hand_3", parent = "farm_hand_2", at = Vector2(0.95, -1.65), icon = "hand", price = 30000, currency = "findings",
+		needs = ["archive_capacity"], add = {farm_hand_share = 0.5}, title = "FULL ENDORSEMENT",
+		body = "Head office has signed your thumb.\nA farm square you pull by hand gets all of GREEN THUMB's bonus, not 50%."},
 	# Golden squares (desk card golden_cabbage): how often one grows golden (save.golden_chance). What a
 	# golden unit pays is the projector's (coins), not this tree's.
 	{id = "gold_chance_1", parent = "", at = Vector2(0.0, 0.95), icon = "sprout", price = 1500, currency = "findings",
@@ -97,6 +109,11 @@ The standing seed order buys the 50-seed pack instead of the 10."},
 	{id = "gold_chance_3", parent = "gold_chance_2", at = Vector2(0.0, 1.85), icon = "sprout", price = 9000, currency = "findings",
 		needs = ["archive_capacity"], add = {golden_chance = 0.0333}, title = "GILDED STRAIN",
 		body = "It is no longer entirely a vegetable.\n1 square in 10 grows golden, not 1 in 15."},
+	# Farm squares only grow golden once this is bought (FarmScreen.FARM_GOLD, sow). Shown once a farm
+	# is owned; ¶8,000 (tools/pace.py ch3: a few minutes of chapter 3's Findings).
+	{id = "farm_gold", parent = "gold_chance_1", at = Vector2(-0.45, 1.25), icon = "sprout", price = 8000, currency = "findings",
+		needs_farm = true, title = "ESTATE SEED ALLOCATION",
+		body = "Promising seed is now issued to the estates, on signature.\nFarm squares can grow golden too, at the same chance as any square."},
 	# COLD CHAIN: how long a ripe square waits before it rots (save.rot_after, FarmScreen.tick), shown
 	# with the golden card, a minute before GameEvents "overripe" starts the rot.
 	{id = "cold_frames", parent = "", at = Vector2(1.55, 0.05), icon = "crate", price = 250, currency = "findings",
@@ -121,26 +138,7 @@ The standing seed order buys the 50-seed pack instead of the 10."},
 	{id = "farm_mult_3", parent = "farm_mult_2", at = Vector2(-1.6, 1.05), icon = "sprout", price = 100000, currency = "findings",
 		add = {farm_square_mult = 10.0}, title = "VERTICAL INTEGRATION",
 		body = "The farm now reports to itself.\nEvery farm square harvests 30× a plain square's cabbages, not 20×."},
-	# ARCHIVE: the most Findings the save holds (save.findings_limit, SaveGame.earn), ¶40,000 from the
-	# desk card archive_capacity (`needs`: shown with it), up to ¶900,000: the Findings counter has six drums, so the ladder ends
-	# under ¶1,000,000 (nothing costs more than ¶200,000). Each step costs less than the limit before it
-	# and at least doubles it (the last two: half as much again); FARM OUTPUT's ¶60,000 needs the first. Paced in
-	# tools/pace.py (`ch3`).
-	{id = "archive_1", parent = "", at = Vector2(0.55, 1.20), icon = "crate", price = 10000, currency = "findings",
-		needs = ["archive_capacity"], add = {findings_limit = 60000}, title = "SECOND CABINET",
-		body = "Identical to the first. This was a requirement.\nYou can hold up to ¶100,000 instead of ¶40,000."},
-	{id = "archive_2", parent = "archive_1", at = Vector2(0.55, 1.65), icon = "crate", price = 20000, currency = "findings",
-		add = {findings_limit = 100000}, title = "BASEMENT STACKS",
-		body = "Damp, but alphabetical.\nYou can hold up to ¶200,000 instead of ¶100,000."},
-	{id = "archive_3", parent = "archive_2", at = Vector2(1.00, 1.65), icon = "crate", price = 40000, currency = "findings",
-		needs = ["structured_farm"], add = {findings_limit = 200000}, title = "MICROFILM",
-		body = "Every Finding, reduced to the size of a seed.\nYou can hold up to ¶400,000 instead of ¶200,000."},
-	{id = "archive_4", parent = "archive_3", at = Vector2(1.00, 1.22), icon = "crate", price = 60000, currency = "findings",
-		add = {findings_limit = 200000}, title = "OFF-SITE ARCHIVE",
-		body = "Nobody has seen it. It is reported to be full.\nYou can hold up to ¶600,000 instead of ¶400,000."},
-	{id = "archive_5", parent = "archive_4", at = Vector2(1.45, 1.50), icon = "crate", price = 100000, currency = "findings",
-		add = {findings_limit = 300000}, title = "RECORD OFFICE",
-		body = "The records now have records of their own.\nYou can hold up to ¶900,000 instead of ¶600,000."},
+	# ARCHIVE (the Findings limit) moved to the projector in round 2 (Projector, same ids).
 	# ---- The outer ring (desk card structured_farm; `needs` on the first of each run). Prices paced
 	# in tools/pace.py (`ch3`, `flow`). ----
 	# SEED BEDS: seeds a farm square holds (save.farm_slots, FarmScreen.slots_of): 2 to 3, 4, 6, each
@@ -183,8 +181,6 @@ const THEMES := [
 		"Spoilage is a scheduling issue.\nRipe squares wait longer before they rot."],
 	["FARM OUTPUT", Vector2(-0.77, 0.00), ["farm_mult_1"],
 		"Acquired farms are held to the same targets.\nEvery farm square harvests more cabbages."],
-	["ARCHIVE", Vector2(0.33, 0.72), ["archive_1"],
-		"Findings need somewhere to be kept.\nThe most Findings (¶) you can hold."],
 ]
 
 @export var approve_sound: AudioStream
@@ -223,8 +219,8 @@ func _process(_delta: float) -> void:
 			_play(widen_sound)
 		_tree.home(ZOOM_WIDE, 0.0 if save.farm_tree_wide else WIDEN_TIME)
 		save.farm_tree_wide = true
-	var line := tr("BUDGET  $%d   |   FINDINGS") % save.coins \
-			+ " [b][color=%s]¶%d[/color][/b]" % [findings_color.to_html(false), save.findings]
+	var line := tr("BUDGET  $%s   |   FINDINGS") % Num.text(save.coins) \
+			+ " [b][color=%s]¶%s[/color][/b]" % [findings_color.to_html(false), Num.text(save.findings)]
 	if _budget.text != line:
 		_budget.text = line
 

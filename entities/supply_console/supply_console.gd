@@ -137,7 +137,7 @@ func _process(delta: float) -> void:
 ## The ticker: the pack price, or FULL while a pack would not fit in storage.
 func _price_text() -> String:
 	var save := SaveManager.save
-	return "$%d" % _cost() if fits(save.stock, save.pack_size, save.storage_cap) else tr("FULL")
+	return "$" + Num.text(_cost()) if fits(save.stock, save.pack_size, save.storage_cap) else tr("FULL")
 
 
 ## Whether a pack of `pack` units fits on top of `stock` under the storage cap `cap`.

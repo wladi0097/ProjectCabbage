@@ -184,3 +184,37 @@ func test_the_machine_thuds_when_it_lands_on_the_desk_not_when_it_starts_to_fall
 	assert_bool(land.playing).is_false()
 	await _wait(FieldLine.DROP_TIME + 0.1)
 	assert_bool(land.playing).is_true()
+
+
+func test_a_ringing_handset_rattles_in_two_short_bursts_then_rests_like_a_phone() -> void:
+	var mid := 2.25 / FieldLine.RING_RATTLE  # A quarter rattle past the second: twisted furthest.
+	assert_float(mid).is_less(FieldLine.RING_BURST)
+	assert_float(absf(FieldLine.ring_offset(mid).y)).is_greater(0.3)  # The first burst...
+	assert_float(absf(FieldLine.ring_offset(mid + FieldLine.RING_BURST + FieldLine.RING_GAP).y)).is_greater(0.3)  # ...the second...
+	assert_that(FieldLine.ring_offset(FieldLine.RING_BURST + FieldLine.RING_GAP * 0.5)).is_equal(Vector2.ZERO)  # ...the gap between...
+	assert_that(FieldLine.ring_offset(FieldLine.RING_PERIOD - 0.3)).is_equal(Vector2.ZERO)  # ...and the pause.
+	assert_float(FieldLine.ring_offset(mid + FieldLine.RING_PERIOD).y).is_equal_approx(FieldLine.ring_offset(mid).y, 0.0001)
+	for i in 100:
+		assert_float(FieldLine.ring_offset(i * 0.0241).x).is_between(0.0, FieldLine.RING_RISE)  # Never into the cradle.
+
+
+func test_a_ringing_handset_moves_in_its_cradle_and_a_quiet_one_does_not() -> void:
+	var machine := _machine()
+	var skeleton: Skeleton3D = machine.get_node("Model/Armature/Skeleton3D")
+	var bone := skeleton.find_bone("Receiver")
+	var cradle := skeleton.get_bone_pose(bone)
+	var mid := 2.25 / FieldLine.RING_RATTLE
+	machine._process(mid)
+	assert_bool(skeleton.get_bone_pose(bone).is_equal_approx(cradle)).is_true()  # Not ringing.
+	machine.ringing = true
+	machine._process(mid)
+	assert_bool(skeleton.get_bone_pose(bone).is_equal_approx(cradle)).is_false()
+	machine._process(FieldLine.RING_PERIOD - 0.3 - mid)  # Into the pause: back in the cradle.
+	assert_bool(skeleton.get_bone_pose(bone).is_equal_approx(cradle)).is_true()
+
+
+func test_lifting_the_handset_stops_the_ringing() -> void:
+	var machine := _machine()
+	machine.ringing = true
+	machine.lift()
+	assert_bool(machine.ringing).is_false()

@@ -470,7 +470,7 @@ func test_the_price_under_the_button_is_the_cabbage_icon_and_the_number() -> voi
 	var sheet := _sheet()
 	var price := sheet._columns["field_associate"].get_node("Price")
 	assert_object((price.get_node("Icon") as TextureRect).texture).is_equal(load("res://assets/sprites/icons/cabbage_icon.svg"))
-	assert_str((price.get_node("Amount") as Label).text).is_equal(FarmScreen._thousands(WarRules.unit_cabbage_price("field_associate")))
+	assert_str((price.get_node("Amount") as Label).text).is_equal(Num.text(WarRules.unit_cabbage_price("field_associate")))
 
 
 func test_a_trainee_waiting_behind_another_units_shows_no_seconds_and_an_empty_bar() -> void:

@@ -368,7 +368,7 @@ func test_in_the_demo_a_full_tray_makes_room_for_the_farm_card_in_its_last_slot(
 
 
 func test_the_tray_never_shows_more_cards_than_offered_however_many_are_open() -> void:
-	var save := _all_stamped_but(["family_farm", "golden_lamp", "mat_allowance", "stats_ledger", "spoilage_memo", "lab_priority"])
+	var save := _all_stamped_but(["family_farm", "golden_lamp", "mat_allowance", "stats_ledger", "spoilage_memo", "lab_priority", "hand_schedule"])
 	save.tray_unlocked = true
 	assert_int(_next(save.stamped, UpgradeDesk.CARDS.size(), save).size()).is_greater(UpgradeDesk.OFFERED)
 	SaveManager.save = save
@@ -862,13 +862,14 @@ func test_chapter_twos_last_card_costs_more_cabbages_than_the_regional_depot_hol
 	assert_int(card.price).is_less_equal(room)
 
 
-func test_nothing_waits_on_the_golden_age_card_but_gold_standard() -> void:
+func test_nothing_waits_on_the_golden_age_card_but_gold_standard_and_its_own_chain() -> void:
 	# DECLARE A GOLDEN AGE is the last of its line: no card, farm node or event needs it, and no projector
-	# node but GOLD STANDARD (optional, it only extends the Golden Age to golden cabbages).
+	# node but GOLD STANDARD (optional, it only extends the Golden Age to golden cabbages) and the first
+	# of its own optional chain (REVALUATION, then PROLONGED PROSPERITY and BOOM CYCLE).
 	for card: Dictionary in UpgradeDesk.CARDS:
 		assert_array(card.get("needs", [])).override_failure_message(card.id).not_contains(["golden_lamp"])
 	for node: Dictionary in Projector.NODES + FarmTree.NODES:
-		if node.id != SaleWindow.GOLD_AGE:
+		if not node.id in [SaleWindow.GOLD_AGE, "lamp_mult"]:
 			assert_array(node.get("needs", [])).override_failure_message(node.id).not_contains(["golden_lamp"])
 		for key: String in ["lock", "research", "after", "parent"]:
 			assert_str(str(node.get(key, ""))).override_failure_message(node.id).is_not_equal("golden_lamp")
@@ -1247,12 +1248,12 @@ func test_the_stamp_tag_tells_the_player_to_pull_the_handle() -> void:
 	assert_str((desk._tag as Label3D).text).is_equal("PULL TO STAMP")
 
 
-const CHAPTER_3 := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm", "negotiation", "rejected_goods", "hand_schedule", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "route_planning", "unit_charge", "bigger_armies", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier", "stars", "farm_shortcut"]
+const CHAPTER_3 := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm", "negotiation", "rejected_goods", "research_light", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "route_planning", "unit_charge", "bigger_armies", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier", "stars", "farm_shortcut", "coin_merge", "token_merge"]
 ## Chapter 3's chain as it is dealt: each entry arrives once the one before it is stamped, a group all at once.
 const CHAPTER_3_DEALS := [["market_intelligence"], ["cash_holding", "big_ideas", "archive_capacity"], ["condense", "structured_farm"],
 		["negotiation"], ["rejected_goods"], ["bribery"], ["war_mode"], ["world_map"], ["no_taxes"], ["sea_lanes"], ["stars"]]
 ## Its optional cards, beside the chain: nothing waits for them.
-const CHAPTER_3_OPTIONAL := ["map_readout", "hand_schedule", "farm_shortcut"]
+const CHAPTER_3_OPTIONAL := ["map_readout", "research_light", "farm_shortcut", "coin_merge", "token_merge"]
 ## The war line, beside the main line from the first law on, one card after the other; stars waits for it.
 const CHAPTER_3_WAR := ["route_planning", "unit_charge", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier"]
 ## The war line's card dealt by the boss's paper.
@@ -1311,14 +1312,14 @@ func test_the_press_refuses_the_stars_card_one_farm_short_and_stamping_it_takes_
 
 
 
-func test_big_minds_is_dealt_with_the_cash_holding_card_and_costs_coins() -> void:
+func test_big_minds_is_dealt_with_the_cash_holding_card_and_costs_cabbages() -> void:
 	var save := _all_stamped_but(CHAPTER_3)
 	save.stamped.append("market_intelligence")
 	assert_array(_next(save.stamped, UpgradeDesk.OFFERED, save)).contains(["cash_holding", "big_ideas"])
 	save.stamped.append("big_ideas")  # Stamped first: the cash card stays on offer.
 	assert_array(_next(save.stamped, UpgradeDesk.OFFERED, save)).contains(["cash_holding"])
 	assert_str(UpgradeDesk.card_data("big_ideas").title).is_equal("BIG MINDS HAVE BIG IDEAS")
-	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("big_ideas"))).is_equal({coins = 40000})
+	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("big_ideas"))).is_equal({stock = 800})
 
 
 func test_the_world_map_card_needs_five_farms_and_its_cabbages_and_nothing_else() -> void:
@@ -1340,7 +1341,7 @@ func test_the_world_map_cards_cabbages_fit_the_biggest_store_with_a_full_mat_of_
 	var biggest := SaveGame.new().storage_cap
 	for node: Dictionary in Projector.NODES:
 		biggest += int(node.get("add", {}).get("storage_cap", 0))
-	assert_int(biggest).is_equal(15000)
+	assert_int(biggest).is_equal(999999)
 	# A full mat of ten cabbages holding 32 each cannot pay (UpgradeDesk.spendable).
 	assert_int(Projector.MAT_MAX).is_equal(10)
 	assert_int(int(UpgradeDesk.card_data("world_map").price) + Projector.MAT_MAX * 32).is_less_equal(biggest)
@@ -1520,19 +1521,19 @@ func test_sea_lanes_needs_almost_all_farms_of_the_starting_continent() -> void:
 func test_a_card_that_needs_farms_waits_in_the_tray_until_they_are_owned() -> void:
 	var save := _all_stamped_but(["condense", "world_map", "no_taxes", "stars"])
 	save.tray_unlocked = true
-	save.coins = 150000
+	save.coins = 30000
 	SaveManager.save = save
 	var desk: UpgradeDesk = auto_free(DESK_SCENE.instantiate())
 	add_child(desk)
 	var card := desk._offered[0]
 	assert_str(card.id).is_equal("condense")  # In the tray with no farm owned.
-	assert_dict(card.costs).is_equal({farms = 1, coins = 150000})
+	assert_dict(card.costs).is_equal({farms = 1, coins = 30000})
 	desk._on_press = card
 
 	desk._bottom_out()  # No farm: refused, nothing paid.
 
 	assert_bool(save.stamped.has("condense")).is_false()
-	assert_int(save.coins).is_equal(150000)
+	assert_int(save.coins).is_equal(30000)
 	save.farms_owned.append("K-1")
 	desk._bottom_out()
 
@@ -1552,7 +1553,7 @@ func test_the_war_card_is_dealt_once_nobody_at_home_sells_any_more() -> void:
 	assert_str(card.title).is_equal("AUTHORISE HOSTILE ACQUISITIONS")
 	assert_str(card.event).is_equal("no_more_sellers")
 	assert_array(card.needs).is_equal(["bribery"])
-	assert_dict(UpgradeDesk.costs(card)).is_equal({farms = UpgradeDesk.Events.HOME_SELLERS, coins = int(card.price)})
+	assert_dict(UpgradeDesk.costs(card)).is_equal({farms = UpgradeDesk.Events.HOME_SELLERS, coins = int(card.price), stock = 5000})  # The war's first harvest.
 	var save := _all_stamped_but(["war_mode", "world_map", "no_taxes", "sea_lanes", "stars"])
 	save.farms_owned = _home_farms(UpgradeDesk.Events.HOME_SELLERS - 1)
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_empty()
@@ -1632,7 +1633,7 @@ func test_with_no_taxes_the_chalked_price_never_goes_past_the_slates_top_price()
 
 func test_condense_cabbages_and_structured_farm_are_dealt_together_once_the_three_cards_before_them_are_stamped() -> void:
 	var trio := ["cash_holding", "big_ideas", "archive_capacity"]
-	var save := _all_stamped_but(trio + ["condense", "structured_farm", "negotiation", "rejected_goods", "hand_schedule", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "stars"])
+	var save := _all_stamped_but(trio + ["condense", "structured_farm", "negotiation", "rejected_goods", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "stars"])
 	for last: String in trio:  # Whichever of the three is still missing holds both back.
 		var two := save.duplicate(true) as SaveGame
 		two.stamped.append_array(trio.filter(func(id: String) -> bool: return id != last))
@@ -1640,12 +1641,12 @@ func test_condense_cabbages_and_structured_farm_are_dealt_together_once_the_thre
 	save.stamped.append_array(trio)
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["condense", "structured_farm"])
 	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("archive_capacity"))).is_equal({findings = 2000})
-	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("condense"))).is_equal({farms = 1, coins = 150000})
-	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("structured_farm"))).is_equal({farms = 1, findings = 12000})
+	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("condense"))).is_equal({farms = 1, coins = 30000})
+	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("structured_farm"))).is_equal({farms = 1, findings = 12000, stock = 1000})
 
 
 func test_negotiation_follows_condense_cabbages_and_structured_farm_and_needs_the_first_farm() -> void:
-	var save := _all_stamped_but(["condense", "structured_farm", "negotiation", "rejected_goods", "hand_schedule", "bribery", "war_mode", "world_map", "no_taxes", "stars"])
+	var save := _all_stamped_but(["condense", "structured_farm", "negotiation", "rejected_goods", "bribery", "war_mode", "world_map", "no_taxes", "stars"])
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["condense", "structured_farm"])
 	save.stamped.append("structured_farm")  # Either first: the other one is still needed.
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["condense"])
@@ -1661,21 +1662,25 @@ func test_bribery_follows_negotiation_and_needs_four_farms() -> void:
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["bribery"])
 	var card := UpgradeDesk.card_data("bribery")
 	var bill := UpgradeDesk.costs(card)
-	assert_dict(bill).is_equal({farms = 4, coins = int(card.price)})
+	assert_dict(bill).is_equal({farms = 4, coins = int(card.price), stock = 6000})  # The pinned store pays a part.
+	assert_int(int(card.price)).is_less_equal(1500000)  # Within WALL SAFE: no STRONGROOM first.
 	save.coins = int(card.price)
+	save.stock = 6000
 	save.farms_owned = _home_farms(3)
 	assert_bool(UpgradeDesk.affords(save, bill)).is_false()
 	save.farms_owned = _home_farms(4)
 	assert_bool(UpgradeDesk.affords(save, bill)).is_true()
 
 
-func test_recover_rejected_goods_comes_between_negotiation_and_bribery_and_needs_two_farms() -> void:
+func test_recover_rejected_goods_comes_between_negotiation_and_bribery_needs_two_farms_and_takes_cabbages_too() -> void:
 	var save := _all_stamped_but(["rejected_goods", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "stars"])
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["rejected_goods"])
 	var card := UpgradeDesk.card_data("rejected_goods")
-	assert_dict(UpgradeDesk.costs(card)).is_equal({farms = 2, coins = int(card.price)})
+	assert_dict(UpgradeDesk.costs(card)).is_equal({farms = 2, coins = int(card.price), stock = 2500})
 	assert_int(card.price).is_less_equal(SaveGame.new().coin_limit * UpgradeDesk.LIMIT_RAISE)  # The purse the cash card gives holds it.
 	save.coins = int(card.price)
+	save.storage_cap = 15000
+	save.stock = 2500
 	save.farms_owned = _home_farms(1)
 	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(card))).is_false()
 	save.farms_owned = _home_farms(2)
@@ -1728,12 +1733,12 @@ func test_an_old_save_that_bought_farms_before_their_cards_existed_has_those_car
 	assert_bool(one.stamped.has("negotiation")).is_false()  # The first farm needed no card.
 
 
-func test_structured_farm_is_dealt_with_condense_and_costs_findings_and_one_farm() -> void:
+func test_structured_farm_is_dealt_with_condense_and_costs_findings_cabbages_and_one_farm() -> void:
 	var card := UpgradeDesk.card_data("structured_farm")
 	assert_str(card.title).is_equal("STRUCTURED FARM")
 	assert_array(card.needs).is_equal(UpgradeDesk.card_data("condense").needs)
 	assert_array(UpgradeDesk.card_data("negotiation").needs).contains(["structured_farm"])
-	assert_dict(UpgradeDesk.costs(card)).is_equal({farms = 1, findings = 12000})
+	assert_dict(UpgradeDesk.costs(card)).is_equal({farms = 1, findings = 12000, stock = 1000})
 	# Stamping it changes no number: the farm tree reads the stamp (FarmTree.wide).
 	var save := SaveGame.new()
 	var slots := save.farm_slots
@@ -1750,17 +1755,18 @@ func test_structured_farm_is_affordable_under_the_findings_limit_the_archive_car
 	assert_int(UpgradeDesk.card_data("structured_farm").price).is_less_equal(save.findings_limit)
 
 
-func test_faster_to_our_farms_is_dealt_with_negotiation_as_a_comfort_paid_in_coins() -> void:
+func test_faster_to_our_farms_is_dealt_with_negotiation_as_a_comfort_paid_in_cabbages() -> void:
 	var card := UpgradeDesk.card_data("farm_shortcut")
 	assert_str(card.title).is_equal("FASTER TO OUR FARMS")
 	assert_array(card.needs).is_equal(["negotiation"])  # Farms are bought with cabbages: map and farm in turn.
-	assert_dict(UpgradeDesk.costs(card)).is_equal({coins = int(card.price)})
+	assert_dict(UpgradeDesk.costs(card)).is_equal({stock = int(card.price)})
 	assert_str(MapTable.SHORTCUT_CARD).is_equal("farm_shortcut")
 	var save := _all_stamped_but(CHAPTER_3)
 	save.stamped.append_array(["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm"])
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).not_contains(["farm_shortcut"])
 	save.stamped.append("negotiation")
-	assert_array(_next(save.stamped, UpgradeDesk.OFFERED, save)).is_equal(["rejected_goods", "hand_schedule", "farm_shortcut"])
+	# Dealt beside the chain: a comfort left waiting from BIG MINDS (CONSOLIDATE LOOSE CHANGE) may share the tray.
+	assert_array(_next(save.stamped, UpgradeDesk.OFFERED, save)).contains(["rejected_goods", "farm_shortcut"])
 	var stamped := SaveGame.new()
 	UpgradeDesk.apply("farm_shortcut", stamped)  # No number changes: the map table and the TV read the stamp.
 	assert_int(stamped.coin_limit).is_equal(SaveGame.new().coin_limit)
@@ -1792,7 +1798,7 @@ func test_the_war_line_starts_with_the_world_map_and_deals_one_card_at_a_time_wi
 	for id: String in CHAPTER_3_WAR:  # Spread over the farms taken by war, the home ones' tutorials past.
 		var card := UpgradeDesk.card_data(id)
 		assert_int(card.farms).override_failure_message(id).is_greater(farms)
-		assert_array(UpgradeDesk.costs(card).keys()).override_failure_message(id).is_equal(["farms", "coins"])
+		assert_array(UpgradeDesk.costs(card).keys().slice(0, 2)).override_failure_message(id).is_equal(["farms", "coins"])  # Some take cabbages too.
 		farms = card.farms
 	assert_int(farms).is_less(UpgradeDesk.Events.FARMS)
 	# The route overlay comes first and early (the sixth farm); the first unit card needs every home
@@ -1882,6 +1888,23 @@ func test_esc_closes_the_approved_list_before_the_pause_menu_can_take_it() -> vo
 	assert_bool(desk.get_node("Approved").visible).is_false()
 
 
+func test_an_old_save_that_has_been_to_the_map_finds_the_field_line_quiet_and_one_that_has_not_hears_it_ring() -> void:
+	var farmer := SaveGame.new()
+	farmer.migration = 8
+	farmer.farms_owned = PackedStringArray(["K-1"])
+	UpgradeDesk.migrate(farmer)
+	assert_bool(farmer.field_line_answered).is_true()
+	var browser := SaveGame.new()
+	browser.migration = 8
+	browser.map_sheet = "world"
+	UpgradeDesk.migrate(browser)
+	assert_bool(browser.field_line_answered).is_true()
+	var newcomer := SaveGame.new()
+	newcomer.migration = 8
+	UpgradeDesk.migrate(newcomer)
+	assert_bool(newcomer.field_line_answered).is_false()
+
+
 func test_migrating_drops_figures_of_retired_unit_types_from_the_army_training_and_a_war_under_way() -> void:
 	var old := SaveGame.new()
 	old.migration = 6
@@ -1892,3 +1915,54 @@ func test_migrating_drops_figures_of_retired_unit_types_from_the_army_training_a
 	assert_dict(old.army).is_equal({field_associate = 2})
 	assert_array(old.army_training).is_equal([{unit = "field_associate", left = 5.0}])
 	assert_dict(old.war_pending).is_equal({courier = 1})
+
+
+func test_from_the_farm_on_chapter_threes_cards_drain_cabbages_from_stock_some_with_coins_or_findings_on_top() -> void:
+	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("big_ideas"))).is_equal({stock = 800})
+	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("structured_farm"))).is_equal({farms = 1, findings = 12000, stock = 1000})
+	assert_dict(UpgradeDesk.costs(UpgradeDesk.card_data("route_planning"))).is_equal({farms = 6, coins = 350000, stock = 10000})
+	var cabbage_cards := UpgradeDesk.CARDS.filter(func(c: Dictionary) -> bool: return UpgradeDesk.costs(c).has("stock"))
+	assert_int(cabbage_cards.size()).is_greater_equal(16)
+
+
+func test_stamping_a_card_paid_in_cabbages_takes_them_from_the_store_and_its_coins_from_the_purse() -> void:
+	var save := SaveGame.new()
+	save.storage_cap = 30000
+	save.stock = 12000
+	save.coins = 1500000
+	save.farms_owned.append_array(["K-1", "K-2", "K-3", "K-4", "K-5", "K-6"])
+	var bill := UpgradeDesk.costs(UpgradeDesk.card_data("route_planning"))
+	var on_mat := Vector2i(3000, 0)  # Out of the chute: those can't pay.
+	assert_bool(UpgradeDesk.affords(save, bill, on_mat)).is_false()
+	assert_bool(UpgradeDesk.affords(save, bill)).is_true()
+	for paid_in: String in bill:
+		UpgradeDesk.pay(save, paid_in, bill[paid_in])
+	assert_int(save.stock).is_equal(2000)
+	assert_int(save.coins).is_equal(1150000)
+	assert_int(save.farms_owned.size()).is_equal(6)  # Farms are needed, never spent.
+
+
+func test_the_quarantine_and_merging_cards_are_optional_comforts_the_merging_ones_in_chapter_3() -> void:
+	for id: String in ["rotten_shield", "coin_merge", "token_merge"]:
+		assert_array(UpgradeDesk.Events.DRY_LEFT).contains([id])
+	assert_array(UpgradeDesk.card_data("rotten_shield").needs).contains(["catch_combo"])
+	# The merging cards are chapter 3's, dealt with the wide sheet their projector chains are on.
+	var ids: Array = UpgradeDesk.CARDS.map(func(c: Dictionary) -> String: return c.id)
+	for id: String in ["coin_merge", "token_merge"]:
+		assert_array(UpgradeDesk.card_data(id).needs).contains(["big_ideas"])
+		assert_int(ids.find(id)).is_greater(ids.find("market_intelligence"))
+	assert_array(UpgradeDesk.card_data("token_merge").needs).contains(["token_recovery"])
+	assert_int(UpgradeDesk.card_data("cash_holding").price).is_equal(10000)
+	assert_int(UpgradeDesk.card_data("condense").price).is_equal(30000)
+
+
+func test_the_research_light_card_is_an_optional_findings_card_dealt_with_bribery_after_structured_farm() -> void:
+	var card := UpgradeDesk.card_data("research_light")
+	assert_array(UpgradeDesk.Events.DRY_LEFT).contains(["research_light"])
+	assert_array(card.needs).contains(["structured_farm", "rejected_goods"])
+	var bill := UpgradeDesk.costs(card)
+	assert_int(bill.findings).is_between(20000, 30000)
+	assert_int(bill.size()).is_equal(1)  # Findings only: coins are what the wait for BRIBERY is short of.
+	var german := _german()
+	for text: String in [card.title, card.body]:
+		assert_bool(german.has(text)).override_failure_message("no German for " + text).is_true()

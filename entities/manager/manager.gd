@@ -7,7 +7,8 @@ extends Node3D
 ## raised by save.manager_raise, but never more than can reach the street in the time (capped: at most
 ## MARGIN of deliverable, what the chute can drop and the stock, packs and farm can supply; with
 ## nothing to deliver he doesn't come in yet). Met: the street throws a bonus of quota × price × manager_reward
-## coins in through the window. Missed: a performance concern memo, nothing else. Nothing about a
+## coins in through the window. Missed: a performance concern memo; after EASE_AFTER misses in a row
+## the next quotas ask EASE of it until one is met (save.quota_misses_row). Nothing about a
 ## visit is saved; quitting mid-quota just ends it.
 
 enum Phase { AWAY, ARRIVING, QUOTA, VERDICT, LEAVING }
@@ -25,6 +26,10 @@ const QUOTA_WINDOW := 300.0
 ## stamp, would otherwise scale a single 5 s sample into a random quota.
 const MIN_SPAN := 30.0
 const MIN_QUOTA := 3
+## After EASE_AFTER quotas missed in a row, head office asks EASE of the quota until one is met
+## (flat, it doesn't compound), and the bubble says the target was revised.
+const EASE_AFTER := 2
+const EASE := 0.8
 ## A quota asks for at most this share of what can be delivered in its time. That count already
 ## assumes a quick flick of every cabbage the moment it is there and average restock luck, so a
 ## tenth is left for a fumble, a refusal or a slow chute.
@@ -59,6 +64,8 @@ var sold_at := 0
 var left := 0.0
 var line := ""
 var met := false
+## This visit's quota was eased after misses in a row (the bubble says so).
+var revised := false
 var bonus := 0
 var _wait := FIRST_VISIT
 var _t := 0.0
@@ -190,6 +197,12 @@ static func harvests(save: SaveGame, time: float) -> int:
 	return units
 
 
+## The quota `q` after `misses_row` quotas missed in a row: EASE of it from EASE_AFTER on (never
+## below one cabbage; nothing stays nothing).
+static func eased(q: int, misses_row: int) -> int:
+	return maxi(roundi(q * EASE), mini(q, 1)) if misses_row >= EASE_AFTER else q
+
+
 ## Seconds to the first visit: FIRST_VISIT when the card was `stamped` before the load, else CARD_VISIT
 ## (the wait only runs once the card is stamped, so he comes just after it).
 static func first_wait(stamped: bool) -> float:
@@ -206,6 +219,8 @@ func _arrive(save: SaveGame) -> void:
 		return not c.sold and not c.mini and not c.rotten).size()
 	quota = capped(quota_for(_samples, save.sold, save.manager_time, save.manager_raise, _sample_clock),
 			deliverable(save, fresh))
+	revised = save.quota_misses_row >= EASE_AFTER
+	quota = eased(quota, save.quota_misses_row)
 	if quota <= 0:
 		_wait = SAMPLE_EVERY  # Nothing to deliver (no stock, no pack he can pay for): he looks in again later.
 		return
@@ -227,13 +242,15 @@ func _verdict(save: SaveGame, success: bool) -> void:
 	var moved := save.sold - sold_at
 	if success:
 		bonus = bonus_for(quota, save.sale_price, save.manager_reward)
-		line = tr(PRAISE.pick_random()) + tr(" Bonus: $%d.") % bonus
+		line = tr(PRAISE.pick_random()) + tr(" Bonus: $%s.") % Num.text(bonus)
 		save.quotas_met += 1
+		save.quota_misses_row = 0
 		SaveManager.log_event("quota_met", "", bonus)
 		coins.throw_in_after(0.5, COINS_FROM, bonus)
 	else:
 		line = tr(SCORN.pick_random())
 		save.quotas_missed += 1
+		save.quota_misses_row += 1
 		SaveManager.log_event("quota_missed", "", quota)
 		memo.post({re = "PERFORMANCE CONCERN", note = tr("A quota of %d cabbages was set. %d were moved.") % [quota, moved],
 				bonus = "Nothing. This memo is the consequence."})

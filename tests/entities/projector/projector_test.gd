@@ -343,6 +343,8 @@ func test_everything_bought_fills_the_mat_to_ten_and_hires_two_hands_more_than_t
 	assert_int(full.hands).is_equal(Associate.MAX_VISIBLE + 2)  # DEPARTMENTAL HEADCOUNT's two speed up the visible ten.
 	assert_int(full.hand_trip).is_equal(2)
 	assert_int(full.condense).is_equal(31)  # CONDENSE II to IX on a save without the card's own step.
+	assert_int(full.research_condense).is_equal(8)
+	assert_int(full.golden_condense).is_equal(6)
 	assert_float(full.restock_delay).is_equal_approx(SaveGame.new().restock_delay / 4.0, 0.0001)  # CONVEYOR II and III.
 	assert_float(full.hand_output).is_equal_approx(2.25, 0.0001)
 	assert_int(full.qa_slots).is_equal(5)
@@ -470,8 +472,8 @@ func test_storage_is_its_own_branch_off_manual_handling_with_its_own_heading_not
 	assert_str(Projector.THEMES[heading][0]).is_equal("STORAGE")
 
 
-func test_storage_grows_from_20_to_15000_in_many_small_steps_each_at_least_a_quarter_more_room() -> void:
-	var save := _save(["projector", "offsite_storage", "big_ideas"], 1000000000)
+func test_storage_grows_from_20_to_999999_in_many_steps_each_at_least_a_quarter_more_room() -> void:
+	var save := _save(["projector", "offsite_storage", "big_ideas", "cash_holding"], 1000000000)
 	var caps := [save.storage_cap]
 	var prices := [0]
 	for id: String in _storage_chain():
@@ -480,7 +482,7 @@ func test_storage_grows_from_20_to_15000_in_many_small_steps_each_at_least_a_qua
 		prices.append(Projector.price_of(id, save))
 	assert_int(caps.size()).is_greater_equal(16)
 	assert_int(caps[1]).is_equal(25)
-	assert_int(caps[-1]).is_equal(15000)
+	assert_int(caps[-1]).is_equal(999999)
 	for i in range(1, caps.size()):
 		assert_float(float(caps[i]) / caps[i - 1]).override_failure_message("%d to %d" % [caps[i - 1], caps[i]]).is_greater_equal(1.25)
 		assert_int(prices[i]).is_greater(prices[i - 1])
@@ -496,13 +498,9 @@ func test_each_storage_step_states_its_new_room_and_the_old() -> void:
 	for id: String in _storage_chain():
 		var node := Projector.node_data(id)
 		var old_cap := Projector.cap_at(node.parent)
-		var line := "Storage holds %s cabbages instead of %s." % [_grouped(Projector.cap_at(id)), _grouped(old_cap)]
+		var line := "Storage holds %s cabbages instead of %s." % [Num.text(Projector.cap_at(id)), Num.text(old_cap)]
 		assert_str(node.body).override_failure_message(id).ends_with(line)
 		assert_str(node.body.get_slice("\n", 0)).override_failure_message(id).is_not_equal(line)  # A flavour line first.
-
-
-func _grouped(n: int) -> String:
-	return "%d,%03d" % [floori(n / 1000.0), n % 1000] if n >= 1000 else str(n)
 
 
 func test_storage_past_the_stock_room_shows_with_a_padlock_until_the_off_site_storage_card() -> void:
@@ -712,6 +710,17 @@ func test_no_two_nodes_sit_on_the_same_spot_of_the_wheel() -> void:
 				assert_float(a.at.distance_to(b.at)).override_failure_message("%s and %s overlap" % [a.id, b.id]).is_greater_equal(0.2)
 
 
+## A node straight above or below its parent sits far enough off that its title never touches the
+## parent's disc (tools/projector_layout/layout.py's box: a node and its title take 0.355 high).
+func test_a_node_straight_under_or_over_its_parent_leaves_room_for_its_title() -> void:
+	for node: Dictionary in Projector.NODES:
+		if node.parent == "" or node.get("dept", false):
+			continue
+		var parent := Projector.node_data(node.parent)
+		if absf(parent.at.x - node.at.x) < 0.01 and not parent.get("dept", false):
+			assert_float(absf(parent.at.y - node.at.y)).override_failure_message("%s under %s" % [node.id, node.parent]).is_greater_equal(0.36)
+
+
 func test_no_two_edges_of_the_tree_cross() -> void:
 	var edges := []
 	for node: Dictionary in Projector.NODES:
@@ -746,11 +755,53 @@ func test_a_rope_allows_slack_but_never_stretches() -> void:
 	assert_vector(Projector.rope(tie, Vector3(0.0, -1.0, 0.0), 0.15)).is_equal_approx(Vector3(0.0, -0.15, 0.0), Vector3.ONE * 0.0001)
 
 
-func test_the_affordable_count_is_the_number_of_upgrades_a_budget_covers() -> void:
+func test_the_affordable_count_is_the_number_of_upgrades_a_budget_covers_each_in_its_own_currency() -> void:
 	var upgrades := _upgrades()
-	assert_int(Projector.affordable(0)).is_equal(0)
-	assert_int(Projector.affordable(1 << 30)).is_equal(upgrades.size())
-	assert_int(Projector.affordable(40)).is_equal(upgrades.filter(func(node: Dictionary) -> bool: return node.price <= 40).size())
+	var budget := SaveGame.new()
+	budget.coins = 0
+	budget.findings = 0
+	assert_int(Projector.affordable(budget)).is_equal(0)
+	budget.coins = 1 << 30
+	budget.findings = 1 << 30
+	assert_int(Projector.affordable(budget)).is_equal(upgrades.size())
+	budget.coins = 40
+	budget.findings = 0
+	assert_int(Projector.affordable(budget)).is_equal(upgrades.filter(func(node: Dictionary) -> bool:
+		return UpgradeTree.currency_of(node) == "coins" and node.price <= 40).size())
+	budget.coins = 0
+	budget.findings = 20000
+	assert_int(Projector.affordable(budget)).is_equal(upgrades.filter(func(node: Dictionary) -> bool:
+		return UpgradeTree.currency_of(node) == "findings" and node.price <= 20000).size())
+
+
+func test_a_findings_node_is_paid_in_findings_and_coins_never_buy_it() -> void:
+	var save := _stamped_but(["stars"])
+	save.tree_bought = PackedStringArray(["stock_25", "stock_32", "stock_40", "stock_50", "storage_1", "stock_100", "stock_125",
+			"stock_160", "storage_2", "storage_3"])
+	save.coins = 1 << 30
+	save.findings = 0
+	assert_bool(Projector.can_buy("archive_1", save)).is_false()
+	assert_bool(Projector.buy("archive_1", save)).is_false()
+	save.findings = 15000
+	var limit := save.findings_limit
+	assert_bool(Projector.buy("archive_1", save)).is_true()
+	assert_int(save.findings).is_equal(5000)
+	assert_int(save.coins).is_equal(1 << 30)
+	assert_int(save.findings_limit).is_equal(limit + 60000)
+
+
+func test_the_pull_counts_a_findings_node_only_when_the_findings_cover_it() -> void:
+	var save := _stamped_but(["stars"])
+	save.tree_bought = PackedStringArray(["stock_25", "stock_32", "stock_40", "stock_50", "storage_1", "stock_100", "stock_125",
+			"stock_160", "storage_2", "storage_3"])
+	save.coins = 0
+	save.findings = 0
+	var none_covered := Projector.offers(save).y
+	save.findings = 10000
+	assert_int(Projector.offers(save).y).is_greater(none_covered)
+	var announced := {}
+	assert_bool(Projector.announce(save, announced)).is_true()
+	assert_bool(announced.has("archive_1")).is_true()
 
 
 func test_the_lamp_pulse_stays_gentle() -> void:
@@ -1194,6 +1245,14 @@ func test_the_dock_steps_halve_the_four_second_recharge_twice() -> void:
 	assert_float(save.vacuum_rest).is_equal_approx(1.0, 0.0001)
 
 
+func test_the_dock_steps_are_called_recharge_and_bulk_discharge_after_them_empties_the_bag_at_once() -> void:
+	assert_str(Projector.node_data("vacuum_dock_1").title).contains("RECHARGE")
+	assert_str(Projector.node_data("vacuum_dock_2").title).contains("RECHARGE")
+	var bulk := Projector.node_data(CoinVacuums.BULK_DISCHARGE)
+	assert_str(bulk.title).is_equal("BULK DISCHARGE")
+	assert_str(bulk.parent).is_equal("vacuum_dock_2")
+
+
 func test_an_old_save_with_the_second_robot_gets_the_larger_bag_on_its_path_once() -> void:
 	var save := SaveGame.new()
 	save.tree_bought = PackedStringArray(["vacuum_speed_1", "vacuum_2"])
@@ -1222,7 +1281,7 @@ func test_an_old_save_with_the_third_robot_gets_both_bag_steps_and_never_less_th
 const LATE: Array[String] = ["slogan_6", "hire_associate_7", "conveyor_3", "gold_age", "bin_rebate_5", "research_mult_4",
 		"own_sale_3", "own_lab_3", "research_chance_3", "grow_4", "double_findings", "gold_sale_2", "gold_lab_2", "stock_3000"]
 const WIDE_ONLY: Array[String] = ["slogan_7", "slogan_8", "mandatory_consumption", "headcount_2", "two_handed",
-		"condense_research", "condense_gold", "condense_2", "condense_3", "condense_4", "condense_5",
+		"condense_gold", "condense_gold_3", "condense_gold_4", "condense_gold_6", "condense_2", "condense_3", "condense_4", "condense_5",
 		"condense_6", "condense_7", "condense_8", "condense_9"]
 
 
@@ -1423,12 +1482,12 @@ func test_departmental_headcount_adds_two_hands_at_once_over_a_quarter_more_than
 	assert_str(Projector.node_data("two_handed").parent).is_equal("headcount_2")
 
 
-func test_the_condensation_branch_opens_with_condensed_samples_and_climbs_to_thirty_two_cabbages_in_one() -> void:
+func test_the_plain_condense_chain_needs_no_research_switch_and_climbs_to_thirty_two_cabbages_in_one() -> void:
 	var save := _stamped_but(["stars"])
 	save.coins = 100000000
 	UpgradeDesk.apply("condense", save)
-	assert_bool(Projector.can_buy("condense_2", save)).is_false()  # Samples first.
-	for id: String in ["condense_research", "condense_gold", "condense_2", "condense_3"]:
+	assert_str(Projector.node_data("condense_2").parent).is_equal("dept_manual")
+	for id: String in ["condense_2", "condense_3"]:
 		assert_bool(Projector.buy(id, save)).override_failure_message(id).is_true()
 	assert_int(save.condense).is_equal(4)
 	# Each of II and III is felt: +50%, then +33% on what a condensed cabbage holds.
@@ -1484,3 +1543,192 @@ func test_the_projector_has_no_war_nodes_they_live_in_the_depots_general_program
 	for node: Dictionary in Projector.NODES:
 		assert_bool(String(node.id).begins_with("war_")).override_failure_message(node.id).is_false()
 		assert_bool(node.get("needs", []).has("war_mode")).override_failure_message(node.id).is_false()
+
+
+func test_the_biggest_store_still_fits_the_chutes_stock_counter() -> void:
+	var top := 0
+	for id: String in _storage_chain():
+		top = maxi(top, Projector.cap_at(id))
+	assert_int(top).is_greater(9999)
+	assert_int(top).is_less_equal(int(pow(10, Associate.Feeder.DRUMS)) - 1)
+
+
+func test_the_merging_chains_wait_for_the_coin_merging_card_and_halve_the_wait_and_raise_the_top_coin_to_ten_thousand() -> void:
+	assert_bool(Projector.is_shown("merge_speed_1", _save(["projector", "coin_collector"]))).is_false()
+	for id: String in ["merge_speed_1", "merge_top_1"]:  # Chapter 3's only: none shows before the wide sheet.
+		assert_bool(Projector.is_shown(id, _stamped_but(["big_ideas", "stars"]))).override_failure_message(id).is_false()
+	var save := _save(["projector", "coin_collector", "coin_merge", "big_ideas", "cash_holding"], 1000000000)
+	save.tree_bought = PackedStringArray(["vacuum_speed_1", "vacuum_hopper_1", "vacuum_2", "vacuum_nozzle_1"])
+	assert_float(save.merge_every).is_equal(2.0)
+	assert_int(save.merge_top).is_equal(100)
+	for id: String in ["merge_speed_1", "merge_speed_2", "merge_speed_3", "merge_top_1", "merge_top_2", "merge_top_3", "merge_top_4"]:
+		assert_bool(Projector.buy(id, save)).override_failure_message(id).is_true()
+	assert_float(save.merge_every).is_equal_approx(0.25, 0.0001)
+	assert_int(save.merge_top).is_equal(10000)
+
+
+func test_the_archive_hangs_on_the_projector_with_its_own_heading_and_is_paid_in_findings() -> void:
+	for id: String in ["archive_1", "archive_2", "archive_3", "archive_4", "archive_5"]:
+		assert_str(UpgradeTree.currency_of(Projector.node_data(id))).override_failure_message(id).is_equal("findings")
+	var heading := UpgradeTree.theme_of(Projector.THEMES, "archive_1")
+	assert_str(Projector.THEMES[heading][0]).is_equal("ARCHIVE")
+
+
+func test_the_money_limit_and_the_golden_nodes_have_their_own_headings_and_storage_is_only_the_store() -> void:
+	assert_str(Projector.THEMES[UpgradeTree.theme_of(Projector.THEMES, "coin_limit_1")][0]).is_equal("TREASURY")
+	for id: String in ["gold_sale_1", "gold_lab_1"]:
+		assert_str(Projector.THEMES[UpgradeTree.theme_of(Projector.THEMES, id)][0]).override_failure_message(id).is_equal("GOLDEN")
+	assert_array(Projector.THEMES[UpgradeTree.theme_of(Projector.THEMES, "stock_25")][2]).is_equal(["stock_25"])
+
+
+## The x span [left, right] of the chain of nodes raising `stat`.
+func _span_of(stat: String) -> Vector2:
+	var span := Vector2(INF, -INF)
+	for node: Dictionary in Projector.NODES:
+		if node.get("add", {}).has(stat):
+			span = Vector2(minf(span.x, node.at.x), maxf(span.y, node.at.x))
+	return span
+
+
+func test_the_three_limit_categories_stand_side_by_side_store_then_money_then_findings() -> void:
+	var store := _span_of("storage_cap")
+	var money := _span_of("coin_limit")
+	var findings := _span_of("findings_limit")
+	assert_float(money.x).is_greater(store.y)
+	assert_float(findings.x).is_greater(money.y)
+	assert_float(findings.x - store.y).is_less(2.5)  # Neighbours, not across the sheet.
+
+
+## The levels a condensing chain reaches from 1, buying from `root` down: [stat after each step].
+func _chain_levels(root: String, stat: String) -> Array:
+	var save := _stamped_but(["stars"])
+	save.coins = 1 << 40
+	save.findings = 1 << 40
+	UpgradeDesk.apply("condense", save)
+	var out := []
+	var step := root
+	while step != "":
+		assert_bool(Projector.buy(step, save)).override_failure_message(step).is_true()
+		out.append(save.get(stat))
+		var next := ""
+		for node: Dictionary in Projector.NODES:
+			if node.parent == step and node.get("add", {}).has(stat):
+				next = node.id
+		step = next
+	return out
+
+
+func test_research_cabbages_have_their_own_condensing_chain_paid_in_findings_from_two_to_eight() -> void:
+	assert_array(_chain_levels("condense_research", "research_condense")).is_equal([2, 3, 4, 6, 8])
+	for node: Dictionary in Projector.NODES:
+		if node.get("add", {}).has("research_condense"):
+			assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("findings")
+	assert_str(Projector.node_data("condense_research").parent).is_equal("dept_manual")
+
+
+func test_golden_cabbages_have_their_own_condensing_chain_in_coins_from_two_to_six() -> void:
+	assert_array(_chain_levels("condense_gold", "golden_condense")).is_equal([2, 3, 4, 6])
+	for node: Dictionary in Projector.NODES:
+		if node.get("add", {}).has("golden_condense"):
+			assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("coins")
+	assert_str(Projector.node_data("condense_gold").parent).is_equal("dept_manual")
+
+
+func test_the_consultants_step_nodes_sit_between_reading_the_room_and_yield_optimisation() -> void:
+	assert_str(Projector.node_data("consultant_step_2").parent).is_equal("consultant_mood")
+	assert_str(Projector.node_data("consultant_step_5").parent).is_equal("consultant_step_2")
+	assert_str(Projector.node_data("consultant_step_10").parent).is_equal("consultant_step_5")
+	assert_str(Projector.node_data(Consultant.SMART).parent).is_equal("consultant_step_10")
+	for step: Array in [["consultant_step_2", 350], ["consultant_step_5", 700], ["consultant_step_10", 1200]]:
+		assert_int(Projector.node_data(step[0]).price).override_failure_message(step[0]).is_equal(step[1])
+
+
+func _old_save() -> SaveGame:
+	var save := SaveGame.new()
+	save.migration = 7
+	return save
+
+
+func test_an_old_saves_archive_steps_move_to_the_projector_without_raising_the_limit_again() -> void:
+	var save := _old_save()
+	save.farm_bought = PackedStringArray(["hand_2", "archive_1", "archive_2"])
+	save.findings_limit = 200000
+	UpgradeDesk.migrate(save)
+	assert_array(Array(save.farm_bought)).is_equal(["hand_2"])
+	assert_bool(save.tree_bought.has("archive_1") and save.tree_bought.has("archive_2")).is_true()
+	assert_int(save.findings_limit).is_equal(200000)
+	Projector.migrate_round_two(save)  # Safe to rerun.
+	assert_int(save.tree_bought.count("archive_1")).is_equal(1)
+
+
+func test_an_old_save_with_yield_optimisation_gets_the_consultants_steps_free() -> void:
+	var save := _old_save()
+	save.tree_bought = PackedStringArray(["consultant_speed_1", "consultant_mood", Consultant.SMART])
+	save.coins = 123
+	UpgradeDesk.migrate(save)
+	for id: String in ["consultant_step_2", "consultant_step_5", "consultant_step_10"]:
+		assert_bool(save.tree_bought.has(id)).override_failure_message(id).is_true()
+	assert_int(save.coins).is_equal(123)
+	var without := _old_save()
+	without.tree_bought = PackedStringArray(["consultant_speed_1", "consultant_mood"])
+	UpgradeDesk.migrate(without)
+	assert_bool(without.tree_bought.has("consultant_step_2")).is_false()
+
+
+func test_an_old_save_condensing_research_and_gold_keeps_each_at_the_plain_level_it_had_even_past_the_chains_top() -> void:
+	var save := _old_save()
+	save.stamped = PackedStringArray(["condense"])
+	save.condense = 6
+	save.tree_bought = PackedStringArray(["condense_research", "condense_gold", "condense_2", "condense_3", "condense_4"])
+	UpgradeDesk.migrate(save)
+	assert_int(save.research_condense).is_equal(6)
+	assert_int(save.golden_condense).is_equal(6)
+	for id: String in ["condense_research_3", "condense_research_4", "condense_research_6", "condense_gold_3", "condense_gold_4", "condense_gold_6"]:
+		assert_bool(save.tree_bought.has(id)).override_failure_message(id).is_true()
+	assert_bool(save.tree_bought.has("condense_research_8")).is_false()
+	# Past a chain's top the whole chain is bought and the old level stays; a kind never condensed stays single.
+	var high := _old_save()
+	high.condense = 32
+	high.tree_bought = PackedStringArray(["condense_gold"])
+	UpgradeDesk.migrate(high)
+	assert_int(high.golden_condense).is_equal(32)
+	for id: String in ["condense_gold_3", "condense_gold_4", "condense_gold_6"]:
+		assert_bool(high.tree_bought.has(id)).override_failure_message(id).is_true()
+	assert_int(high.research_condense).is_equal(1)
+
+
+## The average boost a lamp gives over a whole cycle: `mult` while it glows `time` s of every `every` + `time`.
+func _cycle(mult: float, time: float, every: float) -> float:
+	return 1.0 + (mult - 1.0) * time / (every + time)
+
+
+func test_the_golden_lamps_trio_is_back_each_step_lifting_its_average_boost_by_about_a_quarter() -> void:
+	var save := SaveGame.new()
+	var last := _cycle(save.lamp_mult, save.lamp_time, save.lamp_every)
+	for id: String in ["lamp_mult", "lamp_time", "lamp_every"]:
+		Projector.apply(id, save)
+		var now := _cycle(save.lamp_mult, save.lamp_time, save.lamp_every)
+		assert_float(now / last).override_failure_message(id).is_greater_equal(1.18)
+		last = now
+	assert_float(save.lamp_mult).is_equal(8.0)
+	assert_float(save.lamp_time).is_equal(30.0)
+	assert_float(save.lamp_every).is_equal_approx(90.0, 0.001)
+	assert_array(Projector.node_data("lamp_mult").needs).contains(["golden_lamp"])
+
+
+func test_the_research_lights_trio_mirrors_the_lamps_and_waits_for_its_card() -> void:
+	var save := SaveGame.new()
+	var last := _cycle(save.lab_lamp_mult, save.lab_lamp_time, save.lab_lamp_every)
+	for id: String in ["lab_lamp_mult", "lab_lamp_time", "lab_lamp_every"]:
+		Projector.apply(id, save)
+		var now := _cycle(save.lab_lamp_mult, save.lab_lamp_time, save.lab_lamp_every)
+		assert_float(now / last).override_failure_message(id).is_greater_equal(1.18)
+		last = now
+	assert_array(Projector.node_data("lab_lamp_mult").needs).contains(["research_light"])
+	assert_bool(Projector.is_shown("lab_lamp_mult", SaveGame.new())).is_false()
+
+
+func test_golden_cabbages_join_the_research_light_with_its_last_node() -> void:
+	var node := Projector.node_data(QaBay.LAB_GOLD)
+	assert_str(node.parent).is_equal("lab_lamp_mult")
+	assert_bool(node.has("mul") or node.has("add")).is_false()  # The lab reads tree_bought.

@@ -123,6 +123,16 @@ func test_the_spoilage_memo_keeps_hands_off_rotten_units_until_they_bin_them() -
 	assert_bool(Associate.skips_rotten(save)).is_false()
 
 
+func test_after_the_quarantine_card_no_hand_touches_a_rotten_cabbage_not_even_to_bin_it() -> void:
+	var save := SaveGame.new()
+	save.stamped.append(Cabbage.SHIELD_CARD)
+	save.hands_bin = 1  # WASTE HANDLING bought: still no hand takes one.
+	assert_bool(Associate.skips_rotten(save)).is_true()
+	var rotten := _cabbage(Vector3(1.1, 0.87, 1.0), true)
+	for for_research: bool in [false, true]:
+		assert_object(Associate.pick_target([rotten], ENTRY, null, [], Associate.skips_rotten(save), for_research)).is_null()
+
+
 func test_a_research_hand_never_takes_a_rotten_unit() -> void:
 	var rotten := _cabbage(Vector3(1.1, 0.87, 1.0), true)
 
@@ -139,11 +149,25 @@ func test_before_lab_priority_research_units_go_to_whichever_hand_is_nearest() -
 
 
 func test_under_lab_priority_money_hands_leave_research_units_alone() -> void:
+	var save := SaveManager.save
+	save.stamped.append(HandSchedule.LAB_CARD)
+	UpgradeDesk.apply(HandSchedule.LAB_CARD, save)
+	var struck := HandSchedule.forbidden(save, false)
 	var unit := _cabbage(Vector3(0.6, 0.87, 0.75), false, true)
 	var plain := _cabbage(Vector3(0.0, 0.87, 0.3))
 
-	assert_object(Associate.pick_target([plain, unit], ENTRY, null, [], false, false, true)).is_same(plain)
-	assert_object(Associate.pick_target([unit], ENTRY, null, [], false, false, true)).is_null()
+	assert_object(Associate.pick_target([plain, unit], ENTRY, null, [], false, false, true, false, struck)).is_same(plain)
+	assert_object(Associate.pick_target([unit], ENTRY, null, [], false, false, true, false, struck)).is_null()
+
+
+func test_under_lab_priority_money_hands_take_blue_again_once_the_schedule_clears_it() -> void:
+	var save := SaveManager.save
+	save.stamped.append_array([HandSchedule.CARD, "research_cabbage", HandSchedule.LAB_CARD])
+	UpgradeDesk.apply(HandSchedule.LAB_CARD, save)
+	HandSchedule.toggle(save, false, "research")
+	var unit := _cabbage(Vector3(0.6, 0.87, 0.75), false, true)
+
+	assert_object(Associate.pick_target([unit], ENTRY, null, [], false, false, true, false, HandSchedule.forbidden(save, false))).is_same(unit)
 
 
 func test_under_lab_priority_research_hands_take_research_units_before_nearer_plain_ones() -> void:
@@ -462,9 +486,8 @@ func test_a_regular_hand_leaves_a_cabbage_kind_its_schedule_forbids() -> void:
 
 func test_research_hands_still_take_what_regular_hands_are_forbidden() -> void:
 	var save := SaveManager.save
-	save.stamped.append(HandSchedule.CARD)
-	save.tree_bought.append(HandSchedule.NODES.research)
-	HandSchedule.toggle(save, false, "research")
+	save.stamped.append_array([HandSchedule.CARD, "research_cabbage", HandSchedule.LAB_CARD])
+	UpgradeDesk.apply(HandSchedule.LAB_CARD, save)  # Strikes blue for hired hands.
 	var blue := _cabbage(Vector3(0.6, 0.87, 0.3), false, true)
 	var lab_entry := Associate.park_spot(0, true)
 

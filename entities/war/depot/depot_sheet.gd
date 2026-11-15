@@ -310,12 +310,12 @@ func hint(spot: StringName) -> String:
 		return ""
 	var unit := what.trim_prefix(BUY)
 	var text := tr("Requisition one %s: %s cabbages, %d s of training.") % [tr(CALLED[unit]),
-			FarmScreen._thousands(WarRules.unit_cabbage_price(unit)), ceili(WarRules.training_seconds(save, unit))]
+			Num.text(WarRules.unit_cabbage_price(unit)), ceili(WarRules.training_seconds(save, unit))]
 	var why := refusal(save, unit, _out())
 	if why == "STAFF AT CAPACITY":
 		text += " " + tr("Staff at capacity: %d / %d.") % [WarRules.army_size(save), WarRules.army_cap(save)]
 	elif why != "":
-		text += " " + tr("Short: %s cabbages.") % FarmScreen._thousands(WarRules.unit_cabbage_price(unit) - UpgradeDesk.spendable(save, "stock", _out()))
+		text += " " + tr("Short: %s cabbages.") % Num.text(WarRules.unit_cabbage_price(unit) - UpgradeDesk.spendable(save, "stock", _out()))
 	return text
 
 
@@ -555,7 +555,7 @@ func _print_column(save: SaveGame, unit: String, column: Control, out: Vector2i)
 	(column.get_node("Speed/Text") as Label).text = tr("SPEED %s") % String.num(stats.speed, 1)
 	(column.get_node("Target/Text") as Label).text = tr(TARGETS[stats.target])
 	(column.get_node("Ready") as Label).text = "%d×" % int(save.army.get(unit, 0))  # Ready, under the figure: a count on a game piece.
-	(column.get_node("Price/Amount") as Label).text = FarmScreen._thousands(WarRules.unit_cabbage_price(unit))  # After the cabbage icon.
+	(column.get_node("Price/Amount") as Label).text = Num.text(WarRules.unit_cabbage_price(unit))  # After the cabbage icon.
 	var why := refusal(save, unit, out)
 	(column.get_node("Note") as Label).text = tr(why) if why != "" else ""
 	for label: String in ["Name", "Hire/Word", "Note", "Hp/Text", "Damage/Text", "Speed/Text", "Target/Text"]:

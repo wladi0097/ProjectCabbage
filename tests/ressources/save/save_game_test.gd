@@ -251,7 +251,7 @@ func _limit_steps(limit: String) -> Array:
 	var coins := limit == "coin_limit"
 	var card := UpgradeDesk.card_data("cash_holding" if coins else "archive_capacity")
 	var out := [[card.id, card.price, card]]
-	for node: Dictionary in (Projector.NODES if coins else FarmTree.NODES):
+	for node: Dictionary in Projector.NODES:
 		if node.get("add", {}).has(limit):
 			out.append([node.id, node.price, node])
 	return out
@@ -326,12 +326,12 @@ func test_everything_needed_before_chapter_3_is_affordable_under_the_starting_li
 		var bill := UpgradeDesk.costs(card)
 		assert_int(bill.get("coins", 0)).override_failure_message(card.id).is_less_equal(save.coin_limit)
 		assert_int(bill.get("findings", 0)).override_failure_message(card.id).is_less_equal(save.findings_limit)
-	# The whole storage chain (the last card is paid in more cabbages than the depot holds), and every
-	# projector node a card waits for.
+	# The storage chain to ANNEXED PROVINCE (the last card is paid in more cabbages than the depot
+	# holds; the steps past it are chapter 3's, behind the cash card), and every projector node a card waits for.
 	var needed: Array = UpgradeDesk.CARDS.filter(func(card: Dictionary) -> bool: return card.has("tree")).map(func(card: Dictionary) -> String: return card.tree)
 	assert_array(needed).is_not_empty()
 	for node: Dictionary in Projector.NODES:
-		if node.get("add", {}).has("storage_cap") or node.id in needed:
+		if (node.get("add", {}).has("storage_cap") and Projector.cap_at(node.id) <= 15000) or node.id in needed:
 			assert_int(node.price).override_failure_message(node.id).is_less_equal(save.coin_limit)
 
 
@@ -349,9 +349,9 @@ func test_chapter_3_never_asks_for_more_than_the_limit_its_cards_so_far_allow() 
 	for site: StringName in FarmRegister.WORTH:  # The cheapest site and the dearest.
 		assert_int(FarmRegister.asking(start, site).coins).override_failure_message(site).is_greater(start.coin_limit)
 		assert_int(FarmRegister.asking(start, site).coins).override_failure_message(site).is_less_equal(start.coin_limit * UpgradeDesk.LIMIT_RAISE)
-	# The projector's steps wait for the wide sheet, CH2's for the archive card.
+	# The projector's steps wait for the wide sheet, the archive's for its card too.
 	assert_array(Projector.node_data("coin_limit_1").needs).contains(["big_ideas", "cash_holding"])
-	assert_array(FarmTree.node_data("archive_1").needs).contains(["archive_capacity"])
+	assert_array(Projector.node_data("archive_1").needs).contains(["archive_capacity", "big_ideas"])
 	# The four cards that can lie in the tray before either limit is raised fit the starting limits.
 	var start_ids := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout"]
 	for id: String in start_ids:

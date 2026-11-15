@@ -362,3 +362,47 @@ func test_condensed_drops_let_head_office_ask_for_twice_as_many_cabbages() -> vo
 	UpgradeDesk.apply("condense", save)
 	# Each drop now holds two; the rotten share is floored after doubling.
 	assert_int(Manager.deliverable(save, 0)).is_between(single * 2, single * 2 + 1)
+
+
+func test_after_two_quotas_missed_in_a_row_head_office_asks_a_fifth_less() -> void:
+	assert_int(Manager.eased(20, 0)).is_equal(20)
+	assert_int(Manager.eased(20, 1)).is_equal(20)
+	assert_int(Manager.eased(20, 2)).is_equal(16)
+
+
+func test_the_eased_target_does_not_compound_with_more_misses() -> void:
+	assert_int(Manager.eased(20, 5)).is_equal(16)
+
+
+func test_an_eased_quota_still_asks_for_at_least_one_cabbage_and_nothing_stays_nothing() -> void:
+	assert_int(Manager.eased(1, 2)).is_equal(1)
+	assert_int(Manager.eased(0, 2)).is_equal(0)
+
+
+func test_misses_in_a_row_are_counted_and_a_met_quota_clears_them() -> void:
+	var manager := _manager()
+	_asking(manager)
+	_run(manager, SaveManager.save.manager_time + STEP)
+	assert_int(SaveManager.save.quota_misses_row).is_equal(1)
+
+	SaveManager.save.quota_misses_row = 3
+	manager._verdict(SaveManager.save, true)
+	assert_int(SaveManager.save.quota_misses_row).is_equal(0)
+
+
+func test_after_two_misses_in_a_row_the_visit_says_head_office_revised_the_target() -> void:
+	var manager := _manager()
+	SaveManager.save.quota_misses_row = 2
+	SaveManager.save.stock = 100
+	_asking(manager)
+
+	assert_bool(manager.revised).is_true()
+
+
+func test_a_visit_after_a_single_miss_is_not_revised() -> void:
+	var manager := _manager()
+	SaveManager.save.quota_misses_row = 1
+	SaveManager.save.stock = 100
+	_asking(manager)
+
+	assert_bool(manager.revised).is_false()

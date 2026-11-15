@@ -138,6 +138,8 @@ var _haggle_moving: Tween
 @onready var _asked: Label = $Page/Form/Asked
 @onready var _start: Control = $Page/Form/Start
 @onready var _start_word: Label = $Page/Form/Start/Word
+@onready var _start_handshake: Control = $Page/Form/Start/Handshake
+@onready var _start_envelope: Control = $Page/Form/Start/Envelope
 @onready var _haggle: Node3D = $Haggle
 @onready var _haggle_rest := _haggle.position
 ## The negotiation letter (its own scene) lying over the deed.
@@ -244,7 +246,7 @@ static func code(at: String) -> String:
 
 ## `amount` of what an offer is made in, as the form types it: "250", "$150,000".
 static func amount_text(paid_in: String, amount: int) -> String:
-	return ("$" if paid_in == "coins" else "") + FarmScreen._thousands(amount)
+	return ("$" if paid_in == "coins" else "") + Num.text(amount)
 
 
 ## A fresh, unstamped deed for the farm called `called` on site `at`: its `price` with what is
@@ -286,10 +288,10 @@ func letter(kind: StringName, strip := "") -> void:
 ## each amount what is short of it (`lacks`, FarmRegister.short). Called again whenever either changes.
 func print_price(price: Dictionary, lacks := {}) -> void:
 	bill = price
-	_coins.text = "$" + FarmScreen._thousands(price.coins) if price.has("coins") else ""
-	_cabbages.text = tr("%s cabbages") % FarmScreen._thousands(price.stock) if price.has("stock") else ""
-	_coins_short.text = tr("SHORT %s") % ("$" + FarmScreen._thousands(lacks.coins)) if lacks.has("coins") else ""
-	_cabbages_short.text = tr("SHORT %s") % FarmScreen._thousands(lacks.stock) if lacks.has("stock") else ""
+	_coins.text = "$" + Num.text(price.coins) if price.has("coins") else ""
+	_cabbages.text = tr("%s cabbages") % Num.text(price.stock) if price.has("stock") else ""
+	_coins_short.text = tr("SHORT %s") % ("$" + Num.text(lacks.coins)) if lacks.has("coins") else ""
+	_cabbages_short.text = tr("SHORT %s") % Num.text(lacks.stock) if lacks.has("stock") else ""
 	reprint()
 
 
@@ -330,7 +332,7 @@ func print_staff(rows: Array) -> void:
 			_figures.add_child(figure)
 		line.position = Vector2(0.0, i * ROW_HEIGHT)
 		(line.get_node("Name") as Label).text = row.name
-		(line.get_node("Have") as Label).text = tr("HAVE %d") % row.have
+		(line.get_node("Have") as Label).text = tr("HAVE %s") % Num.text(row.have)
 		(line.get_node("Take") as Label).text = str(row.take)
 		var stand := STAFF_AT + line.position + (line.get_node("Stand") as Control).position
 		(_figures.get_node(NodePath(row.unit)) as Node3D).position = Vector3(stand.x / PIXELS_PER_METRE - SIZE.x / 2.0, 0.0, stand.y / PIXELS_PER_METRE)
@@ -391,7 +393,9 @@ func print_haggle(paid_in := "", size := 0, owner_name := "", replies: Array = [
 	if not on:
 		return
 	_start_word.text = tr("START HAGGLING" if replies.is_empty() else ("RESUME HAGGLING" if left > 0 else "NEGOTIATION RECORD"))
-	_asked.text = tr("ASKED %s") % ("$" + FarmScreen._thousands(asked))
+	_start_envelope.visible = paid_in == "coins"  # The bribe's sign; a handshake for cabbages.
+	_start_handshake.visible = paid_in != "coins"
+	_asked.text = tr("ASKED %s") % ("$" + Num.text(asked))
 	negotiation.print_letter(paid_in, size, owner_name, bill, replies, left, have, note)
 	reprint()
 

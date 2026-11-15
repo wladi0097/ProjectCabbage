@@ -13,6 +13,9 @@ extends MultiMeshInstance3D
 ## beyond that is held back (_withheld, still pending_value, so never lost): every KNOCK seconds a
 ## coin shows at the gap and drops back, and as soon as coins are picked up it comes in, as the
 ## fewest coins.
+## Once MERGE_CARD is stamped, every save.merge_every seconds the coins lying on the desk merge: 5 or 2
+## of one coin (MERGE_RATIO, merge_pick) fly together over the first of them and pop up as the next
+## coin up, at most save.merge_top; the stacks they left drop down onto what is left.
 
 signal thrown(origin: Vector3, count: int)
 signal bounced(position: Vector3)
@@ -22,7 +25,7 @@ signal deposited(position: Vector3)
 ## Part of a payout did not fit under the coin limit and was lost.
 signal refused(position: Vector3)
 
-enum State { FLYING, SETTLING, RESTING, HOMING }
+enum State { FLYING, SETTLING, RESTING, HOMING, MERGING }
 
 const MAX_COINS := 4096
 ## The MultiMesh grows by this many instances when the coins outgrow it (never shrinks): the whole
@@ -92,6 +95,18 @@ const PICKUP_RADIUS := 0.1
 const MAX_STROKE := 0.5
 ## Everything swept up in one frame has left within this many seconds, however much it is.
 const HOME_SPREAD := 0.3
+## The desk card that merges the coins on the desk (save.merge_every, merge_top).
+const MERGE_CARD := "coin_merge"
+## Merging coins first wobble once (MERGE_SHAKE s, MERGE_SHAKE_SIZE m to each side), then fly together
+## over MERGE_TIME s to MERGE_LIFT m above the first of them; the new coin hops up once at MERGE_HOP
+## m/s (no bounce when it lands) and swells MERGE_SWELL bigger for MERGE_POP s as it goes.
+const MERGE_SHAKE := 0.18
+const MERGE_SHAKE_SIZE := 0.003
+const MERGE_TIME := 0.35
+const MERGE_LIFT := 0.06
+const MERGE_HOP := 1.6
+const MERGE_SWELL := 0.6
+const MERGE_POP := 0.3
 
 @export var desk_height := 0.76
 @export var deposit: Node3D
@@ -125,6 +140,8 @@ class Coin:
 	var gone := false  # taken by a vacuum, dropped from _coins at the end of vacuum_at
 	var slot := -1  # the MultiMesh instance _upload last wrote it to (-1: write it again)
 	var lost := false  # a refused payout's coin (worth nothing): up to the gap, then back down into the street
+	var merged := 0  # merging: the first of the group, which becomes a coin worth this much (the others 0, they go)
+	var pop := 0.0  # seconds left of a merged coin's swell
 
 
 # ponytail: Array of RefCounted coins, the moving ones rewritten each frame (resting ones stay put in
@@ -153,6 +170,8 @@ var _tallest: float = MAX_STACK * THICKNESS * SCALES.map(func(s: Vector3) -> flo
 var _swept_to := Vector3.INF
 var _swept_rise := Vector3.ZERO
 var _landed := false
+## Seconds to the next merge (MERGE_CARD).
+var _merge_in := 0.0
 
 
 func _ready() -> void:
@@ -293,11 +312,18 @@ func _process(delta: float) -> void:
 		_last_hand = null
 	if _withheld > 0:
 		_release(delta)
+	var save := SaveManager.save
+	if save.stamped.has(MERGE_CARD):
+		_merge_in -= delta
+		if _merge_in <= 0.0:
+			_merge_in = save.merge_every
+			merge_once(save.merge_top)
 	var moving := false
 	for i in range(_coins.size() - 1, -1, -1):
 		var coin := _coins[i]
 		match coin.state:
 			State.FLYING:
+				coin.pop = maxf(coin.pop - delta, 0.0)
 				_fly(coin, delta)
 				if coin.lost and coin.toss <= 0.0 and coin.xf.origin.y < desk_height:
 					_coins[i] = _coins[-1]  # Back under the sill, out of sight: gone.
@@ -315,6 +341,11 @@ func _process(delta: float) -> void:
 					_coins.pop_back()
 					bank(SaveManager.save, coin.value)
 					deposited.emit(coin.xf.origin)
+			State.MERGING:
+				var first := coin.merged > 0
+				if _merge_step(coin, delta) and not first:
+					_coins[i] = _coins[-1]  # Merged into the first of its group: gone.
+					_coins.pop_back()
 			State.RESTING:
 				continue
 		moving = true
@@ -446,6 +477,126 @@ static func home_delay(i: int, count: int) -> float:
 	return i * minf(HOME_STAGGER, HOME_SPREAD / maxi(count, 1))
 
 
+## Seconds the `i`th of `count` things out of a coin robot's bag waits before it flies off: HOME_STAGGER
+## apart, or with `bulk` (BULK DISCHARGE) the whole bag within HOME_SPREAD (home_delay).
+static func bag_delay(i: int, count: int, bulk: bool) -> float:
+	return home_delay(i, count) if bulk else i * HOME_STAGGER
+
+
+## How many of DENOMINATIONS[i] make one of the next coin up: 5 or 2.
+static func merge_ratio(i: int) -> int:
+	@warning_ignore("integer_division")
+	return DENOMINATIONS[i + 1] / DENOMINATIONS[i]
+
+
+## The coins of `values` that merge next, as their indices: the first merge_ratio of the smallest
+## coin there are enough of whose next coin up is at most `top`. None: nothing to merge.
+static func merge_pick(values: Array[int], top: int) -> Array[int]:
+	for i in DENOMINATIONS.size() - 1:
+		if DENOMINATIONS[i + 1] > top:
+			break
+		var found: Array[int] = []
+		for at in values.size():
+			if values[at] == DENOMINATIONS[i]:
+				found.append(at)
+				if found.size() == merge_ratio(i):
+					return found
+	return []
+
+
+## One merge, if the resting stacks hold one (merge_pick, top coins first): the coins leave their
+## stacks (which drop down onto what is left) and fly together over the first of them. True if any.
+func merge_once(top: int) -> bool:
+	var coins: Array[Coin] = []
+	var cells: Array[Vector2i] = []
+	for cell: Vector2i in _stacks:
+		var stack: Array = _stacks[cell]
+		if not _settled(stack):
+			continue
+		for i in range(stack.size() - 1, -1, -1):
+			coins.append(stack[i])
+			cells.append(cell)
+	var values: Array[int] = []
+	for coin in coins:
+		values.append(coin.value)
+	var pick := merge_pick(values, top)
+	if pick.is_empty():
+		return false
+	var spot := coins[pick[0]].xf.origin + Vector3.UP * MERGE_LIFT
+	var touched := {}
+	for at in pick:
+		var coin := coins[at]
+		(_stacks[cells[at]] as Array).erase(coin)
+		touched[cells[at]] = true
+		coin.state = State.MERGING
+		coin.from = coin.xf
+		coin.to = Transform3D(coin.xf.basis, spot)
+		coin.t = 0.0
+		coin.delay = MERGE_SHAKE
+		coin.merged = 0
+	var first := coins[pick[0]]
+	first.merged = values[pick[0]] * pick.size()
+	first.cell = cells[pick[0]]
+	for cell: Vector2i in touched:
+		_drop_down(cell)
+	return true
+
+
+## A merging coin wobbles once on its stack, then flies on toward the group's spot, rising a little and
+## spinning. Arrived (true), the first of the group becomes the merged coin and hops up off the spot
+## once, swelling, and lands without a bounce; the rest are gone.
+func _merge_step(coin: Coin, delta: float) -> bool:
+	if coin.delay > 0.0:
+		coin.delay = maxf(coin.delay - delta, 0.0)
+		coin.xf.origin = coin.from.origin + shake_offset(1.0 - coin.delay / MERGE_SHAKE)
+		return false
+	coin.t = minf(coin.t + delta / MERGE_TIME, 1.0)
+	var k := ease(coin.t, 2.0)
+	coin.xf.origin = coin.from.origin.lerp(coin.to.origin, k) + Vector3.UP * MERGE_LIFT * 4.0 * k * (1.0 - k)
+	coin.xf.basis = (Basis(Vector3.UP, delta * 14.0) * coin.xf.basis).orthonormalized()
+	if coin.t < 1.0:
+		return false
+	if coin.merged > 0:
+		coin.value = coin.merged
+		coin.merged = 0
+		coin.state = State.FLYING
+		coin.velocity = Vector3.UP * MERGE_HOP
+		coin.spin = Vector3(randf_range(-1, 1), 1.0, randf_range(-1, 1)).normalized() * 12.0
+		coin.has_bounced = true  # one jump: it lands without the payout's bounce
+		coin.pop = MERGE_POP
+		coin.slot = -1
+	return true
+
+
+## The coins of the stack on `cell` lie on the desk and on each other again: one whose coins below
+## left settles down onto what is left.
+func _drop_down(cell: Vector2i) -> void:
+	var stack: Array = _stacks.get(cell, [])
+	if stack.is_empty():
+		_stacks.erase(cell)
+		return
+	var y := desk_height
+	for coin: Coin in stack:
+		var want := y + thickness(coin.value) * 0.5
+		y += thickness(coin.value)
+		if absf(coin.xf.origin.y - want) > 0.0001:
+			coin.from = coin.xf
+			coin.to = Transform3D(coin.xf.basis, Vector3(coin.xf.origin.x, want, coin.xf.origin.z))
+			coin.state = State.SETTLING
+			coin.t = 0.0
+
+
+## How far a merging coin (or token) sits off its spot `k` (0..1) through its wobble: one slow sine,
+## out to one side and the other and back to rest.
+static func shake_offset(k: float) -> Vector3:
+	return Vector3.RIGHT * MERGE_SHAKE_SIZE * sin(TAU * clampf(k, 0.0, 1.0))
+
+
+## The swell of a merged coin with `pop` seconds of it left: 1 (none) up to 1 + MERGE_SWELL halfway.
+static func pop_scale(pop: float) -> float:
+	return 1.0 + MERGE_SWELL * sin(PI * clampf(1.0 - pop / MERGE_POP, 0.0, 1.0)) if pop > 0.0 else 1.0
+
+
 ## A coin vacuum at `point` sucks up the resting stacks within `reach`, at most `room` coins, and
 ## holds them (pending_value still counts them) until bank_from. Returns (coins taken, their value).
 func vacuum_at(point: Vector3, reach: float, room: int) -> Vector2i:
@@ -500,12 +651,14 @@ static func _settled(stack: Array) -> bool:
 	return true
 
 
-## A vacuum empties its bag at `point`: `value` worth of the held coins fly from there to the deposit.
-func bank_from(point: Vector3, value: int) -> void:
+## A vacuum empties its bag at `point`: `value` worth of the held coins fly from there to the deposit,
+## one by one, or all within HOME_SPREAD with `bulk` (BULK DISCHARGE).
+func bank_from(point: Vector3, value: int, bulk := false) -> void:
 	value = mini(value, _held)
 	_held -= value
 	var order := 0
-	for v in coin_values(value):
+	var values := coin_values(value)
+	for v in values:
 		if _coins.size() >= MAX_COINS:
 			_deposit_now(v)
 			continue
@@ -514,7 +667,7 @@ func bank_from(point: Vector3, value: int) -> void:
 		coin.state = State.HOMING
 		coin.xf = Transform3D(Basis(), point + Vector3(randf_range(-1, 1), 0.0, randf_range(-1, 1)) * 0.02)
 		coin.from = coin.xf
-		coin.delay = order * HOME_STAGGER
+		coin.delay = bag_delay(order, values.size(), bulk)
 		order += 1
 		_coins.append(coin)
 
@@ -595,6 +748,8 @@ func _upload() -> void:
 		var xf := _coins[i].xf
 		if _coins[i].value >= BIG_VALUE:
 			xf.basis = xf.basis * Basis.from_scale(SCALES[tier(_coins[i].value)])
+		if _coins[i].state == State.FLYING and _coins[i].pop > 0.0:
+			xf.basis = xf.basis * Basis.from_scale(Vector3.ONE * pop_scale(_coins[i].pop))
 		if _coins[i].state == State.FLYING and _coins[i].delay > 0.0:
 			xf = Transform3D(Basis.from_scale(Vector3.ZERO), xf.origin)
 		var o := i * FLOATS

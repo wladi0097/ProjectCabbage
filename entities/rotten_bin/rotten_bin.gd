@@ -66,7 +66,7 @@ func _size(to: Vector3) -> void:
 func _connect_window() -> void:
 	var window := get_tree().get_first_node_in_group(&"sale_window") as SaleWindow
 	if window != null:
-		window.fined.connect(func(_cabbage: Cabbage, fine: int) -> void: $Notice.show_fine(fine))
+		window.fined.connect(func(_cabbage: Cabbage, fine: int, burst: bool) -> void: $Notice.show_fine(fine, burst))
 
 
 func _process(delta: float) -> void:

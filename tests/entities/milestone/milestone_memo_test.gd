@@ -138,6 +138,18 @@ func test_the_six_original_memos_keep_their_bonus_so_old_saves_never_get_it_twic
 		assert_bool(Memo.memo(id).has("key")).override_failure_message(id).is_true()
 
 
+func test_the_street_pays_double_from_8500_cabbages_sold_under_its_old_id() -> void:
+	var save := SaveGame.new()
+	save.milestones = PackedStringArray(["units_10", "units_25", "units_100", "units_250", "units_1000", "units_2500"])
+	save.sold = 8499
+	assert_dict(Memo.due(save)).is_empty()
+	save.sold = 8500
+	assert_str(Memo.due(save).id).is_equal("units_10000")
+	var street := save.marketing
+	Memo.apply(save, Memo.due(save))
+	assert_float(save.marketing).is_equal_approx(street * 2.0, 0.0001)
+
+
 func test_a_memo_unlocks_the_steam_achievement_named_after_its_id_upper_cased() -> void:
 	assert_str(preload("res://globalScripts/steam_achievements.gd").api_name("units_25")).is_equal("UNITS_25")
 

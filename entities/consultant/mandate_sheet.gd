@@ -70,9 +70,9 @@ func _step(field: StringName, dir: int) -> void:
 func _show(save: SaveGame) -> void:
 	_duty.set_pressed_no_signal(save.consultant_on)
 	%Bounce.text = "%d%%" % save.consultant_bounce
-	%Floor.text = "$%d" % save.consultant_floor
-	%Ceiling.text = tr("NONE") if save.consultant_ceiling <= 0 else "$%d" % save.consultant_ceiling
-	%Price.text = "$%d" % save.sale_price
+	%Floor.text = "$" + Num.text(save.consultant_floor)
+	%Ceiling.text = tr("NONE") if save.consultant_ceiling <= 0 else "$" + Num.text(save.consultant_ceiling)
+	%Price.text = "$" + Num.text(save.sale_price)
 	%Refused.text = "%d%%" % roundi(100.0 * (1.0 - Slate.acceptance(save)))
 	var line := forecast_line(save)
 	%Forecast.text = line

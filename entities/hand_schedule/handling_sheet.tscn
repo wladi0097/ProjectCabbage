@@ -203,7 +203,7 @@ layout_mode = 2
 [node name="Foot" type="Label" parent="Sheet/Paper/Stack"]
 layout_mode = 2
 theme_type_variation = &"MandateSmall"
-text = "This schedule only withholds. Clearances for golden cabbages and the handling of rotten ones are governed elsewhere. Padlocked kinds are added on the projector. You may always handle a cabbage yourself."
+text = "This schedule only withholds. Clearances for golden cabbages and the handling of rotten ones are governed elsewhere. Padlocked kinds are added by separate paperwork. You may always handle a cabbage yourself."
 autowrap_mode = 3
 
 [node name="Click" type="AudioStreamPlayer" parent="."]

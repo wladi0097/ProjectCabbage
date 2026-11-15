@@ -100,6 +100,9 @@ ja
 key
 kind
 ko
+lab_lamp_every
+lab_lamp_mult
+lab_lamp_time
 lamp_every
 lamp_mult
 lamp_time
@@ -156,6 +159,7 @@ qa_slots
 qa_time
 quotas_met
 quotas_missed
+quota_misses_row
 radio_filter
 radio_on
 radio_silent
@@ -268,6 +272,7 @@ golden_sold
 golden_stock
 hand_replant
 hand_yield
+farm_hand_share
 overripe
 farm_auto_seed
 farm_seed_reserve
@@ -303,6 +308,7 @@ vacuum_hopper_1
 vacuum_hopper_2
 vacuum_dock_1
 vacuum_dock_2
+vacuum_bulk
 vacuum_nozzle_1
 vacuum_gyro
 also
@@ -410,6 +416,7 @@ cooldown
 damage
 defence
 depot_dropped
+field_line_answered
 farmhouse
 field_associate
 from
@@ -532,3 +539,10 @@ difficulty
 start_pressed
 abort_pressed
 war_fee
+merge_every
+merge_top
+research_condense
+golden_condense
+schedule_mini
+schedule_research
+up

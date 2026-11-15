@@ -9,6 +9,7 @@ extends Node
 ## farm TV has it), the handset is hung up.
 ## The moments, each on its own for the sound pass: the console lifted away (SupplyConsole), the
 ## machine landing (FieldLine Land), the handset (Lift, LineOpen, HangUp), a lamp relay per farm (Relay).
+## Until the line is first answered (save.field_line_answered) the handset rings (FieldLine.ringing).
 
 const Events := preload("res://globalScripts/game_events.gd")
 
@@ -24,6 +25,7 @@ var _shown := -1
 
 func _ready() -> void:
 	line.line_opened.connect(_on_line_opened)
+	line.ringing = not SaveManager.save.field_line_answered
 	_installed = SupplyConsole.retired(SaveManager.save)
 	line.visible = _installed
 	if _installed:
@@ -57,5 +59,6 @@ func _show(animate: bool) -> void:
 
 
 func _on_line_opened() -> void:
+	SaveManager.save.field_line_answered = true
 	map.go_to_map()
 	_calling = true

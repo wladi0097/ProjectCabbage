@@ -406,7 +406,11 @@ static func assess(layout: Array, grid: Vector2i, options := {}) -> Dictionary:
 ## 0.01; 99 if associates never win), associates (their fewest, -1: never), style (the best playstyle),
 ## cabbages (its army)}.
 static func difficulty(layout: Array, grid: Vector2i) -> Dictionary:
-	var a := assess(layout, grid)
+	return difficulty_of(assess(layout, grid))
+
+
+## difficulty() from an assess at level none with every unit, already run.
+static func difficulty_of(a: Dictionary) -> Dictionary:
 	var fa: Array = a.styles.filter(func(e: Dictionary) -> bool: return e.style == "associates" and e.won)
 	return {k = snappedf(a.k_associates, 0.01) if not fa.is_empty() else 99.0, associates = fa[0].figures if not fa.is_empty() else -1,
 			style = a.best.get("style", ""), cabbages = a.best.get("cabbages", 0)}

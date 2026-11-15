@@ -103,7 +103,7 @@ func _ready() -> void:
 		interactable.grabbed.connect(_press.bind(arrow[1]))
 		interactable.released.connect(func() -> void: _step = 0)
 		label.modulate = CHALK
-	_price.text = "$%d" % SaveManager.save.sale_price
+	_price.text = "$" + Num.text(SaveManager.save.sale_price)
 	Interactable.hover_box(_gauge, GAUGE_BOX, GAUGE_TIP)
 	_gauge.visible = SaveManager.save.stamped.has("acceptance_meter")
 	_needle = acceptance(SaveManager.save)
@@ -227,7 +227,7 @@ func _rewrite(step: int) -> void:
 	if price == save.sale_price:
 		return
 	save.sale_price = price
-	_price.text = "$%d" % price
+	_price.text = "$" + Num.text(price)
 	$Tap.cue(_price.global_position)
 
 

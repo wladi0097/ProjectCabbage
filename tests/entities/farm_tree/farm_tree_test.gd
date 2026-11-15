@@ -7,21 +7,19 @@ const WORKER_NUMBERS := ["farm_hands", "farm_tractors", "farm_hand_speed", "farm
 		"farm_hand_shift", "farm_tractor_shift"]
 const ROUTES := ["farm_hand_route", "farm_tractor_route"]
 ## The hand harvest (GREEN THUMB) and how often a square grows golden.
-const HARVEST_NUMBERS := ["hand_yield", "hand_replant", "golden_chance"]
+const HARVEST_NUMBERS := ["hand_yield", "hand_replant", "golden_chance", "farm_hand_share"]
 ## When the standing seed order buys and which pack.
 const SEED_ORDER := ["farm_seed_reserve", "farm_seed_pack"]
 ## How long a ripe square waits before it rots (COLD CHAIN).
 const ROT := ["rot_after"]
 ## What a farm square harvests, times a plain square (FARM OUTPUT).
 const FARM_OUTPUT := ["farm_square_mult"]
-## The most Findings the save may hold (ARCHIVE).
-const ARCHIVE := ["findings_limit"]
 ## Seeds a farm square holds (SEED BEDS).
 const SEED_BEDS := ["farm_slots"]
 ## The outer ring: what only shows once the desk card STRUCTURED FARM is stamped. Its own nodes, and
 ## the late steps that moved behind it.
 const RING: Array[String] = ["farm_slots_1", "farm_slots_2", "farm_slots_3", "hand_route_2", "hand_shift_2"]
-const MOVED: Array[String] = ["farm_mult_2", "farm_mult_3", "archive_3", "archive_4", "archive_5"]
+const MOVED: Array[String] = ["farm_mult_2", "farm_mult_3"]
 
 var _real_save: SaveGame
 
@@ -59,10 +57,10 @@ func test_every_farm_node_is_paid_in_findings_so_coins_stay_for_the_projector() 
 		assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("findings")
 
 
-func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_the_seed_order_the_rot_delay_farm_output_the_archive_and_seed_beds() -> void:
+func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_the_seed_order_the_rot_delay_farm_output_and_seed_beds() -> void:
 	for node: Dictionary in FarmTree.NODES:
 		for stat: String in node.get("add", {}).keys() + node.get("mul", {}).keys():
-			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER or stat in ROT or stat in FARM_OUTPUT or stat in ARCHIVE or stat in SEED_BEDS).override_failure_message("%s: %s" % [node.id, stat]).is_true()
+			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER or stat in ROT or stat in FARM_OUTPUT or stat in SEED_BEDS).override_failure_message("%s: %s" % [node.id, stat]).is_true()
 
 
 func test_every_number_a_node_changes_is_tracked_by_the_save() -> void:
@@ -225,7 +223,7 @@ func test_the_findings_number_and_its_word_sit_on_one_baseline_level_with_the_ti
 			var said := "%s %d" % [locale, findings]
 			assert_int(budget.get_line_count()).override_failure_message(said).is_equal(1)
 			assert_str(budget.get_parsed_text()).override_failure_message(said) \
-					.ends_with(" %s ¶%d" % ["FINDINGS" if locale == "en" else "BEFUNDE", findings])
+					.ends_with(" %s ¶%s" % ["FINDINGS" if locale == "en" else "BEFUNDE", Num.text(findings)])
 	TranslationServer.set_locale(was)
 
 
@@ -261,6 +259,46 @@ func test_employee_of_the_month_makes_a_hand_harvest_triple_and_one_in_one_out_r
 	FarmTree.buy("thumb_replant", save)
 	assert_float(save.hand_yield).is_equal(3.0)
 	assert_int(save.hand_replant).is_equal(1)
+
+
+func test_green_thumb_on_farm_squares_waits_for_a_farm_then_climbs_from_a_quarter_to_a_half_to_all_of_it_once_the_archive_grows() -> void:
+	var save := _save(["farm_terminal", "green_thumb"], 0, 1000000)
+	FarmTree.buy("thumb_yield", save)
+	assert_bool(FarmTree.is_shown("farm_hand_1", save)).is_false()
+	save.farms_owned.append("site_a")
+	assert_bool(FarmTree.is_shown("farm_hand_1", save)).is_true()
+	assert_bool(FarmTree.is_shown("farm_hand_2", save)).is_false()  # ¶12,000 passes the ¶8,000 archive.
+	save.stamped.append("archive_capacity")
+	assert_bool(FarmTree.is_shown("farm_hand_2", save)).is_true()
+	var shares: Array[float] = [save.farm_hand_share]
+	for id: String in ["farm_hand_1", "farm_hand_2", "farm_hand_3"]:
+		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
+		shares.append(save.farm_hand_share)
+	assert_array(shares).is_equal([0.0, 0.25, 0.5, 1.0])
+
+
+func test_each_green_thumb_farm_step_is_felt_on_a_hand_pulled_farm_square() -> void:
+	var save := _save(["farm_terminal", "green_thumb", "archive_capacity"], 0, 1000000)
+	save.farms_owned.append("site_a")
+	save.farm_squares.append(0)
+	FarmTree.buy("thumb_yield", save)  # EMPLOYEE OF THE MONTH (×3), the chain's parent.
+	var was := FarmScreen.hand_factor(save, 0)
+	assert_float(was).is_equal(1.0)
+	for id: String in ["farm_hand_1", "farm_hand_2", "farm_hand_3"]:
+		FarmTree.buy(id, save)
+		var now := FarmScreen.hand_factor(save, 0)
+		assert_float(now / was).override_failure_message(id).is_greater_equal(1.25)
+		was = now
+
+
+func test_farm_squares_grow_golden_only_after_the_estate_seed_node_under_the_golden_chance() -> void:
+	var save := _save(["farm_terminal", "golden_cabbage"], 0, 1000000)
+	assert_str(FarmTree.node_data(FarmScreen.FARM_GOLD).parent).is_equal("gold_chance_1")
+	FarmTree.buy("gold_chance_1", save)
+	assert_bool(FarmTree.is_shown(FarmScreen.FARM_GOLD, save)).is_false()  # No farm yet.
+	save.farms_owned.append("site_a")
+	assert_bool(FarmTree.buy(FarmScreen.FARM_GOLD, save)).is_true()
+	assert_bool(save.farm_bought.has(FarmScreen.FARM_GOLD)).is_true()
 
 
 func test_the_seed_order_nodes_wait_for_its_card_then_reorder_at_twenty_and_buy_the_fifty_pack() -> void:
@@ -332,7 +370,7 @@ func _ring_save(cards: Array = []) -> SaveGame:
 	var save := _save(["farm_terminal", "seasonal_workforce", "mechanisation", "archive_capacity"] + cards, 0, 100000000)
 	save.findings_limit = 1000000000
 	save.farms_owned.append("site_a")
-	for id: String in ["hand_2", "hand_route", "hand_shift", "farm_mult_1", "archive_1", "archive_2"]:
+	for id: String in ["hand_2", "hand_route", "hand_shift", "farm_mult_1"]:
 		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
 	return save
 
@@ -354,7 +392,7 @@ func test_structured_farm_opens_the_dearer_ring_of_the_farm_tree() -> void:
 
 
 func test_the_first_node_of_each_ring_run_names_structured_farm() -> void:
-	for id: String in ["farm_slots_1", "hand_route_2", "hand_shift_2", "farm_mult_2", "archive_3"]:
+	for id: String in ["farm_slots_1", "hand_route_2", "hand_shift_2", "farm_mult_2"]:
 		assert_array(FarmTree.node_data(id).needs).override_failure_message(id).contains(["structured_farm"])
 
 
@@ -446,3 +484,10 @@ func test_opened_up_the_whole_ring_fits_the_screen_at_the_view_it_settles_on() -
 	for node: Dictionary in FarmTree.NODES:
 		var at: Vector2 = centre + node.at * unit
 		assert_bool(Rect2(Vector2.ZERO, area).grow(-15.0).has_point(at)).override_failure_message(node.id).is_true()
+
+
+func test_the_archive_is_no_longer_on_the_farm_tree_it_moved_to_the_projector() -> void:
+	for id: String in ["archive_1", "archive_2", "archive_3", "archive_4", "archive_5"]:
+		assert_dict(FarmTree.node_data(id)).override_failure_message(id).is_empty()
+		assert_dict(Projector.node_data(id)).override_failure_message(id).is_not_empty()
+	assert_bool(FarmTree.THEMES.any(func(theme: Array) -> bool: return theme[0] == "ARCHIVE")).is_false()

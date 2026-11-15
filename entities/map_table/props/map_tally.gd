@@ -54,14 +54,14 @@ func _process(_delta: float) -> void:
 	show_save(SaveManager.save, live)
 
 
-## What the four windows print for `save`: coins and Findings as a price tag sets them
-## (FarmRegister.short_coins: "9,500", "900K", "1.5M"), the cabbages in stock in full, the farms as
+## What the four windows print for `save`: coins, cabbages in stock and Findings by Num.text
+## ("9.500", "900K", "1.5M"), the farms as
 ## the Field Line's count window ("7/24").
 static func readout(save: SaveGame) -> PackedStringArray:
 	return PackedStringArray([
-		FarmRegister.short_coins(save.coins),
-		FarmScreen._thousands(save.stock),
-		FarmRegister.short_coins(save.findings),
+		Num.text(save.coins),
+		Num.text(save.stock),
+		Num.text(save.findings),
 		FieldLine.count_text(save.farms_owned.size(), Events.FARMS),
 	])
 

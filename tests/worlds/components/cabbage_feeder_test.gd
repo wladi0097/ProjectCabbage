@@ -242,20 +242,32 @@ func test_a_condensed_plain_cabbage_holds_two_cabbages_from_stock() -> void:
 	assert_int(Feeder.condensed(save, false, false, false, 10)).is_equal(2)
 
 
-func test_only_plain_cabbages_are_condensed_until_their_nodes() -> void:
+func test_research_and_golden_cabbages_stay_single_until_their_own_chains_start() -> void:
 	var save := _condensing()
 	assert_int(Feeder.condensed(save, false, false, true, 10)).is_equal(1)  # research
 	assert_int(Feeder.condensed(save, false, true, false, 10)).is_equal(1)  # golden
-	save.tree_bought.append(Feeder.CONDENSE_RESEARCH)
+	Projector.apply("condense_research", save)
 	assert_int(Feeder.condensed(save, false, false, true, 10)).is_equal(2)
 	assert_int(Feeder.condensed(save, false, true, false, 10)).is_equal(1)
-	save.tree_bought.append(Feeder.CONDENSE_GOLD)
+	Projector.apply("condense_gold", save)
 	assert_int(Feeder.condensed(save, false, true, false, 10)).is_equal(2)
 
 
+func test_each_cabbage_kind_holds_its_own_condense_number() -> void:
+	var save := _condensing()
+	save.condense = 12
+	save.research_condense = 4
+	save.golden_condense = 3
+	assert_int(Feeder.condensed(save, false, false, false, 100)).is_equal(12)
+	assert_int(Feeder.condensed(save, false, false, true, 100)).is_equal(4)
+	assert_int(Feeder.condensed(save, false, true, false, 100)).is_equal(3)
+
+
 func test_rotten_cabbages_are_never_condensed() -> void:
-	var save := _condensing([Feeder.CONDENSE_RESEARCH, Feeder.CONDENSE_GOLD])
+	var save := _condensing()
 	save.condense = 4
+	save.research_condense = 4
+	save.golden_condense = 4
 	assert_int(Feeder.condensed(save, true, false, false, 10)).is_equal(1)
 
 
@@ -281,10 +293,25 @@ func test_the_mat_never_holds_more_than_ten_cabbages() -> void:
 	assert_bool(Feeder.should_dispense(10, 10, Feeder.mat_room(save), 100)).is_false()
 
 
-func test_the_condense_nodes_raise_what_a_condensed_cabbage_holds_to_three_then_four() -> void:
+func test_the_plain_condense_chain_starts_off_the_department_and_raises_what_a_cabbage_holds_to_three_then_four() -> void:
 	var save := _condensing()
 	save.stamped = PackedStringArray(["projector", "big_ideas", "condense"])
 	save.coins = 100000000
-	for step: Array in [[Feeder.CONDENSE_RESEARCH, 2], ["condense_2", 3], ["condense_3", 4]]:
+	for step: Array in [["condense_2", 3], ["condense_3", 4]]:
 		assert_bool(Projector.buy(step[0], save)).override_failure_message(step[0]).is_true()
 		assert_int(save.condense).is_equal(step[1])
+
+
+func test_the_stock_counter_shows_up_to_999999_cabbages_with_leading_zeros() -> void:
+	assert_int(Feeder.DRUMS).is_equal(6)
+	assert_array(Array(TallyMachine.drum_positions(999999.0, Feeder.DRUMS))).is_equal([9.0, 9.0, 9.0, 9.0, 9.0, 9.0])
+	assert_array(Array(TallyMachine.drum_positions(120034.0, Feeder.DRUMS))).is_equal([4.0, 3.0, 0.0, 0.0, 2.0, 1.0])
+	assert_array(Array(TallyMachine.drum_positions(72.0, Feeder.DRUMS))).is_equal([2.0, 7.0, 0.0, 0.0, 0.0, 0.0])
+
+
+func test_the_chute_model_has_a_number_drum_for_every_digit() -> void:
+	var model: Node = auto_free(load("res://assets/meshes/Machines/supply_ramp.blend").instantiate())
+	var skeleton: Skeleton3D = model.find_children("*", "Skeleton3D", true, false)[0]
+	for k in Feeder.DRUMS:
+		assert_int(skeleton.find_bone("Drum%d" % k)).is_not_equal(-1)
+	assert_int(skeleton.find_bone("Drum%d" % Feeder.DRUMS)).is_equal(-1)

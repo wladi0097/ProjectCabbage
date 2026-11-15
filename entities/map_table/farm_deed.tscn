@@ -1,6 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://entities/map_table/farm_deed.gd" id="1_deed"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/handshake_icon.svg" id="icon_handshake"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/envelope_icon.svg" id="icon_envelope"]
 [ext_resource type="PackedScene" path="res://entities/map_table/negotiation_letter.tscn" id="letter_scene"]
 [ext_resource type="Shader" path="res://assets/shaders/map_sheet.gdshader" id="2_shader"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
@@ -319,7 +321,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 40
-text = "ASKED $200,000"
+text = "ASKED $200K"
 visible = false
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -334,7 +336,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 70
-text = "$5,000,000"
+text = "$5M"
 vertical_alignment = 1
 
 [node name="CoinsShort" type="Label" parent="Page/Form"]
@@ -347,7 +349,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.9, 0.12, 0.08, 1)
 theme_override_font_sizes/font_size = 36
-text = "SHORT $4,999,000"
+text = "SHORT $4.9M"
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -361,7 +363,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 70
-text = "9,000 cabbages"
+text = "9K cabbages"
 vertical_alignment = 1
 
 [node name="CabbagesShort" type="Label" parent="Page/Form"]
@@ -374,7 +376,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.9, 0.12, 0.08, 1)
 theme_override_font_sizes/font_size = 36
-text = "SHORT 9,000"
+text = "SHORT 9K"
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -397,18 +399,44 @@ offset_bottom = 736.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("BoxLine")
 
+[node name="Handshake" type="TextureRect" parent="Page/Form/Start"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 22.0
+offset_right = 124.0
+offset_bottom = 118.0
+mouse_filter = 2
+texture = ExtResource("icon_handshake")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Envelope" type="TextureRect" parent="Page/Form/Start"]
+visible = false
+layout_mode = 0
+offset_left = 28.0
+offset_top = 22.0
+offset_right = 124.0
+offset_bottom = 118.0
+mouse_filter = 2
+texture = ExtResource("icon_envelope")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(0.11, 0.125, 0.118, 1)
+
 [node name="Word" type="Label" parent="Page/Form/Start"]
 layout_mode = 0
-offset_left = 20.0
+offset_left = 140.0
 offset_right = 712.0
 offset_bottom = 140.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 60
+theme_override_font_sizes/font_size = 52
 text = "START HAGGLING"
 horizontal_alignment = 1
 vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="StaffHead" type="Label" parent="Page/Form"]
 visible = false

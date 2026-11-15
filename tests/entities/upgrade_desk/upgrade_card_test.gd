@@ -16,6 +16,33 @@ func test_a_price_shows_its_currency_sign() -> void:
 	assert_str(UpgradeCard.price_text(130, "coins")).is_equal("$130")
 
 
+func test_card_prices_print_their_numbers_like_every_other_number() -> void:
+	assert_str(UpgradeCard.price_text(1000000, "coins")).is_equal("$1M")
+	assert_str(UpgradeCard.price_text(13000, "stock")).is_equal("13K")
+	assert_str(UpgradeCard.price_text(4000, "findings")).is_equal("¶4K")
+	assert_str(UpgradeCard.price_text(999, "coins")).is_equal("$999")
+	assert_str(UpgradeCard.price_text(13500, "stock")).is_equal("13.500")
+
+
+func test_no_card_body_writes_a_thousand_with_a_comma_since_the_price_uses_dots() -> void:
+	var comma := RegEx.create_from_string("\\d,\\d{3}")
+	for card: Dictionary in UpgradeDesk.CARDS:
+		assert_object(comma.search(card.body)).override_failure_message(card.id).is_null()
+
+
+func test_no_card_body_states_the_farms_it_needs_since_its_price_line_shows_them() -> void:
+	var needs := RegEx.create_from_string("(?i)(needs|braucht|erfordert) (\\d+|every|all|jeden|alle) .*(farm|hof|höfe)")
+	for locale in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		for card: Dictionary in UpgradeDesk.CARDS:
+			var body := TranslationServer.translate(card.body)
+			assert_object(needs.search(body)).override_failure_message("%s: %s" % [locale, card.id]).is_null()
+			var farms := UpgradeCard.farms_of(UpgradeDesk.costs(card))
+			if farms > 0:
+				var count := RegEx.create_from_string("\\b%d (farm|Hof|Höfe)" % farms)
+				assert_object(count.search(body)).override_failure_message("%s: %s" % [locale, card.id]).is_null()
+
+
 func test_a_price_paid_in_cabbages_is_the_number_with_the_cabbage_icon_before_it() -> void:
 	var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("offsite_storage")))
 	var coins: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("projector")))
@@ -103,14 +130,89 @@ func test_a_card_in_several_currencies_prints_its_units_in_the_box_and_the_other
 	var price := card.get_node("Look/Price") as Label3D
 	var also := card.get_node("Look/Also") as Label3D
 
-	assert_str(price.text).is_equal("1900")
+	assert_str(price.text).is_equal("1.900")
 	assert_bool((card.get_node("Look/PriceIcon") as Sprite3D).visible).is_true()
 	assert_bool(also.visible).is_true()
-	assert_str(also.text).is_equal("$20000 + ¶4000 +")
-	assert_float(also.position.x).is_less(UpgradeCard.PRICE_AT.x - UpgradeCard.PRICE_WIDTH * 0.5)
+	assert_str(also.text).is_equal("$20K + ¶4K +")
+	assert_float(also.position.x).is_less(price.position.x)
 	var width := UpgradeCard.also_width(also.text, also.font_size)
-	assert_float(width).is_less_equal(UpgradeCard.ALSO_WIDTH)
-	assert_float(also.position.x - width).override_failure_message("on the card").is_greater(-UpgradeCard.SIZE.x * 0.5)
+	assert_float(also.position.x - width).override_failure_message("in the box").is_greater_equal(UpgradeCard.WIDE_LEFT)
+
+
+func test_units_stand_in_the_box_with_their_icon_even_on_a_card_priced_in_coins() -> void:
+	var bill := UpgradeDesk.costs(UpgradeDesk.card_data("rejected_goods"))
+	assert_str(UpgradeCard.boxed_in(bill, "coins")).is_equal("stock")
+	assert_str(UpgradeCard.also_text(bill, "stock")).is_equal("+ $120K +")
+	assert_str(UpgradeCard.boxed_in({coins = 75}, "coins")).is_equal("coins")
+	assert_str(UpgradeCard.boxed_in({farms = 1, coins = 30000}, "coins")).is_equal("coins")
+
+
+func test_a_card_with_more_than_two_price_items_is_printed_on_the_wide_paper() -> void:
+	assert_bool(UpgradeCard.wide({coins = 75})).is_false()
+	assert_bool(UpgradeCard.wide({farms = 1, coins = 30000})).is_false()  # Farms count as one item.
+	assert_bool(UpgradeCard.wide({farms = 2, coins = 120000, stock = 2500})).is_true()
+	for id: String in ["projector", "condense", "rejected_goods", "structured_farm"]:
+		var data := UpgradeDesk.card_data(id)
+		var card: UpgradeCard = auto_free(UpgradeCard.create(data))
+		var paper := (card.get_node("Look/Paper") as MeshInstance3D).material_override as StandardMaterial3D
+		var is_wide := UpgradeDesk.costs(data).size() > 2
+		assert_object(paper.albedo_texture).override_failure_message(id).is_same(
+				(UpgradeCard.WIDE_MATERIAL if is_wide else UpgradeCard.MATERIAL).albedo_texture)
+
+
+func test_a_priority_form_on_wide_paper_is_the_wide_paper_dyed_oxblood() -> void:
+	var data := UpgradeDesk.card_data("consolidation")
+	assert_bool(UpgradeCard.wide(UpgradeDesk.costs(data))).is_true()
+	var paper := UpgradeCard.paper_of(data)
+	assert_object(paper.albedo_texture).is_same(UpgradeCard.WIDE_MATERIAL.albedo_texture)
+	assert_object(paper.albedo_color).is_equal(UpgradeCard.PRIORITY_TINT)
+	assert_object(UpgradeCard.paper_of(UpgradeDesk.card_data("projector"))).is_same(UpgradeCard.MATERIAL)
+
+
+func test_on_wide_paper_every_price_stands_in_the_box_right_to_left_with_its_sign() -> void:
+	var wide_cards := 0
+	for each: Dictionary in UpgradeDesk.CARDS:
+		var bill := UpgradeDesk.costs(each)
+		if not UpgradeCard.wide(bill):
+			continue
+		wide_cards += 1
+		var size := UpgradeCard.wide_size(bill)
+		assert_int(size).override_failure_message(each.id).is_greater(UpgradeCard.MIN_SIZE)
+		assert_float(UpgradeCard.wide_width(bill, size)).override_failure_message(each.id).is_less_equal(
+				UpgradeCard.WIDE_RIGHT - UpgradeCard.WIDE_LEFT - UpgradeCard.WIDE_PAD * 2.0)
+		var card: UpgradeCard = auto_free(UpgradeCard.create(each))
+		var also := card.get_node("Look/Also") as Label3D
+		var price := card.get_node("Look/Price") as Label3D
+		# Every currency signed: $ and ¶ in print, units and farms by their icons.
+		var line := also.text + " " + price.text
+		if bill.has("coins"):
+			assert_bool(line.contains("$")).override_failure_message(each.id).is_true()
+		if bill.has("findings"):
+			assert_bool(line.contains("¶")).override_failure_message(each.id).is_true()
+		assert_bool((card.get_node("Look/PriceIcon") as Sprite3D).visible).override_failure_message(each.id).is_equal(bill.has("stock"))
+		assert_bool((card.get_node("Look/FarmIcon") as Sprite3D).visible).override_failure_message(each.id).is_equal(UpgradeCard.farms_of(bill) > 0)
+		# Right to left from the box's right edge, the leftmost print still in the box.
+		var text := UpgradeCard.TITLE_FONT.get_string_size(price.text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * UpgradeCard.PIXEL
+		assert_float(price.position.x + text * 0.5).override_failure_message(each.id).is_equal_approx(UpgradeCard.WIDE_RIGHT - UpgradeCard.WIDE_PAD, 0.0005)
+		assert_float(also.position.x).override_failure_message(each.id).is_less(price.position.x)
+		var leftmost := also.position.x - UpgradeCard.also_width(also.text, size, UpgradeCard.farms_of(bill))
+		assert_float(leftmost).override_failure_message(each.id).is_greater_equal(UpgradeCard.WIDE_LEFT + UpgradeCard.WIDE_PAD - 0.0005)
+	assert_int(wide_cards).is_greater(3)
+
+
+func test_on_wide_paper_the_heading_fits_above_the_box_in_english_and_german() -> void:
+	var box_top := 0.047  # The wide box's top edge on the texture.
+	for locale in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		for each: Dictionary in UpgradeDesk.CARDS:
+			if not UpgradeCard.wide(UpgradeDesk.costs(each)):
+				continue
+			var shown := TranslationServer.translate(each.title)
+			var size := UpgradeCard.fit_size(shown, UpgradeCard.HEADING_SIZE, UpgradeCard.WIDE_HEADING_BOX)
+			assert_int(size).override_failure_message("%s: %s" % [locale, shown]).is_greater(UpgradeCard.MIN_SIZE)
+			var card: UpgradeCard = auto_free(UpgradeCard.create(each))
+			var heading := card.get_node("Look/Heading") as Label3D
+			assert_float(heading.position.z + UpgradeCard.WIDE_HEADING_BOX.y * 0.5).override_failure_message(each.id).is_less(box_top)
 
 
 func test_a_card_in_one_currency_prints_nothing_beside_its_price_box() -> void:
@@ -136,7 +238,7 @@ func test_farms_a_card_needs_are_printed_left_of_its_price_box_as_their_count_an
 		assert_str(count.text).is_equal("24")
 		assert_object(icon.texture).is_same(UpgradeCard.FARM_ICON)
 		assert_str(also.text).is_equal("+")  # "24 [farm] +" and the price in its box: no word for farms.
-		assert_str((card.get_node("Look/Price") as Label3D).text).is_equal("$%d" % UpgradeDesk.card_data("stars").price)
+		assert_str((card.get_node("Look/Price") as Label3D).text).is_equal(UpgradeCard.price_text(UpgradeDesk.card_data("stars").price, "coins"))
 		# Left to right: the count, the icon, the plus, the price box.
 		assert_float(count.position.x).is_less(icon.position.x)
 		assert_float(icon.position.x).is_less(also.position.x)
@@ -177,8 +279,10 @@ func test_every_card_that_needs_farms_prints_them_and_its_other_prices_on_the_ca
 		if farms == 0:
 			continue
 		with_farms += 1
-		var shown := UpgradeCard.also_text(bill, each.get("currency", "coins"))
+		var shown := UpgradeCard.also_text(bill, UpgradeCard.boxed_in(bill, each.get("currency", "coins")))
 		assert_bool(shown.begins_with("+")).override_failure_message(each.id).is_true()
+		if UpgradeCard.wide(bill):
+			continue  # The wide box's row: test_on_wide_paper_every_price_stands_in_the_box_right_to_left_with_its_sign.
 		var size := UpgradeCard.also_size(shown, farms)
 		assert_int(size).override_failure_message(each.id).is_greater(UpgradeCard.MIN_SIZE)
 		assert_float(UpgradeCard.also_width(shown, size, farms)).override_failure_message(each.id).is_less_equal(UpgradeCard.ALSO_WIDTH)
@@ -186,8 +290,8 @@ func test_every_card_that_needs_farms_prints_them_and_its_other_prices_on_the_ca
 		var left := UpgradeCard.PRICE_AT.x - UpgradeCard.PRICE_WIDTH * 0.5 - UpgradeCard.ALSO_GAP - UpgradeCard.also_width(shown, size, farms)
 		assert_float(left).override_failure_message(each.id).is_greater(-UpgradeCard.SIZE.x * 0.5)
 	assert_int(with_farms).is_greater(5)
-	# The farms and a second price share the line: sea lanes prints "13 [farm] + $12000000 +".
-	assert_str(UpgradeCard.also_text(UpgradeDesk.costs(UpgradeDesk.card_data("sea_lanes")), "findings")).is_equal("+ $12000000 +")
+	# The farms and a second price share the line: sea lanes prints "13 [farm] + $4.000.000 + ¶200.000".
+	assert_str(UpgradeCard.also_text(UpgradeDesk.costs(UpgradeDesk.card_data("sea_lanes")), "findings")).is_equal("+ $4M +")
 
 
 func test_on_paper_a_farm_count_is_drawn_with_the_farm_icon_after_it_and_cabbages_with_theirs_before() -> void:

@@ -50,9 +50,9 @@ const PIXEL := 0.0003
 const PINCH_AT := Vector3(-0.165, 0.0, 0.085)
 ## The price sits in the ruled box at the bottom right (the texture's box: x 0.096-0.168, z 0.047-0.088),
 ## in PRICE_SIZE print, smaller when it would not fit PRICE_WIDTH. A card in several currencies
-## (UpgradeDesk.costs) prints the others left of the box on its line (Look/Also: "$15000 + ¶2000 +"),
+## (UpgradeDesk.costs) prints the others left of the box on its line (Look/Also: "$15K + ¶2K +"),
 ## ending ALSO_GAP before it, in ALSO_SIZE print or smaller to fit ALSO_WIDTH. Farms it needs stand
-## first on that line as their count and the FARM_ICON (Look/Farms, Look/FarmIcon): "5 [farm] + $2500000 +".
+## first on that line as their count and the FARM_ICON (Look/Farms, Look/FarmIcon): "5 [farm] + $2.5M +".
 const PRICE_AT := Vector3(0.1316, 0.002, 0.0672)
 const PRICE_WIDTH := 0.064
 const PRICE_SIZE := 110
@@ -79,6 +79,18 @@ const HEADING_SIZE := 150
 const FORM_BOX := Vector2(0.33, 0.03)
 const FORM_SIZE := 60
 const MIN_SIZE := 40
+## A card with more than two price items (wide: farms count as one) is printed on WIDE_MATERIAL, whose
+## box runs the card's writing width (the texture's box: x WIDE_LEFT-WIDE_RIGHT, the same z as the
+## small one; tools/make_card_paper_wide.py). Every price stands in it in one print, right to left
+## from WIDE_PAD inside its right edge: "2 [farm] + $120.000 + [cabbage] 2.500", in WIDE_SIZE or smaller
+## to fit (wide_size). Its heading keeps above the box: WIDE_HEADING_BOX, raised WIDE_HEADING_UP.
+const WIDE_MATERIAL := preload("res://assets/materials/card_paper_wide.tres")
+const WIDE_LEFT := -0.1581
+const WIDE_RIGHT := 0.1675
+const WIDE_PAD := 0.008
+const WIDE_SIZE := 100
+const WIDE_HEADING_BOX := Vector2(0.33, 0.095)
+const WIDE_HEADING_UP := 0.0075
 
 var id := ""
 var price := 0
@@ -98,8 +110,8 @@ var _grip := Vector3.ZERO
 var _lifting: Tween
 var _flying: Tween
 var _blinking: Tween
-## The card paper dyed PRIORITY_TINT, built once.
-static var _priority_material: StandardMaterial3D
+## Each paper (MATERIAL, WIDE_MATERIAL) dyed PRIORITY_TINT, built once: {paper: dyed}.
+static var _priority_materials := {}
 
 
 ## A card for `card` (an UpgradeDesk.CARDS entry), its print fitted to the paper.
@@ -114,35 +126,41 @@ func _fill(card: Dictionary) -> void:
 	price = card.price
 	currency = card.get("currency", "coins")
 	costs = UpgradeDesk.costs(card)
-	if paper_tint(card) != Color.WHITE:
-		($Look/Paper as MeshInstance3D).material_override = _priority()
+	var is_wide := wide(costs)
+	($Look/Paper as MeshInstance3D).material_override = paper_of(card)
 	var form := $Look/Form as Label3D
 	form.text = form_of(card)
 	form.font_size = fit_size(tr(form.text), FORM_SIZE, FORM_BOX)
 	# Long titles (German ones above all) print smaller so they stay between the form line and the price box.
 	var heading := $Look/Heading as Label3D
 	heading.text = card.title
-	heading.font_size = fit_size(tr(card.title), HEADING_SIZE, HEADING_BOX)
-	var shown := price_text(price, currency)
+	heading.font_size = fit_size(tr(card.title), HEADING_SIZE, WIDE_HEADING_BOX if is_wide else HEADING_BOX)
+	if is_wide:
+		heading.position.z -= WIDE_HEADING_UP
+	var boxed := boxed_in(costs, currency)
+	var shown := price_text(costs.get(boxed, price), boxed)
 	var label := $Look/Price as Label3D
 	label.text = shown
-	label.font_size = price_size(shown, currency)
-	# The icon and the number sit centred in the price box together.
+	var size := wide_size(costs) if is_wide else price_size(shown, boxed)
+	label.font_size = size
+	# The icon and the number sit centred in the price box together (on wide paper: at its right).
 	var icon := $Look/PriceIcon as Sprite3D
-	icon.visible = shows_icon(currency)
-	var em := label.font_size * PIXEL
-	var text := TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, label.font_size).x * PIXEL
-	var left := PRICE_AT.x - price_width(shown, currency, label.font_size) * 0.5
-	label.position.x = left + price_width(shown, currency, label.font_size) - text * 0.5
+	icon.visible = shows_icon(boxed)
+	var em := size * PIXEL
+	var text := TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * PIXEL
+	var width := price_width(shown, boxed, size)
+	var left := WIDE_RIGHT - WIDE_PAD - width if is_wide else PRICE_AT.x - width * 0.5
+	label.position.x = left + width - text * 0.5
 	icon.pixel_size = em * ICON_EM / ICON.get_height()
 	icon.position = Vector3(left + em * ICON_EM * 0.5, PRICE_AT.y, PRICE_AT.z)
-	# Left of the box, right to left: the other prices, then the farm icon and the farms' count.
+	# Left of the box (on wide paper: of the price), right to left: the other prices, then the farm
+	# icon and the farms' count.
 	var also := $Look/Also as Label3D
 	var farms := farms_of(costs)
-	also.text = also_text(costs, currency)
+	also.text = also_text(costs, boxed)
 	also.visible = also.text != ""
-	also.font_size = also_size(also.text, farms)
-	also.position.x = PRICE_AT.x - PRICE_WIDTH * 0.5 - ALSO_GAP
+	also.font_size = size if is_wide else also_size(also.text, farms)
+	also.position.x = (left if is_wide else PRICE_AT.x - PRICE_WIDTH * 0.5) - ALSO_GAP
 	var count := $Look/Farms as Label3D
 	var farm_icon := $Look/FarmIcon as Sprite3D
 	count.visible = farms > 0
@@ -156,10 +174,42 @@ func _fill(card: Dictionary) -> void:
 	count.position.x = icon_right - side * (1.0 + ICON_GAP)
 
 
-## What a card costs besides `price` in `paid_in`, as printed left of its price box: "$15000 + ¶2000 +"
-## (`bill`: UpgradeDesk.costs; "" for a card in one currency). Never units: they are always the box's.
+## Whether `bill` (UpgradeDesk.costs) has more than two price items (farms count as one): it prints on
+## the wide paper, every price in the full-width box.
+static func wide(bill: Dictionary) -> bool:
+	return bill.size() > 2
+
+
+## The currency whose price stands in the box (on wide paper: rightmost): `bill`'s last
+## (UpgradeDesk.costs orders coins, Findings, units), so units, whose icon has no room on the line
+## beside it, are always the box's. `paid_in` (the card's currency) for a bill of farms alone.
+static func boxed_in(bill: Dictionary, paid_in: String) -> String:
+	var keys := bill.keys().filter(func(each: String) -> bool: return each not in FARM_SIGNS)
+	return keys.back() if not keys.is_empty() else paid_in
+
+
+## How wide `bill`'s whole row prints on wide paper at font size `size` (m): the farms, the other
+## prices (also_text) and the boxed price.
+static func wide_width(bill: Dictionary, size: int) -> float:
+	var boxed := boxed_in(bill, "coins")
+	var shown := also_text(bill, boxed)
+	var also := also_width(shown, size, farms_of(bill)) + ALSO_GAP if shown != "" else 0.0
+	return also + price_width(price_text(bill[boxed], boxed), boxed, size)
+
+
+## The font size that fits `bill`'s row into the wide box: WIDE_SIZE, or smaller.
+static func wide_size(bill: Dictionary) -> int:
+	var size := WIDE_SIZE
+	while size > MIN_SIZE and wide_width(bill, size) > WIDE_RIGHT - WIDE_LEFT - WIDE_PAD * 2.0:
+		size -= 2
+	return size
+
+
+## What a card costs besides `price` in `paid_in`, as printed left of its price box: "$15K + ¶2K +"
+## (`bill`: UpgradeDesk.costs; "" for a card in one currency). Never units: they are always the box's
+## (boxed_in).
 ## Farms the card needs are not in it: their count and icon stand before it, and it starts with
-## their "+" ("+ $2500000 +", or "+" alone).
+## their "+" ("+ $2.5M +", or "+" alone).
 static func also_text(bill: Dictionary, paid_in: String) -> String:
 	var parts := PackedStringArray()
 	if farms_of(bill) > 0:
@@ -330,10 +380,12 @@ func _cue(sound: StringName) -> void:
 ## "$130", "¶10" or "60" (paid from stock: the cabbage ICON is its sign, see shows_icon): the price
 ## with its currency's sign, as on the tally machine's plates. "24" for farms that must be owned
 ## (UpgradeDesk.costs "farms", "home_farms"): the FARM_ICON after it is their sign, see icon_of.
+## The number is set by Num.text ("$1M", "¶4K", "13.500").
 static func price_text(amount: int, paid_in: String) -> String:
+	var shown := Num.text(amount)
 	if paid_in == "stock" or paid_in in FARM_SIGNS:
-		return str(amount)
-	return ("¶%d" if paid_in == "findings" else "$%d") % amount
+		return shown
+	return ("¶" if paid_in == "findings" else "$") + shown
 
 
 ## A price in `paid_in` is printed with an icon (icon_of) for its sign: cabbages and farms.
@@ -433,8 +485,14 @@ static func paper_tint(card: Dictionary) -> Color:
 	return PRIORITY_TINT if card.get("priority", false) else Color.WHITE
 
 
-static func _priority() -> StandardMaterial3D:
-	if _priority_material == null:
-		_priority_material = MATERIAL.duplicate()
-		_priority_material.albedo_color = PRIORITY_TINT
-	return _priority_material
+## The paper card `card` is printed on: WIDE_MATERIAL for more than two price items (wide), else
+## MATERIAL; dyed PRIORITY_TINT for a priority form (paper_tint).
+static func paper_of(card: Dictionary) -> StandardMaterial3D:
+	var paper: StandardMaterial3D = WIDE_MATERIAL if wide(UpgradeDesk.costs(card)) else MATERIAL
+	if paper_tint(card) == Color.WHITE:
+		return paper
+	if not _priority_materials.has(paper):
+		var dyed := paper.duplicate() as StandardMaterial3D
+		dyed.albedo_color = PRIORITY_TINT
+		_priority_materials[paper] = dyed
+	return _priority_materials[paper]

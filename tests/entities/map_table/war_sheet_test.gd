@@ -702,7 +702,48 @@ func test_a_figure_dropped_in_a_zone_stands_there_and_the_glove_lets_go() -> voi
 	assert_bool(sheet.in_zone(holder)).is_true()
 
 
-func test_the_glove_is_hidden_while_nothing_is_held() -> void:
+## The table at war, the camera at the map: the war sheet takes the mouse.
+func _war_at_map() -> WarSheet:
+	var table := _table_at_war()
+	table.go_to_map()
+	table._pan_tween.custom_step(10.0)
+	var war := table.sheet_of(&"war") as WarSheet
+	war._process(0.0)
+	return war
+
+
+## Where the glove's anchor for its pose is (once the pose has settled).
+func _anchor(glove: HandModel) -> Vector3:
+	return glove.global_transform * (HandModel.ANCHORS[glove.pose] as Vector3)
+
+
+func test_at_the_war_table_the_glove_is_the_cursor_open_with_nothing_held() -> void:
+	var war := _war_at_map()
+	var glove: HandModel = war.get_node("Glove")
+	war._process(0.016)
+	assert_bool(glove.visible).is_true()
+	assert_int(glove.pose).is_equal(HandModel.Pose.OPEN)
+	assert_bool(Hand.stand_in).is_true()  # The OS cursor stays hidden.
+	war.pick_up(_figure(war))
+	war._process(0.016)
+	assert_int(glove.pose).is_equal(HandModel.Pose.GRAB)  # The desk's cabbage grab.
+
+
+func test_over_start_and_abort_the_glove_points_its_fingertip_onto_the_button() -> void:
+	var war := _war_at_map()
+	var glove: HandModel = war.get_node("Glove")
+	var control: WarControl = war.get_node("Control")
+	for part: StringName in [WarSheet.START, WarSheet.ABORT]:
+		war._point(Vector2.ZERO, part)
+		war._process(2.0)  # Long enough for the pose to settle.
+		assert_int(glove.pose).is_equal(HandModel.Pose.POINT)
+		assert_float(_anchor(glove).distance_to(control.part_position(part))).override_failure_message(part).is_less(0.05)
+	war._point(Vector2(800.0, 500.0), &"")
+	war._process(0.016)
+	assert_int(glove.pose).is_equal(HandModel.Pose.OPEN)
+
+
+func test_the_glove_is_hidden_away_from_the_war_table() -> void:
 	var sheet := _sheet()
 	var glove: HandModel = sheet.get_node("Glove")
 	sheet._process(0.016)
@@ -754,3 +795,52 @@ func test_an_overlay_over_the_war_puts_the_figure_held_back_and_gives_the_cursor
 	assert_object(war._held).is_null()
 	assert_bool(Hand.stand_in).is_false()
 	assert_vector(Vector2(holder.position.x, holder.position.z)).is_equal_approx(Vector2(from.x, from.z), Vector2.ONE * 0.001)
+
+
+## The duck's depth on bus `bus_name` (dB, cutoff Hz; 0 dB and no cutoff while switched off).
+func _duck_on(bus_name: String) -> Vector2:
+	var bus := AudioServer.get_bus_index(bus_name)
+	var out := Vector2(0.0, INF)
+	for i in AudioServer.get_bus_effect_count(bus):
+		var effect := AudioServer.get_bus_effect(bus, i)
+		if not AudioServer.is_bus_effect_enabled(bus, i):
+			continue
+		if effect is AudioEffectAmplify:
+			out.x = (effect as AudioEffectAmplify).volume_db
+		elif effect is AudioEffectLowPassFilter:
+			out.y = (effect as AudioEffectLowPassFilter).cutoff_hz
+	return out
+
+
+func test_while_a_war_is_on_every_other_sound_sits_in_the_background_and_eases_back_after() -> void:
+	var volumes := [AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Music")), AudioServer.get_bus_volume_db(AudioServer.get_bus_index("SFX"))]
+	var sheet := _sheet()
+	sheet._process(WarSheet.DUCK_IN / 2.0)
+	assert_float(_duck_on("SFX").x).is_equal_approx(WarSheet.DUCK_DB / 2.0, 0.01)  # Easing in.
+	sheet._process(WarSheet.DUCK_IN / 2.0)
+	for bus_name: String in ["Music", "SFX"]:
+		assert_vector(_duck_on(bus_name)).is_equal_approx(Vector2(WarSheet.DUCK_DB, WarSheet.DUCK_HZ), Vector2(0.01, 1.0))
+	assert_float(_duck_on("War").x).is_equal(0.0)  # The war itself stays in front.
+	assert_array([AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Music")), AudioServer.get_bus_volume_db(AudioServer.get_bus_index("SFX"))]).is_equal(volumes)  # The sliders' volumes are left alone.
+	assert_bool(sheet.abort()).is_true()
+	sheet._process(WarSheet.DUCK_OUT / 2.0)
+	assert_float(_duck_on("Music").x).is_equal_approx(WarSheet.DUCK_DB / 2.0, 0.01)  # Easing out.
+	sheet._process(WarSheet.DUCK_OUT / 2.0)
+	for bus_name: String in ["Music", "SFX"]:
+		assert_vector(_duck_on(bus_name)).is_equal(Vector2(0.0, INF))
+
+
+func test_a_war_cut_off_by_leaving_the_scene_gives_every_sound_back_at_once() -> void:
+	var sheet := _sheet()
+	sheet._process(WarSheet.DUCK_IN)
+	assert_float(_duck_on("Music").x).is_equal_approx(WarSheet.DUCK_DB, 0.01)
+	remove_child(sheet)  # auto_free frees it.
+	assert_vector(_duck_on("Music")).is_equal(Vector2(0.0, INF))
+
+
+func test_every_war_sound_plays_on_the_war_bus() -> void:
+	var sheet := _sheet()
+	var players := sheet.find_children("*", "AudioStreamPlayer3D", true, false)
+	assert_int(players.size()).is_greater_equal(25)
+	for player: AudioStreamPlayer3D in players:
+		assert_str(player.bus).override_failure_message(str(sheet.get_path_to(player))).is_equal("War")

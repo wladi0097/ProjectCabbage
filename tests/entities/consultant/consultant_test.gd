@@ -255,3 +255,19 @@ func test_an_old_save_with_the_retired_skill_and_markup_still_loads() -> void:
 	assert_object(old).is_not_null()
 	assert_int(old.sale_price).is_equal(7)
 	assert_int(old.consultant_bounce).is_equal(10)
+
+
+func test_the_consultant_taps_the_biggest_step_bought_that_does_not_overshoot() -> void:
+	var save := SaveGame.new()
+	save.sale_price = 10
+	assert_int(Consultant.tap(save, 40)).is_equal(1)
+	save.tree_bought = PackedStringArray(["consultant_step_2", "consultant_step_5", "consultant_step_10"])
+	assert_int(Consultant.tap(save, 40)).is_equal(10)
+	assert_int(Consultant.tap(save, 17)).is_equal(5)
+	assert_int(Consultant.tap(save, 13)).is_equal(2)
+	assert_int(Consultant.tap(save, 11)).is_equal(1)
+	assert_int(Consultant.tap(save, 1)).is_equal(-5)
+	save.tree_bought = PackedStringArray(["consultant_step_2"])
+	assert_int(Consultant.tap(save, 40)).is_equal(2)
+	save.tree_bought.append(Consultant.SMART)
+	assert_int(Consultant.tap(save, 40)).is_equal(30)

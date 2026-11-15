@@ -175,5 +175,5 @@ material_override = SubResource("SlipMat")
 
 [node name="Slide" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_slide")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")

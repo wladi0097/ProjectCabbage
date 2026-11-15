@@ -6,7 +6,8 @@ extends Node3D
 ## Its page (`Page`, 1 px = 1 mm, printed on `Paper` as the deed's), top to bottom: the form line,
 ## the owner's name, the price as it stands; then the conversation: before the first offer how it
 ## works and the small print, after it one typed reply slip per offer (reply_slip.tscn, `Slips`),
-## each below the one before (SLIP_STEP), every line in full: his line, what it answered ("re: 60 cabbages") and his mood stamped on it.
+## each below the one before (SLIP_STEP), every line in full: his line, what it answered ("re: 60 cabbages"),
+## how far the price moved ("+$24,000", oxblood; "-$24,000"; "price unchanged") and his mood stamped on it.
 ## At the bottom, left, YOUR OFFER (PILE_BOX): the bundles on the paper and their total; under it
 ## SEND OFFER (SEND_BOX); right, the crate of stock (CRATE_BOX, `Crate`: up to four bundles in it)
 ## with how much is in stock, and BACK TO THE DEED (RETURN_BOX).
@@ -116,8 +117,9 @@ static func point(pixel: Vector2, lift := 0.0) -> Vector3:
 
 
 ## Prints the negotiation with `owner_name`'s farm: what is offered (`what`: "stock" or "coins"), a
-## bundle's size, the price as it stands (`price`: {coins, stock}), the replies so far (`replies`:
-## each {offered, mood, line} in order, `mood` and `line` already in words), how many more offers he
+## bundle's size, the price as it stands (`price`: {coins}), the replies so far (`replies`:
+## each {offered, mood, line, step, up} in order, `mood`, `line` and `step` already in words; `up`:
+## the price went up, its step in oxblood), how many more offers he
 ## hears (`left`; 0: NO FURTHER OFFERS), what is in stock (`have`) and the small print `note` (a key;
 ## until the first reply).
 func print_letter(what: String, size: int, owner_name: String, price: Dictionary, replies: Array, left: int, have: int, note: String) -> void:
@@ -126,7 +128,7 @@ func print_letter(what: String, size: int, owner_name: String, price: Dictionary
 	paid_in = what
 	bundle = size
 	_owner.text = tr("Owner: %s") % owner_name
-	_price.text = "$%s + %s" % [FarmScreen._thousands(price.get("coins", 0)), tr("%s cabbages") % FarmScreen._thousands(price.get("stock", 0))]
+	_price.text = "$" + Num.text(price.get("coins", 0))
 	_opening.text = tr("Drag cabbages from the crate onto your offer, then send it. Too few raise the price. Enough lower it."
 			if what == "stock" else "Put coins from the purse in the envelope, then pass it. Too little raises the price. Enough lowers it.")
 	_opening.visible = replies.is_empty()
@@ -147,6 +149,9 @@ func print_letter(what: String, size: int, owner_name: String, price: Dictionary
 		(slip.get_node("Line") as Label).text = replies[i].line
 		(slip.get_node("Imprint/Word") as Label).text = replies[i].mood
 		(slip.get_node("About") as Label).text = tr("re: %s") % amount_text(what, replies[i].offered)
+		var step := slip.get_node("Step") as Label
+		step.text = replies[i].get("step", "")
+		step.add_theme_color_override(&"font_color", FarmRegister.OXBLOOD if replies[i].get("up", false) else FarmDeed.INK)
 	_closed.visible = left <= 0
 	_head.text = tr("OFFER %d OF %d") % [replies.size() + 1, replies.size() + left] if left > 0 else tr("YOUR OFFER")
 	_total.visible = left > 0
@@ -155,7 +160,7 @@ func print_letter(what: String, size: int, owner_name: String, price: Dictionary
 	_crate.visible = left > 0
 	(_boxes[&"deed_crate"] as Control).visible = left > 0
 	_stock.visible = left > 0
-	_stock.text = tr("IN STOCK %s") % FarmScreen._thousands(have) if what == "stock" else tr("IN THE PURSE %s") % ("$" + FarmRegister.short_coins(have))
+	_stock.text = tr("IN STOCK %s") % Num.text(have) if what == "stock" else tr("IN THE PURSE %s") % ("$" + Num.text(have))
 	_have = have
 	for shown: OfferBundle in _crate_bundles:
 		shown.coins = what == "coins"
@@ -168,7 +173,7 @@ func print_letter(what: String, size: int, owner_name: String, price: Dictionary
 
 ## `amount` of what is offered as the letter types it: "60 cabbages", "$150,000".
 static func amount_text(what: String, amount: int) -> String:
-	return "$" + FarmScreen._thousands(amount) if what == "coins" else TranslationServer.translate("%s cabbages") % FarmScreen._thousands(amount)
+	return "$" + Num.text(amount) if what == "coins" else TranslationServer.translate("%s cabbages") % Num.text(amount)
 
 
 ## What is on the offer now (cabbages, or coins).

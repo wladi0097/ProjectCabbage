@@ -80,7 +80,7 @@ func _process(delta: float) -> void:
 ## FULL in MAX's place while it holds that much.
 static func limit_text(currency: String, limit: int, full := false) -> String:
 	var word := str(TranslationServer.translate("FULL")) if full else "MAX"
-	return "%s %s%s" % [word, currency, FarmRegister.short_coins(limit)]
+	return "%s %s%s" % [word, currency, Num.text(limit)]
 
 
 ## Income was lost to the limit: the purse is full (the buzzer only if it was not already).

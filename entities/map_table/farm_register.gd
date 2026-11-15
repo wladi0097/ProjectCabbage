@@ -11,8 +11,7 @@ extends MapSheet
 ## anywhere else, or on the same farm again, slides it away.
 ## AT HOME the first GameEvents.HOME_SELLERS farms are bought. The paper is a deed of transfer and
 ## a click on its stamp box (the spot STAMP) is the purchase:
-## - Paid for: the price in coins and cabbages from stock is taken at once (UpgradeDesk.pay, as the
-##   desk's cards) and the site joins save.farms_owned; then, in order (the constants below): the
+## - Paid for: the price in coins is taken at once (UpgradeDesk.pay, as the desk's cards) and the site joins save.farms_owned; then, in order (the constants below): the
 ##   stamp comes down on the deed and stays for a hit pause; the token takes its owned look and jumps
 ##   with a flash, its tag flips to ACQUIRED and the cabbage pattern spreads over its parcel; the
 ##   Field Line lights the farm's lamp (lamp_held keeps it dark until then); the deed rolls itself up and drops off the map. No click is
@@ -61,7 +60,8 @@ extends MapSheet
 ## left, the offers made), so all of them can be haggled with at once and a bad offer stays with
 ## his farm. What is offered is gone either way (offer). At least his number: the
 ## price drops; less: it goes up (MOOD_STEP, in percent of the asking price, between PRICE_FLOOR
-## and PRICE_CEILING; its coins and its cabbages move together, by the same percentage: price; the ceiling may be more than the purse holds, the next TREASURY step holds it). His mood is stamped on
+## and PRICE_CEILING; the ceiling may be more than the purse holds, the next TREASURY step holds it).
+## Each reply slip prints that step (step_text, replayed from the moods: steps). His mood is stamped on
 ## the deed after each offer and is the only clue (Mood, MOOD_FROM: the offer as a share of his
 ## number). After every offer that landed he wants GREED times as much. With the card RECOVER
 ## (RECOVER REJECTED GOODS) RECOVERED of an offer that missed comes back. Each owner's offers and
@@ -86,20 +86,19 @@ extends MapSheet
 const Events := preload("res://globalScripts/game_events.gd")
 const World := preload("res://entities/map_table/world_register.gd")
 
-## What the 1st .. 5th farm costs, in coins and in cabbages from stock (paced in tools/pace.py:
-## `python tools/pace.py ch3`). The cabbages are a harvest drive of 2-3 min at the TV each, quicker
-## with every farm square and FARM OUTPUT step, and from the second farm on more than the store
-## before it holds: 2,000 needs SALT MINE (3,000), 3,500 the 4,000 step, 5,500 the 6,000, 9,000
-## the 9,999 (Projector's storage chain behind BIG MINDS HAVE BIG IDEAS). The last two farms are
-## walled by their cabbages, not their coins (pace.py wanted $1.5M and $5M for them).
+## What the 1st .. 5th farm costs, in coins only (round 2 point 10: a farm is bought with money,
+## haggled over with cabbages). Paced in tools/pace.py (`python tools/pace.py ch3`) against the
+## farms-first player of the 2026-11-15 playtest (~$50K a minute at farm 4, ~$150K once the street
+## pays double): the fourth and fifth fit the WALL SAFE limit ($1.5M), the fifth comes about 10 min
+## after BRIBERY at the playtest's income.
 const PRICES: Array[Dictionary] = [
-	{coins = 60000, stock = 800},
-	{coins = 200000, stock = 2000},
-	{coins = 450000, stock = 3500},
-	{coins = 1500000, stock = 5500},
-	{coins = 5000000, stock = 9000},
+	{coins = 60000},
+	{coins = 200000},
+	{coins = 450000},
+	{coins = 1200000},
+	{coins = 1600000},
 ]
-## Each home site's price, times PRICES (coins and cabbages): by the head office or on a big parcel
+## Each home site's price, times PRICES: by the head office or on a big parcel
 ## dearer, far out cheaper. A player who buys the cheapest site first pays 0.7 to 1.0 for
 ## the five that are sold, so the chapter keeps its pace (tools/pace.py ch3 mirrors it); the dearest
 ## three are the ones left to war. Any site not listed: 1.0.
@@ -126,14 +125,15 @@ const BRIBE := "bribery"
 ## offer lies between `low` and `high` (cabbages; coins for the bribe), and an offer is made of
 ## bundles of `bundle` (a cabbage on the letter showing that count; a stack of coins), at most
 ## NegotiationLetter.MOST of them: a typical offer is 3 to 10 bundles.
-## PROVISIONAL (tools/pace.py haggle): a share of what one step off the price is worth at the deed's
-## own rate (its coins per cabbage), wider with every farm.
+## Paced in tools/pace.py haggle: a share of what one step off the coin price is worth in cabbages
+## at the slate's price then, wider with every farm; a middling player ends about a fifth under the
+## asking price (the bribe: a third, for about $320K of envelopes).
 const HAGGLES: Array[Dictionary] = [
 	{},
-	{low = 120, high = 176, bundle = 25},
-	{low = 190, high = 320, bundle = 50},
-	{low = 260, high = 546, bundle = 75},
-	{low = 200000, high = 480000, bundle = 125000},
+	{low = 70, high = 120, bundle = 25},
+	{low = 130, high = 230, bundle = 50},
+	{low = 260, high = 500, bundle = 75},
+	{low = 30000, high = 70000, bundle = 15000},
 ]
 ## Who owns each home site and answers the letters: one name per site, the same every time.
 const OWNERS: Dictionary[StringName, String] = {
@@ -213,6 +213,9 @@ const PAPER_AFTER := 1.4
 const STAMP := &"deed_stamp"
 ## The sheet a stamped war order asks the table for (MapSheet.sheet_wanted).
 const WAR := &"war"
+## Not a sheet: once the first farm's deed has left the map, the register asks the table for the
+## farm TV (MapTable.to_farm, the TO FARM press, card or not).
+const TV := &"farm_tv"
 ## The deed lies this far (px) beside its site's centre, at least DEED_MARGIN px inside the sheet's
 ## edges and DEED_LIFT m over the paper (clear of the tokens it covers); it slides in from DEED_FROM
 ## px further out in DEED_SLIDE_TIME s.
@@ -336,24 +339,27 @@ static func worth(site: StringName) -> float:
 
 
 ## What `site`'s owner asks of `save` as the next home farm, {currency: amount} as UpgradeDesk.costs:
-## PRICES by the farms owned times the site's WORTH (coins to the thousand, cabbages to the ten);
+## PRICES by the farms owned times the site's WORTH (coins to the thousand);
 ## nothing while nobody sells: its card (GATES) is not stamped, or five are owned (the rest is war).
 static func asking(save: SaveGame, site: StringName) -> Dictionary:
 	var owned := save.farms_owned.size()
 	if owned >= mini(Events.HOME_SELLERS, PRICES.size()) or (gate(save) != "" and not save.stamped.has(gate(save))):
 		return {}
 	var base: Dictionary = PRICES[owned]
-	return {coins = roundi(base.coins * worth(site) / 1000.0) * 1000, stock = roundi(base.stock * worth(site) / 10.0) * 10}
+	return {coins = roundi(base.coins * worth(site) / 1000.0) * 1000}
 
 
-## What `site` costs `save` now: its asking price as the offers made to its owner have left it. The
-## save keeps the coins (haggle); the cabbages move by the same share of what was asked.
+## What `site` costs `save` now: its asking price plus every step its owner's offers moved it
+## (steps), replayed rather than read from the save, so it always matches the reply slips and a
+## price saved before PRICES or HAGGLES changed never drifts past the ceiling.
 static func price(save: SaveGame, site: StringName) -> Dictionary:
 	var bill := asking(save, site)
-	var coins: int = haggle(save, site).get("price", 0)
-	if bill.is_empty() or coins <= 0:
+	if bill.is_empty():
 		return bill
-	return {coins = coins, stock = roundi(bill.stock * float(coins) / bill.coins)}
+	var coins: int = bill.coins
+	for step in steps(save, site):
+		coins += step
+	return {coins = coins}
 
 
 ## `site`'s owner's negotiation as `save` has it: {price = the coin price his offers left (0: still
@@ -464,6 +470,28 @@ static func offers_left(save: SaveGame, site: StringName) -> int:
 static func price_after(save: SaveGame, site: StringName, mood: int) -> int:
 	var asked: int = asking(save, site).coins
 	return clampi(price(save, site).coins + roundi(asked * MOOD_STEP[mood] / 100.0), floor_price(save, site), roundi(asked * (100 + PRICE_CEILING) / 100.0))
+
+
+## How much each offer made to `site`'s owner moved its coin price, in order (0: it stayed, at the
+## floor or the ceiling): price_after replayed from the asking price over his moods, so the save
+## needs nothing more than the offers.
+static func steps(save: SaveGame, site: StringName) -> Array[int]:
+	var asked: int = asking(save, site).get("coins", 0)
+	var top := roundi(asked * (100 + PRICE_CEILING) / 100.0)
+	var now := asked
+	var out: Array[int] = []
+	for mood in moods(save, site):
+		var next := clampi(now + roundi(asked * MOOD_STEP[mood] / 100.0), floor_price(save, site), top)
+		out.append(next - now)
+		now = next
+	return out
+
+
+## A step (steps) as a reply slip prints it: "+$24K", "-$24.500", or "price unchanged".
+static func step_text(step: int) -> String:
+	if step == 0:
+		return TranslationServer.translate("price unchanged")
+	return ("+" if step > 0 else "-") + "$" + Num.text(absi(step))
 
 
 ## Puts `amount` (cabbages from the store, or coins: tender) to `site`'s owner: it is gone whether it
@@ -636,9 +664,7 @@ static func buy(save: SaveGame, site: StringName, out := Vector2i.ZERO) -> bool:
 	return true
 
 
-## What `site`'s price tag prints: its price as the next farm ("$60K + 800": coins + cabbages; the tag
-## is small, so coins from 10,000 are set in whole thousands and from a million in millions,
-## "$1.5M"; the hint slip has them in full),
+## What `site`'s price tag prints: its price as the next farm (Num.text: "$60K", "$62.400", "$1.5M"),
 ## ACQUIRED once ours; for a farm taken by war what the war is expected to cost, or why it cannot be
 ## attacked (WorldRegister.reach); NOT FOR SALE while nobody sells and there is no war card.
 static func tag_text(save: SaveGame, site: StringName) -> String:
@@ -647,28 +673,12 @@ static func tag_text(save: SaveGame, site: StringName) -> String:
 	var bill := price(save, site) if for_sale(save, site) else war_bill(save, site)
 	if bill.is_empty():
 		return TranslationServer.translate(World.reach(save, World.country_of(site)) if war_ready(save, site) else "NOT FOR SALE")
-	if not bill.has("stock"):
-		return "$" + short_coins(bill.coins)
-	return "$%s + %s" % [short_coins(bill.coins), FarmScreen._thousands(bill.stock)]
+	return "$" + Num.text(bill.coins)
 
 
-## `coins` as a price tag sets them: "9,500", "900K", "1.5M".
-static func short_coins(coins: int) -> String:
-	if coins >= 999500:  # Would round to 1000K.
-		return String.num(coins / 1000000.0, 1).trim_suffix(".0") + "M"
-	if coins >= 10000:
-		return str(roundi(coins / 1000.0)) + "K"
-	return FarmScreen._thousands(coins)
-
-
-## `bill` in words: "$30,000, 300 cabbages".
+## `bill` (coins: a deed's or a war's) in words: "$30K".
 static func words(bill: Dictionary) -> String:
-	var parts := PackedStringArray()
-	if bill.has("coins"):
-		parts.append("$" + FarmScreen._thousands(bill.coins))
-	if bill.has("stock"):
-		parts.append(TranslationServer.translate("%s cabbages") % FarmScreen._thousands(bill.stock))
-	return ", ".join(parts)
+	return "$" + Num.text(bill.get("coins", 0))
 
 
 ## The hint slip for `site` called this name: its price (never what is short: the deed shows that),
@@ -866,9 +876,11 @@ func _print_deed() -> void:
 	if what != "" and for_sale(save, _deed_site):
 		var made := offers(save, _deed_site)
 		var said := moods(save, _deed_site)
+		var moved := steps(save, _deed_site)
 		var replies := []
 		for i in made.size():
-			replies.append({offered = made[i], mood = tr(FarmDeed.MOODS[what][said[i]]), line = tr(reply(save, _deed_site, i, said[i], what))})
+			replies.append({offered = made[i], mood = tr(FarmDeed.MOODS[what][said[i]]), line = tr(reply(save, _deed_site, i, said[i], what)),
+					step = step_text(moved[i]), up = moved[i] > 0})
 		_deed.print_haggle(what, bundle(save), owner_of(_deed_site), replies, offers_left(save, _deed_site),
 				asking(save, _deed_site).coins, UpgradeDesk.spendable(save, what, _out()), haggle_note(save, _deed_site))
 	elif _deed.haggling:
@@ -1029,6 +1041,8 @@ func _stamp_deed() -> void:
 	_dealing.tween_callback(_deed.roll_away.bind(off, DEED_ROLL_TIME, DEED_DROP_TIME))
 	_dealing.tween_interval(DEED_ROLL_TIME + DEED_DROP_TIME)
 	_dealing.tween_callback(_deed_gone)
+	if SaveManager.save.farms_owned.size() == 1:  # The company's first farm: the camera goes to see it.
+		_dealing.tween_callback(sheet_wanted.emit.bind(TV, spot))
 
 
 ## Whether the paper lying here is a declaration that can be stamped (a war that can be started).

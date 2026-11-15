@@ -171,3 +171,79 @@ func test_a_lamp_loaded_from_a_save_starts_dark_and_silent() -> void:
 
 	assert_bool(lamp.glowing).is_false()
 	assert_bool((lamp.get_node("On") as AudioStreamPlayer3D).playing).is_false()
+
+
+const LIGHT_SCENE := preload("res://entities/golden_lamp/research_light.tscn")
+
+
+func _light() -> GoldenLamp:
+	var light := LIGHT_SCENE.instantiate() as GoldenLamp
+	add_child(auto_free(light))
+	return light
+
+
+func test_the_research_light_is_the_golden_lamp_with_its_own_card_numbers_and_the_labs_boost() -> void:
+	var light := _light()
+	assert_bool(light.visible).is_false()  # Before its card.
+	assert_str(light.card).is_equal("research_light")
+	var save: SaveGame = SaveManager.save
+	save.stamped.append("research_light")
+	save.lab_lamp_time = 30.0
+	light._process(0.0)
+	assert_bool(light.visible).is_true()
+	light._process(Lamp.FIRST_WAIT + 0.01)
+	assert_bool(light.glowing).is_true()
+	light._process(29.0)
+	assert_bool(light.glowing).is_true()  # lab_lamp_time, not the golden lamp's 20 s.
+	light._process(1.1)
+	assert_bool(light.glowing).is_false()
+
+
+func test_while_the_research_light_glows_the_lab_takes_its_multiplier_and_drops_it_after() -> void:
+	SaveManager.save.stamped.append("research_light")
+	SaveManager.save.lab_lamp_mult = 8.0
+	var lab := GDScript.new()  # Stands in for the QaBay: only its boosts are read.
+	lab.source_code = "extends Node\nvar boosts := {}\n"
+	lab.reload()
+	var bay: Node = auto_free(Node.new())
+	bay.set_script(lab)
+	bay.add_to_group(&"qa_bay")
+	add_child(bay)
+	var light := _light()
+	light._window_boost(SaveManager.save.lab_lamp_mult)
+	assert_dict(bay.boosts).is_equal({lab_lamp = 8.0})
+	light._window_boost(0.0)
+	assert_dict(bay.boosts).is_empty()
+
+
+func test_hovering_the_research_light_explains_it_with_its_own_numbers_and_golden_cabbages_until_its_node() -> void:
+	TranslationServer.set_locale("en")
+	var light: GoldenLamp = auto_free(LIGHT_SCENE.instantiate())
+	var save := SaveGame.new()
+	save.lab_lamp_every = 90.0
+	save.lab_lamp_mult = 8.0
+	var text := Lamp.hint(save, light.stats, light.hint_text, light.gold_node)
+	for part: String in ["research lab", "90 s", "8×", "Golden cabbages excluded."]:
+		assert_bool(text.contains(part)).override_failure_message(text).is_true()
+	save.tree_bought.append(QaBay.LAB_GOLD)
+	assert_str(Lamp.hint(save, light.stats, light.hint_text, light.gold_node)).not_contains("Golden cabbages excluded.")
+
+
+func test_both_lamps_glowing_tint_the_desk_light_together_and_one_going_out_leaves_the_other() -> void:
+	var base := Color(1, 0.86, 0.68)
+	var gold := Color(Lamp.GOLD, 0.35)
+	var blue := Color(0.35, 0.9, 1, 0.22)
+	var both := Lamp.tinted(base, [gold, blue])
+	assert_object(both).is_not_equal(Lamp.tinted(base, [gold]))
+	assert_object(Lamp.tinted(base, [gold, Color(blue, 0.0)])).is_equal(Lamp.tinted(base, [gold]))
+	assert_object(Lamp.tinted(base, [Color(gold, 0.0), Color(blue, 0.0)])).is_equal(base)
+
+
+func test_the_research_lights_rings_turn_slowly_and_steadily_never_a_blink() -> void:
+	var light := _light()
+	assert_float(light.spin_speed).is_between(0.05, 1.0)
+	assert_float(light.spin_speed * Lamp.SPIN_GLOWING / TAU).is_less(0.5)  # Under half a turn a second while glowing.
+	var ring := light.get_node("Model/Spin1") as Node3D
+	var was := ring.rotation.y
+	light._spin(1.0)
+	assert_float(ring.rotation.y - was).is_equal_approx(light.spin_speed, 0.0001)

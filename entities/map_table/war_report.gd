@@ -117,7 +117,7 @@ func fill(farm: StringName, called: String, coins: int, report: Dictionary) -> v
 	($Page/Form/Site as Label).text = tr("FARM SITE %s") % FarmDeed.code(farm)
 	($Page/Form/Outcome as Label).text = tr("VICTORY" if report.won else ("WITHDRAWN" if report.retreat else "ACQUISITION UNSUCCESSFUL"))
 	($Page/Form/Time as Label).text = tr("%s of %s") % [clock(report.seconds), clock(report.limit)]
-	($Page/Form/Cabbages as Label).text = FarmScreen._thousands(report.cabbages)
+	($Page/Form/Cabbages as Label).text = Num.text(report.cabbages)
 	($Page/Form/Coins as Label).text = FarmDeed.amount_text("coins", coins)
 	($Page/Form/Defences as Label).text = tr("%d of %d") % [report.defences.x, report.defences.y]
 	($Page/Form/Remark as Label).text = tr(remark(report, farm))

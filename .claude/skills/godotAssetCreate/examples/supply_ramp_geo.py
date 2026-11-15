@@ -4,7 +4,7 @@
 # a steel dock plate braced to the front legs sits below it, where the supply console lands.
 # Blender Z-up, front = -Y (Godot +Z). Origin: the cabbage's centre at the lip (the CabbageFeeder
 # node), 1.0 above the floor of the scene. The desk is at z -0.24. Godot ramp direction (0.65, 0.3, 0.12) = Blender (0.65, -0.12, 0.3).
-# One skinned mesh: bone Body + Drum0..Drum3 (Drum0 = ones), digit d at +d*36 deg about the front
+# One skinned mesh: bone Body + Drum0..Drum5 (Drum0 = ones), digit d at +d*36 deg about the front
 # wall direction TW (printed as DRUM_AXIS, in Godot space).
 from mathutils import Quaternion
 ASSET = "supply_ramp"
@@ -12,7 +12,7 @@ E, K, H, B, D, S = range(6)
 COLOURS = {E: (0.15, 0.19, 0.16), K: (0.025, 0.025, 0.024), H: (0.62, 0.63, 0.65), B: (0.62, 0.42, 0.14),
            D: (1, 1, 1), S: (0.19, 0.2, 0.2)}
 SURFACE = {E: 0, K: 0, H: 1, B: 1, D: 2, S: 3}
-DRUMS, PITCH, DRUM_W, DRUM_R = 4, 0.049, 0.045, 0.06
+DRUMS, PITCH, DRUM_W, DRUM_R = 6, 0.049, 0.045, 0.06
 DRUM_U = 0.12
 WIN = 0.022
 WX = (DRUMS - 1) / 2 * PITCH + DRUM_W / 2 + 0.004
@@ -124,7 +124,7 @@ for s in (0.2, 0.55):                                                           
 # --- Stock counter: a small steel drum bar hung right under the chute's front edge, its window
 #     tilted toward the camera, the number row along the wall (x = TW, ones at the top end). The
 #     bar's body tucks under the chute floor, so no steel shows between the wall and the numbers.
-S_C = 0.17
+S_C = 0.18
 TW = CH3 @ Vector((LEN, H0 - H1, 0)).normalized()             # along the front wall
 WO = CH3 @ Vector((H0 - H1, -LEN, 0)).normalized()            # front wall outward normal
 NRM = (WO * math.cos(math.radians(35)) + N * math.sin(math.radians(35))).normalized()   # faces the camera
@@ -213,7 +213,7 @@ def show(bones, digits):
         b.rotation_quaternion = Quaternion((TW.x, TW.z, -TW.y), math.radians(d * 36))   # bone space: Y = world Z
 
 
-STATES = {"stock": lambda b: show(b, [7, 2, 0, 0])}
+STATES = {"stock": lambda b: show(b, [6, 5, 4, 3, 2, 1])}
 # Roughly the game camera's angle onto this corner.
 FRAME = ((-0.35, -1.6, 1.55), (0.12, -0.05, -0.08), 40, 1280, 960)
 

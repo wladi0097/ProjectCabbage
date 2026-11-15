@@ -572,3 +572,54 @@ func test_a_token_whose_pile_was_taken_from_under_it_drops_onto_the_desk() -> vo
 	bay._file(low)
 	bay._restack()
 	assert_float(high.global_position.y).is_equal_approx(QaBay.DESK_Y + float(high.get_meta(&"thick")) * 0.5, 0.0001)
+
+
+func test_findings_tokens_merge_like_coins_and_the_merged_token_keeps_their_worth() -> void:
+	var bay := _bay_in_tree()
+	var tokens: Array[Node3D] = []
+	for i in 5:
+		var slip := _slip(Vector3(0.0, QaBay.DESK_Y + 0.01, 0.5), 1)
+		slip.set_meta(&"cell", Vector2i(0, 0))
+		slip.set_meta(&"thick", 0.01)
+		tokens.append(slip)
+	tokens.append(_slip(Vector3(0.0, QaBay.DESK_Y + 0.01, 0.5), 10))
+	tokens[-1].set_meta(&"cell", Vector2i(1, 0))
+	tokens[-1].set_meta(&"thick", 0.01)
+	bay._slips = tokens
+	assert_bool(bay.merge_once(100)).is_true()
+	assert_int(bay.pending_findings()).is_equal(15)
+	assert_bool(tokens[5].get_meta(&"resting")).is_true()  # The ¶10 is not part of it.
+	bay._merged(tokens.slice(0, 5) as Array[Node3D], 5, Vector3(0.0, QaBay.DESK_Y + 0.05, 0.5))
+	assert_int(bay.pending_findings()).is_equal(15)
+	assert_int(bay._slips.size()).is_equal(2)
+	assert_bool(bay._slips.any(func(s: Node3D) -> bool: return s.get_meta(&"value") == 5)).is_true()
+
+
+func test_merging_findings_tokens_wobble_in_place_before_they_fly_together() -> void:
+	var bay := _bay_in_tree()
+	var tokens: Array[Node3D] = []
+	for i in 5:
+		var slip := _slip(Vector3(0.2 * i, QaBay.DESK_Y + 0.005, 0.5), 1)
+		slip.set_meta(&"cell", Vector2i(i, 0))
+		slip.set_meta(&"thick", 0.01)
+		tokens.append(slip)
+	bay._slips = tokens.duplicate()
+	var far := tokens[0]  # the spot is the newest token's (tokens[4])
+	var rest := far.global_position
+	assert_bool(bay.merge_once(100)).is_true()
+	await await_millis(int(CoinPile.MERGE_SHAKE * 600.0))
+	# Mid-wobble: no further than the wobble from where it lay (the flight would have taken it centimetres).
+	assert_float(far.global_position.distance_to(rest)).is_less_equal(CoinPile.MERGE_SHAKE_SIZE + 0.0005)
+	await await_millis(int((CoinPile.MERGE_SHAKE + CoinPile.MERGE_TIME * 0.5) * 1000.0))
+	assert_float(far.global_position.distance_to(rest)).is_greater(0.05)  # Then off together.
+
+
+func test_a_running_research_light_multiplies_the_findings_of_a_cabbage_taken_into_the_lab() -> void:
+	assert_float(QaBay.boosted(6.0, false, {}, _save)).is_equal(6.0)
+	assert_float(QaBay.boosted(6.0, false, {lab_lamp = 5.0}, _save)).is_equal(30.0)
+
+
+func test_golden_cabbages_skip_the_research_light_until_its_projector_node() -> void:
+	assert_float(QaBay.boosted(20.0, true, {lab_lamp = 5.0}, _save)).is_equal(20.0)
+	_save.tree_bought.append(QaBay.LAB_GOLD)
+	assert_float(QaBay.boosted(20.0, true, {lab_lamp = 5.0}, _save)).is_equal(100.0)

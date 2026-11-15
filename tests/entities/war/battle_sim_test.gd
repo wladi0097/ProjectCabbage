@@ -77,21 +77,72 @@ func _maps() -> Array[WarMap]:
 	return out
 
 
-func test_assess_finds_a_cheapest_winning_army_for_every_existing_map() -> void:
+## Assessing every map takes minutes, so a map passed by a check here is not assessed again until its
+## layout, its stored difficulty or a SIM_SOURCES file changes (res://.godot/ is gitignored: a fresh
+## clone checks every map once). tools/battle_sim.gd --write-all stays the source of truth.
+## ponytail: only these files are hashed; the sim also reads SaveGame's defaults (unit_research,
+## stamped, tree_bought): delete PASSED after changing those.
+const PASSED := "res://.godot/battle_sim_test_passed.txt"
+const SIM_SOURCES := ["res://entities/war/battle_sim.gd", "res://entities/war/war_fight.gd", "res://entities/war/war_rules.gd"]
+
+
+## The maps `check` has not passed in their current form, each [map, its key for _passed].
+func _unchecked(check: String) -> Array:
+	var done := FileAccess.get_file_as_string(PASSED).split("\n") if FileAccess.file_exists(PASSED) else PackedStringArray()
+	var sources := ""
+	for path: String in SIM_SOURCES:
+		sources += FileAccess.get_md5(path)
+	var out := []
 	for map in _maps():
+		var key := ("%s|%s|%s|%s|%s" % [check, map.layout(), map.grid_size, map.difficulty, sources]).md5_text()
+		if key not in done:
+			out.append([map, key])
+	return out
+
+
+## Records the maps `check` just passed (none if anything in the test failed).
+func _passed(keys: Array) -> void:
+	if is_failure() or keys.is_empty():
+		return
+	var f := FileAccess.open(PASSED, FileAccess.READ_WRITE if FileAccess.file_exists(PASSED) else FileAccess.WRITE)
+	f.seek_end()
+	for key: String in keys:
+		f.store_line(key)
+
+
+## Also: editing a map without `tools/battle_sim.gd -- --write-all` fails here.
+func test_assess_finds_a_cheapest_winning_army_and_the_stored_difficulty_for_every_existing_map() -> void:
+	var keys := []
+	for pair: Array in _unchecked("assess"):
+		var map: WarMap = pair[0]
 		var a := BattleSim.assess(map.layout(), map.grid_size)
 		assert_bool(a.best.get("won", false)).override_failure_message(map.name).is_true()
 		for e: Dictionary in a.styles:
 			if e.won:
 				assert_int(e.cabbages).is_greater_equal(a.best.cabbages)
 				assert_bool(BattleSim.trial(map.layout(), map.grid_size, e.army, e.zones).won).is_true()
+		var want := BattleSim.difficulty_of(a)
+		var stored: Dictionary = map.difficulty
+		var stale := "%s: rerun --write-all" % map.name
+		assert_array(stored.keys()).override_failure_message(stale).contains_exactly_in_any_order(want.keys())
+		for key: String in want:
+			if key == "k":  # Stored to 0.01; a scene round-trip may add float noise.
+				assert_float(float(stored.k)).override_failure_message(stale).is_equal_approx(want.k, 0.001)
+			else:
+				assert_that(stored.get(key)).override_failure_message(stale).is_equal(want[key])
+		keys.append(pair[1])
+	_passed(keys)
 
 
 func test_every_existing_map_falls_to_associates_alone() -> void:
-	for map in _maps():
+	var keys := []
+	for pair: Array in _unchecked("associates"):
+		var map: WarMap = pair[0]
 		var a := BattleSim.assess(map.layout(), map.grid_size, {units = ["field_associate"], level = "full"})
 		assert_bool(a.best.get("won", false)).override_failure_message(map.name).is_true()
 		assert_bool(a.best.fits).override_failure_message(map.name).is_true()
+		keys.append(pair[1])
+	_passed(keys)
 
 
 func test_the_test_map_is_the_k_ladders_unit_strength() -> void:
@@ -153,20 +204,6 @@ func test_pults_take_a_silo_cheaper_than_senior_assets() -> void:
 	var seniors := _cost(_pair("silo"), "seniors", {})  # The burst takes a share of a parked tank's health.
 	assert_float(float(_cost(_pair("silo"), "pults", {}))).is_less_equal(0.75 * seniors)
 	assert_float(float(_cost(_pair("silo"), "pults"))).is_less_equal(0.75 * _cost(_pair("silo"), "seniors"))
-
-
-## Editing a map without `tools/battle_sim.gd -- --write-all` fails here.
-func test_every_maps_stored_difficulty_matches_the_calculator() -> void:
-	for map in _maps():
-		var want := BattleSim.difficulty(map.layout(), map.grid_size)
-		var stored: Dictionary = map.difficulty
-		var stale := "%s: rerun --write-all" % map.name
-		assert_array(stored.keys()).override_failure_message(stale).contains_exactly_in_any_order(want.keys())
-		for key: String in want:
-			if key == "k":  # Stored to 0.01; a scene round-trip may add float noise.
-				assert_float(float(stored.k)).override_failure_message(stale).is_equal_approx(want.k, 0.001)
-			else:
-				assert_that(stored.get(key)).override_failure_message(stale).is_equal(want[key])
 
 
 func test_the_declaration_reads_the_band_the_associates_and_the_best_style_without_a_fight() -> void:

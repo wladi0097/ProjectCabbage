@@ -102,8 +102,9 @@ const SHOCK_AFTER_FARM := 40
 ## The desk cards that may still be left when the tray counts as run dry (tray_dry): dear ones the
 ## player saves up for anyway (the desk lamp, the mat allowance), and optional ones a player may
 ## never want (the behaviour memos, the no-effect ledger; in chapter 3, long after the tray ran dry,
-## the handling schedule, the map table's holdings indicator and the farm shortcut). Nothing else needs any of them.
-const DRY_LEFT := ["golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger", "hand_schedule", "map_readout", "farm_shortcut"]
+## the handling schedule, the map table's holdings indicator and the farm shortcut; the comforts: the
+## rotten shield and the two merging cards). Nothing else needs any of them.
+const DRY_LEFT := ["golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger", "hand_schedule", "map_readout", "farm_shortcut", "rotten_shield", "coin_merge", "token_merge", "research_light"]
 const Demo := preload("res://globalScripts/demo.gd")
 
 

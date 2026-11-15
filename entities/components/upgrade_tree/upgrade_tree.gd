@@ -808,7 +808,7 @@ func _draw_popup(node: Dictionary, at: Vector2, r: float, save: SaveGame, lit: f
 	var is_bought: bool = rules.is_bought(node.id, save)
 	var price: int = rules.price_of(node.id, save)
 	var findings := currency_of(node) == "findings"
-	var cost := tr("APPROVED") if is_bought else (tr("COST ¶%d") if findings else tr("COST $%d")) % price
+	var cost := tr("APPROVED") if is_bought else (tr("COST ¶%s") if findings else tr("COST $%s")) % Num.text(price)
 	var short: bool = not is_bought and save.get(currency_of(node)) < price
 	_draw_cost(pos + Vector2(16, height - 16), cost, Color(warn, lit) if short else text)
 
@@ -837,7 +837,7 @@ func _pick_rows(pick: Dictionary, save: SaveGame) -> Array:
 	var node: Dictionary = rules.node_data(pick.id)
 	var rows := [[tr(PICK_HEADING[pick.state]), 21, false, false], [tr(node.title), 24, false, false]]
 	if pick.state != "locked":
-		var cost := (tr("COST ¶%d") if currency_of(node) == "findings" else tr("COST $%d")) % rules.price_of(pick.id, save)
+		var cost := (tr("COST ¶%s") if currency_of(node) == "findings" else tr("COST $%s")) % Num.text(rules.price_of(pick.id, save))
 		rows.append([cost, 24, pick.state == "short", true])
 		return rows
 	var needs: Array = rules.requirement(pick.id, save)

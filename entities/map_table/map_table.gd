@@ -459,12 +459,23 @@ func show_sheet(id: StringName, farm: StringName = &"", chosen := {}) -> void:
 
 
 ## A click on the depot: the depot sheet rolls out, the sheet lying open goes into the holder (the
-## way back). Not during a war, nor while the depot sheet is out already.
+## way back). Not during a war; while the depot sheet is out already, the sheet it was opened from
+## comes back (as the holder would bring it).
 func open_depot() -> void:
-	if shown == DEPOT or shown == WAR or swapping or not Depot.unlocked(SaveManager.save):
+	if shown == WAR or swapping or not Depot.unlocked(SaveManager.save):
 		return
-	_depot_from = shown
-	show_sheet(DEPOT)
+	if shown == DEPOT:
+		show_sheet(_depot_from)
+	else:
+		_depot_from = shown
+		show_sheet(DEPOT)
+	if _hovered == DEPOT:
+		_hint.text = _depot_hint()  # Still on the depot: its slip says what the next click does.
+
+
+## The hint slip's words on the depot: open it, or (open already) go back to the map.
+func _depot_hint() -> String:
+	return tr("Back to the map") if shown == DEPOT else tr("Personnel depot")
 
 
 ## The sheets alive: the world sheet, the war sheet and the country sheet loaded, if any.
@@ -506,6 +517,9 @@ func _sheet_for(id: StringName) -> MapSheet:
 ## A sheet asks for another one (MapSheet.sheet_wanted). From the war sheet with the farm now ours: the war
 ## is won, and the farm's moment plays on its country's sheet once that lies open again.
 func _on_wants(id: StringName, farm: StringName) -> void:
+	if id == FarmRegister.TV:  # The first farm bought: off to see it, as TO FARM.
+		to_farm()
+		return
 	if shown == WAR and SaveManager.save.farms_owned.has(farm):
 		_won = farm
 		(_sheet_for(id) as FarmRegister).expect(farm)
@@ -716,7 +730,7 @@ func _hover(what: StringName) -> void:
 	elif what == HOLDER:
 		_hint.text = _held.hint_title()
 	elif what == DEPOT:
-		_hint.text = tr("Personnel depot")
+		_hint.text = _depot_hint()
 	elif what != &"":
 		_hint.text = sheet_of(shown).hint(what)
 		if shown == WORLD:

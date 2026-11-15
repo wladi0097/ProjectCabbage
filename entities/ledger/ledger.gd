@@ -135,15 +135,15 @@ static func money(amount: int, currency: String) -> String:
 ## The performance summary: [label, value] rows.
 static func summary_rows(save: SaveGame, seconds: int) -> Array:
 	return [
-		["CABBAGES MOVED", str(save.sold)],
-		["CABBAGES INTERCEPTED MID-AIR", str(save.catches)],
+		["CABBAGES MOVED", Num.text(save.sold)],
+		["CABBAGES INTERCEPTED MID-AIR", Num.text(save.catches)],
 		["INTERCEPTION RATE", "%d%%" % roundi(100.0 * save.catches / maxi(save.sold, 1))],
-		["CABBAGES IN INVENTORY", "%d / %d" % [save.stock, save.storage_cap]],
-		["COINS ON HAND", "$%d" % save.coins],
-		["COINS EARNED TO DATE", "$" + FarmScreen._thousands(save.coins_earned)],
-		["FINDINGS FILED", "¶%d" % save.findings],
-		["FINDINGS EARNED TO DATE", "¶" + FarmScreen._thousands(save.findings_earned)],
-		["PRICE PER CABBAGE", "$%d" % save.sale_price],
+		["CABBAGES IN INVENTORY", "%s / %s" % [Num.text(save.stock), Num.text(save.storage_cap)]],
+		["COINS ON HAND", "$" + Num.text(save.coins)],
+		["COINS EARNED TO DATE", "$" + Num.text(save.coins_earned)],
+		["FINDINGS FILED", "¶" + Num.text(save.findings)],
+		["FINDINGS EARNED TO DATE", "¶" + Num.text(save.findings_earned)],
+		["PRICE PER CABBAGE", "$" + Num.text(save.sale_price)],
 		["MARKETING MULTIPLIER", "x%.2f" % save.marketing],
 		["HANDS EMPLOYED", str(save.hands)],
 		["TIME ON SHIFT", clock(seconds)],
@@ -302,11 +302,9 @@ static func nice_step(value: float) -> float:
 	return 10.0 * power
 
 
-## A scale's tick: "$1,200", "¶0.5", "$15K" (steps of a thousand or more count in thousands).
+## A scale's tick: "$1.200", "¶0.5", "$15K" (Num.text; steps under one keep their decimals).
 static func tick_text(value: float, step: float, mark: String) -> String:
-	if step >= 1000.0:
-		return mark + String.num(value / 1000.0, 1).trim_suffix(".0") + "K"
-	return mark + (FarmScreen._thousands(roundi(value)) if step >= 1.0 else String.num(value, 2))
+	return mark + (Num.text(roundi(value)) if step >= 1.0 else String.num(value, 2))
 
 
 static func personnel_rows(save: SaveGame) -> Array:
@@ -599,7 +597,7 @@ func _draw_charts(specs: Array, x: float, w: float, top_y: float, line_h: float,
 	for minute in ticks:
 		var px := _time_x(area, window, minute * 60.0)
 		draw_line(Vector2(px, area.end.y), Vector2(px, area.end.y + 6.0), pencil, 1.5)
-		draw_string(_type, Vector2(px - 40.0, area.end.y + line_h * 0.7), FarmScreen._thousands(minute),
+		draw_string(_type, Vector2(px - 40.0, area.end.y + line_h * 0.7), str(minute),
 				HORIZONTAL_ALIGNMENT_CENTER, 80.0, small, pencil)
 	draw_string(_type, Vector2(area.position.x, area.end.y + line_h * 1.4), tr("MINUTES ON SHIFT"),
 			HORIZONTAL_ALIGNMENT_CENTER, area.size.x, small, pencil)
@@ -618,7 +616,7 @@ func _draw_chart(area: Rect2, spec: Dictionary, points: PackedVector2Array, wind
 	var caption_y := area.position.y - line_h * 0.45
 	draw_string(_type, Vector2(area.position.x - GUTTER, caption_y), tr(spec.caption), HORIZONTAL_ALIGNMENT_LEFT,
 			area.size.x, small, ink)
-	draw_string(_type, Vector2(area.position.x, caption_y), tr("TO DATE %s") % (spec.mark + FarmScreen._thousands(spec.total)),
+	draw_string(_type, Vector2(area.position.x, caption_y), tr("TO DATE %s") % (spec.mark + Num.text(spec.total)),
 			HORIZONTAL_ALIGNMENT_RIGHT, area.size.x, small, ink)
 	var enough := shows_line(points)
 	var top := scale_top(points)

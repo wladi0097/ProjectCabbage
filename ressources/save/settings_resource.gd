@@ -114,12 +114,14 @@ enum ShadowQuality { LOW, MEDIUM, HIGH }
 @export var sfx_volume := 1.0:
 	set(volume):
 		sfx_volume = volume
-		AudioServer.set_bus_volume_db(AudioServer.get_bus_index('SFX'), linear_to_db(volume))
+		for bus in ['SFX', 'War']:  # The war's own sounds (War bus, kept clear of its duck) follow the SFX slider.
+			AudioServer.set_bus_volume_db(AudioServer.get_bus_index(bus), linear_to_db(volume))
 
 @export var sfx_muted := false:
 	set(is_muted):
 		sfx_muted = is_muted
-		AudioServer.set_bus_mute(AudioServer.get_bus_index('SFX'), is_muted)
+		for bus in ['SFX', 'War']:
+			AudioServer.set_bus_mute(AudioServer.get_bus_index(bus), is_muted)
 
 ## The desk radio's old-set sound (band-pass, crackle, squash on the Radio bus); off plays it clean.
 @export var radio_filter := true:

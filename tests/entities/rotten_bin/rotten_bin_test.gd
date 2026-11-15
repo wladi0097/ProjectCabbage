@@ -170,3 +170,9 @@ func test_a_rejected_unit_never_pops_toward_the_screen_bottom() -> void:
 	assert_float(Bin.reject_velocity(Vector3.ZERO, Vector3(0.0, 0.0, 0.05)).z).is_less_equal(0.0)
 	assert_float(Bin.reject_velocity(Vector3.ZERO, Vector3.ZERO).z).is_less(0.0)
 	assert_float(Bin.reject_velocity(Vector3.ZERO, Vector3(0.05, 0.0, 0.0)).x).is_greater(0.0)
+
+
+func test_the_fine_notice_says_when_a_rotten_cabbage_burst_on_the_sales_desk() -> void:
+	# The untranslated lines (the notice draws them through tr).
+	assert_str(FineNotice.notice_line(true)).is_equal("A rotten cabbage burst on the sales desk.")
+	assert_str(FineNotice.notice_line(false)).is_equal("A rotten cabbage was offered to the public.")

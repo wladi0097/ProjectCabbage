@@ -652,3 +652,106 @@ func test_a_condensed_cabbage_sounds_lower_the_more_cabbages_it_holds() -> void:
 	assert_float((dense.get_node("Bump") as SoundCue).pitch_scale).is_equal_approx(CabbageScript.heavy_pitch(2), 0.0001)
 	assert_float((dense.get_node("Grab") as SoundCue).pitch_scale).is_equal_approx(CabbageScript.heavy_pitch(2), 0.0001)
 	assert_float((spawn().get_node("Bump") as SoundCue).pitch_scale).is_equal(1.0)
+
+
+func test_after_the_quarantine_card_rotten_and_regular_cabbages_pass_through_each_other() -> void:
+	SaveManager.save.stamped.append(Cabbage.SHIELD_CARD)
+	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+	var plain := spawn()
+	var golden := spawn(func(c: Cabbage) -> void: c.golden = true)  # Every kind but rotten counts as regular.
+	var other_rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+	for regular: Cabbage in [plain, golden]:
+		assert_array(rotten.get_collision_exceptions()).contains([regular])
+		assert_array(regular.get_collision_exceptions()).contains([rotten, other_rotten])
+	assert_array(rotten.get_collision_exceptions()).not_contains([other_rotten])  # Two rotten ones still meet.
+	assert_array(plain.get_collision_exceptions()).not_contains([golden])
+
+
+func test_a_quarantined_rotten_cabbage_keeps_its_weight_and_still_meets_the_desk_the_hands_and_the_player() -> void:
+	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+	var layers := Vector2i(rotten.collision_layer, rotten.collision_mask)
+	var mass := rotten.mass
+	SaveManager.save.stamped.append(Cabbage.SHIELD_CARD)
+	rotten._physics_process(0.016)
+	assert_bool(rotten._quarantined).is_true()
+	assert_that(Vector2i(rotten.collision_layer, rotten.collision_mask)).is_equal(layers)
+	assert_float(rotten.mass).is_equal(mass)
+
+
+func test_without_the_quarantine_card_rotten_and_regular_cabbages_collide_as_ever() -> void:
+	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+	spawn()
+	assert_array(rotten.get_collision_exceptions()).is_empty()
+
+
+func test_a_rotten_cabbage_out_when_the_card_is_stamped_is_quarantined_on_its_next_step() -> void:
+	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+	var plain := spawn()
+	SaveManager.save.stamped.append(Cabbage.SHIELD_CARD)
+	rotten._physics_process(0.016)
+	assert_array(plain.get_collision_exceptions()).contains([rotten])
+
+
+func _tick(cabbage: Cabbage, seconds: float) -> void:
+	for i in roundi(seconds):
+		cabbage._physics_process(1.0)
+
+
+func test_a_rotten_cabbage_left_on_the_desk_bursts_after_three_minutes() -> void:
+	SaveManager.save.stock = 3
+	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+
+	_tick(rotten, Cabbage.FUSE - 1.0)
+	assert_bool(rotten.is_queued_for_deletion()).is_false()
+
+	_tick(rotten, 1.0)
+	assert_bool(rotten.is_queued_for_deletion()).is_true()
+	assert_int(SaveManager.save.stock).is_equal(2)
+
+
+func test_holding_a_rotten_cabbage_pauses_its_count_but_does_not_reset_it() -> void:
+	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+	_tick(rotten, 10.0)
+	rotten._on_grabbed()
+	assert_bool(rotten.burning()).is_false()
+	assert_float(rotten.fuse).is_equal(Cabbage.FUSE - 10.0)
+
+	rotten._on_released()
+	assert_bool(rotten.burning()).is_true()
+	_tick(rotten, 10.0)
+	assert_float(rotten.fuse).is_equal(Cabbage.FUSE - 20.0)
+
+
+func test_a_rotten_cabbage_already_binned_or_sold_never_bursts() -> void:
+	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+	rotten.sold = true
+	_tick(rotten, Cabbage.FUSE + 10.0)
+	assert_float(rotten.fuse).is_equal(Cabbage.FUSE)
+
+
+func test_a_fresh_cabbage_never_bursts() -> void:
+	var fresh := spawn()
+	_tick(fresh, Cabbage.FUSE + 10.0)
+	assert_bool(fresh.is_queued_for_deletion()).is_false()
+
+
+func test_a_burst_leaves_a_grey_green_puff_and_pushes_nothing() -> void:
+	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+	var count_before := find_children("*", "CPUParticles3D", false, false).size()
+	rotten.burst()
+	assert_int(rotten.collision_layer).is_equal(0)
+	assert_int(rotten.collision_mask).is_equal(0)
+	assert_int(find_children("*", "CPUParticles3D", false, false).size()).is_equal(count_before + 1)
+
+
+func test_a_rotten_cabbage_only_swells_in_its_last_thirty_seconds_slowly_at_first() -> void:
+	assert_float(Cabbage.swell_at(Cabbage.FUSE)).is_equal(1.0)
+	assert_float(Cabbage.swell_at(Cabbage.SWELL_FROM)).is_equal(1.0)
+	assert_float(Cabbage.swell_at(0.0)).is_equal_approx(1.0 + Cabbage.SWELL, 0.0001)
+	assert_float(Cabbage.swell_at(Cabbage.SWELL_FROM / 2.0) - 1.0).is_less(Cabbage.SWELL / 2.0)
+
+
+func test_a_rotten_cabbage_shakes_harder_toward_the_burst_and_quivers_at_the_end() -> void:
+	assert_float(Cabbage.shake_at(60.0)).is_equal(0.0)
+	assert_float(Cabbage.shake_at(25.0)).is_less(Cabbage.shake_at(10.0))
+	assert_float(Cabbage.shake_at(3.0)).is_greater(Cabbage.shake_at(6.0))

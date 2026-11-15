@@ -3,7 +3,8 @@ extends Node3D
 ## The pricing consultant (desk card "pricing_consultant"): a ghost hand in a grey suit sleeve.
 ## Every save.consultant_interval seconds it checks the slate against its target price
 ## (target_price) and, if they differ, reaches in from the left screen edge and taps the arrow one
-## step toward it (with YIELD OPTIMISATION, SMART, it chalks the whole way in one tap), then hovers
+## step toward it ($1, or $2, $5, $10 with the projector's STEP nodes; with YIELD OPTIMISATION, SMART,
+## it chalks the whole way in one tap), then hovers
 ## by the slate for the next tap. On target it withdraws off screen.
 ## Its mandate (save.consultant_bounce, consultant_floor, consultant_ceiling) is the player's word:
 ## it holds the whole-dollar price whose refusals at the street's current mood come nearest the share
@@ -27,6 +28,9 @@ const BOUNCE_STEP := 5
 const BOUNCE_MAX := 50
 ## The projector node with which it chalks its target in one tap.
 const SMART := "consultant_smart"
+## The projector nodes STEP 2, 5 and 10 (step size -> node): a tap moves the price by the biggest bought
+## that doesn't overshoot the target, $1 without.
+const STEPS := {2: "consultant_step_2", 5: "consultant_step_5", 10: "consultant_step_10"}
 ## Fingertip distances off an arrow along the slate face's normal (FACE): hovering, and pressed.
 ## From the front, so the finger is not hidden behind the tilted slate.
 const FACE := Vector3(0.0, 0.875, 0.485)
@@ -187,9 +191,17 @@ func _decide(save: SaveGame) -> void:
 	_phase = Phase.REACH
 
 
-## The price change one tap makes toward `target`: $1, or the whole way with SMART bought.
+## The price change one tap makes toward `target`: the whole way with SMART bought, else the biggest
+## step bought (STEPS, $1 without) that doesn't overshoot it.
 static func tap(save: SaveGame, target: int) -> int:
-	return target - save.sale_price if save.tree_bought.has(SMART) else signi(target - save.sale_price)
+	var gap := target - save.sale_price
+	if save.tree_bought.has(SMART):
+		return gap
+	var step := 1
+	for size: int in STEPS:
+		if save.tree_bought.has(STEPS[size]) and size <= absi(gap):
+			step = maxi(step, size)
+	return signi(gap) * step
 
 
 ## The slate's switch was clicked: the mandate sheet opens (its duty switch sends the consultant away).

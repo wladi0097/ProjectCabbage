@@ -43,7 +43,7 @@ func test_the_tally_and_findings_drum_ticks_wait_at_least_30_ms_between_plays() 
 
 func test_the_machine_is_lettered_with_the_most_it_holds_and_reads_full_at_the_limit() -> void:
 	assert_str(TallyMachine.limit_text("$", 40000)).is_equal("MAX $40K")
-	assert_str(TallyMachine.limit_text("¶", 8000)).is_equal("MAX ¶8,000")
+	assert_str(TallyMachine.limit_text("¶", 8000)).is_equal("MAX ¶8K")
 	assert_str(TallyMachine.limit_text("$", 16000000)).is_equal("MAX $16M")
 	var was := TranslationServer.get_locale()
 	TranslationServer.set_locale("en")

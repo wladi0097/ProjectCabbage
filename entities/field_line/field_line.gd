@@ -9,6 +9,8 @@ extends Node3D
 ## Sound moments, one cue each (streams in the scene): Lift (the handset leaves the cradle),
 ## LineOpen (it is up: the line clicks open), HangUp (it lands back in the rings), Relay (one per
 ## lamp that lights) and Land (the machine drops onto the desk; the old console's drop, higher).
+## While `ringing` (the game's say: until the line is first answered) the handset rattles in its
+## cradle like a ringing phone, two short bursts and a pause (ring_offset), silently.
 
 ## The handset is up and the line open, once per lift: at the top of the lift, not at the click.
 signal line_opened
@@ -29,6 +31,21 @@ const SWING_TIME := 0.36
 const SWING_LAG := 0.07
 const DROP_HEIGHT := 1.6
 const DROP_TIME := 0.45
+## The ring: every RING_PERIOD s two bursts RING_BURST s long, RING_GAP s apart, the handset rattling
+## RING_RATTLE times a second, hopping up to RING_RISE of the lift and twisting RING_SWING of the swing
+## either way (the twist is what reads from above).
+const RING_PERIOD := 2.4
+const RING_BURST := 0.35
+const RING_GAP := 0.2
+const RING_RATTLE := 18.0
+const RING_RISE := 0.25
+const RING_SWING := 0.5
+
+## The handset rattles for attention (ring_offset); a lift stops it.
+var ringing := false
+var _ring_time := 0.0
+## The ring's share of the pose now: (rise, swing), on top of _rise and _swing.
+var _ring := Vector2.ZERO
 
 ## 0 in the cradle, 1 lifted (above 1 while it overshoots); the same for the swing.
 var _rise := 0.0:
@@ -75,6 +92,17 @@ static func count_text(owned: int, total: int) -> String:
 	return "%d/%d" % [owned, total]
 
 
+## The ring's (rise, swing) `t` s into ringing: a rattle during the two bursts of each period, zero between.
+static func ring_offset(t: float) -> Vector2:
+	var at := fposmod(t, RING_PERIOD)
+	if at >= RING_BURST:
+		at -= RING_BURST + RING_GAP
+	if at < 0.0 or at >= RING_BURST:
+		return Vector2.ZERO
+	var phase := at * RING_RATTLE * TAU
+	return Vector2((0.5 - 0.5 * cos(phase * 2.0)) * RING_RISE, sin(phase) * RING_SWING)
+
+
 ## Where the handset is, from its cradle, at `rise` and `swing` (0 down, 1 lifted).
 static func handset_offset(rise: float, swing: float) -> Transform3D:
 	return Transform3D(Basis(Vector3.UP, SWING * swing), LIFT * rise)
@@ -112,6 +140,7 @@ func lift() -> void:
 	if _open:
 		return
 	_open = true
+	ringing = false
 	_lift_sound.cue(global_position)
 	_move()
 	_moving.tween_property(self, "_rise", 1.0, RISE_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -153,6 +182,16 @@ func _stir(rise: float) -> void:
 	_moving.tween_property(self, "_swing", rise * 0.5, 0.14).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
+func _process(delta: float) -> void:
+	var ring := Vector2.ZERO
+	if ringing and not _open:
+		_ring_time += delta
+		ring = ring_offset(_ring_time)
+	if ring != _ring:
+		_ring = ring
+		_pose()
+
+
 func _move() -> void:
 	if _moving != null:
 		_moving.kill()
@@ -168,6 +207,6 @@ func _pose() -> void:
 	if not is_node_ready():
 		return
 	var rest := _skeleton.get_bone_rest(_receiver)
-	var offset := handset_offset(_rise, _swing)
+	var offset := handset_offset(_rise + _ring.x, _swing + _ring.y)
 	_skeleton.set_bone_pose_position(_receiver, rest.origin + offset.origin)
 	_skeleton.set_bone_pose_rotation(_receiver, offset.basis.get_rotation_quaternion() * rest.basis.get_rotation_quaternion())

@@ -168,7 +168,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 36
-text = "$152,000 + 1,520 cabbages"
+text = "$152K + 1.520 cabbages"
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -319,7 +319,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 28
-text = "IN STOCK 14,748"
+text = "IN STOCK 14.748"
 horizontal_alignment = 1
 vertical_alignment = 1
 

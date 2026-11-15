@@ -42,8 +42,8 @@ func _shown(tally: MapTally) -> Array:
 func test_the_tally_shows_coins_cabbages_research_and_farms() -> void:
 	var save := SaveManager.save
 	save.farms_owned = PackedStringArray(["K-1", "K-2"])
-	assert_array(Array(MapTally.readout(save))).is_equal(["84K", "1,250", "3,120", "2/24"])
-	assert_array(_shown(_tally())).is_equal(["84K", "1,250", "3,120", "2/24"])
+	assert_array(Array(MapTally.readout(save))).is_equal(["84.250", "1.250", "3.120", "2/24"])
+	assert_array(_shown(_tally())).is_equal(["84.250", "1.250", "3.120", "2/24"])
 
 
 func test_the_tally_prints_its_numbers_as_the_price_tags_and_the_field_line_do() -> void:
@@ -51,7 +51,7 @@ func test_the_tally_prints_its_numbers_as_the_price_tags_and_the_field_line_do()
 	save.coins = 5400000
 	save.findings = 100000
 	var texts := MapTally.readout(save)
-	assert_str(texts[0]).is_equal(FarmRegister.short_coins(5400000)).is_equal("5.4M")
+	assert_str(texts[0]).is_equal(Num.text(5400000)).is_equal("5.4M")
 	assert_str(texts[2]).is_equal("100K")
 	assert_str(texts[3]).is_equal(FieldLine.count_text(0, Events.FARMS))
 
@@ -61,9 +61,9 @@ func test_the_tally_changes_when_a_farm_is_bought() -> void:
 	tally.live = true
 	assert_bool(FarmRegister.buy(SaveManager.save, &"K-2")).is_true()
 	tally.show_save(SaveManager.save)
-	assert_array(_shown(tally)).is_equal(["24K", "450", "3,120", "1/24"])
-	# What the farm cost and the farm itself flick over; the Findings it did not touch stay still.
-	assert_array([0, 1, 2, 3].map(tally.flicking)).is_equal([true, true, false, true])
+	assert_array(_shown(tally)).is_equal(["24.250", "1.250", "3.120", "1/24"])
+	# What the farm cost (coins only) and the farm itself flick over; what it did not touch stays still.
+	assert_array([0, 1, 2, 3].map(tally.flicking)).is_equal([true, false, false, true])
 
 
 func test_a_window_that_flicks_over_comes_up_dim_and_ends_at_its_full_height_in_its_own_colour() -> void:
@@ -90,7 +90,7 @@ func test_a_number_that_ticks_all_the_time_flicks_once_and_then_changes_quietly(
 	tally._flicks[1].custom_step(1.0)
 	SaveManager.save.stock = 1248
 	tally.show_save(SaveManager.save)
-	assert_array(_shown(tally)).contains(["1,248"])
+	assert_array(_shown(tally)).contains(["1.248"])
 	assert_bool(tally.flicking(1)).is_false()
 	assert_bool(MapTally.rested(MapTally.REST)).is_true()
 	assert_bool(MapTally.rested(0.5)).is_false()
@@ -100,7 +100,7 @@ func test_away_from_the_map_the_tally_follows_the_save_without_flicking() -> voi
 	var tally := _tally()
 	SaveManager.save.coins = 500
 	tally._process(0.0)
-	assert_array(_shown(tally)).is_equal(["500", "1,250", "3,120", "0/24"])
+	assert_array(_shown(tally)).is_equal(["500", "1.250", "3.120", "0/24"])
 	assert_bool(tally.flicking(0)).is_false()
 
 
@@ -158,7 +158,7 @@ func test_a_window_at_its_limit_turns_red_and_flicks_over_and_turns_back_under_i
 	tally._flicks[0].custom_step(1.0)
 	assert_bool(coins.modulate.is_equal_approx(MapTally.FULL_INK)).is_true()
 	assert_float(MapTally.FULL_INK.r).is_greater(MapTally.FULL_INK.g + 0.5)
-	assert_str(coins.text).is_equal(FarmRegister.short_coins(save.coin_limit))  # Still the number, no word.
+	assert_str(coins.text).is_equal(Num.text(save.coin_limit))  # Still the number, no word.
 	# A farm is paid for: under the limit again, at once, whenever the window last flicked.
 	save.coins -= 1000
 	tally.show_save(save)

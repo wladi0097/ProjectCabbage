@@ -1,12 +1,15 @@
 class_name HandSchedule
 extends Node3D
-## The HANDLING ASSIGNMENT SCHEDULE (desk card CARD, chapter 3): a light switch at the bottom of the
+## The HANDLING ASSIGNMENT SCHEDULE (desk card CARD, chapter 1): a light switch at the bottom of the
 ## desk, between the lab hands' and the hired hands' parking piles (Associate.park_spot), there once
 ## the card is stamped. Clicked, it opens the schedule (handling_sheet.tscn):
 ## a form split in two, lab hands left and hired hands right, a picture per cabbage kind (KINDS) under
 ## each. A struck kind is in that half's list in the save (hands_forbidden, lab_hands_forbidden) and
 ## no hand of that kind takes it (Associate.pick_target, given `forbidden`).
-## The card lists plain cabbages; each other kind is listed once its projector node (NODES) is bought.
+## A kind is on the paper once the player has met it (`seen`: its card SEEN stamped; never before, no
+## spoilers) and can be struck once it is `listed`: plain cabbages and minis with their cards, blue
+## ones with MEMO: LAB PRIORITY (LAB_CARD; its stamp strikes blue for hired hands), golden ones with
+## their projector node (GOLD_NODE). Met but not listed: padlocked.
 ## The schedule only withholds: what a hand may not take anyway (a golden cabbage without its
 ## clearance, a rotten one under the spoilage memo) stays untouched whatever the paper says. Rotten
 ## cabbages are no kind here (kind_of ""): the memo and the waste protocol govern them.
@@ -15,8 +18,12 @@ extends Node3D
 const CARD := "hand_schedule"
 ## The cabbage kinds on the paper, in its order. "regular": a plain cabbage, condensed and grown ones included.
 const KINDS: Array[String] = ["regular", "research", "mini", "golden"]
-## The projector node that lists each kind past the plain one.
-const NODES := {research = "schedule_research", mini = "schedule_mini", golden = "schedule_golden"}
+## The card that brings each kind past the plain one: met (on the paper) once it is stamped.
+const SEEN := {research = "research_cabbage", mini = "mini_cabbages", golden = "golden_cabbage"}
+## MEMO: LAB PRIORITY: lists blue, and its stamp strikes blue for hired hands (UpgradeDesk.apply).
+const LAB_CARD := "lab_priority"
+## The projector node (under BULLION HANDLING CLEARANCE) that lists golden cabbages.
+const GOLD_NODE := "schedule_golden"
 
 ## What the switch's toggle and lamp show (anything struck).
 var _shown_on := false
@@ -49,17 +56,38 @@ static func kind_of(cabbage: Cabbage) -> String:
 	return "mini" if cabbage.mini else "regular"
 
 
-## Whether the schedule lists `kind` (its picture can be struck): the card for plain cabbages, and
-## the kind's projector node for the others.
+## Whether the player has met `kind` (its card is stamped): only then is it on the paper at all.
+static func seen(save: SaveGame, kind: String) -> bool:
+	return kind == "regular" or save.stamped.has(SEEN.get(kind, ""))
+
+
+## Whether the schedule lists `kind` (its picture can be struck): plain and mini cabbages once met,
+## blue ones with LAB_CARD, golden ones with GOLD_NODE.
 static func listed(save: SaveGame, kind: String) -> bool:
-	return save.stamped.has(CARD) and (kind == "regular" or save.tree_bought.has(NODES.get(kind, "")))
+	if not save.stamped.has(CARD) or not seen(save, kind):
+		return false
+	match kind:
+		"research":
+			return save.stamped.has(LAB_CARD)
+		"golden":
+			return save.tree_bought.has(GOLD_NODE)
+	return true
 
 
-## The kinds struck for lab hands (`for_research`) or hired hands: none without the card.
+## The kinds struck for lab hands (`for_research`) or hired hands. Without the card only LAB_CARD's
+## rule holds: hired hands leave blue alone.
 static func forbidden(save: SaveGame, for_research: bool) -> PackedStringArray:
-	if not save.stamped.has(CARD):
-		return PackedStringArray()
-	return save.lab_hands_forbidden if for_research else save.hands_forbidden
+	if save.stamped.has(CARD):
+		return save.lab_hands_forbidden if for_research else save.hands_forbidden
+	if not for_research and save.stamped.has(LAB_CARD):
+		return PackedStringArray(["research"])
+	return PackedStringArray()
+
+
+## LAB_CARD stamped (or an old save that had it, once): blue struck for hired hands.
+static func strike_blue(save: SaveGame) -> void:
+	if not save.hands_forbidden.has("research"):
+		save.hands_forbidden.append("research")
 
 
 ## A click on `kind`'s picture in the lab hands' (`for_research`) or hired hands' half: struck, or

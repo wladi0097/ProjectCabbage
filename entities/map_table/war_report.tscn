@@ -332,7 +332,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 38
-text = "2,000"
+text = "2K"
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -358,7 +358,7 @@ auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 38
-text = "$3,000,000"
+text = "$3M"
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -475,10 +475,10 @@ material_override = SubResource("ReportMat")
 
 [node name="Slide" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_slide")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")
 
 [node name="Strike" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_strike")
-bus = &"SFX"
+bus = &"War"
 script = ExtResource("sfx_cue")

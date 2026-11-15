@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- A sealed envelope in white ink lines: a modulate inks it to the print around it. The bribe
+       deed's START HAGGLING sign (its offer is coins in an envelope). -->
+  <g fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="5" y="15" width="54" height="35" rx="2"/>
+    <path d="M5 15 L32 36 L59 15"/>
+    <path d="M5 50 L25 31"/>
+    <path d="M59 50 L39 31"/>
+  </g>
+  <circle cx="32" cy="36" r="5.5" fill="#fff"/>
+</svg>

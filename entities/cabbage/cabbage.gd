@@ -73,6 +73,25 @@ const LANDED_Y := 0.95
 ## Slower than this (m/s) for REST_TIME seconds, a flying unit has come to rest wherever it is.
 const REST_SPEED := 0.3
 const REST_TIME := 0.3
+## Once SHIELD_CARD is stamped rotten cabbages are quarantined: a rotten one and a regular one (any
+## kind that is not rotten) pass through each other (a collision exception both ways, quarantine), so
+## no throw or roll knocks a rotten one out of the window. Everything else (desk, walls, the hands,
+## the player, other rotten ones) it still meets as before; its layers and mass never change.
+const SHIELD_CARD := "rotten_shield"
+## A rotten one left on the desk bursts after FUSE seconds (held by the hand the count pauses; binned
+## or sold it never bursts): a grey-green puff (ROT_PUFF) and the same fine as selling it
+## (SaleWindow.fine). Its last SWELL_FROM seconds it swells up to SWELL bigger and shakes harder
+## (shake_at), its last QUIVER_FROM seconds a fast quiver.
+const FUSE := 180.0
+const SWELL_FROM := 30.0
+const SWELL := 0.25
+const QUIVER_FROM := 5.0
+## Shake: the mesh's sway (m) as the swelling starts and at the burst, and how fast it shakes
+## (rad/s) while swelling and in the quiver.
+const SHAKE := Vector2(0.002, 0.008)
+const QUIVER := 0.012
+const SHAKE_SPEED := Vector2(14.0, 60.0)
+const ROT_PUFF := preload("res://entities/cabbage/rot_puff.tscn")
 
 ## How hard it is pulled toward the hand per metre of lag.
 @export var follow := 18.0
@@ -83,6 +102,8 @@ const REST_TIME := 0.3
 
 var sold := false
 var rotten := false
+## Seconds left before a rotten one bursts (FUSE).
+var fuse := FUSE
 ## A mini unit (entities/mini_drop/): a quarter-size free one, sold at save.mini_value of the price.
 ## Never rotten. Set before it enters the tree, like rotten.
 @warning_ignore("shadowed_global_identifier")
@@ -132,6 +153,10 @@ var _spin := 0.0:
 		_spin = angle
 		_pose()
 var _spinning: Tween
+## Its collision exceptions with the other kind are set (quarantine).
+var _quarantined := false
+## How much bigger a swelling rotten one is drawn (swell_at).
+var _swell := 1.0
 ## One digits texture per count shown so far, shared by every cabbage holding that many.
 static var _count_textures := {}
 
@@ -181,6 +206,8 @@ func _ready() -> void:
 	$Grab.pitch_scale = heavy_pitch(units)
 	bumped.connect(func(speed: float) -> void: $Bump.cue(global_position, speed))
 	$Interactable.grabbed.connect(func() -> void: $Grab.cue(global_position))
+	if SaveManager.save.stamped.has(SHIELD_CARD):
+		quarantine()
 
 
 ## The cabbages a cabbage holding `count` weighs and sounds like: `count`, at most HEFT_MAX.
@@ -291,6 +318,10 @@ static func settled(still: float) -> bool:
 
 
 func _physics_process(delta: float) -> void:
+	if rotten and not _quarantined and SaveManager.save.stamped.has(SHIELD_CARD):
+		quarantine()  # The card was stamped while it lay out.
+	if burning():
+		_tick_fuse(delta)
 	if in_flight:
 		_still = _still + delta if linear_velocity.length() < REST_SPEED else 0.0
 		if settled(_still):
@@ -303,6 +334,68 @@ func _physics_process(delta: float) -> void:
 		linear_velocity = free_velocity(target - global_position, delta)
 	else:
 		linear_velocity = carry_velocity(linear_velocity, target - global_position, delta, follow, max_accel, max_speed)
+
+
+## Its fuse is burning: rotten, out on the desk and not in the player's hand.
+func burning() -> bool:
+	return rotten and not sold and not away and not _held
+
+
+## A rotten one on the desk burns `delta` of its fuse: in the last SWELL_FROM seconds it swells and
+## shakes, at 0 it bursts.
+func _tick_fuse(delta: float) -> void:
+	fuse -= delta
+	if fuse <= 0.0:
+		burst()
+	elif fuse <= SWELL_FROM:
+		_swell = swell_at(fuse)
+		var speed := SHAKE_SPEED.y if fuse <= QUIVER_FROM else SHAKE_SPEED.x
+		var time := Time.get_ticks_msec() / 1000.0 * speed
+		_pose()
+		$Mesh.position = global_basis.orthonormalized().inverse() * Vector3(sin(time * 1.3), 0.0, cos(time)) * shake_at(fuse)
+
+
+## How much bigger a rotten one is drawn with `left` seconds of fuse: 1 until SWELL_FROM, then
+## slowly at first up to 1 + SWELL at the burst.
+static func swell_at(left: float) -> float:
+	return 1.0 + SWELL * pow(1.0 - clampf(left / SWELL_FROM, 0.0, 1.0), 2.0)
+
+
+## How far (m) a rotten one shakes with `left` seconds of fuse: still until SWELL_FROM, then harder
+## toward the burst, QUIVER in the last QUIVER_FROM seconds.
+static func shake_at(left: float) -> float:
+	if left > SWELL_FROM:
+		return 0.0
+	if left <= QUIVER_FROM:
+		return QUIVER
+	return lerpf(SHAKE.x, SHAKE.y, 1.0 - (left - QUIVER_FROM) / (SWELL_FROM - QUIVER_FROM))
+
+
+## The fuse ran out on the desk: a grey-green puff where it lay, the fine as for a sale (the
+## sales desk's notice says it burst), and it is gone. It pushes nothing on its way out.
+func burst() -> void:
+	sold = true
+	collision_layer = 0
+	collision_mask = 0
+	var puff := ROT_PUFF.instantiate() as Node3D
+	get_parent().add_child(puff)
+	puff.global_position = global_position
+	var window := get_tree().get_first_node_in_group(&"sale_window") as SaleWindow
+	if window != null:
+		window.fine(self, true)
+	else:
+		leave_stock(SaveManager.save)
+	queue_free()
+
+
+## Rotten and regular cabbages stop colliding: this one and every cabbage of the other kind out now
+## (a cabbage coming later does the same in its _ready).
+func quarantine() -> void:
+	_quarantined = true
+	for other: Cabbage in get_tree().get_nodes_in_group(&"cabbages"):
+		if other != self and other.rotten != rotten:
+			add_collision_exception_with(other)
+			other.add_collision_exception_with(self)
 
 
 ## The grab squash `time` seconds in: pressed flat, springing back past round once, settling.
@@ -406,7 +499,7 @@ func _pull_out(to: Vector3, time: float, over_y := -INF) -> Tween:
 ## Squashed along the world's up (the hand presses from above) and spun about it, however the body is turned.
 func _pose() -> void:
 	var turn := global_basis.orthonormalized()
-	$Mesh.basis = turn.inverse() * Basis(Vector3.UP, _spin) * Basis.from_scale(squish_scale(_squish)) * turn * _look
+	$Mesh.basis = turn.inverse() * Basis(Vector3.UP, _spin) * Basis.from_scale(squish_scale(_squish) * _swell) * turn * _look
 
 
 ## Last thrown by the player: no hired hand lobbed it and the tube did not send it (managerial work,

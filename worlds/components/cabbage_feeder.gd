@@ -14,7 +14,7 @@ extends Node3D
 ## stock (save.golden_stock, from golden farm squares) come down gold, mixed in at their share of
 ## the stock not on the mat yet (is_golden). Once the desk card condense is stamped a plain cabbage
 ## comes down condensed: one cabbage holding save.condense from stock (Cabbage.units), research and
-## golden ones too after their projector nodes (condensed); the last one in stock comes down single.
+## golden ones their own numbers after their projector chains (condensed); the last one in stock comes down single.
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
 const PLAY_AREA_LAYER := 2
@@ -22,7 +22,9 @@ const ROLL_TIME := 0.4
 const FLIGHT_TIME := 0.8
 ## Until then a tossed cabbage ignores the screen-edge walls (the ramp starts off-screen).
 const ENTER_TIME := 0.3
-const DRUMS := 4
+## Number drums on the stock counter (Drum0 = ones): it shows up to 10^DRUMS - 1 (999,999) with
+## leading zeros. The storage cap must stay below that, or the count wraps.
+const DRUMS := 6
 ## The drums lie along the chute's front wall and turn around its direction.
 const DRUM_AXIS := Vector3(0.9062, 0.4122, 0.0943)
 ## Drum roll speed, as on the tally machine: units per second plus this much per unit to go.
@@ -30,10 +32,6 @@ const ROLL_RATE := 8.0
 const CATCH_UP := 4.0
 const ROTTEN_EVERY := 8
 const MAX_ROTTEN := 2
-## The projector nodes that condense research and golden cabbages too (no number: tree_bought, like
-## SaleWindow.GOLD_AGE).
-const CONDENSE_RESEARCH := "condense_research"
-const CONDENSE_GOLD := "condense_gold"
 
 ## Where the ramp starts, off-screen, relative to the lip.
 @export var ramp_top := Vector3(0.65, 0.3, 0.12)
@@ -162,14 +160,16 @@ static func research_share(save: SaveGame) -> float:
 	return save.research_chance if save.stamped.has("research_cabbage") else 0.0
 
 
-## How many cabbages from stock the next cabbage down the chute holds: save.condense (1 before the
-## desk card condense, 2 with it) for a plain one, and for a research or golden one once its projector
-## node is bought (CONDENSE_RESEARCH, CONDENSE_GOLD); a rotten one always 1. Never more than `left`,
-## the cabbages of its kind (golden, or not) still in stock and not on the mat: the last one is single.
+## How many cabbages from stock the next cabbage down the chute holds, one number per kind (the
+## projector's CONDENSATION chains): save.condense for a plain one (1 before the desk card condense,
+## 2 with it), save.research_condense for a research one and save.golden_condense for a golden one
+## (1 until their first node); a rotten one always 1. Never more than `left`, the cabbages of its
+## kind (golden, or not) still in stock and not on the mat: the last one is single.
 static func condensed(save: SaveGame, rotten: bool, golden: bool, research: bool, left: int) -> int:
-	if rotten or (golden and not save.tree_bought.has(CONDENSE_GOLD)) or (research and not save.tree_bought.has(CONDENSE_RESEARCH)):
+	if rotten:
 		return 1
-	return clampi(save.condense, 1, maxi(left, 1))
+	var holds := save.golden_condense if golden else save.research_condense if research else save.condense
+	return clampi(holds, 1, maxi(left, 1))
 
 
 ## Room on the mat for `fresh` units (rotten ones don't count), and stock that isn't on it yet

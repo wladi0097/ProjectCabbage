@@ -3,7 +3,8 @@ extends Control
 ## The handling schedule's paper (HandSchedule): opens when its switch on the desk is clicked. Two
 ## halves, lab hands left and hired hands right, each a row of cabbage pictures (ScheduleCell, fixed
 ## in the scene). A click on a picture strikes that kind for that half's hands, or clears it
-## (HandSchedule.toggle); a kind not listed yet is faint and padlocked.
+## (HandSchedule.toggle); a kind not met yet is not printed at all, one met but not listed yet is
+## faint and padlocked.
 ## Mouse only; X, Esc or a click beside the paper closes it. The game keeps running behind it.
 
 @onready var _cells: Array[Node] = $Paper/Stack/Halves/Lab/Row.get_children() + $Paper/Stack/Halves/Hired/Row.get_children()
@@ -32,7 +33,7 @@ func close() -> void:
 	visible = false
 
 
-## Every frame while open: a projector node bought behind it lists its kind at once.
+## Every frame while open: a card stamped or node bought behind it lists its kind at once.
 func _process(_delta: float) -> void:
 	if visible:
 		_show(SaveManager.save)
@@ -56,4 +57,5 @@ func _toggle(cell: ScheduleCell) -> void:
 
 func _show(save: SaveGame) -> void:
 	for cell: ScheduleCell in _cells:
+		cell.visible = HandSchedule.seen(save, cell.kind)
 		cell.show_state(HandSchedule.listed(save, cell.kind), HandSchedule.forbidden(save, cell.research).has(cell.kind))

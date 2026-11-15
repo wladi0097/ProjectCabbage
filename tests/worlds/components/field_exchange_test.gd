@@ -28,11 +28,12 @@ func after_test() -> void:
 
 
 ## The desk's corner as the world scene wires it: the machine, the map table, and the exchange
-## between them, for a save with `stamped` cards and `farms` owned.
-func _desk(stamped: Array, farms: Array = []) -> void:
-	var save := SaveGame.new()
-	save.stamped = PackedStringArray(stamped)
-	save.farms_owned = PackedStringArray(farms)
+## between them, for a save with `stamped` cards and `farms` owned (or `loaded`, as it is).
+func _desk(stamped: Array, farms: Array = [], loaded: SaveGame = null) -> void:
+	var save := loaded if loaded != null else SaveGame.new()
+	if loaded == null:
+		save.stamped = PackedStringArray(stamped)
+		save.farms_owned = PackedStringArray(farms)
 	SaveManager.save = save
 	_line = auto_free(load("res://entities/field_line/field_line.tscn").instantiate())
 	_map = auto_free(load("res://entities/map_table/map_table.tscn").instantiate())
@@ -136,6 +137,17 @@ func test_a_handset_lifted_while_the_farm_tv_has_the_camera_is_hung_up_again() -
 	assert_bool(_map.is_away()).is_false()
 	_exchange._process(0.0)
 	assert_bool(_line.is_open()).is_false()
+
+
+func test_the_handset_rings_until_the_line_is_first_answered_and_never_again_after_a_reload() -> void:
+	_desk(["consolidation", "market_intelligence"])
+	assert_bool(_line.ringing).is_true()
+	_line.lift()
+	assert_bool(_line.ringing).is_false()
+	await _wait(LIFTED)
+	assert_bool(SaveManager.save.field_line_answered).is_true()
+	_desk(["consolidation", "market_intelligence"], [], SaveManager.save)  # The answered save, reloaded.
+	assert_bool(_line.ringing).is_false()
 
 
 func test_the_world_scene_wires_the_field_line_and_the_map_table_to_the_exchange_on_the_consoles_spot() -> void:

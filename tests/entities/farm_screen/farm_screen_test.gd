@@ -179,13 +179,6 @@ func test_the_farm_feeds_the_desk_only_once_bought_and_while_it_has_seeds_or_cro
 	assert_bool(FarmScreen.feeds(save)).is_false()
 
 
-func test_money_on_the_farm_screen_is_grouped_in_thousands() -> void:
-	assert_str(FarmScreen._thousands(1234567)).is_equal("1,234,567")
-	assert_str(FarmScreen._thousands(12)).is_equal("12")
-	assert_str(FarmScreen._thousands(1000)).is_equal("1,000")
-	assert_str(FarmScreen._thousands(-1234)).is_equal("-1,234")
-
-
 func test_a_ripe_square_waits_while_its_harvest_would_overfill_storage() -> void:
 	var save := _farm()
 	save.stock = 18
@@ -215,13 +208,92 @@ func test_every_hint_line_fits_the_screen_in_german_and_a_short_one_keeps_the_fu
 			tr_.call("Grab the cabbage and yank it off its square."),
 			tr_.call("Storage full (%d cabbages). Sell some first.") % 99999, tr_.call("Rotten square cleared."),
 			tr_.call("Golden harvest: +%d golden cabbages to stock.") % 99,
-			tr_.call("Harvested by hand: +%d cabbages (GREEN THUMB ×%d).") % [99, 3],
+			tr_.call("Harvested by hand: +%d cabbages (GREEN THUMB ×%s).") % [99, "1.25"],
 			tr_.call("A farm is waiting for its field: click a square under a green arrow."),
 			tr_.call("Farm established on this field: %d× its cabbages.") % 30]
 	for hint in hints:
 		var size := FarmScreen.msg_size(font, hint, width)
 		assert_float(font.get_string_size(hint, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x) 				.override_failure_message("%s at %d px" % [hint, size]).is_less_equal(width)
 	assert_int(FarmScreen.msg_size(font, "Ripe.", width)).is_equal(22)
+
+
+## A farm (square 0 a farm square with two of three seeds ripe, square 1 a ripe plain square), GREEN
+## THUMB, one tractor: every small number on CH1 there to hover.
+func _numbers_farm() -> SaveGame:
+	var save := _seeded_farm(2, ["green_thumb"])
+	save.farm_slots = 3
+	FarmScreen.plant(save, 1, 1.0)
+	FarmScreen.tick(save, FarmScreen.GROW_TIME)
+	save.farm_tractors = 1
+	return save
+
+
+func test_hovering_each_small_number_on_the_fields_screen_explains_it_in_plain_words() -> void:
+	TranslationServer.set_locale("en")
+	var save := _numbers_farm()
+	save.hand_yield = 3.0
+	save.farm_hand_share = 0.25
+	var top_right := func(i: int) -> Vector2: return FarmScreen.square(i).position + Vector2(FarmScreen.square(i).size.x - 20, 12)
+	var top_left := func(i: int) -> Vector2: return FarmScreen.square(i).position + Vector2(20, 12)
+	var hint := func(point: Vector2) -> String: return FarmScreen.hover_hint(save, FarmScreen.hover_at(save, point))
+	assert_str(hint.call(top_right.call(0))).is_equal("Pull it by hand: 45 cabbages (farm ×10, GREEN THUMB ×1.5).")
+	assert_str(hint.call(top_right.call(1))).is_equal("Pull it by hand: 9 cabbages (GREEN THUMB ×3).")
+	assert_str(hint.call(top_left.call(0))).is_equal("2 ripe, 2 seeds planted, 3 beds. Each seed grows its own batch.")
+	assert_str(hint.call(FarmScreen.bay_rect(0).get_center())).is_equal("Tractor bay 1: a tractor parks here between harvests.")
+	assert_str(hint.call(FarmScreen.bay_rect(1).get_center())).is_equal("Tractor bay 2: empty, no tractor leased for it yet.")
+	assert_str(hint.call(FarmScreen.square(save.farm_plots).get_center())).is_equal(
+			"Clearing this square costs $%s. Each one after it costs about a third more." % Num.text(FarmScreen.plot_price(save)))
+	assert_str(hint.call(FarmScreen.square(save.farm_plots + 1).get_center())).contains("Locked.")
+
+
+func test_nothing_is_explained_away_from_the_numbers_or_over_a_square_that_is_not_ripe() -> void:
+	var save := _numbers_farm()
+	assert_str(FarmScreen.hover_at(save, FarmScreen.square(1).get_center())).is_equal("")  # The cabbage itself.
+	assert_str(FarmScreen.hover_at(save, FarmScreen.square(1).position + Vector2(20, 12))).is_equal("")  # No count on a plain square.
+	assert_str(FarmScreen.hover_hint(save, FarmScreen.hover_at(save, FarmScreen.square(2).position + Vector2(FarmScreen.square(2).size.x - 20, 12)))).is_equal("")
+	assert_str(FarmScreen.hover_at(save, Vector2(5, 5))).is_equal("")
+
+
+func test_every_hover_explanation_is_in_german_and_fits_the_hint_line() -> void:
+	var save := _numbers_farm()
+	save.farm_bought.append("irrigation")
+	save.farm_square_mult = 30.0
+	save.farm_hand_share = 0.25
+	TranslationServer.set_locale("de")
+	var font := FarmScreen.screen_font()
+	var width := FarmScreen.SIZE.x - 72
+	var keys := ["ripe:0", "ripe:1", "count:0", "bay:0", "bay:2", "plot:%d" % save.farm_plots, "plot:23"]
+	FarmScreen.harvest(save, 0)
+	keys.append("count:0")  # One ripe left: the same line.
+	for key: String in keys:
+		var text := FarmScreen.hover_hint(save, key)
+		assert_str(text).override_failure_message(key).is_not_empty()
+		assert_bool(text.begins_with("Pull") or text.contains("Tractor") or text.contains("Clearing") or text.contains("Locked") or text.contains("beds")) \
+				.override_failure_message("%s untranslated: %s" % [key, text]).is_false()
+		var size := FarmScreen.msg_size(font, text, width)
+		assert_float(font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x).override_failure_message(text).is_less_equal(width)
+	var no_ripe := _seeded_farm(1)
+	no_ripe.farm_seed_clocks[0] = PackedFloat32Array([1.0])
+	assert_str(FarmScreen.hover_hint(no_ripe, "count:0")).is_not_empty()
+
+
+func test_the_hint_line_shows_a_hovered_numbers_explanation_until_something_else_is_said() -> void:
+	var save := _numbers_farm()
+	var screen := _screen(save)
+	var motion := InputEventMouseMotion.new()
+	motion.position = FarmScreen.bay_rect(0).get_center()
+	screen._gui_input(motion)
+	assert_bool(screen._hovering).is_true()
+	assert_str(screen._hover_key).is_equal("bay:0")
+	screen._say("Square cleared.")
+	assert_bool(screen._hovering).is_false()  # Said after the hover: the hint line says it.
+	screen._gui_input(motion)
+	assert_bool(screen._hovering).is_false()  # Still on the same number: it does not come back.
+	motion.position = FarmScreen.bay_rect(1).get_center()
+	screen._gui_input(motion)
+	assert_bool(screen._hovering).is_true()
+	screen.notification(Control.NOTIFICATION_MOUSE_EXIT)
+	assert_bool(screen._hovering).is_false()
 
 
 func test_the_farm_clock_only_runs_once_the_family_farm_is_stamped() -> void:
@@ -1148,6 +1220,20 @@ func test_the_farm_grows_the_same_with_the_tv_off() -> void:
 	assert_array(runs[0]).is_equal(runs[1])
 
 
+func test_leaving_the_tv_forgets_what_was_hovered_so_no_stale_hint_shows_on_return() -> void:
+	var save := _numbers_farm()
+	save.stamped.append("family_farm")  # The farm clock runs.
+	var screen := _tv_screen(save, true)
+	var motion := InputEventMouseMotion.new()
+	motion.position = FarmScreen.bay_rect(0).get_center()
+	screen._gui_input(motion)
+	assert_bool(screen._hovering).is_true()
+	(screen.get_viewport() as SubViewport).render_target_update_mode = SubViewport.UPDATE_DISABLED  # Esc: off the TV.
+	screen._process(0.0)
+	assert_bool(screen._hovering).is_false()
+	assert_str(screen._hover_key).is_empty()
+
+
 func test_a_farm_nobody_is_looking_at_is_not_redrawn() -> void:
 	var screen := _tv_screen(_one_square_farm(), false)
 	var draws := [0]
@@ -1237,11 +1323,24 @@ func test_a_farm_square_harvests_ten_times_the_cabbages() -> void:
 	assert_int(save.tractor_harvested).is_equal(33)
 
 
-func test_green_thumb_and_the_farm_multiplier_both_count_on_a_hand_pulled_farm_square() -> void:
+func test_on_a_hand_pulled_farm_square_green_thumb_counts_only_by_the_farm_share() -> void:
 	var save := _farm_owner(1, ["green_thumb"])
 	FarmScreen.place_farm(save, 0)
-	assert_int(FarmScreen.harvest(save, 0, true)).is_equal(60)
-	assert_int(save.hand_harvested).is_equal(60)
+	assert_int(FarmScreen.harvest(save, 0, true)).is_equal(30)  # Share 0: the farm's ×10 alone.
+	assert_int(save.hand_harvested).is_equal(30)
+	assert_int(FarmScreen.harvest(save, 1, true)).is_equal(6)  # A plain square keeps the whole ×2.
+	save.hand_yield = 3.0
+	for share: Array in [[0.25, 45], [0.5, 60], [1.0, 90]]:
+		save.farm_hand_share = share[0]
+		assert_int(FarmScreen.harvest_yield(save, true, 0)).override_failure_message(str(share)).is_equal(share[1])
+
+
+func test_a_new_or_old_save_starts_with_no_green_thumb_share_on_farm_squares() -> void:
+	assert_float(SaveGame.new().farm_hand_share).is_equal(0.0)
+	var save := _farm_owner(1, ["green_thumb"])
+	FarmScreen.place_farm(save, 0)
+	assert_float(FarmScreen.hand_factor(save, 0)).is_equal(1.0)
+	assert_str(FarmScreen.pop_text(30, save, 0)).is_equal("+30  ×1")
 
 
 func test_a_raised_farm_multiplier_counts_on_every_farm_square() -> void:
@@ -1290,6 +1389,7 @@ func test_a_tractor_sent_out_harvests_a_farm_square_at_its_multiplier() -> void:
 func test_a_ripe_farm_squares_label_shows_its_real_harvest() -> void:
 	var save := _farm_owner(1, ["green_thumb"])
 	FarmScreen.place_farm(save, 0)
+	save.farm_hand_share = 1.0
 	assert_str(FarmScreen.ripe_label(save, 0)).is_equal("x60 ")
 	assert_str(FarmScreen.ripe_label(save, 1)).is_equal("x6 ")
 
@@ -1480,8 +1580,30 @@ func test_a_ripe_batch_can_be_pulled_while_another_still_grows() -> void:
 	assert_float(save.farm_growth[0]).is_equal(FarmScreen.EMPTY)
 
 
+func test_a_farm_square_grows_no_golden_seed_until_the_estate_seed_node_is_bought() -> void:
+	var save := _seeded_farm(0, ["golden_cabbage"])
+	FarmScreen.plant(save, 0, 0.0)
+	FarmScreen.plant(save, 2, 0.0)
+	assert_array(Array(save.farm_seed_golden[0])).is_equal([0])
+	assert_bool(FarmScreen.is_golden(save, 2)).is_true()  # A plain square rolls as before.
+	save.farm_bought.append(FarmScreen.FARM_GOLD)
+	FarmScreen.plant(save, 0, 0.0)
+	assert_array(Array(save.farm_seed_golden[0])).is_equal([0, 1])
+
+
+func test_a_crop_already_golden_stays_golden_when_its_square_becomes_a_farm() -> void:
+	var save := _farm_owner(1, ["golden_cabbage"])
+	FarmScreen.plant(save, 2, 0.0)
+	FarmScreen.place_farm(save, 2)
+	assert_bool(FarmScreen.is_golden(save, 2)).is_true()
+	FarmScreen.tick(save, FarmScreen.GROW_TIME)
+	FarmScreen.harvest(save, 2)
+	assert_int(save.golden_stock).is_equal(30)
+
+
 func test_each_seed_rolls_for_gold_on_its_own() -> void:
 	var save := _seeded_farm(0, ["golden_cabbage"])
+	save.farm_bought.append(FarmScreen.FARM_GOLD)
 	FarmScreen.plant(save, 0, 1.0)
 	FarmScreen.plant(save, 0, 0.0)
 	assert_array(Array(save.farm_seed_golden[0])).is_equal([0, 1])
@@ -1555,6 +1677,7 @@ func test_a_farm_rots_by_its_oldest_batch_and_taking_that_batch_gives_the_rest_t
 
 func test_a_hand_pull_takes_one_batch_of_a_farm_and_the_next_pull_the_next() -> void:
 	var save := _seeded_farm(2, ["green_thumb"])
+	save.farm_hand_share = 1.0  # GREEN THUMB's whole ×2 on the farm square.
 	assert_int(FarmScreen.harvest(save, 0, true)).is_equal(60)
 	assert_bool(FarmScreen.is_ripe(save, 0)).is_true()
 	assert_int(FarmScreen.seeds_in(save, 0)).is_equal(1)
@@ -1721,6 +1844,7 @@ func test_an_old_saves_single_clock_becomes_one_clock_per_seed() -> void:
 
 func test_per_seed_clocks_survive_saving_and_loading() -> void:
 	var save := _seeded_farm(0, ["golden_cabbage"])
+	save.farm_bought.append(FarmScreen.FARM_GOLD)
 	FarmScreen.plant(save, 0, 1.0)
 	FarmScreen.tick(save, 7.0)
 	FarmScreen.plant(save, 0, 0.0)

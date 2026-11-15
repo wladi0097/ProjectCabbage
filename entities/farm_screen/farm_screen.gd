@@ -51,8 +51,11 @@ const ROTTEN := -2.0
 ## Seconds a ripe square waits before it rots, once the overripe event is on, before CH2's SPOILAGE
 ## nodes (save.rot_after starts here).
 const ROT_AFTER := 180.0
-## The card that makes a hand harvest yield save.hand_yield times.
+## The card that makes a hand harvest yield save.hand_yield times (on a farm square only its
+## save.farm_hand_share, hand_factor).
 const THUMB_CARD := "green_thumb"
+## The CH2 node that lets farm squares grow golden (sow): until it is bought only plain squares roll.
+const FARM_GOLD := "farm_gold"
 ## A hand harvest's readout: "+N" rising POP_RISE px over POP_TIME s from the square.
 const POP_TIME := 1.1
 const POP_RISE := 60.0
@@ -271,6 +274,10 @@ var _leave_left := 0.0
 var _arrow_time := 0.0
 ## Whether a farm was waiting at the last watched frame (the hint says so once it starts).
 var _was_choosing := false
+## The small number under the mouse (hover_at) and whether its explanation holds the hint line: from
+## moving onto it until the next thing said (_say) or the mouse leaves it.
+var _hover_key := ""
+var _hovering := false
 
 
 func _ready() -> void:
@@ -330,6 +337,8 @@ func _process(delta: float) -> void:
 	else:
 		_held = false  # Left the TV (Esc, BACK): the seed goes back in the box, the cabbage stays.
 		_pull = -1
+		_hover_key = ""  # Nor is anything still pointed at: no stale hint on the way back.
+		_hovering = false
 
 
 ## The screen's terminal font: a bold monospace (the scene's theme uses it too).
@@ -470,11 +479,13 @@ static func plant(save: SaveGame, i: int, roll := randf()) -> bool:
 
 ## Puts a seed already in hand (a farm hand's) into square `i`; false if it can't take one (can_sow).
 ## It grows from now on its own clock, slowing no other. With the golden card stamped it grows golden
-## when `roll` (0..1) is under save.golden_chance: every seed on its own, on a farm square too.
+## when `roll` (0..1) is under save.golden_chance: every seed on its own, on a farm square only once
+## CH2's FARM_GOLD is bought (seeds already golden stay golden).
 static func sow(save: SaveGame, i: int, roll := randf()) -> bool:
 	if not can_sow(save, i):
 		return false
-	var gold := save.stamped.has("golden_cabbage") and roll < save.golden_chance
+	var gold := save.stamped.has("golden_cabbage") and roll < save.golden_chance \
+			and (not is_farm(save, i) or save.farm_bought.has(FARM_GOLD))
 	var at := _farm_at(save, i)
 	if at >= 0:
 		var clocks := save.farm_seed_clocks[at]
@@ -584,15 +595,28 @@ static func clear_rot(save: SaveGame, i: int) -> bool:
 	return true
 
 
-## Units one harvest of square `i` gives (one batch: one seed's crop): yield_of, times save.hand_yield when pulled `by_hand` with
+## Units one harvest of square `i` gives (one batch: one seed's crop): yield_of, times hand_factor when pulled `by_hand` with
 ## GREEN THUMB, times save.farm_square_mult on a farm square (-1: a plain square).
 static func harvest_yield(save: SaveGame, by_hand := false, i := -1) -> int:
 	var units := float(yield_of(save))
 	if by_hand and save.stamped.has(THUMB_CARD):
-		units *= save.hand_yield
+		units *= hand_factor(save, i)
 	if is_farm(save, i):
 		units *= save.farm_square_mult
 	return roundi(units)
+
+
+## GREEN THUMB's multiplier on square `i`: save.hand_yield on a plain square; on a farm square only
+## save.farm_hand_share of its bonus counts (0: ×1; CH2's chain under GREEN THUMB raises the share).
+static func hand_factor(save: SaveGame, i := -1) -> float:
+	if not is_farm(save, i):
+		return save.hand_yield
+	return 1.0 + (save.hand_yield - 1.0) * save.farm_hand_share
+
+
+## A multiplier as the screen writes it: "2", "1.5", "1.25".
+static func times(f: float) -> String:
+	return str(roundi(f)) if is_equal_approx(f, roundf(f)) else String.num(f, 2)
 
 
 static func is_farm(save: SaveGame, i: int) -> bool:
@@ -1009,6 +1033,10 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	_mouse = mouse.position
 	_hot = square_at(mouse.position)
+	var key := hover_at(SaveManager.save, mouse.position)
+	if key != _hover_key:
+		_hover_key = key
+		_hovering = key != ""
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
 		if button.pressed:
@@ -1076,7 +1104,7 @@ func _drag(point: Vector2) -> void:
 	_pull = -1
 	if not storage_room(save, true, i):
 		$Denied.play()
-		_warn(tr("Storage full (%d cabbages). Sell some first.") % save.storage_cap)
+		_warn(tr("Storage full (%s cabbages). Sell some first.") % Num.text(save.storage_cap))
 		_spring_back(i)
 		return
 	var gold := is_golden(save, i)
@@ -1084,23 +1112,24 @@ func _drag(point: Vector2) -> void:
 	_tug = Vector2.ZERO
 	($GoldHarvest if gold else $Harvest).play()
 	var units := harvest(save, i, true)
-	_pop = pop_text(units, save)
+	_pop = pop_text(units, save, i)
 	_pop_at = square(i).get_center()
 	_pop_left = POP_TIME
 	_pop_gold = gold
 	if gold:
-		_say(tr("Golden harvest: +%d golden cabbages to stock.") % units)
+		_say(tr("Golden harvest: +%s golden cabbages to stock.") % Num.text(units))
 	elif save.stamped.has(THUMB_CARD):
-		_say(tr("Harvested by hand: +%d cabbages (GREEN THUMB ×%d).") % [units, roundi(save.hand_yield)])
+		_say(tr("Harvested by hand: +%s cabbages (GREEN THUMB ×%s).") % [Num.text(units), times(hand_factor(save, i))])
 	else:
-		_say(tr("Harvested: +%d cabbages to stock.") % units)
+		_say(tr("Harvested: +%s cabbages to stock.") % Num.text(units))
 
 
-## The readout over a square pulled by hand for `units`: "+6", with GREEN THUMB's "×2" after it.
-static func pop_text(units: int, save: SaveGame) -> String:
+## The readout over square `i` pulled by hand for `units`: "+6", with GREEN THUMB's "×2" after it
+## (on a farm square its share, hand_factor).
+static func pop_text(units: int, save: SaveGame, i := -1) -> String:
 	if save.stamped.has(THUMB_CARD):
-		return "+%d  ×%d" % [units, roundi(save.hand_yield)]
-	return "+%d" % units
+		return "+%s  ×%s" % [Num.text(units), times(hand_factor(save, i))]
+	return "+" + Num.text(units)
 
 
 ## The mouse goes up at `point`: a held seed is planted on an empty square or flies back into the
@@ -1167,6 +1196,13 @@ func _no_seeds() -> void:
 
 func _say(text: String) -> void:
 	_msg = text
+	_hovering = false
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_MOUSE_EXIT:
+		_hover_key = ""
+		_hovering = false
 
 
 ## A warning (no seeds, no money, storage full, a wrong click): said on the hint line, which shakes
@@ -1188,7 +1224,7 @@ func _refresh(save: SaveGame) -> void:
 	_auto.text = tr("AUTO SEED: ON") if save.farm_auto_seed else tr("AUTO SEED: OFF")
 	for i in _seed_buttons.size():
 		var price := seed_price(i, save)
-		(_seed_buttons[i].get_node("Row/Price") as Label).text = "%d×  $%d" % [SEED_PACKS[i][0], price]
+		(_seed_buttons[i].get_node("Row/Price") as Label).text = "%d×  $%s" % [SEED_PACKS[i][0], Num.text(price)]
 		_seed_buttons[i].modulate.a = 1.0 if save.coins >= price else 0.55
 
 
@@ -1200,8 +1236,8 @@ func _draw() -> void:
 		var seeds := tr("SEEDS %d") % save.farm_seeds
 		draw_string(_font, Vector2(36, 52), seeds, HORIZONTAL_ALIGNMENT_LEFT, -1, 32, DENIED_RED if blink else PHOSPHOR)
 		var after := 36.0 + _font.get_string_size(seeds + "   ", HORIZONTAL_ALIGNMENT_LEFT, -1, 32).x
-		draw_string(_font, Vector2(after, 52), tr("CABBAGES %d/%d") % [save.stock, save.storage_cap], HORIZONTAL_ALIGNMENT_LEFT, -1, 32, PHOSPHOR)
-		draw_string(_font, Vector2(0, 52), "$ %s" % _thousands(save.coins), HORIZONTAL_ALIGNMENT_RIGHT, SIZE.x - 36, 32, PHOSPHOR)
+		draw_string(_font, Vector2(after, 52), tr("CABBAGES %s/%s") % [Num.text(save.stock), Num.text(save.storage_cap)], HORIZONTAL_ALIGNMENT_LEFT, -1, 32, PHOSPHOR)
+		draw_string(_font, Vector2(0, 52), "$ %s" % Num.text(save.coins), HORIZONTAL_ALIGNMENT_RIGHT, SIZE.x - 36, 32, PHOSPHOR)
 		draw_line(Vector2(36, 66), Vector2(SIZE.x - 36, 66), LINE, 2.0)
 	for i in MAX_PLOTS:
 		_draw_square(save, i)
@@ -1226,7 +1262,9 @@ func _draw() -> void:
 		draw_texture(SEED_SPRITE, _mouse - SEED_SPRITE.get_size() * 0.5)
 	elif _flying:
 		draw_texture(SEED_SPRITE, _fly - SEED_SPRITE.get_size() * 0.5)
-	var msg := tr(_msg) % [roundi(grow_time(save)), yield_of(save)] if _msg == OPENING else tr(_msg)
+	var msg := hover_hint(save, _hover_key) if _hovering and not _held and _pull < 0 else ""
+	if msg == "":
+		msg = tr(_msg) % [roundi(grow_time(save)), yield_of(save)] if _msg == OPENING else tr(_msg)
 	draw_string(_font, Vector2(36 + shake_offset(_shake), SIZE.y - 30), msg, HORIZONTAL_ALIGNMENT_LEFT, SIZE.x - 72, msg_size(_font, msg, SIZE.x - 72), PHOSPHOR)
 
 
@@ -1244,7 +1282,7 @@ func _draw_square(save: SaveGame, i: int) -> void:
 			draw_rect(r, LINE, false, 2.0)
 		var ink := DIM if next else LINE
 		draw_string(_font, Vector2(r.position.x, mid - 6), tr("CLEAR A PLOT") if next else tr("LOCKED"), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 18, ink)
-		draw_string(_font, Vector2(r.position.x, mid + 22), "$%s" % _thousands(plot_price_of(i)), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 22, ink)
+		draw_string(_font, Vector2(r.position.x, mid + 22), "$" + Num.text(plot_price_of(i)), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 22, ink)
 		return
 	var grown: float = save.farm_growth[i]
 	var open := grown == EMPTY
@@ -1340,6 +1378,61 @@ static func ripe_label(save: SaveGame, i := -1) -> String:
 	return "x%d " % harvest_yield(save, true, i)
 
 
+## Which small number is under `point`, as "kind:n" ("" none): a tractor bay ("bay:0", the whole
+## bay), a locked square's price ("plot:7", the whole square), a farm square's seed count in its top
+## left ("count:3") or a square's "xN" in its top right ("ripe:3", hover_hint checks it is ripe).
+static func hover_at(save: SaveGame, point: Vector2) -> String:
+	for n in SLOTS:
+		if bay_rect(n).has_point(point):
+			return "bay:%d" % n
+	var i := square_at(point)
+	if i < 0:
+		return ""
+	if i >= save.farm_plots:
+		return "plot:%d" % i
+	var r := square(i)
+	if point.y > r.position.y + COUNT_SIZE + 10:
+		return ""
+	if point.x >= r.get_center().x:
+		return "ripe:%d" % i
+	return "count:%d" % i if is_farm(save, i) else ""
+
+
+## The hint line's plain explanation of number `key` (hover_at) as it stands in `save`, "" if there
+## is nothing to explain there (a square that is not ripe has no "xN").
+static func hover_hint(save: SaveGame, key: String) -> String:
+	var n := key.get_slice(":", 1).to_int()
+	match key.get_slice(":", 0):
+		"bay":
+			if n < save.farm_tractors:
+				return TranslationServer.translate("Tractor bay %d: a tractor parks here between harvests.") % (n + 1)
+			return TranslationServer.translate("Tractor bay %d: empty, no tractor leased for it yet.") % (n + 1)
+		"plot":
+			if n == save.farm_plots:
+				return TranslationServer.translate("Clearing this square costs $%s. Each one after it costs about a third more.") % Num.text(plot_price_of(n))
+			return TranslationServer.translate("Locked. Squares are cleared in order; this one will cost $%s.") % Num.text(plot_price_of(n))
+		"count":
+			if n >= save.farm_plots or not is_farm(save, n):
+				return ""
+			var ripe := ripe_in(save, n)
+			if ripe > 0:
+				return TranslationServer.translate("%d ripe, %d seeds planted, %d beds. Each seed grows its own batch.") % [ripe, seeds_in(save, n), slots_of(save, n)]
+			return TranslationServer.translate("%d seeds planted, %d beds. Each seed grows its own batch.") % [seeds_in(save, n), slots_of(save, n)]
+		"ripe":
+			if n >= save.farm_plots or save.farm_growth[n] < 0.0 or not is_ripe(save, n):
+				return ""
+			var parts := PackedStringArray()
+			if is_farm(save, n):
+				parts.append(TranslationServer.translate("farm ×%d") % roundi(save.farm_square_mult))
+			if save.stamped.has(THUMB_CARD):
+				parts.append(TranslationServer.translate("GREEN THUMB ×%s") % times(hand_factor(save, n)))
+			var units := harvest_yield(save, true, n)
+			if parts.is_empty():
+				return TranslationServer.translate("Pull it by hand: %s cabbages.") % Num.text(units)
+			return TranslationServer.translate("Pull it by hand: %s cabbages (%s).") % [Num.text(units), ", ".join(parts)]
+	return ""
+
+
 ## The yard (idle workers stand here) and the seed box at its bottom.
 func _draw_yard(save: SaveGame, blink: bool) -> void:
 	var yard := Rect2(YARD.position, Vector2(YARD.size.x, SEED_BOX.position.y - YARD.position.y - 12))
@@ -1389,12 +1482,3 @@ func _draw_worker(w: Worker) -> void:
 		at.y -= px * worker_frame(w.walked)
 	var side := tex.get_size() * px
 	draw_texture_rect(tex, Rect2((at - side * 0.5).round(), side), false)
-
-
-static func _thousands(n: int) -> String:
-	var s := str(absi(n))
-	var out := ""
-	while s.length() > 3:
-		out = "," + s.substr(s.length() - 3) + out
-		s = s.substr(0, s.length() - 3)
-	return ("-" if n < 0 else "") + s + out

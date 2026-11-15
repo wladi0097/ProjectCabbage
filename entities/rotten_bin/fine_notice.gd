@@ -19,6 +19,8 @@ var _t := HOLD + OUT_TIME
 var _price := 0
 var _owed := 0
 var _short := false
+## It burst on the desk (Cabbage.burst) rather than being sold.
+var _burst := false
 
 @onready var _paper: Control = $Paper
 
@@ -32,7 +34,9 @@ func _ready() -> void:
 
 
 ## Shows a fine: `taken` coins left the tally; the full fine is SaleWindow.FINE times the price.
-func show_fine(taken: int) -> void:
+## `burst`: it burst on the sales desk instead of being sold.
+func show_fine(taken: int, burst := false) -> void:
+	_burst = burst
 	_price = SaveManager.save.sale_price
 	_owed = SaleWindow.FINE * _price
 	_short = taken < _owed
@@ -58,6 +62,11 @@ func _process(delta: float) -> void:
 	_paper.queue_redraw()
 
 
+## The notice's main line (untranslated): sold to the public, or `burst` on the desk.
+static func notice_line(burst: bool) -> String:
+	return "A rotten cabbage burst on the sales desk." if burst else "A rotten cabbage was offered to the public."
+
+
 func _draw_paper() -> void:
 	var w := SIZE.x
 	_paper.draw_rect(Rect2(Vector2(8, 8), SIZE), Color(0, 0, 0, 0.4))
@@ -66,8 +75,8 @@ func _draw_paper() -> void:
 	_paper.draw_string(FONT, Vector2(24, 44), "FORM 11-R", HORIZONTAL_ALIGNMENT_RIGHT, w - 48, 13, Color(INK, 0.6))
 	_paper.draw_line(Vector2(24, 56), Vector2(w - 24, 56), INK, 2.0)
 	_paper.draw_string(FONT, Vector2(24, 80), tr("RE: CABBAGE UNFIT FOR SALE"), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 15, Color(INK, 0.8))
-	_paper.draw_string(FONT, Vector2(24, 112), tr("A rotten cabbage was offered to the public."), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
-	_paper.draw_string(FONT, Vector2(24, 142), tr("Penalty: %d × $%d = $%d") % [SaleWindow.FINE, _price, _owed],
+	_paper.draw_string(FONT, Vector2(24, 112), tr(notice_line(_burst)), HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
+	_paper.draw_string(FONT, Vector2(24, 142), tr("Penalty: %d × $%s = $%s") % [SaleWindow.FINE, Num.text(_price), Num.text(_owed)],
 			HORIZONTAL_ALIGNMENT_LEFT, w - 48, 19, INK)
 	var line := tr("Tally insufficient. Balance set to zero.") if _short else tr("Deducted from your tally.")
 	_paper.draw_string(FONT, Vector2(24, 170), line, HORIZONTAL_ALIGNMENT_LEFT, w - 48, 17, Color(INK, 0.85))

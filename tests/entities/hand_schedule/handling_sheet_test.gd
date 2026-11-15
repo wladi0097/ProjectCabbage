@@ -59,18 +59,33 @@ func test_a_click_on_a_picture_stamps_it_not_to_be_handled_and_a_second_click_cl
 	assert_array(SaveManager.save.hands_forbidden).is_empty()
 
 
-func test_a_kind_not_listed_yet_is_padlocked_and_takes_no_click_until_its_node_is_bought() -> void:
+func test_a_met_kind_not_listed_yet_is_padlocked_and_takes_no_click_until_lab_priority_is_stamped() -> void:
+	SaveManager.save.stamped.append("research_cabbage")
 	var sheet := _sheet()
 	sheet.open()
 	var cell := _cell(sheet, "Lab", "research")
+	assert_bool(cell.visible).is_true()
 	assert_bool(cell.disabled).is_true()
 	assert_bool((cell.get_node("Lock") as Control).visible).is_true()
 	assert_bool(_cell(sheet, "Lab", "regular").disabled).override_failure_message("plain comes with the card").is_false()
 
-	SaveManager.save.tree_bought.append(HandSchedule.NODES.research)
+	SaveManager.save.stamped.append(HandSchedule.LAB_CARD)
 	sheet.open()
 	assert_bool(cell.disabled).is_false()
 	assert_bool((cell.get_node("Lock") as Control).visible).is_false()
+
+
+func test_a_kind_not_met_yet_is_not_on_the_paper_at_all() -> void:
+	var sheet := _sheet()
+	sheet.open()
+	for half: String in ["Lab", "Hired"]:
+		assert_bool(_cell(sheet, half, "regular").visible).override_failure_message(half).is_true()
+		for kind: String in ["research", "mini", "golden"]:
+			assert_bool(_cell(sheet, half, kind).visible).override_failure_message(half + " " + kind).is_false()
+	SaveManager.save.stamped.append("golden_cabbage")
+	sheet.open()
+	assert_bool(_cell(sheet, "Hired", "golden").visible).override_failure_message("met: padlocked, not hidden").is_true()
+	assert_bool(_cell(sheet, "Hired", "golden").disabled).is_true()
 
 
 func test_the_paper_closes_on_x_esc_or_a_click_outside() -> void:

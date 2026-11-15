@@ -157,7 +157,7 @@ func test_the_demo_never_holds_its_warning_back_for_a_full_tray() -> void:
 
 
 func test_skipping_the_optional_memos_and_the_ledger_never_blocks_stage_two() -> void:
-	var save := _all_stamped_but(["family_farm", "golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger"])
+	var save := _all_stamped_but(["family_farm", "golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger", "hand_schedule"])
 	assert_bool(Events.tray_dry(save)).is_true()
 
 

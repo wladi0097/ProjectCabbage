@@ -257,3 +257,47 @@ func test_a_condensed_cabbage_lands_outside_as_two_thuds_and_a_plain_one_as_one(
 	assert_int(SaleWindow.thuds(4)).is_equal(2)
 	# The second thud comes while the cabbage is still on its way out.
 	assert_float(SaleWindow.SECOND_THUD).is_less(SaleWindow.SUCK_TIME)
+
+
+## A rotten cabbage with $4 chalked, $100 in the tally and 5 in stock, sold through the window or
+## `burst` on the desk: [the save after, the fined emissions].
+func _rotten_fine(burst: bool) -> Array:
+	var real := SaveManager.save
+	var save := SaveGame.new()
+	save.sale_price = 4
+	save.coins = 100
+	save.stock = 5
+	SaveManager.save = save
+	var holder := Node3D.new()  # Freed before the next one: a burst fines the first window in the tree.
+	add_child(holder)
+	var window := SaleWindow.new()
+	window.coins = auto_free(FakeCoins.new())
+	for cue: String in ["Suck", "Refuse"]:
+		var player: AudioStreamPlayer3D = preload("res://entities/components/sound_cue.gd").new()
+		player.name = cue
+		window.add_child(player)
+	holder.add_child(window)
+	var seen := []
+	window.fined.connect(func(_c: Cabbage, fine: int, was_burst: bool) -> void: seen.append([fine, was_burst]))
+	var cabbage: Cabbage = preload("res://entities/cabbage/cabbage.tscn").instantiate()
+	cabbage.rotten = true
+	holder.add_child(cabbage)
+	if burst:
+		cabbage.burst()
+	else:
+		window._judge(cabbage)
+	SaveManager.save = real
+	holder.free()
+	return [save, seen]
+
+
+func test_a_rotten_cabbage_bursting_on_the_desk_is_fined_the_same_as_selling_it() -> void:
+	var sold := _rotten_fine(false)
+	var burst := _rotten_fine(true)
+	for got: Array in [sold, burst]:
+		var save: SaveGame = got[0]
+		assert_int(save.coins).is_equal(60)
+		assert_int(save.fines).is_equal(1)
+		assert_int(save.stock).is_equal(4)
+	assert_array(sold[1]).is_equal([[40, false]])
+	assert_array(burst[1]).is_equal([[40, true]])

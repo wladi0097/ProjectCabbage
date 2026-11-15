@@ -102,5 +102,5 @@ func test_a_bribe_is_laid_out_in_coin_stacks() -> void:
 	letter.grab(NegotiationLetter.CRATE_BOX.get_center())
 	letter.drop(true)
 	assert_bool((_on_pile(letter)[0] as OfferBundle).coins).is_true()
-	assert_str((letter.get_node("Page/Form/Pile/Total") as Label).text).is_equal("$100,000")
+	assert_str((letter.get_node("Page/Form/Pile/Total") as Label).text).is_equal("$100K")
 	assert_bool((letter.get_node("Clink") as SoundCue).playing).is_true()

@@ -47,6 +47,8 @@ const CABBAGE_LAYER := 4
 ## Seconds between tips (one unit of the fleet, random in this range) and the node that ends them.
 const TIP_EVERY := Vector2(240.0, 360.0)
 const STABILISER := "vacuum_gyro"
+## The projector node that empties a whole bag in one burst instead of coin by coin.
+const BULK_DISCHARGE := "vacuum_bulk"
 const SLIDE_FROM := Vector3(0.0, 0.8, 0.0)
 const SLIDE_TIME := 0.4
 const TOKEN_CARD := "token_recovery"
@@ -386,11 +388,12 @@ func _unload(unit: Unit) -> void:
 	unit.body.global_transform = global_transform * unit.home
 	unit.state = State.PARKED
 	unit.wait = SaveManager.save.vacuum_rest
+	var bulk := SaveManager.save.tree_bought.has(BULK_DISCHARGE)
 	if not unit.slips.is_empty():
-		_bay(SaveManager.save).file_from(unit.slips, unit.body.global_position + Vector3.UP * HEIGHT)
+		_bay(SaveManager.save).file_from(unit.slips, unit.body.global_position + Vector3.UP * HEIGHT, bulk)
 		unit.slips = []
 	if unit.value > 0:
-		coins.bank_from(unit.body.global_position + Vector3.UP * HEIGHT, unit.value)
+		coins.bank_from(unit.body.global_position + Vector3.UP * HEIGHT, unit.value, bulk)
 		$Beep.cue(unit.body.global_position, UNLOAD_BEEP)
 	unit.loaded = 0
 	unit.value = 0
