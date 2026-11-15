@@ -83,6 +83,14 @@ border_width_right = 4
 border_width_bottom = 4
 border_color = Color(0.11, 0.125, 0.118, 1)
 
+[sub_resource type="StyleBoxFlat" id="FinalLine"]
+draw_center = false
+border_width_left = 8
+border_width_top = 8
+border_width_right = 8
+border_width_bottom = 8
+border_color = Color(0.416, 0.169, 0.157, 1)
+
 [sub_resource type="StyleBoxFlat" id="BoxLine"]
 bg_color = Color(0.77, 0.74, 0.62, 1)
 border_width_left = 5
@@ -199,6 +207,16 @@ offset_bottom = 1018.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("FrameLine")
 
+[node name="FinalFrame" type="Panel" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 810.0
+offset_bottom = 1030.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FinalLine")
+
 [node name="FormLine" type="Label" parent="Page/Form"]
 layout_mode = 0
 offset_left = 44.0
@@ -238,6 +256,37 @@ theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 42
 text = "FARM SITE K-5"
 vertical_alignment = 1
+
+[node name="SiteName" type="Label" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 44.0
+offset_top = 180.0
+offset_right = 776.0
+offset_bottom = 232.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 36
+text = "THE SUPERVISED PLOT"
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Briefing" type="Label" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 44.0
+offset_top = 232.0
+offset_right = 776.0
+offset_bottom = 318.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.2, 0.22, 0.21, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_constants/line_spacing = -4
+text = "They have installed a supervisor. We have brought three of you."
+vertical_alignment = 1
+autowrap_mode = 3
+max_lines_visible = 2
 
 [node name="Rule1" type="ColorRect" parent="Page/Form"]
 layout_mode = 0
@@ -329,44 +378,6 @@ text = "SHORT 9,000"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="ScoutHead" type="Label" parent="Page/Form"]
-visible = false
-layout_mode = 0
-offset_left = 44.0
-offset_top = 462.0
-offset_right = 404.0
-offset_bottom = 496.0
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 28
-text = "DEFENCES ON RECORD"
-vertical_alignment = 1
-
-[node name="ScoutFrame" type="Panel" parent="Page/Form"]
-visible = false
-layout_mode = 0
-offset_left = 42.0
-offset_top = 498.0
-offset_right = 406.0
-offset_bottom = 742.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("FrameLine")
-
-[node name="Defences" type="Label" parent="Page/Form"]
-visible = false
-layout_mode = 0
-offset_left = 44.0
-offset_top = 740.0
-offset_right = 404.0
-offset_bottom = 776.0
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 21
-text = "CANNONS 2   MORTARS 1"
-vertical_alignment = 1
-clip_text = true
-
 [node name="Rule2" type="ColorRect" parent="Page/Form"]
 layout_mode = 0
 offset_left = 44.0
@@ -402,24 +413,210 @@ vertical_alignment = 1
 [node name="StaffHead" type="Label" parent="Page/Form"]
 visible = false
 layout_mode = 0
-offset_left = 420.0
-offset_top = 462.0
-offset_right = 776.0
-offset_bottom = 496.0
+offset_left = 44.0
+offset_top = 460.0
+offset_right = 494.0
+offset_bottom = 506.0
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 30
 text = "STAFF COMMITTED"
 vertical_alignment = 1
 
 [node name="Staff" type="Control" parent="Page/Form"]
 visible = false
 layout_mode = 0
-offset_left = 420.0
-offset_top = 500.0
-offset_right = 776.0
-offset_bottom = 776.0
+offset_left = 44.0
+offset_top = 506.0
+offset_right = 494.0
+offset_bottom = 996.0
 mouse_filter = 2
+
+[node name="NoStaff" type="Panel" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 52.0
+offset_top = 560.0
+offset_right = 486.0
+offset_bottom = 880.0
+rotation = -0.04
+pivot_offset = Vector2(217, 160)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("ImprintLine")
+
+[node name="Head" type="Label" parent="Page/Form/NoStaff"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 414.0
+offset_bottom = 156.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 46
+theme_override_constants/line_spacing = -8
+text = "NO STAFF ON THE BOOKS."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Line" type="Label" parent="Page/Form/NoStaff"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 160.0
+offset_right = 414.0
+offset_bottom = 300.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 32
+theme_override_constants/line_spacing = -4
+text = "Requisition personnel at the depot first."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Resistance" type="Control" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 506.0
+offset_top = 460.0
+offset_right = 776.0
+offset_bottom = 784.0
+mouse_filter = 2
+
+[node name="Head" type="Label" parent="Page/Form/Resistance"]
+layout_mode = 0
+offset_right = 270.0
+offset_bottom = 80.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_constants/line_spacing = -10
+text = "ASSESSED RESISTANCE"
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Rating" type="Label" parent="Page/Form/Resistance"]
+layout_mode = 0
+offset_top = 78.0
+offset_right = 270.0
+offset_bottom = 142.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 42
+text = "SERIOUS"
+vertical_alignment = 1
+clip_text = true
+
+[node name="Pips" type="Control" parent="Page/Form/Resistance"]
+layout_mode = 0
+offset_top = 146.0
+offset_right = 270.0
+offset_bottom = 180.0
+mouse_filter = 2
+
+[node name="Pip0" type="Panel" parent="Page/Form/Resistance/Pips"]
+layout_mode = 0
+offset_left = 0.0
+offset_right = 44.0
+offset_bottom = 34.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="Fill" type="ColorRect" parent="Page/Form/Resistance/Pips/Pip0"]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 7.0
+offset_right = 36.0
+offset_bottom = 27.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Pip1" type="Panel" parent="Page/Form/Resistance/Pips"]
+layout_mode = 0
+offset_left = 56.0
+offset_right = 100.0
+offset_bottom = 34.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="Fill" type="ColorRect" parent="Page/Form/Resistance/Pips/Pip1"]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 7.0
+offset_right = 36.0
+offset_bottom = 27.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Pip2" type="Panel" parent="Page/Form/Resistance/Pips"]
+layout_mode = 0
+offset_left = 113.0
+offset_right = 157.0
+offset_bottom = 34.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="Fill" type="ColorRect" parent="Page/Form/Resistance/Pips/Pip2"]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 7.0
+offset_right = 36.0
+offset_bottom = 27.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Pip3" type="Panel" parent="Page/Form/Resistance/Pips"]
+layout_mode = 0
+offset_left = 169.0
+offset_right = 213.0
+offset_bottom = 34.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="Fill" type="ColorRect" parent="Page/Form/Resistance/Pips/Pip3"]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 7.0
+offset_right = 36.0
+offset_bottom = 27.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Pip4" type="Panel" parent="Page/Form/Resistance/Pips"]
+layout_mode = 0
+offset_left = 226.0
+offset_right = 270.0
+offset_bottom = 34.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="Fill" type="ColorRect" parent="Page/Form/Resistance/Pips/Pip4"]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 7.0
+offset_right = 36.0
+offset_bottom = 27.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Estimate" type="Label" parent="Page/Form/Resistance"]
+layout_mode = 0
+offset_top = 184.0
+offset_right = 270.0
+offset_bottom = 324.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_constants/line_spacing = -10
+text = "Estimated staff required: 6 field associates."
+autowrap_mode = 3
 
 [node name="Rule3" type="ColorRect" parent="Page/Form"]
 layout_mode = 0
@@ -533,9 +730,6 @@ mesh = SubResource("DeedPlane")
 material_override = SubResource("DeedMat")
 
 [node name="Figures" type="Node3D" parent="."]
-
-[node name="Scout" type="Node3D" parent="."]
-visible = false
 
 [node name="Stamp" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.23, 0, 0.895)

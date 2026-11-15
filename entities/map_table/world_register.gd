@@ -7,7 +7,9 @@ extends MapSheet
 ## of its farms). tools/make_map_sheets.py writes all of them from reports/maps/labels.json;
 ## COUNTRIES below is the same data as the rules need it (a test holds the two together).
 ## At the map: a country is hovered (its outline shows, its token lifts, the hint slip names it and
-## its farms: no price, nothing is bought here) and clicked: its own sheet rolls out (`sheet_wanted`,
+## its farms: no price, nothing is bought here) and clicked: its own sheet rolls out. A country not
+## yet reachable (closed: none of it ours and its farms out of reach) shows a faded outline, the slip
+## says why, and a click is refused (`Flash/Refuse`) (`sheet_wanted`,
 ## MapTable), where its farms are taken one at a time (FarmRegister). A country shows one of three
 ## looks (share): plain while none of its farms is ours, patches of the cabbage pattern once some
 ## are, wholly cabbage-pattern green only once ALL are.
@@ -59,6 +61,15 @@ const REASONS := {
 	NOT_ADJACENT: "No country next to this one is wholly ours. Yet.",
 	NO_SEA_LANES: "The sea is not ours to cross yet.",
 }
+## Why a country's own sheet cannot be opened from the world sheet (closed), as the hint slip says it
+## (translation keys): no neighbour wholly ours, the sea not ours to cross, the final island.
+const CLOSED_LAND := "NOT YET REACHABLE. No border with a country wholly ours."
+const CLOSED_SEA := "NOT YET REACHABLE. Requires sea lanes."
+const CLOSED_FINAL := "NOT YET REACHABLE. Pending the full acquisition of Nordhal."
+## The final island: reached only past all of Nordhal.
+const FINAL := &"endmark"
+## A country's outline while hovered and closed: the plain ink, faded.
+const CLOSED_FADE := 0.55
 ## A country's token on the art, around its holding point (px).
 const TOKEN := Rect2(-110, -110, 220, 220)
 ## The overlay art of a country that is ours.
@@ -77,6 +88,10 @@ var _hot := &""
 ## What the sheet shows: the farms owned. When the save has it otherwise, it is printed again.
 var _shown := -1
 var _ink: Color
+## The outline's own ink (the scene's), for a country that opens.
+var _open_ink: Color
+
+@onready var _refuse_sound: SoundCue = $Flash/Refuse
 
 
 func _ready() -> void:
@@ -87,6 +102,7 @@ func _ready() -> void:
 			_sites[point.site] = point
 			_rest[point.site] = point.position
 	_ink = _tag(HOME).get_theme_color(&"font_color")
+	_open_ink = _outline(HOME).default_color
 	refresh()
 
 
@@ -146,6 +162,33 @@ static func reach(save: SaveGame, country: StringName) -> String:
 	return "" if save.stamped.has(SEA_CARD) else NO_SEA_LANES
 
 
+## Why `country`'s own sheet cannot be opened from the world sheet for `save` (a CLOSED_ key), ""
+## when it can: once any of its farms is ours, or its farms can be attacked (reach). The final
+## island waits for Nordhal; a country the sea lanes would open, or that no land path from home
+## reaches, waits for SEA_CARD; anything else for a neighbour wholly ours. Farm by farm the war
+## order's strips (reach) still stand behind this.
+static func closed(save: SaveGame, country: StringName) -> String:
+	if farms_of(save, country) > 0 or reach(save, country) == "":
+		return ""
+	if country == FINAL and reach(save, country) != NO_SEA_LANES:  # Nordhal ours without the lanes: the sea is why.
+		return CLOSED_FINAL
+	if reach(save, country) == NO_SEA_LANES or not (save.stamped.has(SEA_CARD) or by_land(country)):
+		return CLOSED_SEA
+	return CLOSED_LAND
+
+
+## Whether `country` can be walked to from home, border by border, without a sea lane.
+static func by_land(country: StringName) -> bool:
+	var seen: Array = [HOME]
+	var i := 0
+	while i < seen.size():
+		for next: StringName in COUNTRIES[seen[i]].land:
+			if not seen.has(next):
+				seen.append(next)
+		i += 1
+	return seen.has(country)
+
+
 ## The line under a war order's strip (REASONS), translated.
 static func reason(save: SaveGame, country: StringName) -> String:
 	return TranslationServer.translate(REASONS.get(reach(save, country), ""))
@@ -185,9 +228,12 @@ static func tag_text(save: SaveGame, country: StringName) -> String:
 	return "%d/%d" % [farms_of(save, country), COUNTRIES[country].farms]
 
 
-## The hint slip for `country` called this name: its farms, and that a click opens its sheet. Never
-## a price: nothing is bought on the world sheet.
+## The hint slip for `country` called this name: its farms, and that a click opens its sheet; while
+## it is closed, only why. Never a price: nothing is bought on the world sheet.
 static func hint_text(save: SaveGame, country: StringName, called: String) -> String:
+	var why := closed(save, country)
+	if why != "":
+		return "%s. %s" % [called, TranslationServer.translate(why)]
 	return TranslationServer.translate("%s. Farms: %d of %d. Click for its farm register.") % [called, farms_of(save, country), COUNTRIES[country].farms]
 
 
@@ -244,6 +290,7 @@ func hover(spot: StringName) -> void:
 		if country == &"":
 			continue
 		_outline(country).visible = country == spot
+		_outline(country).default_color = _open_ink if closed(SaveManager.save, country) == "" else Color(_ink, CLOSED_FADE)
 		if thing_up(_index(country)):
 			_move(country).tween_method(raise_thing.bind(_index(country)), _raised(country),
 					FarmRegister.HOVER_SCALE if country == spot else 1.0, FarmRegister.HOVER_TIME)
@@ -251,9 +298,14 @@ func hover(spot: StringName) -> void:
 	reprint()
 
 
-## A click on a country opens its own sheet (MapTable hears `sheet_wanted`).
+## A click on a country opens its own sheet (MapTable hears `sheet_wanted`); on a closed one
+## (closed) the refusal's clunk, and nothing opens.
 func press(spot: StringName) -> void:
-	if _sites.has(spot):
+	if not _sites.has(spot):
+		return
+	if closed(SaveManager.save, spot) != "":
+		_refuse_sound.cue(_sites[spot].global_position)
+	else:
 		sheet_wanted.emit(spot, &"")
 
 

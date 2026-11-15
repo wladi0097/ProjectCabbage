@@ -1,0 +1,136 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_t4xr1"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_htf50"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/hedge.tscn" id="3_qi7t6"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="4_bxc11"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cctv.tscn" id="5_gbg2b"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="6_driae"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="7_kbytf"]
+
+[node name="Sulvania3" type="Node3D" unique_id=1424386994]
+script = ExtResource("1_t4xr1")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 9,
+&"cabbages": 7000,
+&"k": 2.0300000000000002,
+&"style": "mixed"
+}
+site_name = "THE SCENIC APPROACH"
+briefing = "A hedged drive, watched from both sides. Guests are asked to use it."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=477886081 instance=ExtResource("2_htf50")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 3, 0.24, 0, 0.88)
+
+[node name="Zone2" type="Node3D" parent="." unique_id=1093911469 instance=ExtResource("2_htf50")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 2, 0.39999998, 0, 0.16)
+
+[node name="Zone3" type="Node3D" parent="." unique_id=1730165044 instance=ExtResource("2_htf50")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 2, 0.39999998, 0, 1.5999999)
+
+[node name="Hedge1" type="Node3D" parent="." unique_id=187421163 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0, 0.56)
+
+[node name="Hedge2" type="Node3D" parent="." unique_id=1595340651 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 0, 0.56)
+
+[node name="Hedge3" type="Node3D" parent="." unique_id=956268635 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.39999998, 0, 0.56)
+
+[node name="Hedge4" type="Node3D" parent="." unique_id=15287200 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56, 0, 0.56)
+
+[node name="Hedge5" type="Node3D" parent="." unique_id=1088385447 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.71999997, 0, 0.56)
+
+[node name="Hedge6" type="Node3D" parent="." unique_id=2056574857 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.56)
+
+[node name="Hedge7" type="Node3D" parent="." unique_id=1920357678 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 0.56)
+
+[node name="Hedge8" type="Node3D" parent="." unique_id=1869134417 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1999999, 0, 0.56)
+
+[node name="Hedge9" type="Node3D" parent="." unique_id=886158133 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.56)
+
+[node name="Hedge10" type="Node3D" parent="." unique_id=300193253 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.56)
+
+[node name="Hedge11" type="Node3D" parent="." unique_id=1425470860 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.56)
+
+[node name="Hedge12" type="Node3D" parent="." unique_id=191008743 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 0.56)
+
+[node name="Hedge13" type="Node3D" parent="." unique_id=1668078757 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.56)
+
+[node name="Hedge14" type="Node3D" parent="." unique_id=1642369945 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 0.56)
+
+[node name="Hedge15" type="Node3D" parent="." unique_id=202168862 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0, 1.1999999)
+
+[node name="Hedge16" type="Node3D" parent="." unique_id=326332472 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 0, 1.1999999)
+
+[node name="Hedge17" type="Node3D" parent="." unique_id=977992116 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.39999998, 0, 1.1999999)
+
+[node name="Hedge18" type="Node3D" parent="." unique_id=1370732327 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56, 0, 1.1999999)
+
+[node name="Hedge19" type="Node3D" parent="." unique_id=665955250 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.71999997, 0, 1.1999999)
+
+[node name="Hedge20" type="Node3D" parent="." unique_id=892535035 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 1.1999999)
+
+[node name="Hedge21" type="Node3D" parent="." unique_id=1892720318 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 1.1999999)
+
+[node name="Hedge22" type="Node3D" parent="." unique_id=556728660 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1999999, 0, 1.1999999)
+
+[node name="Hedge23" type="Node3D" parent="." unique_id=179161096 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 1.1999999)
+
+[node name="Hedge24" type="Node3D" parent="." unique_id=1820264425 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.1999999)
+
+[node name="Hedge25" type="Node3D" parent="." unique_id=1750535294 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 1.1999999)
+
+[node name="Hedge26" type="Node3D" parent="." unique_id=957711058 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 1.1999999)
+
+[node name="Hedge27" type="Node3D" parent="." unique_id=1887041362 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 1.1999999)
+
+[node name="Hedge28" type="Node3D" parent="." unique_id=1056773393 instance=ExtResource("3_qi7t6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 1.1999999)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=1305271445 instance=ExtResource("4_bxc11")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.24)
+
+[node name="Cctv1" type="Node3D" parent="." unique_id=443995288 instance=ExtResource("5_gbg2b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.24)
+
+[node name="Cannon2" type="Node3D" parent="." unique_id=1054087368 instance=ExtResource("4_bxc11")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 1.52)
+
+[node name="Cctv2" type="Node3D" parent="." unique_id=636101920 instance=ExtResource("5_gbg2b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.52)
+
+[node name="Cctv3" type="Node3D" parent="." unique_id=780683862 instance=ExtResource("5_gbg2b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.96, 0, 0.88)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=752111245 instance=ExtResource("6_driae")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.56, 0, 0.79999995)
+
+[node name="Road1" type="Node3D" parent="." unique_id=676743875 instance=ExtResource("7_kbytf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4399999, 0, 0.88)
+size = Vector2i(12, 1)

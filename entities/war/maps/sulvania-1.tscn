@@ -1,0 +1,86 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_smgl6"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_8vo13"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/wall_stone.tscn" id="3_0db42"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="4_4byjd"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cctv.tscn" id="5_4twbg"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/mortar.tscn" id="6_qhpq7"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="7_5lsst"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="8_4g783"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/field.tscn" id="13_rr5l0"]
+
+[node name="Sulvania1" type="Node3D" unique_id=986322498]
+script = ExtResource("1_smgl6")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 7,
+&"cabbages": 7000,
+&"k": 1.73,
+&"style": "associates"
+}
+site_name = "THE RECEPTION LINE"
+briefing = "A straight wall, a row of guns. The budget ran out at one end."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=546479510 instance=ExtResource("2_8vo13")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 3, 0.08, 0, 0.39999998)
+
+[node name="Zone2" type="Node3D" parent="." unique_id=1223263611 instance=ExtResource("2_8vo13")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 3, 0.08, 0, 0.88)
+
+[node name="Zone3" type="Node3D" parent="." unique_id=2042995357 instance=ExtResource("2_8vo13")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 3, 0.08, 0, 1.36)
+
+[node name="WallStone1" type="Node3D" parent="." unique_id=840623687 instance=ExtResource("3_0db42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.08)
+
+[node name="WallStone2" type="Node3D" parent="." unique_id=1748340417 instance=ExtResource("3_0db42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.24)
+
+[node name="WallStone3" type="Node3D" parent="." unique_id=1109790540 instance=ExtResource("3_0db42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.39999998)
+
+[node name="WallStone4" type="Node3D" parent="." unique_id=1561983484 instance=ExtResource("3_0db42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.56)
+
+[node name="WallStone5" type="Node3D" parent="." unique_id=1725548351 instance=ExtResource("3_0db42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.71999997)
+
+[node name="WallStone6" type="Node3D" parent="." unique_id=892957658 instance=ExtResource("3_0db42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.88)
+
+[node name="WallStone7" type="Node3D" parent="." unique_id=1074323380 instance=ExtResource("3_0db42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 1.04)
+
+[node name="WallStone8" type="Node3D" parent="." unique_id=755370722 instance=ExtResource("3_0db42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 1.1999999)
+
+[node name="WallStone9" type="Node3D" parent="." unique_id=682046556 instance=ExtResource("3_0db42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 1.36)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=1473065880 instance=ExtResource("4_4byjd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.39999998)
+
+[node name="Cctv1" type="Node3D" parent="." unique_id=234025882 instance=ExtResource("5_4twbg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.88)
+
+[node name="Cannon2" type="Node3D" parent="." unique_id=878318796 instance=ExtResource("4_4byjd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 1.36)
+
+[node name="Mortar1" type="Node3D" parent="." unique_id=1638334764 instance=ExtResource("6_qhpq7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.56, 0, 0.32)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=319241870 instance=ExtResource("7_5lsst")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.72, 0, 0.79999995)
+
+[node name="Road1" type="Node3D" parent="." unique_id=2062929279 instance=ExtResource("8_4g783")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.88)
+size = Vector2i(9, 1)
+
+[node name="Field1" type="Node3D" parent="." unique_id=1572707081 instance=ExtResource("13_rr5l0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.24)
+size = Vector2i(5, 3)
+
+[node name="Field2" type="Node3D" parent="." unique_id=986377684 instance=ExtResource("13_rr5l0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 1.36)
+size = Vector2i(5, 3)

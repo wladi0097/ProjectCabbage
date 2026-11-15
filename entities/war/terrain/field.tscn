@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/terrain/terrain_piece.gd" id="1_piece"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/terrain_field_base.res" id="2_base"]
+
+[node name="Field" type="Node3D"]
+script = ExtResource("1_piece")
+base = ExtResource("2_base")

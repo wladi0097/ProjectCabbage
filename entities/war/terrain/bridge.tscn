@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/terrain_bridge_deck.res" id="1_deck"]
+
+[node name="Bridge" type="Node3D"]
+
+[node name="Deck" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("1_deck")

@@ -44,8 +44,9 @@ func test_only_hired_unit_types_the_depot_deals_in_are_on_offer() -> void:
 	assert_array(Depot.units(save)).is_empty()
 	save.stamped.append(Depot.WAR_CARD)
 	assert_array(Depot.units(save)).is_equal(["field_associate"])
-	save.stamped.append("unit_compliance")  # Not dealt in yet: never shown.
-	assert_array(Depot.units(save)).is_equal(["field_associate"])
+	save.stamped.append("unit_pult")  # Hired types join in depot order, whatever order they came in.
+	save.stamped.append("unit_charge")
+	assert_array(Depot.units(save)).is_equal(["field_associate", "restructuring_charge", "pult_crew"])
 
 
 func test_a_ray_at_the_depot_finds_it_and_one_beside_it_does_not() -> void:
@@ -73,3 +74,16 @@ func test_hovering_lifts_the_depot_and_raises_its_shutter() -> void:
 	depot._hover_tween.custom_step(10.0)
 	assert_float(depot.position.y).is_equal_approx(0.0, 0.0001)
 	assert_float((depot.get_node("Shutter") as Node3D).position.y).is_equal_approx(shutter, 0.0001)
+
+
+func test_the_depot_carries_its_name_stencilled_on_the_roof_in_english_and_german() -> void:
+	var depot: Depot = auto_free(SCENE.instantiate())
+	add_child(depot)
+	var stencil := depot.get_node("Stencil") as Label3D
+	assert_vector(stencil.global_basis.z).is_equal_approx(depot.global_basis.y, Vector3.ONE * 0.001)  # Facing up.
+	assert_float(stencil.position.y).is_greater(depot._box.end.y)  # On the roof, not inside it.
+	var locale := TranslationServer.get_locale()
+	for pair: Array in [["en", "PERSONNEL"], ["de", "PERSONAL"]]:
+		TranslationServer.set_locale(pair[0])
+		assert_str(stencil.tr(stencil.text)).starts_with(pair[1])
+	TranslationServer.set_locale(locale)

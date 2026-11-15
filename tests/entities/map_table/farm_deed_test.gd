@@ -26,6 +26,14 @@ func _rect(deed: FarmDeed, node: String) -> Rect2:
 	return (deed.get_node("Page/Form/" + node) as Control).get_rect()
 
 
+## How tall `label` prints `text` wrapped to its width, its line spacing counted.
+func _high(label: Label, text: String) -> float:
+	var font := label.get_theme_font(&"font")
+	var font_size := label.get_theme_font_size(&"font_size")
+	var lines := roundi(font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, label.size.x, font_size).y / font.get_height(font_size))
+	return lines * font.get_height(font_size) + (lines - 1) * label.get_theme_constant(&"line_spacing")
+
+
 func test_the_deed_names_the_farm_its_site_and_its_price_in_coins_and_cabbages() -> void:
 	var deed := _deed()
 	deed.fill("Kaletten Farm", &"K-8", {coins = 1500000, stock = 5500})
@@ -380,3 +388,164 @@ func test_the_deed_rolls_itself_up_and_is_gone() -> void:
 	assert_bool(deed.visible).is_false()
 	deed.slide(Vector3(2, 0, 0), Vector3.ZERO, 0.3)  # The next one lies flat again.
 	assert_float(deed.open).is_equal(1.0)
+
+
+
+func test_five_unit_rows_fit_the_declaration_legibly_in_english_and_german() -> void:
+	var deed := _deed()
+	deed.letter(&"war")
+	deed.fill("Filderau Holding", &"K-7", {coins = 3000000})
+	var rows := []
+	for unit: String in WarRules.UNITS:
+		rows.append({unit = unit, name = DepotSheet.NAMES[unit], have = 12, take = 12})
+	assert_int(rows.size()).is_equal(FarmDeed.MAX_ROWS)
+	var frame := Rect2(44, 44, 732, 1000 - 44 + 4)  # Inside the frame, beside the stamp box.
+	for locale: String in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		for row: Dictionary in rows:
+			row.name = TranslationServer.translate(DepotSheet.NAMES[row.unit])
+		deed.print_staff(rows)
+		for i in rows.size():
+			var line: Control = deed.get_node("Page/Form/Staff/" + rows[i].unit)
+			var at := FarmDeed.STAFF_AT + line.position
+			assert_bool(frame.encloses(Rect2(at, line.size))).is_true()
+			assert_bool(Rect2(at, line.size).intersects(FarmDeed.STAMP_BOX)).is_false()
+			for part: String in ["Name", "Have", "Take"]:
+				var label: Label = line.get_node(part)
+				var font := label.get_theme_font(&"font")
+				var wide := font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.get_theme_font_size(&"font_size")).x
+				assert_float(wide).override_failure_message("%s %s too wide in %s" % [part, label.text, locale]).is_less_equal(label.size.x)
+				assert_int(label.get_theme_font_size(&"font_size")).is_greater_equal(30)  # Readable at 720p.
+			for side: String in ["Less", "More"]:
+				assert_float((line.get_node(side) as Control).size.x).is_greater_equal(50.0)  # A box to hit at 720p.
+		# ASSESSED RESISTANCE beside them, over the stamp box, every line in full.
+		for band: String in WarMap.BAND_NAMES:
+			for associates: int in [12, -1]:
+				deed.print_resistance({band = 5, band_name = band, associates = associates})
+				for part: String in ["Head", "Rating", "Estimate"]:
+					var label: Label = deed.get_node("Page/Form/Resistance/" + part)
+					assert_float(_high(label, tr(label.text))).override_failure_message("%s %s too long in %s" % [part, tr(label.text), locale]).is_less_equal(label.size.y + 4.0)
+					assert_int(label.get_theme_font_size(&"font_size")).is_greater_equal(28)
+		var block := _rect(deed, "Resistance")
+		assert_bool(block.end.y <= FarmDeed.STAMP_BOX.position.y and block.position.x >= _rect(deed, "Staff").end.x).is_true()
+	TranslationServer.set_locale("en")
+
+
+func test_a_declaration_with_no_trained_staff_says_why_in_place_of_the_rows() -> void:
+	var deed := _deed()
+	deed.letter(&"war")
+	deed.fill("Filderau Holding", &"K-7", {coins = 3000000})
+	var nobody := [{unit = "field_associate", name = "FIELD ASSOCIATE", have = 0, take = 0}]
+	deed.print_staff(nobody)
+	var notice := deed.get_node("Page/Form/NoStaff") as Control
+	assert_bool(notice.visible).is_true()
+	assert_bool((deed.get_node("Page/Form/Staff") as Control).visible).is_false()
+	assert_bool((deed.get_node("Figures") as Node3D).visible).is_false()
+	assert_bool((deed.get_node("Page/Form/StaffHead") as Control).visible).is_true()
+	assert_str(_text(deed, "NoStaff/Head")).is_equal("NO STAFF ON THE BOOKS.")
+	assert_str(_text(deed, "NoStaff/Line")).is_equal("Requisition personnel at the depot first.")
+	assert_bool(Rect2(44, 500, 450, 500).encloses(notice.get_rect())).is_true()  # Where the rows would be, clear of the stamp box.
+	for locale: String in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		for part: String in ["Head", "Line"]:
+			var label: Label = deed.get_node("Page/Form/NoStaff/" + part)
+			var text := tr(label.text)
+			assert_float(_high(label, text)).override_failure_message("%s in %s" % [text, locale]).is_less_equal(label.size.y + 4.0)
+			assert_int(label.get_theme_font_size(&"font_size")).is_greater_equal(30)
+	TranslationServer.set_locale("en")
+	# The stamp refused: the notice and STAMP HERE flash red, then go back to their ink.
+	deed.blink(true)
+	deed._blinking.custom_step(FarmDeed.BLINK_TIME * 1.5)
+	assert_that((deed.get_node("Page/Form/NoStaff/Head") as Label).get_theme_color(&"font_color")).is_equal(FarmDeed.DENIED_RED)
+	assert_that((deed.get_node("Page/Form/Box/Word") as Label).get_theme_color(&"font_color")).is_equal(FarmDeed.DENIED_RED)
+	deed._blinking.custom_step(10.0)
+	assert_that((deed.get_node("Page/Form/NoStaff/Head") as Label).get_theme_color(&"font_color")).is_not_equal(FarmDeed.DENIED_RED)
+	# Somebody hired: the rows are back.
+	deed.print_staff([{unit = "field_associate", name = "FIELD ASSOCIATE", have = 2, take = 2}])
+	assert_bool(notice.visible).is_false()
+	assert_bool((deed.get_node("Page/Form/Staff") as Control).visible).is_true()
+
+
+func test_every_staff_figure_stands_at_least_eleven_centimetres_across_on_the_sheet_inside_its_row() -> void:
+	var deed := _deed()
+	var row: Control = deed.STAFF_ROW.instantiate()
+	var stand := (row.get_node("Stand") as Control).position
+	var gutter := (row.get_node("Name") as Control).position.x
+	row.free()
+	for unit: String in WarRules.UNITS:
+		var figure: Node3D = (load(FarmDeed.SOLDIER % unit) as PackedScene).instantiate()
+		var box := AABB()
+		for mesh: MeshInstance3D in figure.find_children("*", "MeshInstance3D", true, false):
+			box = box.merge(mesh.transform * mesh.get_aabb())
+		var times := FarmDeed.figure_scale(figure)
+		figure.free()
+		assert_float(times).is_greater_equal(FarmDeed.FIGURE_SCALE)
+		var on_page := box.size * times * FarmDeed.PIXELS_PER_METRE  # Page px.
+		var across := maxf(on_page.x, on_page.z) * FarmDeed.WAR_SCALE  # mm on the sheet.
+		assert_float(across).override_failure_message("%s is %d mm" % [unit, across]).is_greater_equal(110.0)
+		assert_float(on_page.z).override_failure_message(unit).is_less_equal(FarmDeed.ROW_HEIGHT)
+		assert_float(stand.x + (box.position.x + box.size.x) * times * FarmDeed.PIXELS_PER_METRE).override_failure_message(unit).is_less_equal(gutter)
+
+
+func test_the_assessed_resistance_lights_one_pip_per_band() -> void:
+	var deed := _deed()
+	deed.print_resistance({band = 3, band_name = "SERIOUS", associates = 6})
+	assert_bool((deed.get_node("Page/Form/Resistance") as Control).visible).is_true()
+	assert_str((deed.get_node("Page/Form/Resistance/Rating") as Label).text).is_equal("SERIOUS")
+	assert_str((deed.get_node("Page/Form/Resistance/Estimate") as Label).text).contains("6 field associates")
+	for k in 5:
+		assert_bool((deed.get_node("Page/Form/Resistance/Pips/Pip%d/Fill" % k) as Control).visible).is_equal(k < 3)
+	deed.print_resistance({band = 5, band_name = "CATASTROPHIC", associates = -1})  # More than the cap allows.
+	assert_str((deed.get_node("Page/Form/Resistance/Estimate") as Label).text).contains("exceeds current headcount")
+	deed.print_resistance({})
+	assert_bool((deed.get_node("Page/Form/Resistance") as Control).visible).is_false()
+
+
+func test_the_declaration_prints_the_maps_site_name_and_briefing_under_the_farms_name() -> void:
+	var deed := _deed()
+	deed.letter(&"war")
+	deed.fill("Filderau Holding", &"K-7", {coins = 3000000})
+	assert_bool((deed.get_node("Page/Form/SiteName") as Control).visible).is_false()  # Unfilled: no site printed.
+	deed.print_site({site_name = "THE SUPERVISED PLOT", briefing = "They have installed a supervisor. We have brought three of you.", final = false})
+	assert_str(_text(deed, "SiteName")).is_equal("THE SUPERVISED PLOT")
+	assert_str(_text(deed, "Briefing")).is_equal("They have installed a supervisor. We have brought three of you.")
+	assert_bool((deed.get_node("Page/Form/Briefing") as Control).visible).is_true()
+	# Under the name's one line, in place of FARM SITE, above the cost of war.
+	var title := _rect(deed, "Title")
+	var font_size := (deed.get_node("Page/Form/Title") as Label).get_theme_font_size(&"font_size")
+	assert_float(_rect(deed, "SiteName").position.y).is_greater_equal(title.position.y + font_size)
+	assert_float(_rect(deed, "Briefing").end.y).is_less_equal(_rect(deed, "Rule1").position.y)
+	assert_bool((deed.get_node("Page/Form/Site") as Control).visible).is_false()
+	assert_int((deed.get_node("Page/Form/Briefing") as Label).get_theme_font_size(&"font_size")).is_greater_equal(28)  # Readable at 720p.
+	deed.fill("Filderau Holding", &"K-7", {coins = 3000000})  # A fresh paper prints none until told.
+	assert_bool((deed.get_node("Page/Form/SiteName") as Control).visible).is_false()
+	assert_bool((deed.get_node("Page/Form/Site") as Control).visible).is_true()  # And its code is back.
+
+
+func test_every_maps_site_name_and_briefing_fit_the_declaration_in_english_and_german() -> void:
+	var deed := _deed()
+	var name_label := deed.get_node("Page/Form/SiteName") as Label
+	var line := deed.get_node("Page/Form/Briefing") as Label
+	for locale: String in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		for path in WarMap.map_paths():
+			var map: WarMap = load(path).instantiate()
+			var wide := name_label.get_theme_font(&"font").get_string_size(tr(map.site_name), HORIZONTAL_ALIGNMENT_LEFT, -1,
+					name_label.get_theme_font_size(&"font_size")).x
+			assert_float(wide).override_failure_message("%s %s" % [path, tr(map.site_name)]).is_less_equal(name_label.size.x)
+			var high := line.get_theme_font(&"font").get_multiline_string_size(tr(map.briefing), HORIZONTAL_ALIGNMENT_LEFT, line.size.x,
+					line.get_theme_font_size(&"font_size")).y
+			assert_float(high).override_failure_message("%s %s" % [path, tr(map.briefing)]).is_less_equal(line.size.y + 6.0)
+			map.free()
+
+
+func test_only_the_last_wars_declaration_wears_the_oxblood_border_and_stamps_heavier() -> void:
+	var deed := _deed()
+	deed.letter(&"war")
+	deed.fill("Endmark Holding", &"endmark-1", {coins = 16000000})
+	deed.print_site({site_name = "THE HEART", briefing = "x", final = true})
+	assert_bool(deed.heavy).is_true()
+	assert_bool((deed.get_node("Page/Form/FinalFrame") as Control).visible).is_true()
+	deed.print_site({site_name = "THE SUPERVISED PLOT", briefing = "x", final = false})
+	assert_bool(deed.heavy).is_false()
+	assert_bool((deed.get_node("Page/Form/FinalFrame") as Control).visible).is_false()

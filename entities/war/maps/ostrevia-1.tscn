@@ -1,0 +1,57 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_wnr07"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_ui46n"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/mortar.tscn" id="3_gkc51"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="4_gadld"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="5_5ax74"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="6_7ftl8"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/field.tscn" id="11_gni88"]
+
+[node name="Ostrevia1" type="Node3D" unique_id=34786818]
+script = ExtResource("1_wnr07")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 5,
+&"cabbages": 4000,
+&"k": 1.3900000000000001,
+&"style": "mixed"
+}
+site_name = "CENTRAL MAIL ROOM"
+briefing = "Three mailing units, one distribution list. You are on it."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=2117906114 instance=ExtResource("2_ui46n")]
+transform = Transform3D(2, 0, 0, 0, 1, 0, 0, 0, 5, 0.16, 0, 0.88)
+
+[node name="Zone2" type="Node3D" parent="." unique_id=690943936 instance=ExtResource("2_ui46n")]
+transform = Transform3D(5, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.08)
+
+[node name="Zone3" type="Node3D" parent="." unique_id=701046285 instance=ExtResource("2_ui46n")]
+transform = Transform3D(5, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.68)
+
+[node name="Mortar1" type="Node3D" parent="." unique_id=955913686 instance=ExtResource("3_gkc51")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4399999, 0, 0.64)
+
+[node name="Mortar2" type="Node3D" parent="." unique_id=523489023 instance=ExtResource("3_gkc51")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4399999, 0, 0.96)
+
+[node name="Mortar3" type="Node3D" parent="." unique_id=1765175262 instance=ExtResource("3_gkc51")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.76, 0, 0.79999995)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=9032938 instance=ExtResource("4_gadld")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 0.39999998)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=975581542 instance=ExtResource("5_5ax74")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.56, 0, 0.96)
+
+[node name="Road1" type="Node3D" parent="." unique_id=1744058413 instance=ExtResource("6_7ftl8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.79999995, 0, 0.88)
+size = Vector2i(6, 1)
+
+[node name="Field1" type="Node3D" parent="." unique_id=1806796692 instance=ExtResource("11_gni88")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.64, 0, 0.16)
+size = Vector2i(4, 2)
+
+[node name="Field2" type="Node3D" parent="." unique_id=1453828831 instance=ExtResource("11_gni88")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.64, 0, 1.5999999)
+size = Vector2i(4, 2)

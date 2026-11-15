@@ -1,0 +1,126 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_ww1me"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_1dr7k"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/wall_stone.tscn" id="3_dgfbc"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/wall_wood.tscn" id="4_imhbq"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="5_o8yfr"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/mortar.tscn" id="6_5kdad"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="7_xqofw"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/pond.tscn" id="8_kfw4s"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/field.tscn" id="13_yooeh"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="15_i7gq7"]
+
+[node name="Veldmark1" type="Node3D" unique_id=1258389120]
+script = ExtResource("1_ww1me")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 4,
+&"cabbages": 3000,
+&"k": 1.2,
+&"style": "mixed"
+}
+site_name = "THE GATED COMMUNITY"
+briefing = "Masonry on three and a half sides. The remaining half is a garden gate."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=354897978 instance=ExtResource("2_1dr7k")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 5, 0.24, 0, 0.88)
+
+[node name="Zone2" type="Node3D" parent="." unique_id=34893300 instance=ExtResource("2_1dr7k")]
+transform = Transform3D(2, 0, 0, 0, 1, 0, 0, 0, 3, 2.8799999, 0, 0.88)
+
+[node name="WallStone1" type="Node3D" parent="." unique_id=204180878 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.39999998)
+
+[node name="WallStone2" type="Node3D" parent="." unique_id=687247636 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.39999998)
+
+[node name="WallStone3" type="Node3D" parent="." unique_id=327882842 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 0.39999998)
+
+[node name="WallStone4" type="Node3D" parent="." unique_id=900678929 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.39999998)
+
+[node name="WallStone5" type="Node3D" parent="." unique_id=1446026964 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 0.39999998)
+
+[node name="WallStone6" type="Node3D" parent="." unique_id=794108556 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 0.39999998)
+
+[node name="WallStone7" type="Node3D" parent="." unique_id=1837917676 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 0.39999998)
+
+[node name="WallStone8" type="Node3D" parent="." unique_id=252449944 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.36)
+
+[node name="WallStone9" type="Node3D" parent="." unique_id=2001888675 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 1.36)
+
+[node name="WallStone10" type="Node3D" parent="." unique_id=143016814 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 1.36)
+
+[node name="WallStone11" type="Node3D" parent="." unique_id=44014522 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 1.36)
+
+[node name="WallStone12" type="Node3D" parent="." unique_id=1357833468 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 1.36)
+
+[node name="WallStone13" type="Node3D" parent="." unique_id=913146270 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 1.36)
+
+[node name="WallStone14" type="Node3D" parent="." unique_id=1867443183 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 1.36)
+
+[node name="WallStone15" type="Node3D" parent="." unique_id=505445803 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.56)
+
+[node name="WallStone16" type="Node3D" parent="." unique_id=739837741 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.71999997)
+
+[node name="WallStone17" type="Node3D" parent="." unique_id=1632551643 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.88)
+
+[node name="WallStone18" type="Node3D" parent="." unique_id=816214955 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.04)
+
+[node name="WallStone19" type="Node3D" parent="." unique_id=819435756 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.1999999)
+
+[node name="WallStone20" type="Node3D" parent="." unique_id=1213546757 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 0.56)
+
+[node name="WallStone21" type="Node3D" parent="." unique_id=337399654 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 0.71999997)
+
+[node name="WallWood1" type="Node3D" parent="." unique_id=2001601532 instance=ExtResource("4_imhbq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 0.88)
+
+[node name="WallStone22" type="Node3D" parent="." unique_id=1307273340 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 1.04)
+
+[node name="WallStone23" type="Node3D" parent="." unique_id=323191288 instance=ExtResource("3_dgfbc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 1.1999999)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=1135879285 instance=ExtResource("5_o8yfr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 0.88)
+
+[node name="Mortar1" type="Node3D" parent="." unique_id=1372626061 instance=ExtResource("6_5kdad")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.76, 0, 1.12)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=1606003037 instance=ExtResource("7_xqofw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.24, 0, 0.64)
+
+[node name="Pond1" type="Node3D" parent="." unique_id=162414114 instance=ExtResource("8_kfw4s")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 1.4399999)
+size = Vector2i(3, 2)
+
+[node name="Field1" type="Node3D" parent="." unique_id=412803369 instance=ExtResource("13_yooeh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0, 0.16)
+size = Vector2i(4, 2)
+
+[node name="Road1" type="Node3D" parent="." unique_id=224185765 instance=ExtResource("15_i7gq7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0, 0.88)
+size = Vector2i(6, 1)
+
+[node name="Road2" type="Node3D" parent="." unique_id=665189815 instance=ExtResource("15_i7gq7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6399999, 0, 0.88)

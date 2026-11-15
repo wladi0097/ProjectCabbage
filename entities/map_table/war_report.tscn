@@ -1,0 +1,484 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/war_report.gd" id="1_report"]
+[ext_resource type="Shader" path="res://assets/shaders/map_sheet.gdshader" id="2_shader"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_slide_1.wav" id="sfx_deed_slide_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_slide_2.wav" id="sfx_deed_slide_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_slide_3.wav" id="sfx_deed_slide_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_1.wav" id="sfx_deed_stamp_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_2.wav" id="sfx_deed_stamp_2"]
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_slide"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 3
+stream_0/stream = ExtResource("sfx_deed_slide_1")
+stream_1/stream = ExtResource("sfx_deed_slide_2")
+stream_2/stream = ExtResource("sfx_deed_slide_3")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_strike"]
+random_pitch = 1.03
+random_volume_offset_db = 1.0
+streams_count = 2
+stream_0/stream = ExtResource("sfx_deed_stamp_1")
+stream_1/stream = ExtResource("sfx_deed_stamp_2")
+
+[sub_resource type="StyleBoxFlat" id="FrameLine"]
+draw_center = false
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.11, 0.125, 0.118, 1)
+
+[sub_resource type="StyleBoxFlat" id="BoxLine"]
+bg_color = Color(0.77, 0.74, 0.62, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.11, 0.125, 0.118, 1)
+
+[sub_resource type="StyleBoxFlat" id="ImprintLine"]
+draw_center = false
+border_width_left = 8
+border_width_top = 8
+border_width_right = 8
+border_width_bottom = 8
+border_color = Color(0.416, 0.169, 0.157, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="PlaneMesh" id="ReportPlane"]
+size = Vector2(0.86, 1.2)
+subdivide_width = 1
+subdivide_depth = 8
+center_offset = Vector3(0, 0, 0.6)
+
+[sub_resource type="ShaderMaterial" id="ReportMat"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/open = 1.0
+shader_parameter/sheet_length = 1.2
+shader_parameter/core = 0.02
+shader_parameter/pitch = 0.006
+shader_parameter/lift = 0.0
+shader_parameter/back_color = Color(0.66, 0.63, 0.53, 1)
+
+[node name="WarReport" type="Node3D"]
+visible = false
+script = ExtResource("1_report")
+
+[node name="Page" type="SubViewport" parent="."]
+disable_3d = true
+size = Vector2i(860, 1200)
+render_target_update_mode = 0
+
+[node name="Form" type="Control" parent="Page"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 860.0
+offset_bottom = 1200.0
+mouse_filter = 2
+
+[node name="Paper" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_right = 860.0
+offset_bottom = 1200.0
+mouse_filter = 2
+color = Color(0.85, 0.82, 0.7, 1)
+
+[node name="Frame" type="Panel" parent="Page/Form"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 838.0
+offset_bottom = 1178.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("FrameLine")
+
+[node name="FormLine" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 36.0
+offset_right = 816.0
+offset_bottom = 84.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 40
+text = "FORM 9-R  AFTER-ACTION REPORT"
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 88.0
+offset_right = 816.0
+offset_bottom = 176.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 66
+text = "Ballhead Moor Holding"
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Site" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 176.0
+offset_right = 816.0
+offset_bottom = 220.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 38
+text = "FARM SITE K-6"
+vertical_alignment = 1
+
+[node name="Rule1" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 230.0
+offset_right = 816.0
+offset_bottom = 234.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="OutcomeHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 244.0
+offset_right = 400.0
+offset_bottom = 294.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 30
+text = "OUTCOME"
+vertical_alignment = 1
+
+[node name="Outcome" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 300.0
+offset_top = 244.0
+offset_right = 816.0
+offset_bottom = 294.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 38
+text = "VICTORY"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="TimeHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 298.0
+offset_right = 500.0
+offset_bottom = 348.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 30
+text = "TIME ON SITE"
+vertical_alignment = 1
+
+[node name="Time" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 298.0
+offset_right = 816.0
+offset_bottom = 348.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 38
+text = "0:38 of 1:30"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Rule2" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 358.0
+offset_right = 816.0
+offset_bottom = 362.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="StaffHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 370.0
+offset_right = 470.0
+offset_bottom = 410.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "STAFF"
+vertical_alignment = 1
+
+[node name="DeployedHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 470.0
+offset_top = 370.0
+offset_right = 650.0
+offset_bottom = 410.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 26
+text = "DEPLOYED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LostHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 650.0
+offset_top = 370.0
+offset_right = 816.0
+offset_bottom = 410.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 26
+text = "LOST"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Staff" type="Control" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 414.0
+offset_right = 816.0
+offset_bottom = 674.0
+mouse_filter = 2
+
+[node name="Row" type="Control" parent="Page/Form/Staff"]
+visible = false
+layout_mode = 0
+offset_right = 772.0
+offset_bottom = 52.0
+mouse_filter = 2
+
+[node name="Name" type="Label" parent="Page/Form/Staff/Row"]
+layout_mode = 0
+offset_right = 426.0
+offset_bottom = 52.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 30
+text = "FIELD ASSOCIATE"
+vertical_alignment = 1
+clip_text = true
+
+[node name="Deployed" type="Label" parent="Page/Form/Staff/Row"]
+layout_mode = 0
+offset_left = 426.0
+offset_right = 606.0
+offset_bottom = 52.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 36
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Lost" type="Label" parent="Page/Form/Staff/Row"]
+layout_mode = 0
+offset_left = 606.0
+offset_right = 772.0
+offset_bottom = 52.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 36
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Rule3" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 684.0
+offset_right = 816.0
+offset_bottom = 688.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="CabbagesHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 696.0
+offset_right = 560.0
+offset_bottom = 746.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 30
+text = "CABBAGES WRITTEN OFF"
+vertical_alignment = 1
+
+[node name="Cabbages" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 520.0
+offset_top = 696.0
+offset_right = 816.0
+offset_bottom = 746.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 38
+text = "2,000"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="CoinsHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 750.0
+offset_right = 520.0
+offset_bottom = 800.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 30
+text = "COST OF WAR"
+vertical_alignment = 1
+
+[node name="Coins" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 420.0
+offset_top = 750.0
+offset_right = 816.0
+offset_bottom = 800.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 38
+text = "$3,000,000"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="DefencesHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 804.0
+offset_right = 680.0
+offset_bottom = 854.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 30
+text = "DEFENCES DECOMMISSIONED"
+vertical_alignment = 1
+
+[node name="Defences" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 804.0
+offset_right = 816.0
+offset_bottom = 854.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 38
+text = "2 of 2"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Rule4" type="ColorRect" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 864.0
+offset_right = 816.0
+offset_bottom = 868.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="GradeHead" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 876.0
+offset_right = 420.0
+offset_bottom = 916.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
+text = "GRADE AND REMARKS"
+vertical_alignment = 1
+
+[node name="Remark" type="Label" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 920.0
+offset_right = 470.0
+offset_bottom = 1060.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 30
+text = "Losses within tolerance. The tolerance has been lowered."
+autowrap_mode = 2
+
+[node name="Grade" type="Panel" parent="Page/Form"]
+visible = false
+layout_mode = 0
+offset_left = 486.0
+offset_top = 908.0
+offset_right = 816.0
+offset_bottom = 1028.0
+rotation = -0.14
+pivot_offset = Vector2(165, 60)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("ImprintLine")
+
+[node name="Word" type="Label" parent="Page/Form/Grade"]
+layout_mode = 0
+offset_right = 330.0
+offset_bottom = 120.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 52
+text = "EXEMPLARY"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="File" type="Panel" parent="Page/Form"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 1072.0
+offset_right = 816.0
+offset_bottom = 1156.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxLine")
+
+[node name="Word" type="Label" parent="Page/Form/File"]
+layout_mode = 0
+offset_right = 772.0
+offset_bottom = 84.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 44
+text = "FILE REPORT"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Paper" type="MeshInstance3D" parent="."]
+gi_mode = 0
+cast_shadow = 0
+extra_cull_margin = 0.3
+mesh = SubResource("ReportPlane")
+material_override = SubResource("ReportMat")
+
+[node name="Slide" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_slide")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Strike" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_strike")
+bus = &"SFX"
+script = ExtResource("sfx_cue")

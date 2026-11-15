@@ -1,8 +1,9 @@
 [gd_scene format=3]
 
-[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_wall_steel_post.res" id="1_post"]
-[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_wall_steel_arm.res" id="2_arm"]
-[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_wall_steel_rubble.res" id="3_rubble"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/maquette_wall_steel_post.res" id="1_post"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/maquette_wall_steel_arm.res" id="2_arm"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/maquette_wall_steel_rubble.res" id="3_rubble"]
+[ext_resource type="Script" path="res://entities/war/buildings/rubble_turn.gd" id="4_turn"]
 
 [sub_resource type="BoxShape3D" id="Box"]
 size = Vector3(0.05, 0.076, 0.05)
@@ -40,6 +41,7 @@ mesh = ExtResource("2_arm")
 visible = false
 gi_mode = 0
 mesh = ExtResource("3_rubble")
+script = ExtResource("4_turn")
 
 [node name="Body" type="StaticBody3D" parent="."]
 

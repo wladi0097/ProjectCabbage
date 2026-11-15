@@ -300,30 +300,51 @@ Needs every farm in Kohlmark (8). The 19% tax on cabbages is abolished and the c
 	{id = "sea_lanes", price = 200000, currency = "findings", also = {coins = 12000000}, farms = 13, title = "SEA LANES", needs = ["no_taxes"],
 		body = "Water is not a border. It is a delay.
 Needs 13 farms. The sea lanes drawn on the world chart are opened: farms in a country across a lane from one that is wholly ours can be attacked."},
-	# The war line (research/war-contract.md): beside the main line from the first law on (the home
-	# farms 6 to 8 are the field associates' tutorials), one card after the other, spread over the
-	# farms taken abroad by `farms`. No effect here: WarRules (entities/war/war_rules.gd) reads
-	# save.stamped (unit types, army cap, mid-round placing, the retreat share). EXPAND THE FIELD
-	# WORKFORCE is dealt by the boss's WE NEED BIGGER ARMIES paper (GameEvents "bigger_armies_memo").
-	# Parked 2026-11-14: the unit cards unit_compliance, unit_senior and unit_pult are out (their copy,
-	# figures and WarRules data are kept) until the unit types are planned with the user.
-	# Prices paced with the fights (tools/pace.py ch3, war pass 2026-11-14).
+	# The war line (research/war-contract.md): beside the main line from the world map on, never behind
+	# the first law (the home farms 6 to 8 are the field associates' tutorials; research/war-maps.md
+	# finding 2), one card after the other, spread over the farms taken abroad by `farms`. No effect
+	# here: WarRules (entities/war/war_rules.gd) reads save.stamped (unit types, army cap, mid-round
+	# placing, the retreat share). EXPAND THE FIELD WORKFORCE is dealt by the boss's WE NEED BIGGER
+	# ARMIES paper (GameEvents "bigger_armies_memo").
+	# The unit cards (research/war-units.md section 6) hire one unit type each (WarRules.UNIT_CARD), in
+	# the order the maps need them: the charge after K-8 (before Veldmark's masonry ring), the senior
+	# asset before Sulvania, the pult crew before Grauland's shredders, the courier before Morrow.
+	# Prices paced with the fights (tools/pace.py ch3, war pass 2026-11-14; the unit cards' in the
+	# balance pass 2026-11-15, research/war-balance.md: each lands as soon as its `needs` and farms allow).
+	# The war line's first card, a plain form: the war sheet pencils a held figure's way to its first
+	# target only once this is stamped (WarSheet.ROUTE_CARD). Cheap, right after the world map (about
+	# 10 s of income at the sixth farm, tools/pace.py ch3).
+	{id = "route_planning", price = 1000000, farms = 6, title = "ISSUE PROJECTED ROUTE OVERLAYS", needs = ["world_map"],
+		body = "Staff routes are pencilled on the site plan before deployment. Deviations are noted.
+Needs 6 farms. While you hold a staff figure over a hatched zone, a pencil line on the war sheet shows the way it will walk to its first target."},
+	{id = "unit_charge", price = 3500000, farms = 8, title = "AUTHORISE RESTRUCTURING CHARGES", needs = ["route_planning"],
+		body = "Every wall is a regulatory matter. Some are settled on contact.
+Needs 8 farms. Restructuring charges join the personnel depot. Each walks straight at the first fence between it and the nearest defence and settles it on contact, itself included. Security grade takes two."},
 	{id = "bigger_armies", price = 4000000, farms = 10, title = "EXPAND THE FIELD WORKFORCE", event = "bigger_armies_memo", needs = ["no_taxes"],
 		body = "Headcount is the only strategy the board understands.
 Needs 10 farms. Two more staff of any kind may take the field in one war."},
-	{id = "tactics", price = 4500000, farms = 11, title = "AUTHORISE TACTICAL ADJUSTMENTS", needs = ["no_taxes"],
+	{id = "tactics", price = 4500000, farms = 10, title = "AUTHORISE TACTICAL ADJUSTMENTS", needs = ["unit_charge"],
 		body = "The plan may now be revised while it fails.
-Needs 11 farms. Staff may still be placed on a landing spot after the attack has started."},
-	{id = "retreat", price = 7000000, farms = 15, title = "STRATEGIC WITHDRAWAL PROTOCOL", needs = ["tactics"],
+Needs 10 farms. Staff may still be placed in a hatched zone after the attack has started."},
+	{id = "unit_senior", price = 5000000, farms = 11, title = "PROMOTE SENIOR ASSETS", needs = ["tactics"],
+		body = "Slow, expensive and very hard to remove. Like all senior staff.
+Needs 11 farms. Senior assets join the personnel depot. They go for the defences only, take a great deal of punishment on the way, and count as two staff in the field."},
+	{id = "unit_pult", price = 6000000, farms = 14, title = "COMMISSION CABBAGE-PULT CREWS", needs = ["unit_senior"],
+		body = "The cabbage has always been a projectile. Now it is a budget line.
+Needs 14 farms. Cabbage-pult crews join the personnel depot. They lob cabbages at the nearest defence from a distance, over any fence, and hit whatever stands next to it."},
+	{id = "retreat", price = 7000000, farms = 15, title = "STRATEGIC WITHDRAWAL PROTOCOL", needs = ["unit_pult"],
 		body = "It is not a retreat. It is a return to head office.
 Needs 15 farms. A war can be called off with a RETREAT button. 30% of the staff placed come home; the rest are written off."},
+	{id = "unit_courier", price = 8000000, farms = 17, title = "ENGAGE EXPRESS COURIERS", needs = ["retreat"],
+		body = "Next-day delivery. Signature not required.
+Needs 17 farms. Express couriers join the personnel depot. They ride fast, hop any fence and leave it standing, and deliver themselves to the nearest defence."},
 	# Chapter 3's end (`priority`, the end-of-chapter rule), last in the chain, so it reaches the tray
 	# only once the card before it is stamped: `farms` is a requirement, not a price: the
 	# company must own that many farms (save.farms_owned; all GameEvents.FARMS of them), none is spent
 	# (costs, spendable, pay). Stamped, the alpha's end popup comes (ui/sub/alpha_end); chapter 4 later.
 	# The farms are the wall (the last one is the final island); the coins and Findings on top are a
 	# last lap. PROVISIONAL price (tools/pace.py ch3).
-	{id = "stars", price = 10000000, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "retreat"],
+	{id = "stars", price = 10000000, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "retreat", "unit_courier"],
 		body = "There is nothing left to buy down here.
 Needs all 24 farms: the field line counts them. Stamped, the board looks up."},
 	# Optional (no card needs it; one of GameEvents.DRY_LEFT). No effect here: the map table puts TO
@@ -759,8 +780,20 @@ static func migrate(save: SaveGame) -> void:
 		save.stamped.append(FarmRegister.WAR_CARD)  # Past the war card before it existed (farms seized, countries annexed): filed; the farms stay.
 	if save.stamped.has(FarmRegister.BRIBE) and not save.stamped.has(FarmRegister.RECOVER):
 		save.stamped.append(FarmRegister.RECOVER)  # BRIBERY stamped before the card it now follows existed: filed.
+	if save.migration < 7:
+		drop_retired_units(save)
 	save.migration = SaveGame.MIGRATION
 	save.sale_price = mini(save.sale_price, PriceSlate.max_price(save.marketing))
+
+
+## Figures of unit types that no longer exist (the compliance officer) leave the army, the training
+## queue and a war under way.
+static func drop_retired_units(save: SaveGame) -> void:
+	for counts: Dictionary in [save.army, save.war_pending]:
+		for unit: String in counts.keys():
+			if unit not in WarRules.UNITS:
+				counts.erase(unit)
+	save.army_training = save.army_training.filter(func(e: Dictionary) -> bool: return e.unit in WarRules.UNITS)
 
 
 ## Stock a loaded save holds, at most what storage can hold now (a save from a build with more room,

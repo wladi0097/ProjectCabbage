@@ -1,0 +1,111 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_v4grq"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_rshj1"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/hedge.tscn" id="3_lji42"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cctv.tscn" id="4_v0d3a"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/wall_stone.tscn" id="5_nmagm"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="6_ynnxt"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="7_ijjem"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/field.tscn" id="8_rpnmh"]
+
+[node name="Veldmark2" type="Node3D" unique_id=2036897992]
+script = ExtResource("1_v4grq")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 5,
+&"cabbages": 3000,
+&"k": 1.3900000000000001,
+&"style": "mixed"
+}
+site_name = "VISITOR MANAGEMENT"
+briefing = "Visitors are logged once visible. They are visible on arrival."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=1732889796 instance=ExtResource("2_rshj1")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 5, 0.24, 0, 0.88)
+
+[node name="Zone2" type="Node3D" parent="." unique_id=1938006398 instance=ExtResource("2_rshj1")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 0.08)
+
+[node name="Hedge1" type="Node3D" parent="." unique_id=192283774 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.08)
+
+[node name="Hedge2" type="Node3D" parent="." unique_id=1003834005 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.24)
+
+[node name="Hedge3" type="Node3D" parent="." unique_id=1592701587 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.39999998)
+
+[node name="Hedge4" type="Node3D" parent="." unique_id=1372537741 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.56)
+
+[node name="Hedge5" type="Node3D" parent="." unique_id=1093176210 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.71999997)
+
+[node name="Hedge6" type="Node3D" parent="." unique_id=4506503 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.88)
+
+[node name="Hedge7" type="Node3D" parent="." unique_id=1565146770 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 1.04)
+
+[node name="Hedge8" type="Node3D" parent="." unique_id=1906604927 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.71999997)
+
+[node name="Hedge9" type="Node3D" parent="." unique_id=1766320328 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.88)
+
+[node name="Hedge10" type="Node3D" parent="." unique_id=630778927 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 1.04)
+
+[node name="Hedge11" type="Node3D" parent="." unique_id=770544274 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 1.1999999)
+
+[node name="Hedge12" type="Node3D" parent="." unique_id=604422450 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 1.36)
+
+[node name="Hedge13" type="Node3D" parent="." unique_id=862825880 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 1.52)
+
+[node name="Hedge14" type="Node3D" parent="." unique_id=1854100787 instance=ExtResource("3_lji42")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 1.68)
+
+[node name="Cctv1" type="Node3D" parent="." unique_id=1376670734 instance=ExtResource("4_v0d3a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 0.88)
+
+[node name="WallStone1" type="Node3D" parent="." unique_id=2145129837 instance=ExtResource("5_nmagm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 0.24)
+
+[node name="WallStone2" type="Node3D" parent="." unique_id=1531869339 instance=ExtResource("5_nmagm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 0.24)
+
+[node name="WallStone3" type="Node3D" parent="." unique_id=284954374 instance=ExtResource("5_nmagm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6399999, 0, 0.24)
+
+[node name="WallStone4" type="Node3D" parent="." unique_id=1506927331 instance=ExtResource("5_nmagm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 0.56)
+
+[node name="WallStone5" type="Node3D" parent="." unique_id=1478352736 instance=ExtResource("5_nmagm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 0.56)
+
+[node name="WallStone6" type="Node3D" parent="." unique_id=54962355 instance=ExtResource("5_nmagm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6399999, 0, 0.56)
+
+[node name="WallStone7" type="Node3D" parent="." unique_id=745952426 instance=ExtResource("5_nmagm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 0.39999998)
+
+[node name="WallStone8" type="Node3D" parent="." unique_id=842331321 instance=ExtResource("5_nmagm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6399999, 0, 0.39999998)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=906492712 instance=ExtResource("6_ynnxt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 0.39999998)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=261324827 instance=ExtResource("7_ijjem")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.56, 0, 0.96)
+
+[node name="Field1" type="Node3D" parent="." unique_id=1432771978 instance=ExtResource("8_rpnmh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.39999998, 0, 0.16)
+size = Vector2i(3, 2)
+
+[node name="Field2" type="Node3D" parent="." unique_id=780204414 instance=ExtResource("8_rpnmh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 1.4399999)
+size = Vector2i(5, 2)

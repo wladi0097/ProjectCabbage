@@ -103,14 +103,17 @@ func test_a_countrys_sheet_is_its_farm_register_and_wears_its_name() -> void:
 func test_the_lettering_is_printed_on_the_paper_so_it_rolls_up_with_it() -> void:
 	for id: String in SHEETS:
 		var sheet := _sheet(id)
-		assert_int(_labels(sheet).size()).override_failure_message(id).is_greater(20)
-		# The only lettering off the paper is the name tag on its roll.
-		assert_array(sheet.find_children("*", "Label3D", true, false)).is_equal([sheet.get_node("Core/Tag/Name")])
+		if id != "war":  # The war sheet is all battlefield: no lettering on its paper.
+			assert_int(_labels(sheet).size()).override_failure_message(id).is_greater(20)
+		# The only lettering off the paper is the name tag on its roll (and the war's control box, a desk prop).
+		var off_paper := sheet.find_children("*", "Label3D", true, false).filter(func(l: Node) -> bool:
+			return not sheet.has_node("Control") or not sheet.get_node("Control").is_ancestor_of(l))
+		assert_array(off_paper).is_equal([sheet.get_node("Core/Tag/Name")])
 		var paper: ShaderMaterial = sheet.get_node("Paper").material_override
 		assert_object(paper.get_shader_parameter("sheet_tex")).is_not_null()
 
 
-func test_the_sheets_carry_their_title_blocks_farm_names_and_country_names() -> void:
+func test_the_sheets_carry_their_title_blocks_farm_names_and_country_names_and_the_war_sheet_only_its_title_block() -> void:
 	for id: String in SHEETS.slice(2):
 		var texts := _texts(_sheet(id))
 		assert_array(texts).override_failure_message(id).contains([_labels_json().country_maps[id].capital.name])
@@ -119,15 +122,18 @@ func test_the_sheets_carry_their_title_blocks_farm_names_and_country_names() -> 
 	assert_array(_texts(_sheet("kohlmark"))).contains(["KOHLMARK - NATIONAL FARM REGISTER", "WIRSINGEN"])
 	assert_array(_texts(_sheet("world"))).contains(
 			["WORLD MARKETS - GENERAL CHART", "Kohlmark", "The Lower Provinces", "Endmark Isle", "Grey Sea"])
-	assert_array(_texts(_sheet("war"))).contains(["FORM 9-T  THEATRE OF OPERATIONS", "THEATRE OF OPERATIONS - FARM SITE",
-			"PERSONNEL IN THEATRE", "START"])
+	var war := _sheet("war")  # The paper is the battlefield: only the end's stamp and the small title block in its corner.
+	var block := war.get_node("Page/Sheet/TitleBlock")
+	assert_array(_labels(war).filter(func(l: Label) -> bool: return not block.is_ancestor_of(l)).map(func(l: Label) -> String: return l.text)) 			.is_equal(["VICTORY"])
 
 
 func test_lettering_too_small_to_read_from_the_map_camera_is_left_off_outside_the_title_block() -> void:
 	# 1 px of the art is 1 mm of the desk. The title blocks sit in the sheets' bottom right.
 	for id: String in SHEETS:
-		for label in _labels(_sheet(id)):
-			var centre := label.position + label.size / 2.0
+		var sheet := _sheet(id)
+		var art := sheet.get_node("Page/Sheet") as Control
+		for label in _labels(sheet):
+			var centre := art.get_global_transform().affine_inverse() * label.get_global_rect().get_center()
 			if label.get_theme_font_size(&"font_size") < 19:
 				assert_bool(centre.x > 2200.0 and centre.y > 1300.0) \
 						.override_failure_message("%s: %s is too small to read" % [id, label.text]).is_true()

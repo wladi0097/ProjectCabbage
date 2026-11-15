@@ -1,6 +1,5 @@
 [gd_scene format=3]
 
-[ext_resource type="PackedScene" path="res://entities/components/upgrade_tree/upgrade_tree.tscn" id="1_tree"]
 [ext_resource type="Texture2D" path="res://assets/sprites/icons/cabbage_icon.svg" id="2_cabbage"]
 
 [sub_resource type="StyleBoxFlat" id="Plate"]
@@ -31,16 +30,36 @@ expand_margin_left = 0.0
 shadow_color = Color(0.11, 0.125, 0.118, 0.25)
 shadow_offset = Vector2(5, 6)
 
+[sub_resource type="StyleBoxFlat" id="Track"]
+bg_color = Color(0.875, 0.886, 0.851, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.11, 0.125, 0.118, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="Badge"]
+bg_color = Color(0.11, 0.125, 0.118, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+corner_detail = 12
+
 [node name="DepotColumn" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 680.0
-offset_bottom = 1480.0
+offset_right = 560.0
+offset_bottom = 676.0
 mouse_filter = 2
 
 [node name="Name" type="Label" parent="."]
 layout_mode = 0
-offset_right = 680.0
+offset_right = 560.0
 offset_bottom = 70.0
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
@@ -52,30 +71,52 @@ vertical_alignment = 1
 [node name="Rule" type="ColorRect" parent="."]
 layout_mode = 0
 offset_top = 74.0
-offset_right = 680.0
+offset_right = 560.0
 offset_bottom = 78.0
 mouse_filter = 2
 color = Color(0.11, 0.125, 0.118, 1)
 
+[node name="News" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 92.0
+offset_right = 556.0
+offset_bottom = 148.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Badge")
+
+[node name="Mark" type="Label" parent="News"]
+layout_mode = 0
+offset_right = 56.0
+offset_bottom = 56.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.45, 0.85, 0.92, 1)
+theme_override_font_sizes/font_size = 40
+text = "¶"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Stage" type="Control" parent="."]
 layout_mode = 0
-offset_left = 150.0
+offset_left = 130.0
 offset_top = 300.0
-offset_right = 150.0
+offset_right = 130.0
 offset_bottom = 300.0
 mouse_filter = 2
 
 [node name="Hp" type="Panel" parent="."]
 layout_mode = 0
 offset_top = 552.0
-offset_right = 330.0
+offset_right = 270.0
 offset_bottom = 610.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("Plate")
 
 [node name="Text" type="Label" parent="Hp"]
 layout_mode = 0
-offset_right = 330.0
+offset_left = 8.0
+offset_right = 262.0
 offset_bottom = 60.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -87,16 +128,17 @@ vertical_alignment = 1
 
 [node name="Damage" type="Panel" parent="."]
 layout_mode = 0
-offset_left = 350.0
+offset_left = 290.0
 offset_top = 552.0
-offset_right = 680.0
+offset_right = 560.0
 offset_bottom = 610.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("Plate")
 
 [node name="Text" type="Label" parent="Damage"]
 layout_mode = 0
-offset_right = 330.0
+offset_left = 8.0
+offset_right = 262.0
 offset_bottom = 60.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -109,14 +151,15 @@ vertical_alignment = 1
 [node name="Speed" type="Panel" parent="."]
 layout_mode = 0
 offset_top = 618.0
-offset_right = 330.0
+offset_right = 270.0
 offset_bottom = 676.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("Plate")
 
 [node name="Text" type="Label" parent="Speed"]
 layout_mode = 0
-offset_right = 330.0
+offset_left = 8.0
+offset_right = 262.0
 offset_bottom = 60.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -128,16 +171,17 @@ vertical_alignment = 1
 
 [node name="Target" type="Panel" parent="."]
 layout_mode = 0
-offset_left = 350.0
+offset_left = 290.0
 offset_top = 618.0
-offset_right = 680.0
+offset_right = 560.0
 offset_bottom = 676.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("Plate")
 
 [node name="Text" type="Label" parent="Target"]
 layout_mode = 0
-offset_right = 330.0
+offset_left = 8.0
+offset_right = 262.0
 offset_bottom = 60.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -149,8 +193,9 @@ vertical_alignment = 1
 
 [node name="Ready" type="Label" parent="."]
 layout_mode = 0
+offset_left = -10.0
 offset_top = 430.0
-offset_right = 300.0
+offset_right = 270.0
 offset_bottom = 520.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
@@ -162,10 +207,10 @@ vertical_alignment = 1
 
 [node name="Price" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 300.0
-offset_top = 376.0
-offset_right = 520.0
-offset_bottom = 424.0
+offset_left = 270.0
+offset_top = 352.0
+offset_right = 470.0
+offset_bottom = 400.0
 mouse_filter = 2
 theme_override_constants/separation = 8
 alignment = 1
@@ -190,19 +235,19 @@ vertical_alignment = 1
 
 [node name="Hire" type="Panel" parent="."]
 layout_mode = 0
-offset_left = 300.0
-offset_top = 150.0
-offset_right = 520.0
-offset_bottom = 370.0
+offset_left = 270.0
+offset_top = 146.0
+offset_right = 470.0
+offset_bottom = 346.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("Round")
 
 [node name="Word" type="Label" parent="Hire"]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 200.0
-offset_bottom = 200.0
+offset_left = 28.0
+offset_top = 24.0
+offset_right = 172.0
+offset_bottom = 176.0
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
 theme_override_font_sizes/font_size = 36
@@ -214,80 +259,69 @@ autowrap_mode = 2
 
 [node name="Trainee" type="Control" parent="."]
 layout_mode = 0
-offset_left = 605.0
+offset_left = 515.0
 offset_top = 300.0
-offset_right = 605.0
+offset_right = 515.0
 offset_bottom = 300.0
 mouse_filter = 2
 
-[node name="Line" type="ColorRect" parent="."]
+[node name="Line" type="Panel" parent="."]
 layout_mode = 0
-offset_left = 545.0
-offset_top = 356.0
-offset_right = 665.0
-offset_bottom = 370.0
+offset_left = 468.0
+offset_top = 350.0
+offset_right = 562.0
+offset_bottom = 376.0
 mouse_filter = 2
-color = Color(0.11, 0.125, 0.118, 0.3)
+theme_override_styles/panel = SubResource("Track")
 
 [node name="Fill" type="ColorRect" parent="Line"]
 layout_mode = 0
-offset_right = 0.0
-offset_bottom = 14.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 5.0
+offset_bottom = 21.0
 mouse_filter = 2
-color = Color(0.11, 0.125, 0.118, 1)
+color = Color(0.37, 0.62, 0.13, 1)
 
-[node name="More" type="Label" parent="."]
+[node name="Left" type="Label" parent="."]
 layout_mode = 0
-offset_left = 662.0
-offset_top = 276.0
-offset_right = 742.0
-offset_bottom = 330.0
+offset_left = 462.0
+offset_top = 376.0
+offset_right = 522.0
+offset_bottom = 414.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 56
+theme_override_font_sizes/font_size = 30
+text = "12 s"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="More" type="Label" parent="."]
+layout_mode = 0
+offset_left = 522.0
+offset_top = 374.0
+offset_right = 566.0
+offset_bottom = 416.0
+auto_translate_mode = 2
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 38
 text = "+2"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Note" type="Label" parent="."]
 layout_mode = 0
 offset_left = 250.0
-offset_top = 424.0
-offset_right = 680.0
-offset_bottom = 466.0
+offset_top = 404.0
+offset_right = 480.0
+offset_bottom = 484.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
 theme_override_font_sizes/font_size = 30
+theme_override_constants/line_spacing = -6
 text = "STAFF AT CAPACITY"
 horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ResearchHead" type="Label" parent="."]
-layout_mode = 0
-offset_top = 690.0
-offset_right = 680.0
-offset_bottom = 742.0
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 38
-text = "DEVELOPMENT PROGRAMME"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Rule2" type="ColorRect" parent="."]
-layout_mode = 0
-offset_top = 746.0
-offset_right = 680.0
-offset_bottom = 749.0
-mouse_filter = 2
-color = Color(0.11, 0.125, 0.118, 1)
-
-[node name="Tree" parent="." instance=ExtResource("1_tree")]
-popup_shown = false
-layout_mode = 0
-offset_top = 758.0
-offset_right = 680.0
-offset_bottom = 1480.0
-ground = Color(0.875, 0.886, 0.851, 1)
-beam = Color(0.9, 0.91, 0.88, 1)
+autowrap_mode = 3

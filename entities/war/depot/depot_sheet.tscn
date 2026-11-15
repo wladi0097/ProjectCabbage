@@ -18,6 +18,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_set_down_3.wav" id="sfx_land_3"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_press_hop.wav" id="sfx_hop"]
 [ext_resource type="Material" path="res://assets/meshes/Army/army_plastic_grey.tres" id="5_grey"]
+[ext_resource type="PackedScene" path="res://entities/components/upgrade_tree/upgrade_tree.tscn" id="6_tree"]
 [sub_resource type="AudioStreamRandomizer" id="Rand_denied"]
 random_pitch = 1.03
 random_volume_offset_db = 1.0
@@ -70,73 +71,108 @@ offset_right = 3200.0
 offset_bottom = 1800.0
 mouse_filter = 2
 
-[node name="FormLine" type="Label" parent="Page/Sheet"]
+[node name="ResearchHead" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 2300.0
-offset_top = 1492.0
-offset_right = 3080.0
-offset_bottom = 1564.0
+offset_left = 110.0
+offset_top = 828.0
+offset_right = 2450.0
+offset_bottom = 878.0
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 46
+text = "DEVELOPMENT PROGRAMME"
+vertical_alignment = 1
+
+[node name="ResearchRule" type="ColorRect" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 110.0
+offset_top = 894.0
+offset_right = 2450.0
+offset_bottom = 898.0
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 1)
+
+[node name="Tree" parent="Page/Sheet" instance=ExtResource("6_tree")]
+popup_scale = 2.0
+hub_at = Vector2(0.5, 0.326)
+layout_mode = 0
+offset_left = 110.0
+offset_top = 900.0
+offset_right = 2450.0
+offset_bottom = 1720.0
+ground = Color(0.875, 0.886, 0.851, 1)
+beam = Color(0.9, 0.91, 0.88, 1)
+
+[node name="Title" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2500.0
+offset_top = 852.0
+offset_right = 3080.0
+offset_bottom = 1064.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 68
+theme_override_constants/line_spacing = -12
+text = "PERSONNEL DEPOT"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="FormLine" type="Label" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 2500.0
+offset_top = 1088.0
+offset_right = 3080.0
+offset_bottom = 1156.0
+theme_type_variation = &"FormLabel"
+theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
+theme_override_font_sizes/font_size = 28
 text = "FORM 7-P  PERSONNEL REQUISITION"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Title" type="Label" parent="Page/Sheet"]
+[node name="L26" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 2300.0
-offset_top = 1374.0
-offset_right = 2938.0
-offset_bottom = 1492.0
+offset_left = 2692.0
+offset_top = 1273.0
+offset_right = 2888.0
+offset_bottom = 1327.0
+rotation = -0.24435
+pivot_offset = Vector2(98, 27)
 theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 56
-text = "PERSONNEL DEPOT"
+theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
+theme_override_font_sizes/font_size = 46
+text = "FILED"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Staff" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 2310.0
-offset_top = 1566.0
-offset_right = 2760.0
-offset_bottom = 1680.0
+offset_left = 2510.0
+offset_top = 1452.0
+offset_right = 3070.0
+offset_bottom = 1600.0
 auto_translate_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 60
+theme_override_font_sizes/font_size = 84
 text = "STAFF 0 / 3"
-horizontal_alignment = 0
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="StaffNote" type="Label" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 2760.0
-offset_top = 1570.0
-offset_right = 3070.0
-offset_bottom = 1676.0
+offset_left = 2520.0
+offset_top = 1612.0
+offset_right = 3060.0
+offset_bottom = 1708.0
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 19
+theme_override_font_sizes/font_size = 26
 text = "Staff in training count towards the limit."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
-[node name="L26" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 2944.0
-offset_top = 1440.0
-offset_right = 3074.0
-offset_bottom = 1494.0
-rotation = -0.24435
-pivot_offset = Vector2(65, 27)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
-theme_override_font_sizes/font_size = 31
-text = "FILED"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 
 [node name="Denied" type="AudioStreamPlayer3D" parent="."]

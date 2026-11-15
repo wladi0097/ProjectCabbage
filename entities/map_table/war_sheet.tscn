@@ -7,8 +7,8 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_refuse_1.wav" id="sfx_refuse"]
 [ext_resource type="PackedScene" path="res://entities/war/maps/test_map.tscn" id="5_map"]
 [ext_resource type="Script" path="res://entities/war/fight/fight_view.gd" id="6_view"]
-[ext_resource type="Script" path="res://entities/war/fight/grid_print.gd" id="7_grid"]
-[ext_resource type="PackedScene" path="res://entities/war/fight/tray_row.tscn" id="8_row"]
+[ext_resource type="PackedScene" path="res://entities/war/fight/war_control.tscn" id="8_control"]
+[ext_resource type="PackedScene" path="res://entities/map_table/war_report.tscn" id="9_report"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_cannon_1.wav" id="sfx_war_cannon_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_cannon_2.wav" id="sfx_war_cannon_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_cannon_3.wav" id="sfx_war_cannon_3"]
@@ -44,14 +44,11 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_tick_1.wav" id="sfx_war_tick_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_tick_2.wav" id="sfx_war_tick_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_retreat.wav" id="sfx_war_retreat"]
-
-[sub_resource type="StyleBoxFlat" id="HotBox"]
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 8
-border_width_top = 8
-border_width_right = 8
-border_width_bottom = 8
-border_color = Color(0.416, 0.169, 0.157, 1)
+[ext_resource type="Script" path="res://entities/map_table/war_ink.gd" id="10_ink"]
+[ext_resource type="PackedScene" path="res://entities/map_table/war_slip.tscn" id="11_slip"]
+[ext_resource type="PackedScene" path="res://entities/hand/hand_model.tscn" id="12_glove"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_1.wav" id="sfx_deed_stamp_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_2.wav" id="sfx_deed_stamp_2"]
 
 [sub_resource type="BoxShape3D" id="FloorBox"]
 size = Vector3(3.2, 0.02, 1.8)
@@ -191,6 +188,36 @@ random_volume_offset_db = 1.0
 streams_count = 1
 stream_0/stream = ExtResource("sfx_war_retreat")
 
+[sub_resource type="AudioStreamRandomizer" id="Rand_root_Beat"]
+random_pitch = 1.02
+random_volume_offset_db = 1.0
+streams_count = 2
+stream_0/stream = ExtResource("sfx_deed_stamp_1")
+stream_1/stream = ExtResource("sfx_deed_stamp_2")
+
+[sub_resource type="StyleBoxFlat" id="TitleBlockLine"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.11, 0.125, 0.118, 0.9)
+
+[sub_resource type="ViewportTexture" id="PencilTex"]
+viewport_path = NodePath("PencilPage")
+
+[sub_resource type="StandardMaterial3D" id="PencilMat"]
+resource_local_to_scene = true
+render_priority = 10
+transparency = 1
+no_depth_test = true
+shading_mode = 0
+albedo_texture = SubResource("PencilTex")
+
+[sub_resource type="PlaneMesh" id="PencilPlane"]
+size = Vector2(3.2, 1.8)
+center_offset = Vector3(0, 0, 0.9)
+
 [node name="WarSheet" instance=ExtResource("1_sheet")]
 script = ExtResource("4_register")
 id = &"war"
@@ -200,253 +227,13 @@ roll_name = "WAR"
 [node name="Art" parent="Page/Sheet" index="0"]
 texture = ExtResource("2_art")
 
-[node name="L02" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 110.0
-offset_top = 112.0
-offset_right = 1010.0
-offset_bottom = 170.0
-pivot_offset = Vector2(450, 29)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "FORM 9-T  THEATRE OF OPERATIONS"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Farm" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 110.0
-offset_top = 182.0
-offset_right = 1010.0
-offset_bottom = 262.0
-pivot_offset = Vector2(450, 40)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 54
-text = "Objective"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Country" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 110.0
-offset_top = 262.0
-offset_right = 1010.0
-offset_bottom = 326.0
-pivot_offset = Vector2(450, 32)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 38
-text = "Country"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Grid" type="Control" parent="Page/Sheet"]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 1110.0
-offset_top = 400.0
-offset_right = 3030.0
-offset_bottom = 1680.0
-mouse_filter = 2
-script = ExtResource("7_grid")
-
-[node name="FieldCaption" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 1110.0
-offset_top = 330.0
-offset_right = 2500.0
-offset_bottom = 395.0
-pivot_offset = Vector2(695, 32)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 34
-text = "THEATRE OF OPERATIONS - FARM SITE"
-horizontal_alignment = 0
-vertical_alignment = 1
-
-[node name="TrayTitle" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 110.0
-offset_top = 382.0
-offset_right = 1010.0
-offset_bottom = 438.0
-pivot_offset = Vector2(450, 28)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 30
-text = "PERSONNEL IN THEATRE"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Row0" parent="Page/Sheet" instance=ExtResource("8_row")]
-offset_left = 110.0
-offset_top = 440.0
-offset_right = 1010.0
-offset_bottom = 640.0
-
-[node name="Row1" parent="Page/Sheet" instance=ExtResource("8_row")]
-offset_left = 110.0
-offset_top = 640.0
-offset_right = 1010.0
-offset_bottom = 840.0
-
-[node name="Row2" parent="Page/Sheet" instance=ExtResource("8_row")]
-offset_left = 110.0
-offset_top = 840.0
-offset_right = 1010.0
-offset_bottom = 1040.0
-
-[node name="Row3" parent="Page/Sheet" instance=ExtResource("8_row")]
-offset_left = 110.0
-offset_top = 1040.0
-offset_right = 1010.0
-offset_bottom = 1240.0
-
-[node name="ControlsTitle" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 110.0
-offset_top = 1292.0
-offset_right = 1010.0
-offset_bottom = 1348.0
-pivot_offset = Vector2(450, 28)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 30
-text = "ENGAGEMENT CONTROL"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ClockCaption" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 140.0
-offset_top = 1392.0
-offset_right = 480.0
-offset_bottom = 1440.0
-pivot_offset = Vector2(170, 24)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 24
-text = "TIME REMAINING"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Clock" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 140.0
-offset_top = 1440.0
-offset_right = 480.0
-offset_bottom = 1600.0
-pivot_offset = Vector2(170, 80)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 110
-text = "1:30"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ClockNote" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 140.0
-offset_top = 1595.0
-offset_right = 480.0
-offset_bottom = 1645.0
-pivot_offset = Vector2(170, 25)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 20
-text = "Overtime is not authorised."
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Start" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 510.0
-offset_top = 1380.0
-offset_right = 980.0
-offset_bottom = 1475.0
-pivot_offset = Vector2(235, 47)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 56
-text = "START"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="StartNote" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 510.0
-offset_top = 1460.0
-offset_right = 980.0
-offset_bottom = 1500.0
-pivot_offset = Vector2(235, 20)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 19
-text = "Commits all staff placed. No refunds."
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="StartHot" type="Panel" parent="Page/Sheet"]
-visible = false
-layout_mode = 0
-offset_left = 510.0
-offset_top = 1380.0
-offset_right = 980.0
-offset_bottom = 1505.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("HotBox")
-
-[node name="Retreat" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 510.0
-offset_top = 1525.0
-offset_right = 980.0
-offset_bottom = 1620.0
-pivot_offset = Vector2(235, 47)
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 56
-text = "RETREAT"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="RetreatNote" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 510.0
-offset_top = 1605.0
-offset_right = 980.0
-offset_bottom = 1645.0
-pivot_offset = Vector2(235, 20)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 19
-text = "30% of staff placed return"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="RetreatHot" type="Panel" parent="Page/Sheet"]
-visible = false
-layout_mode = 0
-offset_left = 510.0
-offset_top = 1525.0
-offset_right = 980.0
-offset_bottom = 1650.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("HotBox")
-
 [node name="Imprint" type="Label" parent="Page/Sheet"]
 visible = false
 layout_mode = 0
-offset_left = 60.0
-offset_top = 640.0
-offset_right = 1060.0
-offset_bottom = 1000.0
+offset_left = 2080.0
+offset_top = 150.0
+offset_right = 3080.0
+offset_bottom = 510.0
 rotation = -0.20944
 autowrap_mode = 3
 pivot_offset = Vector2(500, 180)
@@ -457,413 +244,116 @@ text = "VICTORY"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="L15" type="Label" parent="Page/Sheet"]
+[node name="Ink" type="Control" parent="Page/Sheet"]
 layout_mode = 0
-offset_left = 2080.0
-offset_top = 76.0
-offset_right = 3480.0
-offset_bottom = 196.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
+offset_right = 3200.0
+offset_bottom = 1800.0
+mouse_filter = 2
+script = ExtResource("10_ink")
+
+[node name="TitleBlock" type="Panel" parent="Page/Sheet"]
+layout_mode = 0
+offset_left = 3044.0
+offset_top = 1306.0
+offset_right = 3192.0
+offset_bottom = 1690.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("TitleBlockLine")
+
+[node name="Box" type="VBoxContainer" parent="Page/Sheet/TitleBlock"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 5.0
+offset_right = 140.0
+offset_bottom = 380.0
+mouse_filter = 2
+theme_override_constants/separation = 3
+
+[node name="Form" type="Label" parent="Page/Sheet/TitleBlock/Box"]
+layout_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 47
-text = "N"
-horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 15
+theme_override_constants/line_spacing = -4
+text = "FORM 9-T"
 
-[node name="L27" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = -435.0
-offset_top = -6.0
-offset_right = 965.0
-offset_bottom = 114.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
+[node name="Rule1" type="ColorRect" parent="Page/Sheet/TitleBlock/Box"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 0.9)
+
+[node name="Code" type="Label" parent="Page/Sheet/TitleBlock/Box"]
+layout_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "A"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L28" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = -435.0
-offset_top = 1686.0
-offset_right = 965.0
-offset_bottom = 1806.0
-pivot_offset = Vector2(700, 60)
+theme_override_font_sizes/font_size = 20
+theme_override_constants/line_spacing = -4
+text = "SITE K-7"
 auto_translate_mode = 2
+
+[node name="Site" type="Label" parent="Page/Sheet/TitleBlock/Box"]
+layout_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "A"
-horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 18
+theme_override_constants/line_spacing = -4
+text = "THE SUPERVISED PLOT"
+autowrap_mode = 3
+max_lines_visible = 3
 
-[node name="L29" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = -54.0
-offset_top = -6.0
-offset_right = 1346.0
-offset_bottom = 114.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
+[node name="Rule2" type="ColorRect" parent="Page/Sheet/TitleBlock/Box"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 0.9)
+
+[node name="Sheet" type="Label" parent="Page/Sheet/TitleBlock/Box"]
+layout_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "B"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L30" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = -54.0
-offset_top = 1686.0
-offset_right = 1346.0
-offset_bottom = 1806.0
-pivot_offset = Vector2(700, 60)
+theme_override_font_sizes/font_size = 20
+theme_override_constants/line_spacing = -4
+text = "SHEET 7 OF 19"
 auto_translate_mode = 2
+autowrap_mode = 3
+
+[node name="Scale" type="Label" parent="Page/Sheet/TitleBlock/Box"]
+layout_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "B"
-horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 16
+theme_override_constants/line_spacing = -4
+text = "SCALE 1:100"
 
-[node name="L31" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 328.0
-offset_top = -6.0
-offset_right = 1728.0
-offset_bottom = 114.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
+[node name="Rule3" type="ColorRect" parent="Page/Sheet/TitleBlock/Box"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.11, 0.125, 0.118, 0.9)
+
+[node name="Drawn" type="Label" parent="Page/Sheet/TitleBlock/Box"]
+layout_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "C"
-horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 14
+theme_override_constants/line_spacing = -4
+text = "DRAWN: ACQUISITIONS"
+autowrap_mode = 3
 
-[node name="L32" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 328.0
-offset_top = 1686.0
-offset_right = 1728.0
-offset_bottom = 1806.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
+[node name="Approved" type="Label" parent="Page/Sheet/TitleBlock/Box"]
+layout_mode = 2
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "C"
-horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 14
+theme_override_constants/line_spacing = -4
+text = "APPROVED: PENDING OUTCOME"
+autowrap_mode = 3
 
-[node name="L33" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 709.0
-offset_top = -6.0
-offset_right = 2109.0
-offset_bottom = 114.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "D"
-horizontal_alignment = 1
-vertical_alignment = 1
+[node name="Board" type="Node3D" parent="Things"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0, 0.02)
 
-[node name="L34" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 709.0
-offset_top = 1686.0
-offset_right = 2109.0
-offset_bottom = 1806.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "D"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L35" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 1091.0
-offset_top = -6.0
-offset_right = 2491.0
-offset_bottom = 114.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "E"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L36" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 1091.0
-offset_top = 1686.0
-offset_right = 2491.0
-offset_bottom = 1806.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "E"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L37" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 1472.0
-offset_top = -6.0
-offset_right = 2872.0
-offset_bottom = 114.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "F"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L38" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 1472.0
-offset_top = 1686.0
-offset_right = 2872.0
-offset_bottom = 1806.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "F"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L39" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 1854.0
-offset_top = -6.0
-offset_right = 3254.0
-offset_bottom = 114.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "G"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L40" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 1854.0
-offset_top = 1686.0
-offset_right = 3254.0
-offset_bottom = 1806.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "G"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L41" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 2235.0
-offset_top = -6.0
-offset_right = 3635.0
-offset_bottom = 114.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "H"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L42" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 2235.0
-offset_top = 1686.0
-offset_right = 3635.0
-offset_bottom = 1806.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "H"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L43" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = -646.0
-offset_top = 179.0
-offset_right = 754.0
-offset_bottom = 299.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "1"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L44" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 2446.0
-offset_top = 179.0
-offset_right = 3846.0
-offset_bottom = 299.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "1"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L45" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = -646.0
-offset_top = 510.0
-offset_right = 754.0
-offset_bottom = 630.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "2"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L46" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 2446.0
-offset_top = 510.0
-offset_right = 3846.0
-offset_bottom = 630.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "2"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L47" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = -646.0
-offset_top = 840.0
-offset_right = 754.0
-offset_bottom = 960.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "3"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L48" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 2446.0
-offset_top = 840.0
-offset_right = 3846.0
-offset_bottom = 960.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "3"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L49" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = -646.0
-offset_top = 1170.0
-offset_right = 754.0
-offset_bottom = 1290.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "4"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L50" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 2446.0
-offset_top = 1170.0
-offset_right = 3846.0
-offset_bottom = 1290.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "4"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L51" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = -646.0
-offset_top = 1501.0
-offset_right = 754.0
-offset_bottom = 1621.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "5"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="L52" type="Label" parent="Page/Sheet"]
-layout_mode = 0
-offset_left = 2446.0
-offset_top = 1501.0
-offset_right = 3846.0
-offset_bottom = 1621.0
-pivot_offset = Vector2(700, 60)
-auto_translate_mode = 2
-theme_type_variation = &"FormLabel"
-theme_override_colors/font_color = Color(0.11, 0.125, 0.118, 1)
-theme_override_font_sizes/font_size = 31
-text = "5"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Map" parent="Things" instance=ExtResource("5_map")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.49, 0, 0.4)
+[node name="Map" parent="Things/Board" instance=ExtResource("5_map")]
 
 [node name="Field" type="Node3D" parent="."]
 script = ExtResource("6_view")
@@ -876,7 +366,7 @@ collision_mask = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.9)
 shape = SubResource("FloorBox")
 
-[node name="Tray" type="Node3D" parent="Field"]
+[node name="Figures" type="Node3D" parent="Field"]
 
 [node name="Shots" type="Node3D" parent="Field"]
 
@@ -1022,3 +512,53 @@ script = ExtResource("sfx_cue")
 stream = SubResource("Rand_root_Retreat")
 bus = &"SFX"
 script = ExtResource("sfx_cue")
+
+[node name="Control" parent="." instance=ExtResource("8_control")]
+visible = false
+transform = Transform3D(0.92, 0, 0, 0, 0.92, 0, 0, 0, 0.92, -1.86, -0.018, 1.31)
+
+[node name="Report" parent="." instance=ExtResource("9_report")]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -0.45, 0.34, 0.18)
+
+[node name="Slip" parent="." instance=ExtResource("11_slip")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.93, 0.004, 0.69)
+
+[node name="Final" parent="." instance=ExtResource("11_slip")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0.3, 0.4)
+
+[node name="Beat" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_root_Beat")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+
+[node name="Glove" parent="." instance=ExtResource("12_glove")]
+visible = false
+size = 0.65
+
+[node name="PencilPage" type="SubViewport" parent="."]
+disable_3d = true
+transparent_bg = true
+size = Vector2i(1600, 900)
+render_target_update_mode = 1
+
+[node name="Sheet" type="Control" parent="PencilPage"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 3200.0
+offset_bottom = 1800.0
+scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+
+[node name="Pencil" type="Control" parent="PencilPage/Sheet"]
+layout_mode = 0
+offset_right = 3200.0
+offset_bottom = 1800.0
+mouse_filter = 2
+script = ExtResource("10_ink")
+
+[node name="PencilOverlay" type="MeshInstance3D" parent="."]
+visible = false
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("PencilPlane")
+material_override = SubResource("PencilMat")

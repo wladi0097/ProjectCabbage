@@ -142,3 +142,15 @@ func test_a_hand_puts_its_pose_anchor_on_the_target() -> void:
 
 	assert_vector(model.global_position + model.basis * HandModel.ANCHORS[HandModel.Pose.POINT]) \
 			.is_equal_approx(target, Vector3.ONE * 0.0001)
+
+
+func test_a_hand_on_a_turned_table_leans_with_the_motion_as_seen_from_that_table() -> void:
+	var table := Node3D.new()
+	table.rotate_y(PI / 2.0)  # The table's right is the world's -Z.
+	add_child(auto_free(table))
+	var model := SCENE.instantiate() as HandModel
+	table.add_child(model)
+	model.move_to(Vector3(1, 1, 0), 0.1)
+	model.move_to(Vector3(1, 1, -0.2), 0.1)  # Right across the table.
+	assert_float(model._sway.z).is_less(0.0)  # Rolls right.
+	assert_float(model._sway.x).is_equal_approx(0.0, 0.0001)  # Does not tip.

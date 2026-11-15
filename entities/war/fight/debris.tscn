@@ -1,0 +1,47 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/fight/puff.gd" id="1_puff"]
+
+[sub_resource type="StandardMaterial3D" id="Card"]
+vertex_color_use_as_albedo = true
+roughness = 0.9
+cull_mode = 2
+
+[sub_resource type="BoxMesh" id="Bit"]
+material = SubResource("Card")
+size = Vector3(0.022, 0.002, 0.016)
+
+[sub_resource type="Curve" id="Shrink"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.75, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Gradient" id="Tones"]
+offsets = PackedFloat32Array(0, 0.35, 0.7, 1)
+colors = PackedColorArray(0.8, 0.79, 0.72, 1, 0.55, 0.59, 0.52, 1, 0.68, 0.6, 0.46, 1, 0.24, 0.26, 0.25, 1)
+
+[node name="Debris" type="CPUParticles3D"]
+emitting = false
+amount = 16
+lifetime = 0.9
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("Bit")
+particle_flag_rotate_y = true
+emission_shape = 1
+emission_sphere_radius = 0.02
+direction = Vector3(0, 1, 0)
+spread = 65.0
+gravity = Vector3(0, -2.6, 0)
+initial_velocity_min = 0.45
+initial_velocity_max = 0.95
+angular_velocity_min = -540.0
+angular_velocity_max = 540.0
+damping_min = 0.3
+damping_max = 0.6
+angle_min = -180.0
+angle_max = 180.0
+scale_amount_min = 0.6
+scale_amount_max = 1.4
+scale_amount_curve = SubResource("Shrink")
+color_initial_ramp = SubResource("Tones")
+script = ExtResource("1_puff")

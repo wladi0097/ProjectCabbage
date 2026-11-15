@@ -28,12 +28,14 @@ extends MapSheet
 ## (nothing is bought or haggled over abroad). Until the card WAR_CARD is stamped such a farm prints
 ## NOT FOR SALE and its paper wears that strip. With it (war_ready) the paper is a DECLARATION OF
 ## WAR (FarmDeed.FORMS): the war's price in coins only (war_bill: WorldRegister.war_price), the
-## scouting view of the farm's fighting map (WAR_MAP) and one row per unit type the depot deals in with the
+## scouting view of the farm's fighting map (WarMap.scene_for) and one row per unit type the depot deals in with the
 ## figures ready (save.army) and how many go ([-] n [+]: the spots FarmDeed.STAFF_LESS/MORE; all of
 ## them at first). Its stamp declares the war (declare): the coins are paid, the chosen figures leave
 ## save.army (`committed` keeps them for the war sheet) and the sheet asks the table for the war
 ## sheet of that farm (`sheet_wanted`; MapTable hands them on: WarSheet.begin), where the war is won
-## or lost. Refused (the clunk, what is short blinks) short of coins or with nobody chosen. A farm
+## or lost. Refused (the clunk, what is short blinks) short of coins or with nobody chosen; with
+## nobody trained at all (has_staff) the paper prints the NO STAFF notice in place of the rows. It
+## lies FarmDeed.WAR_SCALE times a deed's size (`_deed_scale`). A farm
 ## that cannot be attacked yet
 ## (WorldRegister.reach: no neighbouring country is wholly ours, or the sea is not open) gets the
 ## order with a strip saying why and no stamp box. Back from a war won, the table has the sheet
@@ -211,9 +213,6 @@ const PAPER_AFTER := 1.4
 const STAMP := &"deed_stamp"
 ## The sheet a stamped war order asks the table for (MapSheet.sheet_wanted).
 const WAR := &"war"
-## The fighting map a war on a farm is fought on (WarMap; the declaration's scouting view).
-## ponytail: every farm uses the test map until each has its own (entities/war/maps).
-const WAR_MAP := "res://entities/war/maps/test_map.tscn"
 ## The deed lies this far (px) beside its site's centre, at least DEED_MARGIN px inside the sheet's
 ## edges and DEED_LIFT m over the paper (clear of the tokens it covers); it slides in from DEED_FROM
 ## px further out in DEED_SLIDE_TIME s.
@@ -275,6 +274,8 @@ var _deed_army := {}
 ## and what it marks as short.
 var _deed_site := &""
 var _deed_corner := Vector2.ZERO
+## The laid-out paper's size as a deed's (FarmDeed.WAR_SCALE for a declaration of war).
+var _deed_scale := 1.0
 var _deed_lacks := {}
 ## The purchase playing out (null: none): no click is taken until its deed is gone.
 var _dealing: Tween
@@ -525,12 +526,17 @@ static func war_bill(save: SaveGame, site: StringName) -> Dictionary:
 	return {coins = World.war_price(save, country).get("coins", 0)}
 
 
+## Whether `save` has anybody trained to send to war (save.army; trainees do not count).
+static func has_staff(save: SaveGame) -> bool:
+	return save.army.values().any(func(count: Variant) -> bool: return int(count) > 0)
+
+
 ## Whether `save` can declare war on `site` sending `chosen` (unit id -> count): a war can be
-## started there (war_bill), its coins are in the purse, at least one figure goes and none more than
-## save.army has ready (`out`: UpgradeDesk.units_out).
+## started there (war_bill), its coins are in the purse, there is trained staff (has_staff), at
+## least one figure goes and none more than save.army has ready (`out`: UpgradeDesk.units_out).
 static func can_declare(save: SaveGame, site: StringName, chosen: Dictionary, out := Vector2i.ZERO) -> bool:
 	var bill := war_bill(save, site)
-	if bill.is_empty() or not UpgradeDesk.affords(save, bill, out):
+	if bill.is_empty() or not UpgradeDesk.affords(save, bill, out) or not has_staff(save):
 		return false
 	var sent := 0
 	for unit: String in chosen:
@@ -542,27 +548,42 @@ static func can_declare(save: SaveGame, site: StringName, chosen: Dictionary, ou
 
 
 ## Declares war on `site` for `save`: pays war_bill's coins and takes the `chosen` figures out of
-## save.army. Whether it was declared; refused (can_declare), nothing changes.
+## save.army into save.war_pending (a game closed before they are committed gives them back).
+## Whether it was declared; refused (can_declare), nothing changes.
 static func declare(save: SaveGame, site: StringName, chosen: Dictionary, out := Vector2i.ZERO) -> bool:
 	if not can_declare(save, site, chosen, out):
 		return false
 	var bill := war_bill(save, site)
 	for paid_in: String in bill:
 		UpgradeDesk.pay(save, paid_in, bill[paid_in], out)
+	save.war_fee = int(bill.get("coins", 0))  # Given back if the game closes before START.
+	save.war_pending = {}
 	for unit: String in chosen:
 		var left := int(save.army.get(unit, 0)) - int(chosen[unit])
 		if left > 0:
 			save.army[unit] = left
 		else:
 			save.army.erase(unit)
+		if int(chosen[unit]) > 0:
+			save.war_pending[unit] = int(chosen[unit])
 	return true
 
 
+## The war on `site` is called off before START (WarSheet.abort): nothing happened, so its coins
+## (war_bill, the same as paid: the price only moves with farms won) come back. The figures are the
+## war sheet's to return. The coins it gave back.
+static func refund(save: SaveGame, site: StringName) -> int:
+	var coins := int(war_bill(save, site).get("coins", 0))
+	save.coins += coins  # Not earn(): what was paid comes back whole, over the purse's limit or not.
+	return coins
+
+
 ## Where the deed for the site at art pixel `at` lies: its top left corner on the art (px). Beside
-## the site (deed_side), level with it, inside the sheet: never on the site.
-static func deed_corner(at: Vector2) -> Vector2:
-	var size := FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE
-	var x := at.x + DEED_GAP if deed_side(at) > 0.0 else at.x - DEED_GAP - size.x
+## the site (deed_side), level with it, inside the sheet: never on the site. `times`: the paper is
+## that many times a deed's size (FarmDeed.WAR_SCALE for a declaration).
+static func deed_corner(at: Vector2, times := 1.0) -> Vector2:
+	var size := FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE * times
+	var x := at.x + DEED_GAP if deed_side(at, times) > 0.0 else at.x - DEED_GAP - size.x
 	var room := SIZE * PIXELS_PER_METRE - size - Vector2.ONE * DEED_MARGIN
 	return Vector2(x, clampf(at.y - size.y / 2.0, DEED_MARGIN, room.y))
 
@@ -570,10 +591,10 @@ static func deed_corner(at: Vector2) -> Vector2:
 ## The side of the site at art pixel `at` its deed lies on, and comes from: -1 map-left, 1
 ## map-right. The side away from the sheet's middle, so the map stays in view; where the paper has
 ## no room there (a site near the sheet's edge), the side towards the middle.
-static func deed_side(at: Vector2) -> float:
+static func deed_side(at: Vector2, times := 1.0) -> float:
 	var width := SIZE.x * PIXELS_PER_METRE
 	var out := -1.0 if at.x < width / 2.0 else 1.0
-	var need := DEED_GAP + FarmDeed.SIZE.x * FarmDeed.PIXELS_PER_METRE + DEED_MARGIN
+	var need := DEED_GAP + FarmDeed.SIZE.x * FarmDeed.PIXELS_PER_METRE * times + DEED_MARGIN
 	return out if (at.x if out < 0.0 else width - at.x) >= need else -out
 
 
@@ -693,13 +714,13 @@ func spot_at(pixel: Vector2) -> StringName:
 	if _deed_site != &"":
 		# The deed lies DEED_LIFT over the sheet (the record a little more): the mouse is on the
 		# pixel of the paper it shows there, not on the sheet's pixel under it.
-		var on := lifted(pixel, DEED_LIFT + (FarmDeed.HAGGLE_LIFT if _deed.haggling else 0.0)) - _deed_corner
+		var on := (lifted(pixel, DEED_LIFT + (FarmDeed.HAGGLE_LIFT if _deed.haggling else 0.0)) - _deed_corner) / _deed_scale
 		if FarmDeed.covers(on, _deed.haggling):
 			# The papers cover what lies under them; only their boxes are spots: the stamp box of a
 			# farm for sale, START HAGGLING where its owner haggles, the letter's crate, offer and
 			# SEND OFFER while he hears offers, and BACK TO THE DEED.
 			_letter_at = FarmDeed.page(on)
-			if _declaring():
+			if _declaring() and has_staff(SaveManager.save):  # Nobody trained: no rows to count.
 				var staff := FarmDeed.staff_box_at(on, Depot.units(SaveManager.save))
 				if staff != &"":
 					return staff if _dealing == null else &""
@@ -762,7 +783,7 @@ func press(spot: StringName) -> void:
 	if spot == STAMP and _deed_site != &"":
 		_stamp_deed()
 	elif spot in [HAGGLE, RETURN] and _deed_site != &"":
-		_deed.lay_haggle(spot == HAGGLE, deed_side(_pixel(_deed_site)) * DEED_FROM / PIXELS_PER_METRE, DEED_SLIDE_TIME)
+		_deed.lay_haggle(spot == HAGGLE, deed_side(_pixel(_deed_site), _deed_scale) * DEED_FROM / PIXELS_PER_METRE, DEED_SLIDE_TIME)
 	elif spot == CRATE and _deed_site != &"":
 		_grab()
 	elif spot == PILE and _deed_site != &"":
@@ -790,7 +811,7 @@ func drag(pixel: Vector2) -> void:
 func focus() -> PackedVector3Array:
 	if _deed_site == &"" or not _deed.haggling or not _deed.visible:
 		return PackedVector3Array()
-	var letter := global_transform * Transform3D(Basis(), _deed_at()) * _deed.letter_rest()
+	var letter := global_transform * Transform3D(Basis.from_scale(Vector3.ONE * _deed_scale), _deed_at()) * _deed.letter_rest()
 	var size := NegotiationLetter.SIZE
 	return PackedVector3Array([letter * Vector3.ZERO, letter * Vector3(size.x, 0.0, 0.0), letter * Vector3(0.0, 0.0, size.y), letter * Vector3(size.x, 0.0, size.y)])
 
@@ -815,17 +836,19 @@ func deed_site() -> StringName:
 ## Lays `spot`'s deed beside it: it slides in from beyond the sheet's edge on its side.
 func _lay_out(spot: StringName) -> void:
 	_deed_site = spot
-	_deed_corner = deed_corner(_pixel(spot))
+	_deed_scale = FarmDeed.WAR_SCALE if war_ready(SaveManager.save, spot) else 1.0
+	_deed.scale = Vector3.ONE * _deed_scale
+	_deed_corner = deed_corner(_pixel(spot), _deed_scale)
 	_take = SaveManager.save.army.duplicate()  # Everybody ready goes, unless told otherwise.
 	_print_deed()
 	_uncover(0.0)
-	var paper := Rect2(_deed_corner, FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE).grow(COVER)
+	var paper := Rect2(_deed_corner, FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE * _deed_scale).grow(COVER)
 	for site in _sites:
 		if site != spot and paper.has_point(_pixel(site)):
 			_tucked.append(site)
 			_move(site).tween_method(raise_thing.bind(_index(site)), 1.0, 0.0, TUCK_TIME)
 	var to := _deed_at()
-	_deed.slide(to + Vector3.RIGHT * deed_side(_pixel(spot)) * DEED_FROM / PIXELS_PER_METRE, to, DEED_SLIDE_TIME)
+	_deed.slide(to + Vector3.RIGHT * deed_side(_pixel(spot), _deed_scale) * DEED_FROM / PIXELS_PER_METRE, to, DEED_SLIDE_TIME)
 
 
 ## Prints the laid-out paper as the save has it: a deed with the next farm's price and what is short
@@ -858,7 +881,8 @@ func _print_deed() -> void:
 			_take[unit] = clampi(int(_take.get(unit, have)), 0, have)
 			rows.append({unit = unit, name = tr(DepotSheet.NAMES[unit]), have = have, take = _take[unit]})
 		_deed.print_staff(rows)
-		_deed.print_scout(WAR_MAP)
+		_deed.print_resistance(WarMap.difficulty_for(_deed_site, save, WarRules.army_cap(save)))
+		_deed.print_site(WarMap.brief_for(_deed_site, save))
 	_deed.hot(_hot_box)  # The mouse may still be on its box.
 
 
@@ -891,7 +915,7 @@ func _submit_offer() -> void:
 		return
 	SaveManager.log_event("offer", str(save.farms_owned.size() + 1), offers(save, _deed_site)[-1], tender(save, _deed_site))
 	SaveManager.autosave()  # At once: quitting must not take a lost offer back and keep what the mood told.
-	letter.send(deed_side(_pixel(_deed_site)) * SEND_AWAY, SEND_TIME)
+	letter.send(deed_side(_pixel(_deed_site), _deed_scale) * SEND_AWAY, SEND_TIME)
 	if bribe:
 		_deed.envelope()
 	_dealing = create_tween()
@@ -926,7 +950,7 @@ func _put_away() -> void:
 	if _deed_site == &"":
 		return
 	var from := _deed_at()
-	_deed.slide(from, from + Vector3.RIGHT * deed_side(_pixel(_deed_site)) * DEED_FROM / PIXELS_PER_METRE, DEED_SLIDE_TIME, true)
+	_deed.slide(from, from + Vector3.RIGHT * deed_side(_pixel(_deed_site), _deed_scale) * DEED_FROM / PIXELS_PER_METRE, DEED_SLIDE_TIME, true)
 	_deed_site = &""
 	_uncover(DEED_SLIDE_TIME * 0.5)
 
@@ -950,7 +974,7 @@ func _drop_deed() -> void:
 
 ## Where the laid-out deed's origin (the middle of its top edge) lies on the sheet.
 func _deed_at() -> Vector3:
-	return Vector3((_deed_corner.x + FarmDeed.SIZE.x * FarmDeed.PIXELS_PER_METRE / 2.0) / PIXELS_PER_METRE - SIZE.x / 2.0,
+	return Vector3((_deed_corner.x + FarmDeed.SIZE.x * FarmDeed.PIXELS_PER_METRE * _deed_scale / 2.0) / PIXELS_PER_METRE - SIZE.x / 2.0,
 			DEED_LIFT, _deed_corner.y / PIXELS_PER_METRE)
 
 
@@ -992,7 +1016,7 @@ func _stamp_deed() -> void:
 	lamp_held = true
 	BossReport.hold = deed_gone_after() + PAPER_AFTER
 	_deed.strike(STAMP_DROP_TIME)
-	var off := _deed_at() + Vector3.RIGHT * deed_side(_pixel(spot)) * DEED_FROM / PIXELS_PER_METRE
+	var off := _deed_at() + Vector3.RIGHT * deed_side(_pixel(spot), _deed_scale) * DEED_FROM / PIXELS_PER_METRE
 	_dealing = create_tween()
 	_dealing.tween_interval(STAMP_DROP_TIME)
 	_dealing.tween_callback(_deed.imprint)

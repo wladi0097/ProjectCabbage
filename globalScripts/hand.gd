@@ -36,6 +36,10 @@ const TOOLTIP_INK := Color(0.13, 0.15, 0.14)
 
 var hovered: Interactable
 var held: Interactable
+## A scene's own glove stands in for the cursor (the war sheet's, holding a figure): the OS
+## cursor stays hidden even where this hand is not shown (while the window has focus; the sheet
+## lets go of the figure when an overlay takes the mouse).
+var stand_in := false
 
 var _model: HandModel
 ## Where the mouse ray last hit the hovered thing; frozen while it is held.
@@ -89,7 +93,7 @@ func _process(delta: float) -> void:
 				return n is CanvasItem and (n as CanvasItem).is_visible_in_tree())
 	_model.visible = in_game
 	_show_tooltip(hovered.tooltip if in_game and held == null and is_instance_valid(hovered) else "", delta)
-	var mode := Input.MOUSE_MODE_HIDDEN if in_game else Input.MOUSE_MODE_VISIBLE
+	var mode := Input.MOUSE_MODE_HIDDEN if in_game or (stand_in and get_window().has_focus()) else Input.MOUSE_MODE_VISIBLE
 	if Input.mouse_mode != mode:
 		Input.mouse_mode = mode
 	if not in_game:

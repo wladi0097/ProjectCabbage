@@ -1,0 +1,84 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_map"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="b_farmhouse"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/wall_wood.tscn" id="b_wall_wood"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="b_zone"]
+
+[node name="Tutorial1" type="Node3D" unique_id=2038741196]
+script = ExtResource("1_map")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 1,
+&"cabbages": 1000,
+&"k": 0.49,
+&"style": "associates"
+}
+site_name = "THE HOLDOUT"
+briefing = "One farmhouse. One fence. No further questions."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=1300963031 instance=ExtResource("b_zone")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 7, 0.24, 0, 0.88)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=1108998636 instance=ExtResource("b_farmhouse")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 0, 0.8)
+
+[node name="WallWood1" type="Node3D" parent="." unique_id=786445149 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 0.4)
+
+[node name="WallWood2" type="Node3D" parent="." unique_id=1177100417 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.4)
+
+[node name="WallWood3" type="Node3D" parent="." unique_id=974433685 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.4)
+
+[node name="WallWood4" type="Node3D" parent="." unique_id=1847755252 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.4)
+
+[node name="WallWood5" type="Node3D" parent="." unique_id=510514227 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.84, 0, 0.4)
+
+[node name="WallWood6" type="Node3D" parent="." unique_id=1571636364 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.4)
+
+[node name="WallWood7" type="Node3D" parent="." unique_id=894490204 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 1.2)
+
+[node name="WallWood8" type="Node3D" parent="." unique_id=1917529215 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 1.2)
+
+[node name="WallWood9" type="Node3D" parent="." unique_id=184741232 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.2)
+
+[node name="WallWood10" type="Node3D" parent="." unique_id=1230124424 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 1.2)
+
+[node name="WallWood11" type="Node3D" parent="." unique_id=2145556371 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.84, 0, 1.2)
+
+[node name="WallWood12" type="Node3D" parent="." unique_id=706596804 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 1.2)
+
+[node name="WallWood13" type="Node3D" parent="." unique_id=1314032053 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 0.56)
+
+[node name="WallWood14" type="Node3D" parent="." unique_id=1594018638 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 0.72)
+
+[node name="WallWood15" type="Node3D" parent="." unique_id=808793642 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 0.88)
+
+[node name="WallWood16" type="Node3D" parent="." unique_id=701308108 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 1.04)
+
+[node name="WallWood17" type="Node3D" parent="." unique_id=175565022 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.56)
+
+[node name="WallWood18" type="Node3D" parent="." unique_id=1047231151 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.72)
+
+[node name="WallWood19" type="Node3D" parent="." unique_id=890645761 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.88)
+
+[node name="WallWood20" type="Node3D" parent="." unique_id=1248596034 instance=ExtResource("b_wall_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 1.04)

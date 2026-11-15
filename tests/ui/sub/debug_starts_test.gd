@@ -114,7 +114,7 @@ func test_the_home_country_start_point_opens_in_the_world_phase_with_the_first_l
 	assert_bool(MapTable.sheet_unlocked(&"world", save)).is_true()
 	assert_str(MapTable.start_sheet(save)).is_equal(&"kohlmark")
 	assert_array(BossReport.due(save)).is_empty()  # Every paper is signed, THE COUNTRY IS OURS too.
-	assert_array(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)).is_equal(["no_taxes"])
+	assert_array(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)).is_equal(["no_taxes", "route_planning"])  # The war line beside it, its first card.
 	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(UpgradeDesk.card_data("no_taxes")))).is_true()
 	# A neighbour's farm can be attacked at once; the sea is still closed.
 	var war := FarmRegister.war_bill(save, &"ostrevia-1")

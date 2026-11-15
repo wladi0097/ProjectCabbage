@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/materials/maquette/maquette.gdshader" id="1_shader"]
+
+[resource]
+resource_name = "maquette_grey_board"
+shader = ExtResource("1_shader")
+shader_parameter/albedo = Color(0.494, 0.49, 0.471, 1)
+shader_parameter/roughness = 0.95
+shader_parameter/metallic = 0.0
+shader_parameter/specular = 0.18
+shader_parameter/fibre = 0.14
+shader_parameter/fibre_scale = 420.0
+shader_parameter/mottle = 0.04
+shader_parameter/grain = 0.0
+shader_parameter/grain_scale = 220.0

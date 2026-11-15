@@ -409,11 +409,3 @@ func test_a_new_ring_is_a_closed_circle_of_its_radius_round_its_node() -> void:
 	for i in range(1, ring.size() - 1, 2):  # Each segment starts where the last ended ...
 		assert_vector(ring[i]).is_equal_approx(ring[i + 1], Vector2.ONE * 0.001)
 	assert_vector(ring[ring.size() - 1]).is_equal_approx(ring[0], Vector2.ONE * 0.001)  # ... and the last closes it.
-
-
-func test_the_projector_and_the_farm_tv_draw_their_popups_beside_the_node() -> void:
-	for scene: String in ["res://entities/projector/projector.tscn", "res://entities/farm_tree/farm_tree.tscn"]:
-		var host: Node = auto_free(load(scene).instantiate())
-		var trees := host.find_children("*", "Control", true, false).filter(func(n: Node) -> bool: return n is UpgradeTree)
-		assert_int(trees.size()).override_failure_message(scene).is_equal(1)
-		assert_bool((trees[0] as UpgradeTree).popup_shown).override_failure_message(scene).is_true()

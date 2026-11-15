@@ -1,0 +1,171 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/fight/war_control.gd" id="1_script"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/control_body.res" id="2_body"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/control_start_cap.res" id="3_start"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/control_abort_cap.res" id="4_abort"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="5_font"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_press_1.wav" id="sfx_console_press_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/console_press_2.wav" id="sfx_console_press_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_denied_1.wav" id="sfx_press_denied_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/press_denied_2.wav" id="sfx_press_denied_2"]
+
+[sub_resource type="StandardMaterial3D" id="StartLens"]
+resource_local_to_scene = true
+albedo_color = Color(0.42, 0.4, 0.34, 1)
+roughness = 0.35
+emission_enabled = true
+emission = Color(1, 0.8, 0.52, 1)
+emission_energy_multiplier = 0.0
+
+[sub_resource type="StandardMaterial3D" id="AbortLens"]
+resource_local_to_scene = true
+albedo_color = Color(0.2, 0.048, 0.044, 1)
+roughness = 0.6
+emission_enabled = true
+emission = Color(0.54, 0.165, 0.133, 1)
+emission_energy_multiplier = 0.0
+
+[sub_resource type="BoxShape3D" id="StartHit"]
+size = Vector3(0.078, 0.03, 0.078)
+
+[sub_resource type="BoxShape3D" id="AbortHit"]
+size = Vector3(0.064, 0.03, 0.064)
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_press"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_console_press_1")
+stream_1/stream = ExtResource("sfx_console_press_2")
+
+[sub_resource type="AudioStreamRandomizer" id="Rand_denied"]
+random_pitch = 1.06
+random_volume_offset_db = 1.5
+streams_count = 2
+stream_0/stream = ExtResource("sfx_press_denied_1")
+stream_1/stream = ExtResource("sfx_press_denied_2")
+
+[node name="WarControl" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 0, 0, 0)
+gi_mode = 0
+mesh = ExtResource("2_body")
+
+[node name="Panel" type="Node3D" parent="."]
+transform = Transform3D(1.4, 0, 0, 0, 1.3776, -0.2497, 0, 0.2497, 1.3776, 0, 0.0966, 0)
+
+[node name="StartCap" type="MeshInstance3D" parent="Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.039, 0.003, 0.049)
+gi_mode = 0
+mesh = ExtResource("3_start")
+surface_material_override/0 = SubResource("StartLens")
+
+[node name="AbortCap" type="MeshInstance3D" parent="Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.039, 0.003, 0.049)
+gi_mode = 0
+mesh = ExtResource("4_abort")
+surface_material_override/0 = SubResource("AbortLens")
+
+[node name="Digits" type="Node3D" parent="Panel"]
+
+[node name="Min" type="Label3D" parent="Panel/Digits"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.046, 0.0068, -0.086)
+pixel_size = 0.0005
+modulate = Color(0.84, 0.82, 0.72, 1)
+shaded = false
+auto_translate_mode = 2
+text = "1"
+font = ExtResource("5_font")
+font_size = 128
+outline_size = 0
+
+[node name="Colon" type="Label3D" parent="Panel/Digits"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.019, 0.0068, -0.088)
+pixel_size = 0.0005
+modulate = Color(0.84, 0.82, 0.72, 1)
+shaded = false
+auto_translate_mode = 2
+text = ":"
+font = ExtResource("5_font")
+font_size = 128
+outline_size = 0
+
+[node name="Sec10" type="Label3D" parent="Panel/Digits"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.008, 0.0068, -0.086)
+pixel_size = 0.0005
+modulate = Color(0.84, 0.82, 0.72, 1)
+shaded = false
+auto_translate_mode = 2
+text = "3"
+font = ExtResource("5_font")
+font_size = 128
+outline_size = 0
+
+[node name="Sec1" type="Label3D" parent="Panel/Digits"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.046, 0.0068, -0.086)
+pixel_size = 0.0005
+modulate = Color(0.84, 0.82, 0.72, 1)
+shaded = false
+auto_translate_mode = 2
+text = "0"
+font = ExtResource("5_font")
+font_size = 128
+outline_size = 0
+
+[node name="StartPlate" type="Label3D" parent="Panel"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.039, 0.0068, 0.111)
+pixel_size = 0.00036
+modulate = Color(0.78, 0.76, 0.68, 1)
+shaded = false
+text = "BUTTON START"
+font = ExtResource("5_font")
+font_size = 64
+outline_size = 0
+
+[node name="AbortPlate" type="Label3D" parent="Panel"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.039, 0.0068, 0.111)
+pixel_size = 0.00036
+modulate = Color(0.78, 0.76, 0.68, 1)
+shaded = false
+text = "ABORT"
+font = ExtResource("5_font")
+font_size = 64
+outline_size = 0
+
+[node name="TimePlate" type="Label3D" parent="Panel"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0068, -0.013)
+pixel_size = 0.00036
+modulate = Color(0.78, 0.76, 0.68, 1)
+shaded = false
+text = "TIME REMAINING"
+font = ExtResource("5_font")
+font_size = 64
+outline_size = 0
+
+[node name="Hits" type="StaticBody3D" parent="Panel"]
+collision_layer = 0
+collision_mask = 0
+
+[node name="Start" type="CollisionShape3D" parent="Panel/Hits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.039, 0.01, 0.049)
+shape = SubResource("StartHit")
+
+[node name="Abort" type="CollisionShape3D" parent="Panel/Hits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.039, 0.01, 0.049)
+shape = SubResource("AbortHit")
+
+[node name="Press" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_press")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+min_interval = 0.08
+
+[node name="Denied" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Rand_denied")
+bus = &"SFX"
+script = ExtResource("sfx_cue")
+min_interval = 0.15

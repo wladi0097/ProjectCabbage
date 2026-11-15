@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_map"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="b_cannon"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="b_farmhouse"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="b_zone"]
+
+[node name="Tutorial2" type="Node3D" unique_id=904858539]
+script = ExtResource("1_map")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 3,
+&"cabbages": 2500,
+&"k": 1.0,
+&"style": "seniors"
+}
+site_name = "THE SUPERVISED PLOT"
+briefing = "They have installed a supervisor. We have brought three of you."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=1803016514 instance=ExtResource("b_zone")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 5, 0.24, 0, 0.88)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=1095939361 instance=ExtResource("b_cannon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.88)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=1398391417 instance=ExtResource("b_farmhouse")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 0, 0.8)

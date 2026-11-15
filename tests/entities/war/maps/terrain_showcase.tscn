@@ -1,0 +1,116 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_iwbjg"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_2nh31"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="3_wkfyt"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/river.tscn" id="8_jevvw"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/bridge.tscn" id="13_dcglq"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/pond.tscn" id="14_2vljs"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/hedge.tscn" id="18_yvssg"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/field.tscn" id="19_75fv4"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="23_ydlak"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="24_b8vge"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/mortar.tscn" id="25_4fow1"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/wall_wood.tscn" id="26_u3017"]
+
+[node name="TerrainShowcase" type="Node3D" unique_id=1349122426]
+script = ExtResource("1_iwbjg")
+difficulty = {
+&"associates": 4,
+&"cabbages": 2500,
+&"k": 1.27,
+&"style": "seniors"
+}
+
+[node name="Zone1" type="Node3D" parent="." unique_id=772328220 instance=ExtResource("2_2nh31")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 4, 0.24, 0, 0.96)
+
+[node name="Zone2" type="Node3D" parent="." unique_id=900472008 instance=ExtResource("2_2nh31")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 2, 2.48, 0, 1.5999999)
+
+[node name="Road1" type="Node3D" parent="." unique_id=1827517114 instance=ExtResource("3_wkfyt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 0, 0.56)
+size = Vector2i(6, 1)
+
+[node name="Road2" type="Node3D" parent="." unique_id=43250615 instance=ExtResource("3_wkfyt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4399999, 0, 0.56)
+size = Vector2i(4, 1)
+
+[node name="River1" type="Node3D" parent="." unique_id=765966691 instance=ExtResource("8_jevvw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 0.56)
+size = Vector2i(1, 7)
+
+[node name="River2" type="Node3D" parent="." unique_id=1659680213 instance=ExtResource("8_jevvw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.04)
+size = Vector2i(5, 1)
+
+[node name="River3" type="Node3D" parent="." unique_id=129240550 instance=ExtResource("8_jevvw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 1.4399999)
+size = Vector2i(1, 4)
+
+[node name="Bridge1" type="Node3D" parent="." unique_id=1881493120 instance=ExtResource("13_dcglq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 0.56)
+
+[node name="Bridge2" type="Node3D" parent="." unique_id=2104911057 instance=ExtResource("13_dcglq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.04)
+
+[node name="Pond1" type="Node3D" parent="." unique_id=566612514 instance=ExtResource("14_2vljs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 0.32)
+size = Vector2i(3, 2)
+
+[node name="Pond2" type="Node3D" parent="." unique_id=1890701268 instance=ExtResource("14_2vljs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.72, 0, 0.48)
+size = Vector2i(2, 2)
+
+[node name="Hedge1" type="Node3D" parent="." unique_id=1050126986 instance=ExtResource("18_yvssg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56, 0, 1.36)
+
+[node name="Hedge2" type="Node3D" parent="." unique_id=1217377106 instance=ExtResource("18_yvssg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.71999997, 0, 1.36)
+
+[node name="Hedge3" type="Node3D" parent="." unique_id=163442668 instance=ExtResource("18_yvssg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 1.36)
+
+[node name="Hedge4" type="Node3D" parent="." unique_id=1535063368 instance=ExtResource("18_yvssg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 1.36)
+
+[node name="Hedge5" type="Node3D" parent="." unique_id=1311951490 instance=ExtResource("18_yvssg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.24)
+
+[node name="Hedge6" type="Node3D" parent="." unique_id=1547040573 instance=ExtResource("18_yvssg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.24)
+
+[node name="Hedge7" type="Node3D" parent="." unique_id=691766107 instance=ExtResource("18_yvssg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.24)
+
+[node name="Hedge8" type="Node3D" parent="." unique_id=1501428925 instance=ExtResource("18_yvssg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 0.24)
+
+[node name="Hedge9" type="Node3D" parent="." unique_id=840781404 instance=ExtResource("18_yvssg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 0.39999998)
+
+[node name="Field1" type="Node3D" parent="." unique_id=1491009120 instance=ExtResource("19_75fv4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3999999, 0, 1.1999999)
+size = Vector2i(4, 3)
+
+[node name="Field2" type="Node3D" parent="." unique_id=1182964194 instance=ExtResource("19_75fv4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.39999998, 0, 0.16)
+size = Vector2i(3, 2)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=1516595353 instance=ExtResource("23_ydlak")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8799999, 0, 0.79999995)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=468154481 instance=ExtResource("24_b8vge")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 0.71999997)
+
+[node name="Mortar1" type="Node3D" parent="." unique_id=775654589 instance=ExtResource("25_4fow1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5999999, 0, 1.4399999)
+
+[node name="WallWood1" type="Node3D" parent="." unique_id=1718296332 instance=ExtResource("26_u3017")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.56)
+
+[node name="WallWood2" type="Node3D" parent="." unique_id=601637464 instance=ExtResource("26_u3017")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.71999997)
+
+[node name="WallWood3" type="Node3D" parent="." unique_id=463706057 instance=ExtResource("26_u3017")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.88)

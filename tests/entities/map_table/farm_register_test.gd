@@ -62,7 +62,7 @@ func _play_out(sheet: FarmRegister) -> void:
 
 ## The art pixel in the middle of the laid-out deed's stamp box.
 func _box(sheet: FarmRegister) -> Vector2:
-	return sheet._deed_corner + FarmDeed.STAMP_BOX.get_center()
+	return sheet._deed_corner + FarmDeed.STAMP_BOX.get_center() * sheet._deed_scale
 
 
 ## How much of each parcel shows the pattern on the land layer (0..1), by site; the head office's
@@ -1603,7 +1603,7 @@ func _at_war(staff := 3) -> FarmRegister:
 ## The art pixel in the middle of the laid-out declaration's [-] (or [+]) box of its first staff row.
 func _staff_box(sheet: FarmRegister, more := false) -> Vector2:
 	var box := FarmDeed.MORE_IN_ROW if more else FarmDeed.LESS_IN_ROW
-	return sheet._deed_corner + FarmDeed.STAFF_AT + box.get_center()
+	return sheet._deed_corner + (FarmDeed.STAFF_AT + box.get_center()) * sheet._deed_scale
 
 
 func test_a_farm_nobody_sells_gets_a_declaration_of_war_whose_stamp_charges_coins_and_takes_the_chosen_staff() -> void:
@@ -1656,6 +1656,49 @@ func test_a_declaration_with_nobody_chosen_cannot_be_stamped() -> void:
 	assert_bool((sheet.get_node("Deed/Denied") as SoundCue).playing).is_true()
 
 
+func test_a_declaration_with_no_trained_staff_cannot_be_stamped_and_says_why() -> void:
+	var sheet := _at_war(0)
+	SaveManager.save.army_training = [{unit = "field_associate", left = 5.0}]  # Still in training: does not count.
+	var coins := SaveManager.save.coins
+	var wanted := []
+	sheet.sheet_wanted.connect(func(id: StringName, farm: StringName) -> void: wanted.append([id, farm]))
+	sheet.press(&"K-7")
+	var deed: FarmDeed = sheet.get_node("Deed")
+	assert_bool((deed.get_node("Page/Form/NoStaff") as Control).visible).is_true()
+	assert_str((deed.get_node("Page/Form/NoStaff/Head") as Label).text).is_equal("NO STAFF ON THE BOOKS.")
+	assert_bool((deed.get_node("Page/Form/Staff") as Control).visible).is_false()
+	assert_str(sheet.spot_at(_staff_box(sheet))).is_equal(&"")  # No rows to count.
+	assert_bool(FarmRegister.can_declare(SaveManager.save, &"K-7", {})).is_false()
+	sheet.press(FarmRegister.STAMP)
+	_play_out(sheet)
+	assert_array(wanted).is_empty()
+	assert_int(SaveManager.save.coins).is_equal(coins)
+	assert_bool((deed.get_node("Denied") as SoundCue).playing).is_true()
+	SaveManager.save.army = {field_associate = 0}  # A type on the books with nobody in it is still nobody.
+	assert_bool(FarmRegister.has_staff(SaveManager.save)).is_false()
+	SaveManager.save.army = {field_associate = 1}  # Trained: the rows are back.
+	sheet._process(0.0)
+	assert_bool((deed.get_node("Page/Form/NoStaff") as Control).visible).is_false()
+	assert_bool((deed.get_node("Page/Form/Staff/field_associate") as Control).is_visible_in_tree()).is_true()
+
+
+func test_a_declaration_lies_bigger_than_a_deed_beside_its_farm_inside_the_sheet() -> void:
+	var sheet := _at_war()
+	var paper := FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE * FarmDeed.WAR_SCALE
+	assert_float(FarmDeed.WAR_SCALE).is_greater_equal(1.4)
+	for site: StringName in [&"K-6", &"K-7", &"K-8"]:
+		sheet.press(site)
+		assert_float(sheet._deed_scale).is_equal(FarmDeed.WAR_SCALE)
+		assert_vector((sheet.get_node("Deed") as Node3D).scale).is_equal(Vector3.ONE * FarmDeed.WAR_SCALE)
+		var rect := Rect2(sheet._deed_corner, paper)
+		assert_bool(rect.has_point(sheet._pixel(site))).is_false()
+		assert_bool(Rect2(Vector2.ZERO, FarmRegister.SIZE * FarmRegister.PIXELS_PER_METRE).encloses(rect)).is_true()
+		sheet.press(&"")
+	SaveManager.save.farms_owned = PackedStringArray(SITES.slice(0, 1))  # A farm for sale: a plain deed.
+	sheet.press(&"K-7")
+	assert_float(sheet._deed_scale).is_equal(1.0)
+
+
 func test_a_declaration_cannot_send_more_staff_than_are_ready() -> void:
 	var sheet := _at_war(2)
 	sheet.press(&"K-7")
@@ -1675,14 +1718,14 @@ func test_a_declaration_short_of_coins_is_refused_and_nothing_changes() -> void:
 	assert_dict(save.army).is_equal({field_associate = 3})
 
 
-func test_a_declaration_scouts_the_farms_defences() -> void:
+func test_a_declaration_lists_no_defences_only_the_assessed_resistance() -> void:
 	var sheet := _at_war()
 	sheet.press(&"K-7")
 	var deed: FarmDeed = sheet.get_node("Deed")
-	assert_bool((deed.get_node("Scout") as Node3D).visible).is_true()
-	assert_int(deed.get_node("Scout").get_child_count()).is_equal(1)
-	assert_str((deed.get_node("Page/Form/Defences") as Label).text).contains("CANNONS 2")
-	assert_str((deed.get_node("Page/Form/Defences") as Label).text).contains("MORTARS 1")
+	assert_object(deed.get_node_or_null("Scout")).is_null()
+	assert_object(deed.get_node_or_null("Page/Form/Defences")).is_null()
+	assert_bool((deed.get_node("Page/Form/SmallPrint") as Control).visible).is_false()
+	assert_bool((deed.get_node("Page/Form/Resistance") as Control).visible).is_equal(not WarMap.difficulty_for(&"K-7", SaveManager.save).is_empty())
 
 
 func test_a_farm_abroad_out_of_reach_gets_a_war_order_with_a_strip_and_no_stamp_box() -> void:

@@ -105,11 +105,9 @@ func test_both_counters_show_their_limit_and_light_full_only_at_it() -> void:
 		var limit: int = SaveManager.save.get(SaveGame.LIMITS[machine.field])
 		assert_bool(machine._limit.visible).override_failure_message(path).is_true()
 		assert_bool(machine._full.visible).is_false()
-		assert_bool(machine._lamp.visible).is_false()
 		assert_str(machine._limit.text).is_equal(TallyMachine.limit_text(machine.mark, limit))
 		_fill(machine)
 		assert_bool(machine._full.visible).override_failure_message(path).is_true()
-		assert_bool(machine._lamp.visible).is_true()
 		assert_bool(machine._limit.visible).is_false()
 		assert_str(machine._full.text).is_equal(TallyMachine.limit_text(machine.mark, limit, true))
 
@@ -126,19 +124,23 @@ func test_the_full_buzzer_sounds_once_when_the_purse_fills_and_not_again_while_i
 			assert_bool(_buzzed(machine)).override_failure_message(path).is_false()
 
 
-func test_the_full_lamp_stays_lit_without_flashing_while_the_purse_is_full() -> void:
+func test_the_full_plate_stays_steady_without_flashing_while_the_purse_is_full() -> void:
 	for path in COUNTERS:
 		var machine := _counter(path)
 		_fill(machine)
-		var energy := machine._lamp.light_energy
 		var ink := machine._full.modulate
 		for _payout in 20:
 			machine.refuse()
 			machine._process(0.1)
-			assert_bool(machine._lamp.visible).override_failure_message(path).is_true()
-			assert_bool(machine._full.visible).is_true()
-			assert_float(machine._lamp.light_energy).is_equal(energy)
+			assert_bool(machine._full.visible).override_failure_message(path).is_true()
 			assert_that(machine._full.modulate).is_equal(ink)
+
+
+func test_a_full_counter_says_so_in_red_letters_only_with_no_warning_light() -> void:
+	for path in COUNTERS:
+		var machine := _counter(path)
+		_fill(machine)
+		assert_array(machine.find_children("*", "Light3D", true, false)).override_failure_message(path).is_empty()
 
 
 func test_income_refused_because_unbanked_pieces_fill_the_purse_buzzes_once_and_shows_full_until_they_no_longer_fill_it() -> void:
@@ -154,12 +156,10 @@ func test_income_refused_because_unbanked_pieces_fill_the_purse_buzzes_once_and_
 			machine.refuse()
 			machine._process(TallyMachine.QUIET)
 			assert_bool(machine._full.visible).override_failure_message(path).is_true()
-			assert_bool(machine._lamp.visible).is_true()
 			assert_bool(_buzzed(machine)).override_failure_message(path).is_false()
 		_unbanked = 0
 		_fill(machine, false)
 		assert_bool(machine._full.visible).override_failure_message(path).is_false()  # MAX again: there is room.
-		assert_bool(machine._lamp.visible).is_false()
 		assert_bool(machine._limit.visible).is_true()
 
 
@@ -187,7 +187,7 @@ func test_a_purse_hovering_at_its_limit_does_not_buzz_again_within_the_quiet_tim
 			machine._process(0.5)
 			_fill(machine)
 			machine._process(0.5)
-			assert_bool(machine._lamp.visible).override_failure_message(path).is_true()
+			assert_bool(machine._full.visible).override_failure_message(path).is_true()
 			assert_bool(_buzzed(machine)).override_failure_message(path).is_false()
 		_fill(machine, false)
 		machine._process(1.5)
@@ -202,7 +202,7 @@ func test_each_counter_fills_and_buzzes_on_its_own() -> void:
 	findings._process(0.0)
 	assert_bool(_buzzed(coins)).is_true()
 	assert_bool(_buzzed(findings)).is_false()
-	assert_bool(findings._lamp.visible).is_false()
+	assert_bool(findings._full.visible).is_false()
 	_fill(findings)
 	assert_bool(_buzzed(findings)).is_true()
 	assert_bool(_buzzed(coins)).is_false()

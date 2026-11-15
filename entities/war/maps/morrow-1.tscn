@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_bc31b"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_62ql0"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/river.tscn" id="3_bjo11"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/bridge.tscn" id="8_r2mbn"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/silo.tscn" id="9_yo35t"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cctv.tscn" id="10_tfgb7"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="11_ecgld"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/mortar.tscn" id="12_ymv2l"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="13_w4raa"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="14_ma00t"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/field.tscn" id="18_dmlpa"]
+
+[node name="Morrow1" type="Node3D" unique_id=331576101]
+script = ExtResource("1_bc31b")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 14,
+&"cabbages": 7500,
+&"k": 2.7,
+&"style": "mixed"
+}
+site_name = "SINGLE POINT OF FAILURE"
+briefing = "One landing, one bridge, one silo beside it. The risk assessment is one page."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=1442031552 instance=ExtResource("2_62ql0")]
+transform = Transform3D(2, 0, 0, 0, 1, 0, 0, 0, 3, 0.16, 0, 0.39999998)
+
+[node name="River1" type="Node3D" parent="." unique_id=219484622 instance=ExtResource("3_bjo11")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56, 0, 0.88)
+size = Vector2i(1, 11)
+
+[node name="Bridge1" type="Node3D" parent="." unique_id=984182205 instance=ExtResource("8_r2mbn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56, 0, 1.1999999)
+
+[node name="Bridge2" type="Node3D" parent="." unique_id=10672848 instance=ExtResource("8_r2mbn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56, 0, 1.36)
+
+[node name="Silo1" type="Node3D" parent="." unique_id=878176029 instance=ExtResource("9_yo35t")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0, 1.28)
+
+[node name="Cctv1" type="Node3D" parent="." unique_id=403503063 instance=ExtResource("10_tfgb7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 0.88)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=288468817 instance=ExtResource("11_ecgld")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.39999998)
+
+[node name="Mortar1" type="Node3D" parent="." unique_id=1031809476 instance=ExtResource("12_ymv2l")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.56, 0, 1.28)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=1524679493 instance=ExtResource("13_w4raa")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8799999, 0, 0.64)
+
+[node name="Road1" type="Node3D" parent="." unique_id=1648757104 instance=ExtResource("14_ma00t")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5999999, 0, 1.1999999)
+size = Vector2i(6, 1)
+
+[node name="Field1" type="Node3D" parent="." unique_id=1812187368 instance=ExtResource("18_dmlpa")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.28, 0, 0.39999998)
+size = Vector2i(4, 3)

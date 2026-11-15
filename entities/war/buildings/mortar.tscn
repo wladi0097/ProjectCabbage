@@ -1,8 +1,8 @@
 [gd_scene format=3]
 
-[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_mortar_base.res" id="1_base"]
-[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_mortar_turret.res" id="2_turret"]
-[ext_resource type="ArrayMesh" path="res://assets/meshes/War/war_mortar_rubble.res" id="3_rubble"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/maquette_mortar_base.res" id="1_base"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/maquette_mortar_turret.res" id="2_turret"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/maquette_mortar_rubble.res" id="3_rubble"]
 
 [sub_resource type="BoxShape3D" id="Box"]
 size = Vector3(0.29, 0.06, 0.29)
@@ -14,14 +14,14 @@ gi_mode = 0
 mesh = ExtResource("1_base")
 
 [node name="Turret" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.014, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Turret"]
 gi_mode = 0
 mesh = ExtResource("2_turret")
 
 [node name="Muzzle" type="Marker3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1227, -0.0304)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0859, -0.0327)
 
 [node name="Rubble" type="MeshInstance3D" parent="."]
 visible = false

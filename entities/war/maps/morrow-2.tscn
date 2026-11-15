@@ -1,0 +1,66 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_oupfn"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_sj80t"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/pond.tscn" id="3_xx8gg"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="8_ny53f"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/silo.tscn" id="9_r5y1g"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/shredder.tscn" id="10_pu2b6"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="11_miamq"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cctv.tscn" id="12_q8nac"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/mortar.tscn" id="13_rynnm"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="14_j31lj"]
+
+[node name="Morrow2" type="Node3D" unique_id=1573146926]
+script = ExtResource("1_oupfn")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 15,
+&"cabbages": 9500,
+&"k": 2.82,
+&"style": "mixed"
+}
+site_name = "DOUBLE INDEMNITY"
+briefing = "Two silos, insured against each other. Approach from the east; the lake is not negotiable."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=1523228575 instance=ExtResource("2_sj80t")]
+transform = Transform3D(4, 0, 0, 0, 1, 0, 0, 0, 3, 2.72, 0, 1.36)
+
+[node name="Zone2" type="Node3D" parent="." unique_id=181280791 instance=ExtResource("2_sj80t")]
+transform = Transform3D(4, 0, 0, 0, 1, 0, 0, 0, 3, 2.72, 0, 0.39999998)
+
+[node name="Pond1" type="Node3D" parent="." unique_id=1323885148 instance=ExtResource("3_xx8gg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5999999, 0, 0.88)
+size = Vector2i(4, 3)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=818486355 instance=ExtResource("8_ny53f")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 0, 0.32)
+
+[node name="Silo1" type="Node3D" parent="." unique_id=432754440 instance=ExtResource("9_r5y1g")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.79999995, 0, 0.32)
+
+[node name="Silo2" type="Node3D" parent="." unique_id=1923957924 instance=ExtResource("9_r5y1g")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 0, 0.79999995)
+
+[node name="Shredder1" type="Node3D" parent="." unique_id=969502772 instance=ExtResource("10_pu2b6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.71999997, 0, 0.71999997)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=151990699 instance=ExtResource("11_miamq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 0.24)
+
+[node name="Cctv1" type="Node3D" parent="." unique_id=817052692 instance=ExtResource("12_q8nac")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 1.04)
+
+[node name="Mortar1" type="Node3D" parent="." unique_id=1766965365 instance=ExtResource("13_rynnm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0, 1.4399999)
+
+[node name="Cannon2" type="Node3D" parent="." unique_id=733271964 instance=ExtResource("11_miamq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56, 0, 1.36)
+
+[node name="Road1" type="Node3D" parent="." unique_id=1389264605 instance=ExtResource("14_j31lj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 0.39999998)
+size = Vector2i(3, 1)
+
+[node name="Road2" type="Node3D" parent="." unique_id=1758073241 instance=ExtResource("14_j31lj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 1.36)
+size = Vector2i(3, 1)

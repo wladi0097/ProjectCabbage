@@ -63,9 +63,11 @@ const OFF := Vector2(-1e9, -1e9)
 @export var glow := Color(0.846, 0.888, 0.888, 0.25)
 ## The projector lamp's slow shimmer on the nodes (pulse).
 @export var shimmer := false
-## Whether the hovered node's popup is drawn beside it (the projector, the farm TV). Off, the host
-## shows hovered() its own way (the depot sheet: in the map's screen-space hint slip).
-@export var popup_shown := true
+## The hover popup drawn this many times its size, about the node (a host seen from afar: the
+## depot sheet on the map table).
+@export var popup_scale := 1.0
+## Where the hub sits in the view, as a fraction of its size (the depot's org chart: at the top).
+@export var hub_at := Vector2(0.5, 0.5)
 
 ## The tree's script (see above), set by the host.
 var rules: Variant
@@ -159,11 +161,6 @@ func _process(delta: float) -> void:
 	_top.queue_redraw()
 
 
-## The id of the node under the mouse ("": none).
-func hovered() -> String:
-	return _hovered
-
-
 ## The view goes dark: hover and hold drop, and the ids marked NEW are handed back (seen now).
 func close() -> PackedStringArray:
 	var seen := PackedStringArray(_fresh)
@@ -254,7 +251,7 @@ func _notification(what: int) -> void:
 func _wheel() -> Array:
 	var uy := size.y / 2.0 / 1.25
 	var unit := Vector2(minf(size.x / 2.0 / 1.05, uy * WIDEN), uy)
-	return [size / 2.0 + Vector2(0.0, uy * 0.06) + _pan, unit * _zoom, _radius(unit) * _zoom]
+	return [size * hub_at + Vector2(0.0, uy * 0.06) + _pan, unit * _zoom, _radius(unit) * _zoom]
 
 
 func _radius(unit: Vector2) -> float:
@@ -493,8 +490,11 @@ func _draw_top() -> void:
 			reach = box.size.x / 2.0
 		else:
 			_top.draw_circle(at, r, lit)
-		if popup_shown:
-			_draw_popup(rules.node_data(_hovered), at, reach, save, light, area)
+		# popup_scale: drawn bigger about the node, kept inside the view all the same.
+		_top.draw_set_transform(at * (1.0 - popup_scale), 0.0, Vector2.ONE * popup_scale)
+		_draw_popup(rules.node_data(_hovered), at, reach / popup_scale, save, light,
+				Rect2(at + (area.position - at) / popup_scale, area.size / popup_scale))
+		_top.draw_set_transform(Vector2.ZERO)
 	elif _hovered_theme >= 0:
 		var heading: Array = rules.THEMES[_hovered_theme]
 		var box := theme_plate(heading, wheel[1], r, font)

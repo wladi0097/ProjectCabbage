@@ -3,59 +3,70 @@ class_name WarRules
 ## buying and training figures, the fight's time limit, retreat and mid-round placing, and each
 ## unit's stats with its depot research applied. Pure static logic; WarFight runs the fight itself.
 
-## Unit ids, in depot column order.
-const UNITS: Array[String] = ["field_associate", "compliance_officer", "senior_asset", "pult_crew"]
+## Unit ids, in depot column order (research/war-units.md: the final roster).
+const UNITS: Array[String] = ["field_associate", "restructuring_charge", "senior_asset", "pult_crew", "courier"]
 ## The desk card (save.stamped) that hires each unit type. Every one also needs `war_mode`.
 const UNIT_CARD := {
 	field_associate = "war_mode",
-	compliance_officer = "unit_compliance",
+	restructuring_charge = "unit_charge",
 	senior_asset = "unit_senior",
 	pult_crew = "unit_pult",
+	courier = "unit_courier",
 }
 ## Cabbages from stock per figure (field_associate paced in tools/pace.py ch3, war pass 2026-11-14:
-## the figures lost in a war are its harvest drive; the parked types' are placeholders).
-const UNIT_PRICE := {field_associate = 1000, compliance_officer = 30, senior_asset = 80, pult_crew = 50}
+## the figures lost in a war are its harvest drive; the others set in the balance pass 2026-11-15 so
+## each is clearly cheaper than associates on the defences it counters: research/war-balance.md).
+const UNIT_PRICE := {field_associate = 1000, restructuring_charge = 500, senior_asset = 2500, pult_crew = 2000, courier = 1500}
 ## Seconds one figure trains before it joins save.army (WAR_TRAINING cuts it).
-const UNIT_TRAINING := {field_associate = 15.0, compliance_officer = 30.0, senior_asset = 45.0, pult_crew = 40.0}
+const UNIT_TRAINING := {field_associate = 15.0, restructuring_charge = 10.0, senior_asset = 45.0, pult_crew = 30.0, courier = 25.0}
+## Army places one figure takes under the cap (default 1).
+const UNIT_SPACE := {senior_asset = 2}
 ## Base stats, in WarFight's cell units: hp, damage per hit, seconds between hits (interval),
 ## speed (cells/s), range (cells from the unit to the target's edge), splash (radius in cells, 0:
-## single target), wall_mult (damage times this against walls) and the target rule:
-## "defence" (nearest cannon or mortar, then the farmhouse), "tower" (the same set: cannons and
-## mortars, then the farmhouse), "wall" (nearest wall, blows up on contact; no walls left: as "defence").
+## single target), wall_mult (damage times this against walls), hops (crosses fences without
+## breaking them, WarFight.HOP s a cell) and the target rule: "defence" (nearest defence, then the
+## farmhouse), "wall" (the first standing fence on its straight path to the nearest defence, blows
+## up on contact; no fence on that path: blows up at the defence).
 const BASE_STATS := {
-	field_associate = {hp = 150.0, damage = 25.0, interval = 1.0, speed = 1.2, range = 0.8, splash = 0.0, wall_mult = 1.0, target = "defence"},
-	compliance_officer = {hp = 60.0, damage = 30.0, interval = 1.0, speed = 1.8, range = 0.6, splash = 1.2, wall_mult = 20.0, target = "wall"},
-	senior_asset = {hp = 700.0, damage = 18.0, interval = 1.0, speed = 0.7, range = 0.8, splash = 0.0, wall_mult = 1.0, target = "tower"},
-	pult_crew = {hp = 90.0, damage = 30.0, interval = 1.5, speed = 1.0, range = 3.0, splash = 1.0, wall_mult = 1.0, target = "defence"},
+	field_associate = {hp = 150.0, damage = 25.0, interval = 1.0, speed = 1.2, range = 0.8, splash = 0.0, wall_mult = 1.0, hops = false, target = "defence"},
+	restructuring_charge = {hp = 60.0, damage = 30.0, interval = 1.0, speed = 1.2, range = 0.6, splash = 1.2, wall_mult = 20.0, hops = false, target = "wall"},
+	senior_asset = {hp = 1200.0, damage = 18.0, interval = 1.0, speed = 0.9, range = 0.8, splash = 0.0, wall_mult = 1.0, hops = false, target = "defence"},
+	pult_crew = {hp = 110.0, damage = 30.0, interval = 1.5, speed = 1.0, range = 3.5, splash = 1.0, wall_mult = 1.0, hops = false, target = "defence"},
+	courier = {hp = 110.0, damage = 40.0, interval = 1.2, speed = 2.0, range = 0.8, splash = 0.0, wall_mult = 1.0, hops = true, target = "defence"},
 }
 ## Depot research, a small tree per unit: each node multiplies one stat by `step` (all >= +25%),
 ## costs `findings`, and needs its `parent` bought first ("": none). The field associate's prices are
-## paced (tools/pace.py ch3); the parked types' are placeholders.
+## paced (tools/pace.py ch3); the others in the balance pass (research/war-balance.md), cheaper, so
+## each tree is bought between its card and the chapter's end.
 const RESEARCH: Array[Dictionary] = [
 	{id = "fa_hp_1", unit = "field_associate", stat = "hp", step = 1.3, findings = 100000, parent = ""},
 	{id = "fa_damage_1", unit = "field_associate", stat = "damage", step = 1.3, findings = 200000, parent = "fa_hp_1"},
 	{id = "fa_speed_1", unit = "field_associate", stat = "speed", step = 1.25, findings = 150000, parent = "fa_hp_1"},
 	{id = "fa_hp_2", unit = "field_associate", stat = "hp", step = 1.3, findings = 400000, parent = "fa_damage_1"},
-	{id = "co_hp_1", unit = "compliance_officer", stat = "hp", step = 1.5, findings = 3000, parent = ""},
-	{id = "co_damage_1", unit = "compliance_officer", stat = "damage", step = 1.3, findings = 6000, parent = "co_hp_1"},
-	{id = "co_splash_1", unit = "compliance_officer", stat = "splash", step = 1.3, findings = 9000, parent = "co_damage_1"},
-	{id = "sa_hp_1", unit = "senior_asset", stat = "hp", step = 1.3, findings = 4000, parent = ""},
-	{id = "sa_damage_1", unit = "senior_asset", stat = "damage", step = 1.3, findings = 8000, parent = "sa_hp_1"},
-	{id = "sa_hp_2", unit = "senior_asset", stat = "hp", step = 1.3, findings = 14000, parent = "sa_damage_1"},
-	{id = "pc_damage_1", unit = "pult_crew", stat = "damage", step = 1.3, findings = 4000, parent = ""},
-	{id = "pc_range_1", unit = "pult_crew", stat = "range", step = 1.25, findings = 8000, parent = "pc_damage_1"},
-	{id = "pc_splash_1", unit = "pult_crew", stat = "splash", step = 1.3, findings = 8000, parent = "pc_damage_1"},
-	{id = "pc_damage_2", unit = "pult_crew", stat = "damage", step = 1.3, findings = 14000, parent = "pc_range_1"},
+	{id = "rc_hp_1", unit = "restructuring_charge", stat = "hp", step = 1.5, findings = 40000, parent = ""},
+	{id = "rc_wall_1", unit = "restructuring_charge", stat = "wall_mult", step = 1.5, findings = 80000, parent = "rc_hp_1"},
+	{id = "rc_splash_1", unit = "restructuring_charge", stat = "splash", step = 1.3, findings = 200000, parent = "rc_wall_1"},
+	{id = "sa_hp_1", unit = "senior_asset", stat = "hp", step = 1.3, findings = 50000, parent = ""},
+	{id = "sa_damage_1", unit = "senior_asset", stat = "damage", step = 1.3, findings = 80000, parent = "sa_hp_1"},
+	{id = "sa_speed_1", unit = "senior_asset", stat = "speed", step = 1.25, findings = 60000, parent = "sa_hp_1"},
+	{id = "sa_hp_2", unit = "senior_asset", stat = "hp", step = 1.3, findings = 300000, parent = "sa_damage_1"},
+	{id = "pc_damage_1", unit = "pult_crew", stat = "damage", step = 1.3, findings = 60000, parent = ""},
+	{id = "pc_range_1", unit = "pult_crew", stat = "range", step = 1.25, findings = 100000, parent = "pc_damage_1"},
+	{id = "pc_splash_1", unit = "pult_crew", stat = "splash", step = 1.3, findings = 80000, parent = "pc_damage_1"},
+	{id = "pc_damage_2", unit = "pult_crew", stat = "damage", step = 1.3, findings = 300000, parent = "pc_range_1"},
+	{id = "cr_speed_1", unit = "courier", stat = "speed", step = 1.25, findings = 60000, parent = ""},
+	{id = "cr_hp_1", unit = "courier", stat = "hp", step = 1.3, findings = 100000, parent = "cr_speed_1"},
+	{id = "cr_damage_1", unit = "courier", stat = "damage", step = 1.3, findings = 200000, parent = "cr_speed_1"},
 ]
 
 const BASE_CAP := 3
-## Army cap added by the BIGGER ARMIES card, and by each projector war_cap_1..3 node.
+## Army cap added by the BIGGER ARMIES card, and by each depot GENERAL war_cap_1..3 node.
 const CARD_CAP := 2
 const NODE_CAP := 2
 const BASE_FIGHT := 90.0
-## Seconds each projector war_time_1..3 node adds to the fight.
+## Seconds each depot GENERAL war_time_1..3 node adds to the fight.
 const NODE_FIGHT := 15.0
-## Training time kept by each projector war_training_1..3 node (0.75: 25% shorter each).
+## Training time kept by each depot GENERAL war_training_1..3 node (0.75: 25% shorter each).
 const NODE_TRAINING := 0.75
 ## Retreat share with the RETREAT card, added per war_retreat_1..5 node, and its top.
 const BASE_RETREAT := 0.3
@@ -71,12 +82,24 @@ static func army_cap(save: SaveGame) -> int:
 	return BASE_CAP + CARD_CAP * int(save.stamped.has("bigger_armies")) + NODE_CAP * _nodes(save, "war_cap_", 3)
 
 
-## Figures ready plus figures in training: what the cap counts.
+## Army places one figure of `unit` takes (UNIT_SPACE).
+static func unit_space(unit: String) -> int:
+	return int(UNIT_SPACE.get(unit, 1))
+
+
+## The places of figures ready plus figures in training: what the cap counts.
 static func army_size(save: SaveGame) -> int:
-	var size := save.army_training.size()
+	var size := 0
+	for entry: Dictionary in save.army_training:
+		size += unit_space(entry.unit)
 	for unit: String in save.army:
-		size += int(save.army[unit])
+		size += int(save.army[unit]) * unit_space(unit)
 	return size
+
+
+## Whether one more figure of `unit` fits under the army cap.
+static func fits(save: SaveGame, unit: String) -> bool:
+	return army_size(save) + unit_space(unit) <= army_cap(save)
 
 
 static func fight_seconds(save: SaveGame) -> float:
@@ -111,10 +134,10 @@ static func unit_stats(save: SaveGame, unit: String) -> Dictionary:
 	return stats
 
 
-## Hired, under the army cap, and the cabbages in the store (`out`: UpgradeDesk.units_out, cabbages
+## Hired, fitting under the army cap, and the cabbages in the store (`out`: UpgradeDesk.units_out, cabbages
 ## out of the chute can't pay).
 static func can_buy(save: SaveGame, unit: String, out := Vector2i.ZERO) -> bool:
-	return unit_unlocked(save, unit) and army_size(save) < army_cap(save) \
+	return unit_unlocked(save, unit) and fits(save, unit) \
 			and UpgradeDesk.spendable(save, "stock", out) >= unit_cabbage_price(unit)
 
 
@@ -123,7 +146,8 @@ static func buy(save: SaveGame, unit: String, out := Vector2i.ZERO) -> bool:
 	if not can_buy(save, unit, out):
 		return false
 	UpgradeDesk.pay(save, "stock", unit_cabbage_price(unit), out)
-	save.army_training.append({unit = unit, left = training_seconds(save, unit)})
+	var seconds := training_seconds(save, unit)
+	save.army_training.append({unit = unit, left = seconds, total = seconds})  # total: the bar stays true if a training node is bought mid-way.
 	return true
 
 
@@ -163,7 +187,7 @@ static func buy_research(save: SaveGame, id: String) -> bool:
 	return true
 
 
-## How many of the projector nodes `prefix`1..`count` are bought.
+## How many of the depot GENERAL nodes (save.tree_bought) `prefix`1..`count` are bought.
 static func _nodes(save: SaveGame, prefix: String, count: int) -> int:
 	var bought := 0
 	for i in range(1, count + 1):

@@ -288,8 +288,8 @@ func _input(event: InputEvent) -> void:
 	_mouse_at = mouse.position
 	var open := sheet_of(shown)
 	if open.has_method(&"take_mouse") and open.call(&"take_mouse", mouse, sheet_pixel(_camera.project_ray_origin(mouse.position), _camera.project_ray_normal(mouse.position))):
-		# The sheet's own controls have the mouse (the depot's research tree); the slip names what it is on.
-		_hover(open.call(&"hovered_spot") if open.has_method(&"hovered_spot") else &"")
+		# The sheet's own controls have the mouse (the depot's research tree, with its own popup): no slip.
+		_hover(&"")
 		return
 	_hover(pick(_camera.project_ray_origin(mouse.position), _camera.project_ray_normal(mouse.position)))
 	if mouse is InputEventMouseMotion:
@@ -692,6 +692,12 @@ func _fly(k: float, sheet: MapSheet, from: Transform3D, to: Transform3D, arc: Ve
 
 func _bounce(k: float, sheet: MapSheet, at: Vector3, height := BOUNCE) -> void:
 	sheet.global_position = at + Vector3.UP * sin(k * PI) * height
+
+
+## The mouse is on spot `what` of the open sheet (&"": nothing), as a sheet that takes the mouse
+## itself says (the war sheet's control box): the hint slip names it.
+func hover_spot(what: StringName) -> void:
+	_hover(what)
 
 
 func _hover(what: StringName) -> void:

@@ -121,7 +121,15 @@ func _start_war(table: MapTable, farm: StringName) -> void:
 	_finish(table)
 
 
-## Fights the war on the open war sheet to a win: three field associates on its first landing spot.
+## The war's end plays out: its after-action report slides in, its grade lands, and it is filed.
+func _file_report(war: WarSheet) -> void:
+	war._dealing.custom_step(10.0)
+	(war.get_node("Report") as WarReport)._moving.custom_step(10.0)
+	assert_bool(war.file_report()).is_true()
+	war._dealing.custom_step(10.0)
+
+
+## Fights the war on the open war sheet to a win: three field associates in its first zone.
 func _win_war(table: MapTable) -> WarSheet:
 	var war := table.sheet_of(&"war") as WarSheet
 	war.begin(war.farm, {field_associate = 3})
@@ -228,6 +236,7 @@ func test_stamping_the_world_map_card_drops_the_world_roll_into_the_holder_the_n
 
 
 func test_the_holder_carries_the_sheet_one_level_up_and_a_click_on_it_goes_back() -> void:
+	WorldRegister.annex(SaveManager.save, HOME)  # Sulvania borders it: reachable.
 	var table := _table_with_world()
 	_at_map(table)
 	var slot: Vector3 = table.get_node("Holder/Slot").global_position
@@ -247,18 +256,23 @@ func test_the_holder_carries_the_sheet_one_level_up_and_a_click_on_it_goes_back(
 	assert_object(table.sheet_of(&"sulvania")).is_null()
 
 
-func test_clicking_a_country_on_the_world_sheet_opens_that_countrys_sheet() -> void:
+func test_clicking_a_reachable_country_on_the_world_sheet_opens_its_sheet_and_an_unreachable_one_does_not() -> void:
+	WorldRegister.annex(SaveManager.save, HOME)
 	var table := _table_with_world()
 	table.show_sheet(&"world")
 	_finish(table)
 	_at_map(table)
 	var world := table.sheet_of(&"world")
-	var token: Node3D = (world as WorldRegister)._sites[&"endmark"]
+	var far: Node3D = (world as WorldRegister)._sites[&"endmark"]
+	_click(table, _camera.unproject_position(far.global_position))  # Not yet reachable: refused.
+	_finish(table)
+	assert_str(table.shown).is_equal(&"world")
+	var token: Node3D = (world as WorldRegister)._sites[&"sulvania"]
 	_click(table, _camera.unproject_position(token.global_position))
 	_finish(table)
-	assert_str(table.shown).is_equal(&"endmark")
-	assert_object(table.sheet_of(&"endmark") as FarmRegister).is_not_null()
-	assert_int(SaveManager.save.farms_owned.size()).is_equal(0)  # Looking costs nothing.
+	assert_str(table.shown).is_equal(&"sulvania")
+	assert_object(table.sheet_of(&"sulvania") as FarmRegister).is_not_null()
+	assert_int(SaveManager.save.farms_owned.size()).is_equal(8)  # Looking costs nothing.
 
 
 func test_hovering_a_country_on_the_world_sheet_starts_loading_its_sheet() -> void:
@@ -280,15 +294,15 @@ func test_starting_a_war_rolls_out_the_war_sheet_for_that_farm() -> void:
 	assert_str(table.held()).is_equal(HOME)  # Its country, rolled up in the holder.
 	var war := table.sheet_of(&"war") as WarSheet
 	assert_str(war.farm).is_equal(&"K-7")
-	assert_str((war.get_node("Page/Sheet/Country") as Label).text).is_equal("Kohlmark")
-	assert_str((war.get_node("Page/Sheet/Farm") as Label).text).contains("K-7")
+	assert_str(war._map.scene_file_path).is_equal(WarMap.MAPS + "K-6.tscn")  # The first war at home, whichever farm.
 	assert_int(SaveManager.save.farms_owned.size()).is_equal(5)
 
 
 func test_losing_the_war_costs_only_what_the_declaration_paid() -> void:
 	_at_war()
+	SaveManager.save.farms_owned.append("K-6")  # The second war at home: K-7's map, its tower, one associate is not enough.
 	var table := _table()
-	var coins := SaveManager.save.coins - int(WorldRegister.COUNTRIES[HOME].wars[0].coins)
+	var coins := SaveManager.save.coins - int(WorldRegister.COUNTRIES[HOME].wars[1].coins)
 	var stock := SaveManager.save.stock
 	_start_war(table, &"K-7")
 	_at_map(table)
@@ -301,7 +315,7 @@ func test_losing_the_war_costs_only_what_the_declaration_paid() -> void:
 	war.start_fight()
 	war.fight.tick(WarRules.fight_seconds(SaveManager.save))
 	war._process(0.0)
-	war._dealing.custom_step(10.0)
+	_file_report(war)
 	_finish(table)
 	assert_str(table.shown).is_equal(HOME)
 	assert_int(SaveManager.save.coins).is_equal(coins)
@@ -317,7 +331,7 @@ func test_winning_the_war_takes_that_one_farm_and_its_moment_plays_back_on_its_c
 	var war := _win_war(table)
 	assert_array(Array(SaveManager.save.farms_owned)).is_equal(["K-1", "K-2", "K-3", "K-4", "K-5", "K-7"])
 	assert_bool(FarmRegister.lamp_held).is_true()  # The Field Line waits for the moment.
-	war._dealing.custom_step(10.0)
+	_file_report(war)
 	_finish(table)
 	assert_str(table.shown).is_equal(HOME)
 	var country := table.sheet_of(HOME) as FarmRegister
@@ -337,7 +351,7 @@ func test_a_war_abroad_comes_back_to_that_country_with_the_world_in_the_holder_a
 	assert_str(table.held()).is_equal(&"world")
 	_start_war(table, &"ostrevia-2")
 	assert_str(table.held()).is_equal(&"ostrevia")  # The world roll made room.
-	_win_war(table)._dealing.custom_step(10.0)
+	_file_report(_win_war(table))
 	_finish(table)
 	assert_str(table.shown).is_equal(&"ostrevia")
 	assert_str(table.held()).is_equal(&"")
@@ -632,6 +646,32 @@ func test_the_open_sheet_with_its_border_is_inside_the_frame_at_16_9_and_21_9() 
 			for z: float in [0.15, 3.35]:
 				var at := _on_screen(table, Vector3(x, 0.752, z), aspect)
 				assert_float(maxf(absf(at.x), absf(at.y))).override_failure_message("the sheet's corner at %s, %s is off the screen" % [x, z]).is_less(0.98)
+
+
+func test_a_declaration_of_war_lies_whole_on_the_screen_at_16_9_16_10_21_9_and_720p_beside_any_farm() -> void:
+	# FramedCamera: at or above 16:9 the height is kept, below it the 16:9 width.
+	_at_war()
+	var table := _table()
+	var sheet := table.sheet_of(HOME) as FarmRegister
+	var paper := FarmDeed.SIZE * FarmDeed.PIXELS_PER_METRE * FarmDeed.WAR_SCALE
+	var up := sheet.global_basis.y.normalized() * FarmRegister.DEED_LIFT
+	for screen: Vector2i in [Vector2i(1920, 1080), Vector2i(1920, 1200), Vector2i(2560, 1080), Vector2i(1280, 720)]:
+		var aspect := float(screen.x) / screen.y
+		var half := Vector2(tan(deg_to_rad(20.0)) * aspect, tan(deg_to_rad(20.0)))
+		if aspect < 16.0 / 9.0:
+			half = Vector2(tan(deg_to_rad(20.0)) * 16.0 / 9.0, tan(deg_to_rad(20.0)) * 16.0 / 9.0 / aspect)
+		for x in range(150, 3100, 100):
+			for y: float in [120.0, 900.0, 1680.0]:
+				var corner := FarmRegister.deed_corner(Vector2(x, y), FarmDeed.WAR_SCALE)
+				for k: Vector2 in [Vector2.ZERO, Vector2(1, 0), Vector2(0, 1), Vector2.ONE]:
+					var point := sheet.point_at(corner + paper * k) + up
+					var local := (table.get_node("View") as Node3D).global_transform.affine_inverse() * point
+					var at := Vector2(local.x / -local.z / half.x, -local.y / -local.z / half.y)
+					assert_float(maxf(absf(at.x), absf(at.y))).override_failure_message("%s: the paper beside %d, %d is off the screen at %s" % [screen, x, y, at]).is_less(0.99)
+	# And it is big: well over half the screen's height at 16:9.
+	var top := _on_screen(table, sheet.point_at(FarmRegister.deed_corner(Vector2(800, 900), FarmDeed.WAR_SCALE)) + up)
+	var foot := _on_screen(table, sheet.point_at(FarmRegister.deed_corner(Vector2(800, 900), FarmDeed.WAR_SCALE) + Vector2(0, paper.y)) + up)
+	assert_float(absf(foot.y - top.y) / 2.0).is_greater(0.6)
 
 
 func test_the_open_sheet_takes_more_than_three_quarters_of_the_screens_height() -> void:
@@ -1262,7 +1302,7 @@ func test_the_console_buttons_still_take_the_camera_where_they_say() -> void:
 	assert_bool((desk.get_node("Press") as SoundCue).playing).is_true()
 
 
-func test_the_depot_research_trees_hover_text_shows_in_the_screen_space_hint_slip() -> void:
+func test_the_depot_research_tree_hovers_with_its_own_popup_and_the_map_shows_no_hint_slip() -> void:
 	SaveManager.save.stamped.append("war_mode")
 	SaveManager.save.depot_dropped = true
 	var table := _table()
@@ -1270,7 +1310,7 @@ func test_the_depot_research_trees_hover_text_shows_in_the_screen_space_hint_sli
 	table.open_depot()
 	_finish(table)
 	var sheet := table.sheet_of(MapTable.DEPOT) as DepotSheet
-	var tree := sheet._columns["field_associate"].get_node("Tree") as UpgradeTree
+	var tree := sheet.get_node("Page/Sheet/Tree") as UpgradeTree
 	var wheel: Array = tree._wheel()
 	var node: Vector2 = sheet._art_rect(tree).position + wheel[0] + DepotResearch.node_data("fa_hp_1").at * wheel[1]
 	var move := InputEventMouseMotion.new()
@@ -1279,10 +1319,33 @@ func test_the_depot_research_trees_hover_text_shows_in_the_screen_space_hint_sli
 	tree._hover(node - sheet._art_rect(tree).position)  # What the page's GUI hands the tree (it takes pushed input on its next frame).
 	table._input(move)
 	table._process(0.0)
-	assert_bool(table._hint.visible).is_true()
-	assert_str(table._hint.text).contains("BODY ARMOUR")
-	assert_bool(table._hint.get_parent() is CanvasLayer).is_true()  # Over the 3D view, at screen size.
+	assert_str(tree._hovered).is_equal("fa_hp_1")  # The tree's own popup names it.
+	assert_bool(table._hint.visible).is_false()
 	move.position = _camera.unproject_position(sheet.point_at(Vector2(2600, 700)))  # Bare paper.
 	table._input(move)
 	table._process(0.0)
 	assert_bool(table._hint.visible).is_false()
+
+
+func test_the_depot_hire_hint_lies_beside_the_hovered_columns_button_on_the_left_and_on_the_right() -> void:
+	SaveManager.save.stamped.append_array(["war_mode", "unit_charge", "unit_senior", "unit_pult", "unit_courier"])
+	SaveManager.save.depot_dropped = true
+	var table := _table()
+	_at_map(table)
+	table.open_depot()
+	_finish(table)
+	var sheet := table.sheet_of(MapTable.DEPOT) as DepotSheet
+	# The test window is square: the courier column lies past its edge, so the pult crew stands in for the right.
+	for unit: String in ["field_associate", "pult_crew"]:
+		var spot := StringName("buy:" + unit)
+		var move := InputEventMouseMotion.new()
+		move.position = _camera.unproject_position(sheet.point_at(sheet._art_rect(sheet._columns[unit].get_node("Hire")).get_center()))
+		table._input(move)
+		table._process(0.0)
+		assert_str(table._hovered).is_equal(spot)
+		assert_bool(table._hint.visible).is_true()
+		var slip := Rect2(table._hint.position, table._hint.size)
+		var box := table._on_screen_box(sheet, sheet.spot_box(spot))
+		assert_bool(slip.intersects(box)).override_failure_message(unit + ": covers its button").is_false()
+		assert_bool(slip.grow(MapTable.HINT_GAP + 2.0).intersects(box)).override_failure_message(unit + ": not beside it").is_true()
+

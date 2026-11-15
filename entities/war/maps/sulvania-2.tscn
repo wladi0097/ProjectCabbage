@@ -1,0 +1,80 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_ch8jx"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_5vfvk"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/river.tscn" id="3_h8eth"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/bridge.tscn" id="8_nyc5q"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/wall_stone.tscn" id="9_6et6j"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="10_e46g7"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cctv.tscn" id="11_57yeh"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/mortar.tscn" id="12_4nfxy"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="13_ix5sb"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="14_tuk8i"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/field.tscn" id="18_ckotk"]
+
+[node name="Sulvania2" type="Node3D" unique_id=1121723851]
+script = ExtResource("1_ch8jx")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 8,
+&"cabbages": 5500,
+&"k": 1.8800000000000001,
+&"style": "mixed"
+}
+site_name = "THE TOLL BRIDGES"
+briefing = "Two bridges. Both charge."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=1583172338 instance=ExtResource("2_5vfvk")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 3, 0.24, 0, 0.39999998)
+
+[node name="Zone2" type="Node3D" parent="." unique_id=2122053531 instance=ExtResource("2_5vfvk")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 3, 0.24, 0, 1.36)
+
+[node name="River1" type="Node3D" parent="." unique_id=699980181 instance=ExtResource("3_h8eth")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4399999, 0, 0.88)
+size = Vector2i(2, 11)
+
+[node name="Bridge1" type="Node3D" parent="." unique_id=218033840 instance=ExtResource("8_nyc5q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.39999998)
+
+[node name="Bridge2" type="Node3D" parent="." unique_id=561891185 instance=ExtResource("8_nyc5q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.39999998)
+
+[node name="Bridge3" type="Node3D" parent="." unique_id=1733721927 instance=ExtResource("8_nyc5q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 1.36)
+
+[node name="Bridge4" type="Node3D" parent="." unique_id=1397328781 instance=ExtResource("8_nyc5q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.36)
+
+[node name="WallStone1" type="Node3D" parent="." unique_id=1161481032 instance=ExtResource("9_6et6j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0.39999998)
+
+[node name="WallStone2" type="Node3D" parent="." unique_id=2053915857 instance=ExtResource("9_6et6j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 1.36)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=916870207 instance=ExtResource("10_e46g7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 0.39999998)
+
+[node name="Cctv1" type="Node3D" parent="." unique_id=1556411325 instance=ExtResource("11_57yeh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 1.36)
+
+[node name="Mortar1" type="Node3D" parent="." unique_id=1473148096 instance=ExtResource("12_4nfxy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.24, 0, 1.28)
+
+[node name="Cannon2" type="Node3D" parent="." unique_id=2118021563 instance=ExtResource("10_e46g7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 0.88)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=2101955622 instance=ExtResource("13_ix5sb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.72, 0, 0.79999995)
+
+[node name="Road1" type="Node3D" parent="." unique_id=981927471 instance=ExtResource("14_tuk8i")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.39999998)
+size = Vector2i(5, 1)
+
+[node name="Road2" type="Node3D" parent="." unique_id=1919257067 instance=ExtResource("14_tuk8i")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 1.36)
+size = Vector2i(5, 1)
+
+[node name="Field1" type="Node3D" parent="." unique_id=1641888060 instance=ExtResource("18_ckotk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.79999995, 0, 0.88)
+size = Vector2i(4, 3)

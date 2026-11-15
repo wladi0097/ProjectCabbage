@@ -13,15 +13,62 @@ func _save(cards: Array = ["war_mode"], nodes: Array = [], stock := 20000) -> Sa
 func test_war_mode_hires_field_associates_only() -> void:
 	var save := _save()
 	assert_bool(WarRules.unit_unlocked(save, "field_associate")).is_true()
-	for unit in ["compliance_officer", "senior_asset", "pult_crew"]:
+	for unit in ["restructuring_charge", "senior_asset", "pult_crew", "courier"]:
 		assert_bool(WarRules.unit_unlocked(save, unit)).is_false()
 	assert_bool(WarRules.unit_unlocked(_save([]), "field_associate")).is_false()
 
 
 func test_each_unit_card_hires_its_unit() -> void:
-	var save := _save(["war_mode", "unit_compliance", "unit_senior", "unit_pult"])
+	var save := _save(["war_mode", "unit_charge", "unit_senior", "unit_pult", "unit_courier"])
 	for unit in WarRules.UNITS:
 		assert_bool(WarRules.unit_unlocked(save, unit)).is_true()
+
+
+func test_each_unit_type_waits_for_its_own_card() -> void:
+	for unit: String in WarRules.UNITS:
+		if unit == "field_associate":
+			continue
+		var cards := ["war_mode", "unit_charge", "unit_senior", "unit_pult", "unit_courier"]
+		cards.erase(WarRules.UNIT_CARD[unit])
+		assert_bool(WarRules.unit_unlocked(_save(cards), unit)).override_failure_message(unit).is_false()
+		assert_bool(WarRules.unit_unlocked(_save(["war_mode", WarRules.UNIT_CARD[unit]]), unit)).override_failure_message(unit).is_true()
+		assert_bool(WarRules.unit_unlocked(_save([WarRules.UNIT_CARD[unit]]), unit)).override_failure_message(unit).is_false()
+
+
+func test_a_senior_asset_takes_two_places_of_the_army_cap() -> void:
+	var save := _save(["war_mode", "unit_senior"], [], 100000)
+	assert_int(WarRules.army_cap(save)).is_equal(3)
+	assert_bool(WarRules.buy(save, "senior_asset")).is_true()
+	assert_int(WarRules.army_size(save)).is_equal(2)
+	assert_bool(WarRules.can_buy(save, "senior_asset")).is_false()  # 2 + 2 > 3.
+	assert_bool(WarRules.buy(save, "field_associate")).is_true()
+	assert_int(WarRules.army_size(save)).is_equal(3)
+	WarRules.tick_training(save, 1000.0)
+	assert_dict(save.army).is_equal({senior_asset = 1, field_associate = 1})
+	assert_int(WarRules.army_size(save)).is_equal(3)  # Ready, it still takes two.
+
+
+func test_research_raises_only_its_own_units_stats() -> void:
+	var all := _save(["war_mode", "unit_charge", "unit_senior", "unit_pult", "unit_courier"])
+	for unit: String in WarRules.UNITS:
+		all.unit_research = PackedStringArray()
+		for node: Dictionary in WarRules.RESEARCH:
+			if node.unit == unit:
+				all.unit_research.append(node.id)
+		for other: String in WarRules.UNITS:
+			var changed := WarRules.unit_stats(all, other) != WarRules.unit_stats(_save(), other)
+			assert_bool(changed).override_failure_message("%s research, %s stats" % [unit, other]).is_equal(other == unit)
+
+
+func test_structural_assessment_takes_security_grade_fencing_in_one_blast() -> void:
+	var save := _save(["war_mode", "unit_charge"])
+	var blast := func() -> float:
+		var stats := WarRules.unit_stats(save, "restructuring_charge")
+		return float(stats.damage) * float(stats.wall_mult)
+	assert_float(blast.call()).is_greater_equal(WarFight.BUILDINGS.wall_stone.hp)
+	assert_float(blast.call()).is_less(WarFight.BUILDINGS.wall_steel.hp)
+	save.unit_research = PackedStringArray(["rc_hp_1", "rc_wall_1"])
+	assert_float(blast.call()).is_greater_equal(WarFight.BUILDINGS.wall_steel.hp)
 
 
 func test_the_army_cap_starts_at_three() -> void:
@@ -147,7 +194,7 @@ func test_every_unit_has_a_small_research_tree() -> void:
 
 
 func test_each_research_step_raises_its_stat_by_at_least_a_quarter() -> void:
-	var all := _save(["war_mode", "unit_compliance", "unit_senior", "unit_pult"])
+	var all := _save(["war_mode", "unit_charge", "unit_senior", "unit_pult", "unit_courier"])
 	for node in WarRules.RESEARCH:
 		var old := float(WarRules.unit_stats(all, node.unit)[node.stat])
 		all.unit_research.append(node.id)

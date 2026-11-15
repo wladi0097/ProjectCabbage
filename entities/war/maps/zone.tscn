@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://entities/war/maps/zone.gdshader" id="1_hatch"]
+
+[sub_resource type="ShaderMaterial" id="Hatch"]
+render_priority = 0
+shader = ExtResource("1_hatch")
+shader_parameter/ours = Vector3(0.114, 0.345, 0.016)
+shader_parameter/outline = 0.016
+shader_parameter/cell = 0.16
+
+[sub_resource type="PlaneMesh" id="Cell"]
+material = SubResource("Hatch")
+size = Vector2(0.16, 0.16)
+
+[node name="Zone" type="Node3D"]
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.001, 0)
+gi_mode = 0
+cast_shadow = 0
+mesh = SubResource("Cell")

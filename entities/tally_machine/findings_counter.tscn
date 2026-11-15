@@ -91,14 +91,6 @@ font = ExtResource("4_font")
 font_size = 64
 outline_size = 0
 
-[node name="FullLamp" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.3, 0.15)
-visible = false
-light_color = Color(1, 0.16, 0.1, 1)
-light_energy = 0.6
-light_bake_mode = 0
-omni_range = 0.45
-
 [node name="Refuse" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_refuse")
 volume_db = -8.0

@@ -2299,7 +2299,6 @@ Straight to the farm,Straight to the farm,Direkt zum Hof
 Straight to the map,Straight to the map,Direkt zur Karte
 WE NEED BIGGER ARMIES,WE NEED BIGGER ARMIES,WIR BRAUCHEN GRÖSSERE ARMEEN
 The board has reviewed the war reports. The victories are adequate. The armies are not: a war fought by a handful of staff is a meeting. The field workforce is to be expanded. The requisition is in your tray. Keep the paperwork for the fallen in order.,The board has reviewed the war reports. The victories are adequate. The armies are not: a war fought by a handful of staff is a meeting. The field workforce is to be expanded. The requisition is in your tray. Keep the paperwork for the fallen in order.,Der Vorstand hat die Kriegsberichte geprüft. Die Siege sind ausreichend. Die Armeen sind es nicht: Ein Krieg mit einer Handvoll Mitarbeitern ist eine Besprechung. Die Feldbelegschaft wird aufgestockt. Die Anforderung liegt in Ihrem Eingangskorb. Halten Sie die Unterlagen der Gefallenen in Ordnung.
-HIRE COMPLIANCE OFFICERS,HIRE COMPLIANCE OFFICERS,COMPLIANCE-BEAUFTRAGTE EINSTELLEN
 "Every wall is a regulatory matter. Some are settled on contact.
 Needs 8 farms. Compliance officers join the personnel depot. Each walks to the nearest wall and settles it on contact, himself included.","Every wall is a regulatory matter. Some are settled on contact.
 Needs 8 farms. Compliance officers join the personnel depot. Each walks to the nearest wall and settles it on contact, himself included.","Jede Mauer ist eine Regelungsfrage. Manche werden bei Berührung geklärt.
@@ -2311,24 +2310,14 @@ Needs 10 farms. Two more staff of any kind may take the field in one war.","Pers
 Braucht 10 Höfe. In jedem Krieg dürfen zwei Mitarbeiter mehr ins Feld, gleich welcher Art."
 AUTHORISE TACTICAL ADJUSTMENTS,AUTHORISE TACTICAL ADJUSTMENTS,TAKTISCHE ANPASSUNGEN GENEHMIGEN
 "The plan may now be revised while it fails.
-Needs 11 farms. Staff may still be placed on a landing spot after the attack has started.","The plan may now be revised while it fails.
-Needs 11 farms. Staff may still be placed on a landing spot after the attack has started.","Der Plan darf jetzt überarbeitet werden, während er scheitert.
-Braucht 11 Höfe. Mitarbeiter dürfen auch nach Beginn des Angriffs noch auf einen Landeplatz gesetzt werden."
-PROMOTE SENIOR ASSETS,PROMOTE SENIOR ASSETS,LEITENDE MITARBEITER BEFÖRDERN
-"Slow, expensive and very hard to remove. Like all senior staff.
-Needs 13 farms. Senior assets join the personnel depot. They ignore everything but the towers and take a great deal of punishment on the way.","Slow, expensive and very hard to remove. Like all senior staff.
-Needs 13 farms. Senior assets join the personnel depot. They ignore everything but the towers and take a great deal of punishment on the way.","Langsam, teuer und kaum zu entfernen. Wie alle leitenden Mitarbeiter.
-Braucht 13 Höfe. Leitende Mitarbeiter kommen ins Personaldepot. Sie beachten nichts außer den Türmen und stecken unterwegs sehr viel ein."
+Needs 10 farms. Staff may still be placed in a hatched zone after the attack has started.","The plan may now be revised while it fails.
+Needs 10 farms. Staff may still be placed in a hatched zone after the attack has started.","Der Plan darf jetzt überarbeitet werden, während er scheitert.
+Braucht 10 Höfe. Mitarbeiter dürfen auch nach Beginn des Angriffs noch in eine schraffierte Zone gesetzt werden."
 STRATEGIC WITHDRAWAL PROTOCOL,STRATEGIC WITHDRAWAL PROTOCOL,PROTOKOLL ZUM STRATEGISCHEN RÜCKZUG
 "It is not a retreat. It is a return to head office.
 Needs 15 farms. A war can be called off with a RETREAT button. 30% of the staff placed come home; the rest are written off.","It is not a retreat. It is a return to head office.
 Needs 15 farms. A war can be called off with a RETREAT button. 30% of the staff placed come home; the rest are written off.","Es ist kein Rückzug. Es ist eine Rückkehr in die Zentrale.
 Braucht 15 Höfe. Ein Krieg kann mit einem RÜCKZUG-Knopf abgebrochen werden. 30% der eingesetzten Mitarbeiter kommen heim, der Rest wird abgeschrieben."
-COMMISSION CABBAGE-PULT CREWS,COMMISSION CABBAGE-PULT CREWS,KOHLSCHLEUDER-TRUPPS BEAUFTRAGEN
-"The cabbage has always been a projectile. Now it is a budget line.
-Needs 18 farms. Cabbage-pult crews join the personnel depot. They shell the nearest defence from a distance, and anything standing next to it.","The cabbage has always been a projectile. Now it is a budget line.
-Needs 18 farms. Cabbage-pult crews join the personnel depot. They shell the nearest defence from a distance, and anything standing next to it.","Der Kohlkopf war schon immer ein Geschoss. Jetzt ist er ein Haushaltsposten.
-Braucht 18 Höfe. Kohlschleuder-Trupps kommen ins Personaldepot. Sie beschießen die nächste Verteidigung aus der Ferne und alles, was daneben steht."
 EXTENDED MANDATE,EXTENDED MANDATE,ERWEITERTES MANDAT
 "The war has been granted an extension.
 Every fight lasts 105 s, not 90 s.","The war has been granted an extension.
@@ -2455,7 +2444,6 @@ SPEED,SPEED,TEMPO
 RANGE,RANGE,REICHWEITE
 SPLASH,SPLASH,STREUUNG
 NEAREST DEFENCE,NEAREST DEFENCE,NÄCHSTE VERTEIDIGUNG
-TOWERS ONLY,TOWERS ONLY,NUR TÜRME
 WALLS FIRST,WALLS FIRST,MAUERN ZUERST
 READY %d,READY %d,BEREIT %d
 IN TRAINING %d,IN TRAINING %d,IN AUSBILDUNG %d
@@ -2465,7 +2453,7 @@ NEXT READY IN %d s,NEXT READY IN %d s,NÄCHSTER BEREIT IN %d s
 STAFF AT CAPACITY,STAFF AT CAPACITY,PERSONALOBERGRENZE ERREICHT
 NOT ENOUGH CABBAGES,NOT ENOUGH CABBAGES,NICHT GENUG KOHLKÖPFE
 STAFF %d / %d,STAFF %d / %d,PERSONAL %d / %d
-"Requisition one %s: %s cabbages, %d s of training.","Requisition one %s: %s cabbages, %d s of training.","Einen %s anfordern: %s Kohlköpfe, %d s Ausbildung."
+"Requisition one %s: %s cabbages, %d s of training.","Requisition one %s: %s cabbages, %d s of training.","Anfordern, 1 × %s: %s Kohlköpfe, %d s Ausbildung."
 Staff at capacity: %d / %d.,Staff at capacity: %d / %d.,Personalobergrenze erreicht: %d / %d.
 Short: %s cabbages.,Short: %s cabbages.,Es fehlen %s Kohlköpfe.
 %s for every %s: ¶%s.,%s for every %s: ¶%s.,%s für jeden %s: ¶%s.
@@ -2546,3 +2534,261 @@ Field associates take another 30% more damage before they fall.","Die Gefahren w
 Außendienstmitarbeiter halten weitere 30 % mehr Schaden aus, bevor sie fallen."
 HIRE AND TRAIN,HIRE AND TRAIN,EINSTELLEN UND AUSBILDEN
 Cost: ¶%s.,Cost: ¶%s.,Kosten: ¶%s.
+BUTTON START,START,START
+ABORT,ABORT,ABBRUCH
+"Staff are standing outside the hatched zones. Move them in, or back onto the desk.","Staff are standing outside the hatched zones. Move them in, or back onto the desk.",Personal steht außerhalb der schraffierten Zonen. Hineinstellen oder zurück auf den Schreibtisch.
+Set staff down in a hatched zone first.,Set staff down in a hatched zone first.,Zuerst Personal in eine schraffierte Zone stellen.
+Commence the engagement. Staff placed are committed.,Commence the engagement. Staff placed are committed.,Einsatz beginnen. Eingesetztes Personal ist gebunden.
+Call it off. Staff and the war's fee are refunded.,Call it off. Staff and the war's fee are refunded.,Abblasen. Personal und Kriegsgebühr werden erstattet.
+AUTHORISE RESTRUCTURING CHARGES,AUTHORISE RESTRUCTURING CHARGES,UMSTRUKTURIERUNGSLADUNGEN GENEHMIGEN
+"Every wall is a regulatory matter. Some are settled on contact.
+Needs 8 farms. Restructuring charges join the personnel depot. Each walks straight at the first fence between it and the nearest defence and settles it on contact, itself included. Security grade takes two.","Every wall is a regulatory matter. Some are settled on contact.
+Needs 8 farms. Restructuring charges join the personnel depot. Each walks straight at the first fence between it and the nearest defence and settles it on contact, itself included. Security grade takes two.","Jede Mauer ist eine Regelungsfrage. Manche werden bei Berührung geklärt.
+Braucht 8 Höfe. Umstrukturierungsladungen kommen ins Personaldepot. Jede geht geradewegs auf den ersten Zaun zwischen sich und der nächsten Verteidigung zu und klärt ihn bei Berührung, sich selbst eingeschlossen. Die Sicherheitsstufe braucht zwei."
+PROMOTE SENIOR ASSETS,PROMOTE SENIOR ASSETS,LEITENDE MITARBEITER BEFÖRDERN
+"Slow, expensive and very hard to remove. Like all senior staff.
+Needs 11 farms. Senior assets join the personnel depot. They go for the defences only, take a great deal of punishment on the way, and count as two staff in the field.","Slow, expensive and very hard to remove. Like all senior staff.
+Needs 11 farms. Senior assets join the personnel depot. They go for the defences only, take a great deal of punishment on the way, and count as two staff in the field.","Langsam, teuer und kaum zu entfernen. Wie alle leitenden Mitarbeiter.
+Braucht 11 Höfe. Leitende Mitarbeiter kommen ins Personaldepot. Sie gehen nur auf die Verteidigung los, stecken unterwegs sehr viel ein und zählen im Feld doppelt."
+COMMISSION CABBAGE-PULT CREWS,COMMISSION CABBAGE-PULT CREWS,KOHLSCHLEUDER-TRUPPS BEAUFTRAGEN
+"The cabbage has always been a projectile. Now it is a budget line.
+Needs 14 farms. Cabbage-pult crews join the personnel depot. They lob cabbages at the nearest defence from a distance, over any fence, and hit whatever stands next to it.","The cabbage has always been a projectile. Now it is a budget line.
+Needs 14 farms. Cabbage-pult crews join the personnel depot. They lob cabbages at the nearest defence from a distance, over any fence, and hit whatever stands next to it.","Der Kohlkopf war schon immer ein Geschoss. Jetzt ist er ein Haushaltsposten.
+Braucht 14 Höfe. Kohlschleuder-Trupps kommen ins Personaldepot. Sie werfen Kohlköpfe aus der Distanz auf die nächste Verteidigung, über jeden Zaun hinweg, und treffen, was daneben steht."
+ENGAGE EXPRESS COURIERS,ENGAGE EXPRESS COURIERS,EILKURIERE BEAUFTRAGEN
+"Next-day delivery. Signature not required.
+Needs 17 farms. Express couriers join the personnel depot. They ride fast, hop any fence and leave it standing, and deliver themselves to the nearest defence.","Next-day delivery. Signature not required.
+Needs 17 farms. Express couriers join the personnel depot. They ride fast, hop any fence and leave it standing, and deliver themselves to the nearest defence.","Zustellung am nächsten Tag. Unterschrift nicht erforderlich.
+Braucht 17 Höfe. Eilkuriere kommen ins Personaldepot. Sie fahren schnell, springen über jeden Zaun und lassen ihn stehen, und stellen sich selbst bei der nächsten Verteidigung zu."
+RESTRUCTURING CHARGE,RESTRUCTURING CHARGE,UMSTRUKTURIERUNGSLADUNG
+restructuring charge,restructuring charge,Umstrukturierungsladung
+SENIOR ASSET,SENIOR ASSET,LEITENDER MITARBEITER
+senior asset,senior asset,leitender Mitarbeiter
+CABBAGE-PULT CREW,CABBAGE-PULT CREW,KOHLSCHLEUDER-TRUPP
+cabbage-pult crew,cabbage-pult crew,Kohlschleuder-Trupp
+EXPRESS COURIER,EXPRESS COURIER,EILKURIER
+express courier,express courier,Eilkurier
+PADDED CASING,PADDED CASING,GEPOLSTERTES GEHÄUSE
+"Survives the commute. Usually.
+Restructuring charges take 50% more damage before they fall.","Survives the commute. Usually.
+Restructuring charges take 50% more damage before they fall.","Übersteht den Arbeitsweg. Meistens.
+Umstrukturierungsladungen halten 50 % mehr Schaden aus, bevor sie fallen."
+STRUCTURAL ASSESSMENT,STRUCTURAL ASSESSMENT,STATISCHES GUTACHTEN
+"Every fence has a weak point. It has been found.
+Restructuring charges do 50% more damage to fences: security grade goes in one blast.","Every fence has a weak point. It has been found.
+Restructuring charges do 50% more damage to fences: security grade goes in one blast.","Jeder Zaun hat eine Schwachstelle. Sie wurde gefunden.
+Umstrukturierungsladungen richten an Zäunen 50 % mehr Schaden an: Die Sicherheitsstufe fällt mit einer Ladung."
+WIDER REMIT,WIDER REMIT,ERWEITERTES MANDAT
+"The restructuring now covers the adjoining departments.
+Restructuring charges blast 30% wider.","The restructuring now covers the adjoining departments.
+Restructuring charges blast 30% wider.","Die Umstrukturierung erfasst jetzt auch die angrenzenden Abteilungen.
+Umstrukturierungsladungen sprengen 30 % weiter."
+EXECUTIVE PADDING,EXECUTIVE PADDING,FÜHRUNGSPOLSTERUNG
+"Upholstered at company expense.
+Senior assets take 30% more damage before they fall.","Upholstered at company expense.
+Senior assets take 30% more damage before they fall.","Auf Firmenkosten gepolstert.
+Leitende Mitarbeiter halten 30 % mehr Schaden aus, bevor sie fallen."
+FIRM HANDSHAKE,FIRM HANDSHAKE,FESTER HÄNDEDRUCK
+"Held slightly too long. On purpose.
+Senior assets hit 30% harder.","Held slightly too long. On purpose.
+Senior assets hit 30% harder.","Etwas zu lange gehalten. Mit Absicht.
+Leitende Mitarbeiter treffen 30 % härter."
+COMPANY CAR,COMPANY CAR,DIENSTWAGEN
+"Parked in the space nearest the door.
+Senior assets walk 25% faster.","Parked in the space nearest the door.
+Senior assets walk 25% faster.","Auf dem Platz direkt vor der Tür geparkt.
+Leitende Mitarbeiter gehen 25 % schneller."
+GOLDEN PARACHUTE,GOLDEN PARACHUTE,GOLDENER FALLSCHIRM
+"Removal now costs more than retention.
+Senior assets take another 30% more damage before they fall.","Removal now costs more than retention.
+Senior assets take another 30% more damage before they fall.","Die Entfernung kostet jetzt mehr als das Behalten.
+Leitende Mitarbeiter halten weitere 30 % mehr Schaden aus, bevor sie fallen."
+HEAVIER HEADS,HEAVIER HEADS,SCHWERERE KÖPFE
+"Selected for density, not flavour.
+Cabbage-pult crews hit 30% harder.","Selected for density, not flavour.
+Cabbage-pult crews hit 30% harder.","Nach Dichte ausgewählt, nicht nach Geschmack.
+Kohlschleuder-Trupps treffen 30 % härter."
+LONGER ARM,LONGER ARM,LÄNGERER ARM
+"The arm was extended. The budget was not.
+Cabbage-pult crews throw 25% further.","The arm was extended. The budget was not.
+Cabbage-pult crews throw 25% further.","Der Arm wurde verlängert. Das Budget nicht.
+Kohlschleuder-Trupps werfen 25 % weiter."
+LOOSER LEAVES,LOOSER LEAVES,LOSERE BLÄTTER
+"The leaves come off on impact. That is the point.
+Cabbage-pult crews splash 30% wider.","The leaves come off on impact. That is the point.
+Cabbage-pult crews splash 30% wider.","Die Blätter lösen sich beim Aufprall. Darum geht es.
+Kohlschleuder-Trupps streuen 30 % weiter."
+DENSER CABBAGE,DENSER CABBAGE,DICHTERER KOHL
+"Grown under pressure. Like everyone here.
+Cabbage-pult crews hit another 30% harder.","Grown under pressure. Like everyone here.
+Cabbage-pult crews hit another 30% harder.","Unter Druck gewachsen. Wie alle hier.
+Kohlschleuder-Trupps treffen weitere 30 % härter."
+GEARED HUB,GEARED HUB,GANGSCHALTUNG
+"Three speeds. All of them fast.
+Express couriers ride 25% faster.","Three speeds. All of them fast.
+Express couriers ride 25% faster.","Drei Gänge. Alle schnell.
+Eilkuriere fahren 25 % schneller."
+HELMET POLICY,HELMET POLICY,HELMPFLICHT
+"Mandatory since the incident.
+Express couriers take 30% more damage before they fall.","Mandatory since the incident.
+Express couriers take 30% more damage before they fall.","Pflicht seit dem Vorfall.
+Eilkuriere halten 30 % mehr Schaden aus, bevor sie fallen."
+PRIORITY POST,PRIORITY POST,VORRANGPOST
+"Delivered with force. Signed for by no one.
+Express couriers hit 30% harder.","Delivered with force. Signed for by no one.
+Express couriers hit 30% harder.","Mit Nachdruck zugestellt. Von niemandem quittiert.
+Eilkuriere treffen 30 % härter."
+ASSESSED RESISTANCE,ASSESSED RESISTANCE,EINGESCHÄTZTER WIDERSTAND
+ROUTINE,ROUTINE,ROUTINE
+MODERATE,MODERATE,MÄSSIG
+SERIOUS,SERIOUS,ERHEBLICH
+SEVERE,SEVERE,SCHWERWIEGEND
+CATASTROPHIC,CATASTROPHIC,KATASTROPHAL
+Estimated staff required: %d field associates.,Estimated staff required: %d field associates.,Geschätzter Personalbedarf: %d Außendienstmitarbeiter.
+GENERAL,GENERAL,ALLGEMEIN
+"Standing orders for the whole depot.
+Fight time, training, headcount and retreats, paid in coins.","Standing orders for the whole depot.
+Fight time, training, headcount and retreats, paid in coins.","Daueranweisungen für das ganze Depot.
+Kampfzeit, Ausbildung, Personalstand und Rückzug, bezahlt in Münzen."
+"The backbone of every hostile acquisition.
+Field associate research, paid in Findings.","The backbone of every hostile acquisition.
+Field associate research, paid in Findings.","Das Rückgrat jeder feindlichen Übernahme.
+Forschung für Außendienstmitarbeiter, bezahlt in Befunden."
+"Single use. Highly effective. Fully deductible.
+Restructuring charge research, paid in Findings.","Single use. Highly effective. Fully deductible.
+Restructuring charge research, paid in Findings.","Einmalig. Hochwirksam. Voll absetzbar.
+Forschung für Umstrukturierungsladungen, bezahlt in Befunden."
+"Expensive to keep, impossible to dismiss.
+Senior asset research, paid in Findings.","Expensive to keep, impossible to dismiss.
+Senior asset research, paid in Findings.","Teuer im Unterhalt, unmöglich zu entlassen.
+Forschung für leitende Mitarbeiter, bezahlt in Befunden."
+"Produce, delivered at speed.
+Cabbage-pult crew research, paid in Findings.","Produce, delivered at speed.
+Cabbage-pult crew research, paid in Findings.","Frischware, mit Wucht geliefert.
+Forschung für Kohlschleuder-Trupps, bezahlt in Befunden."
+"Always on time. Never signed for.
+Express courier research, paid in Findings.","Always on time. Never signed for.
+Express courier research, paid in Findings.","Immer pünktlich. Nie quittiert.
+Forschung für Eilkuriere, bezahlt in Befunden."
+Estimated staff required: exceeds current headcount.,Estimated staff required: exceeds current headcount.,Geschätzter Personalbedarf: übersteigt den aktuellen Personalstand.
+"PERSONNEL
+DEPOT","PERSONNEL
+DEPOT","PERSONAL-
+DEPOT"
+FORM 9-R  AFTER-ACTION REPORT,FORM 9-R  AFTER-ACTION REPORT,FORMULAR 9-R  EINSATZBERICHT
+OUTCOME,OUTCOME,ERGEBNIS
+TIME ON SITE,TIME ON SITE,ZEIT VOR ORT
+STAFF,STAFF,PERSONAL
+DEPLOYED,DEPLOYED,EINGESETZT
+LOST,LOST,VERLOREN
+CABBAGES WRITTEN OFF,CABBAGES WRITTEN OFF,ABGESCHRIEBENE KOHLKÖPFE
+DEFENCES DECOMMISSIONED,DEFENCES DECOMMISSIONED,STILLGELEGTE ABWEHRANLAGEN
+GRADE AND REMARKS,GRADE AND REMARKS,BEWERTUNG UND ANMERKUNGEN
+FILE REPORT,FILE REPORT,BERICHT ABLEGEN
+%s of %s,%s of %s,%s von %s
+%d of %d,%d of %d,%d von %d
+EXEMPLARY,EXEMPLARY,VORBILDLICH
+ACCEPTABLE,ACCEPTABLE,AKZEPTABEL
+REGRETTABLE,REGRETTABLE,BEDAUERLICH
+Losses within tolerance. The tolerance has been lowered.,Losses within tolerance. The tolerance has been lowered.,Verluste im Toleranzbereich. Der Toleranzbereich wurde gesenkt.
+Head office has requested the method in writing.,Head office has requested the method in writing.,Die Zentrale erbittet die Methode in schriftlicher Form.
+Commendation issued. Commendations carry no salary.,Commendation issued. Commendations carry no salary.,Belobigung erteilt. Belobigungen sind nicht vergütet.
+The site is ours. The staff costs have been noted.,The site is ours. The staff costs have been noted.,Der Standort gehört uns. Die Personalkosten wurden vermerkt.
+Objective met. Efficiency will be discussed at your review.,Objective met. Efficiency will be discussed at your review.,Ziel erreicht. Über die Effizienz sprechen wir im Mitarbeitergespräch.
+"A satisfactory result, for a given value of satisfactory.","A satisfactory result, for a given value of satisfactory.","Ein zufriedenstellendes Ergebnis, je nach Auslegung von zufriedenstellend."
+The farm remains in private hands. This is being looked into.,The farm remains in private hands. This is being looked into.,Der Hof bleibt in Privatbesitz. Die Angelegenheit wird geprüft.
+Staff losses have been reclassified as a learning experience.,Staff losses have been reclassified as a learning experience.,Die Personalverluste wurden als Lernerfahrung umgebucht.
+Please do not discuss this engagement with the shareholders.,Please do not discuss this engagement with the shareholders.,Bitte erwähnen Sie diesen Einsatz nicht gegenüber den Aktionären.
+Staff were relocated rearward ahead of schedule.,Staff were relocated rearward ahead of schedule.,Das Personal wurde vorzeitig nach hinten verlegt.
+A withdrawal is not a defeat. It is merely filed as one.,A withdrawal is not a defeat. It is merely filed as one.,Ein Rückzug ist keine Niederlage. Er wird nur so abgelegt.
+The remaining staff have been asked to stop looking back.,The remaining staff have been asked to stop looking back.,"Das verbliebene Personal wurde gebeten, nicht mehr zurückzublicken."
+THE HOLDOUT,THE HOLDOUT,DER VERWEIGERER
+One farmhouse. One fence. No further questions.,One farmhouse. One fence. No further questions.,Ein Bauernhaus. Ein Zaun. Keine weiteren Fragen.
+THE SUPERVISED PLOT,THE SUPERVISED PLOT,DAS ÜBERWACHTE GRUNDSTÜCK
+They have installed a supervisor. We have brought three of you.,They have installed a supervisor. We have brought three of you.,Man hat dort einen Aufseher eingesetzt. Wir haben drei von Ihnen mitgebracht.
+THE LAST NEIGHBOUR,THE LAST NEIGHBOUR,DER LETZTE NACHBAR
+The last address in Kohlmark that is not ours. It has a yard and a mailing list.,The last address in Kohlmark that is not ours. It has a yard and a mailing list.,"Die letzte Adresse in Kohlmark, die nicht uns gehört. Sie hat einen Hof und einen Verteiler."
+THE GATED COMMUNITY,THE GATED COMMUNITY,DIE GESCHLOSSENE WOHNANLAGE
+Masonry on three and a half sides. The remaining half is a garden gate.,Masonry on three and a half sides. The remaining half is a garden gate.,Mauerwerk auf dreieinhalb Seiten. Die übrige Hälfte ist ein Gartentor.
+VISITOR MANAGEMENT,VISITOR MANAGEMENT,DIE PFORTE
+All visitors are logged from the moment they are visible. They are visible from the moment they arrive.,All visitors are logged from the moment they are visible. They are visible from the moment they arrive.,"Alle Besucher werden erfasst, sobald sie sichtbar sind. Sichtbar sind sie, sobald sie ankommen."
+CENTRAL MAIL ROOM,CENTRAL MAIL ROOM,ZENTRALE POSTSTELLE
+"Three mailing units, one distribution list. You are on it.","Three mailing units, one distribution list. You are on it.","Drei Versandstellen, ein Verteiler. Sie stehen darauf."
+THE RETENTION PONDS,THE RETENTION PONDS,DIE AUFFANGBECKEN
+The sprinkler system was inspected last spring. It works.,The sprinkler system was inspected last spring. It works.,Die Sprinkleranlage wurde im letzten Frühjahr geprüft. Sie funktioniert.
+THE RECEPTION LINE,THE RECEPTION LINE,DIE EMPFANGSREIHE
+"A straight wall, a straight line of guns, and one end they ran out of budget for.","A straight wall, a straight line of guns, and one end they ran out of budget for.","Eine gerade Mauer, eine gerade Reihe Geschütze und ein Ende, für das das Budget nicht mehr reichte."
+THE TOLL BRIDGES,THE TOLL BRIDGES,DIE ZOLLBRÜCKEN
+Two bridges. Both charge.,Two bridges. Both charge.,Zwei Brücken. Beide kosten.
+THE SCENIC APPROACH,THE SCENIC APPROACH,DIE PRACHTALLEE
+"The drive is well kept, fully hedged and overlooked from both sides. Guests are asked to use it.","The drive is well kept, fully hedged and overlooked from both sides. Guests are asked to use it.","Die Zufahrt ist gepflegt, ganz von Hecken gesäumt und von beiden Seiten einsehbar. Gäste werden gebeten, sie zu benutzen."
+THE FRONT DESK,THE FRONT DESK,DER EMPFANG
+All applications go through the front desk. The front desk is a shredder.,All applications go through the front desk. The front desk is a shredder.,Alle Anträge laufen über den Empfang. Der Empfang ist ein Aktenvernichter.
+THE CORNER OFFICE,THE CORNER OFFICE,DAS ECKBÜRO
+"Top floor, corner, two walls of masonry. The view is of you.","Top floor, corner, two walls of masonry. The view is of you.","Oberstes Stockwerk, Ecke, zwei Wände aus Mauerwerk. Die Aussicht sind Sie."
+THE STRONGROOM,THE STRONGROOM,DER TRESORRAUM
+"Arrival is by sea. Security-grade fencing on all four sides, as the brochure promised.","Arrival is by sea. Security-grade fencing on all four sides, as the brochure promised.","Die Anreise erfolgt auf dem Seeweg. Sicherheitszaun auf allen vier Seiten, wie im Prospekt versprochen."
+REDUNDANT VAULTS,REDUNDANT VAULTS,REDUNDANTE TRESORE
+"Two vaults, in case one is compromised. The farmhouse is kept outside both, for insurance reasons.","Two vaults, in case one is compromised. The farmhouse is kept outside both, for insurance reasons.","Zwei Tresore, falls einer kompromittiert wird. Das Bauernhaus steht aus Versicherungsgründen außerhalb beider."
+SINGLE POINT OF FAILURE,SINGLE POINT OF FAILURE,EINZIGE SCHWACHSTELLE
+"One landing, one bridge, one silo beside it. The risk assessment is one page.","One landing, one bridge, one silo beside it. The risk assessment is one page.","Ein Landeplatz, eine Brücke, ein Silo daneben. Die Risikobewertung ist eine Seite lang."
+DOUBLE INDEMNITY,DOUBLE INDEMNITY,DOPPELTE HAFTUNG
+"Two silos, insured against each other. Approach from the east; the lake is not negotiable.","Two silos, insured against each other. Approach from the east; the lake is not negotiable.","Zwei Silos, gegeneinander versichert. Anfahrt von Osten; über den See wird nicht verhandelt."
+LAYERED SECURITY,LAYERED SECURITY,GESTAFFELTE SICHERHEIT
+"Picket for the public, security grade for the staff. Visitors are welcome from any direction.","Picket for the public, security grade for the staff. Visitors are welcome from any direction.","Lattenzaun für die Öffentlichkeit, Sicherheitsstufe für das Personal. Besucher sind aus allen Richtungen willkommen."
+THE OPEN-PLAN OFFICE,THE OPEN-PLAN OFFICE,DAS BÜRO OHNE WÄNDE
+Six cubicles off one corridor. The partitions are picket; the building is not.,Six cubicles off one corridor. The partitions are picket; the building is not.,"Sechs Kabinen an einem Flur. Die Trennwände sind Lattenzaun, das Gebäude nicht."
+THE HEART,THE HEART,DAS HERZ
+"Head office. Theirs. Three layers of fencing round one farmhouse, like a cabbage.","Head office. Theirs. Three layers of fencing round one farmhouse, like a cabbage.","Die Zentrale. Ihre. Drei Lagen Zaun um ein Bauernhaus, wie ein Kohlkopf."
+FORM 9-T,FORM 9-T,FORMULAR 9-T
+SITE %s,SITE %s,GELÄNDE %s
+SHEET %d OF %d,SHEET %d OF %d,BLATT %d VON %d
+SCALE 1:100,SCALE 1:100,MASSSTAB 1:100
+DRAWN: ACQUISITIONS,DRAWN: ACQUISITIONS,GEZ.: AKQUISITION
+APPROVED: PENDING OUTCOME,APPROVED: PENDING OUTCOME,FREIGABE: NACH ERGEBNIS
+NEW STRUCTURE ON SITE,NEW STRUCTURE ON SITE,NEUES BAUWERK AUF DEM GELÄNDE
+Removed at START.,Removed at START.,Wird bei START entfernt.
+SUPERVISOR'S TOWER,SUPERVISOR'S TOWER,AUFSEHERTURM
+MASS MAILING UNIT,MASS MAILING UNIT,MASSENVERSANDSTELLE
+CCTV MAST,CCTV MAST,ÜBERWACHUNGSMAST
+FIRE SAFETY SPRINKLER,FIRE SAFETY SPRINKLER,BRANDSCHUTZ-SPRINKLER
+DOCUMENT SHREDDER,DOCUMENT SHREDDER,AKTENVERNICHTER
+LIABILITY SILO,LIABILITY SILO,HAFTUNGSSILO
+MASONRY FENCING,MASONRY FENCING,UMZÄUNUNG: MAUERWERK
+SECURITY-GRADE FENCING,SECURITY-GRADE FENCING,UMZÄUNUNG: SICHERHEITSSTUFE
+"Someone is always watching. Occasionally, someone throws something.","Someone is always watching. Occasionally, someone throws something.",Jemand sieht immer zu. Gelegentlich wirft jemand etwas.
+Sent to all. Read by none. Lands on everyone.,Sent to all. Read by none. Lands on everyone.,An alle verschickt. Von keinem gelesen. Trifft jeden.
+"For your safety, this attack is being recorded.","For your safety, this attack is being recorded.",Zu Ihrer Sicherheit wird dieser Angriff aufgezeichnet.
+Regulations require coverage. Of everyone nearby.,Regulations require coverage. Of everyone nearby.,Die Vorschriften verlangen Abdeckung. Von allen in der Nähe.
+Every application is reviewed. Briefly.,Every application is reviewed. Briefly.,Jeder Antrag wird geprüft. Kurz.
+It was always going to blow. Nobody budgeted for it.,It was always going to blow. Nobody budgeted for it.,Es musste irgendwann hochgehen. Eingeplant hat es niemand.
+Access is restricted. Restrictions are flexible.,Access is restricted. Restrictions are flexible.,Der Zutritt ist beschränkt. Die Beschränkungen sind flexibel.
+Shoots the nearest figure within 6 squares and stays on it until it falls or walks away.,Shoots the nearest figure within 6 squares and stays on it until it falls or walks away.,"Schießt auf die nächste Figur innerhalb von 6 Feldern und bleibt an ihr, bis sie fällt oder weggeht."
+"Lobs a crate that hurts every figure where it lands. Reaches 7 squares, but nobody within 2.","Lobs a crate that hurts every figure where it lands. Reaches 7 squares, but nobody within 2.","Wirft eine Kiste, die jede Figur am Einschlagort trifft. Reicht 7 Felder weit, aber niemanden näher als 2."
+"Reaches 8 squares with a stream of small, weak shots. It starts early and does not stop.","Reaches 8 squares with a stream of small, weak shots. It starts early and does not stop.","Reicht 8 Felder weit, mit einem Strom kleiner, schwacher Schüsse. Fängt früh an und hört nicht auf."
+"Reaches only 2.5 squares, but its spray hits the figure and everyone beside it. Spread out.","Reaches only 2.5 squares, but its spray hits the figure and everyone beside it. Spread out.","Reicht nur 2,5 Felder, aber der Sprühstrahl trifft die Figur und jeden neben ihr. Verteilen Sie sich."
+"Reaches 3 squares. The longer it holds one figure, the harder it hits. A new figure starts it over.","Reaches 3 squares. The longer it holds one figure, the harder it hits. A new figure starts it over.","Reicht 3 Felder. Je länger er eine Figur festhält, desto härter trifft er. Eine neue Figur setzt ihn zurück."
+Lobs cabbages 4 squares. When it falls it bursts and hurts every figure beside it.,Lobs cabbages 4 squares. When it falls it bursts and hurts every figure beside it.,"Wirft Kohl 4 Felder weit. Fällt es, platzt es und trifft jede Figur daneben."
+Over three times as tough as picket. Staff walk round it if the way round is short.,Over three times as tough as picket. Staff walk round it if the way round is short.,"Über dreimal so stabil wie Lattenzaun. Das Personal geht außen herum, wenn der Umweg kurz ist."
+"Six times as tough as picket. Find the way round, or bring a charge.","Six times as tough as picket. Find the way round, or bring a charge.",Sechsmal so stabil wie Lattenzaun. Finden Sie den Weg außen herum oder bringen Sie eine Umstrukturierungsladung mit.
+FORM 9-F  FINAL ACQUISITION,FORM 9-F  FINAL ACQUISITION,FORMULAR 9-F  LETZTE ÜBERNAHME
+The last farm that is not ours. After this there is nothing left to acquire. The Board will be watching the clock.,The last farm that is not ours. After this there is nothing left to acquire. The Board will be watching the clock.,"Der letzte Hof, der nicht uns gehört. Danach gibt es nichts mehr zu übernehmen. Der Vorstand behält die Uhr im Blick."
+Click to proceed.,Click to proceed.,Zum Fortfahren klicken.
+ENDMARK ISLE,ENDMARK ISLE,INSEL ENDMARK
+"A straight wall, a row of guns. The budget ran out at one end.","A straight wall, a row of guns. The budget ran out at one end.","Eine gerade Mauer, eine Reihe Geschütze. Ein Ende blieb unbudgetiert."
+"A hedged drive, watched from both sides. Guests are asked to use it.","A hedged drive, watched from both sides. Guests are asked to use it.","Eine Heckenallee, beidseitig überwacht. Gäste bitte nur hier entlang."
+NOT YET REACHABLE. No border with a country wholly ours.,NOT YET REACHABLE. No border with a country wholly ours.,"NOCH NICHT ERREICHBAR. Keine Grenze zu einem Land, das ganz uns gehört."
+NOT YET REACHABLE. Requires sea lanes.,NOT YET REACHABLE. Requires sea lanes.,NOCH NICHT ERREICHBAR. Setzt Seewege voraus.
+NOT YET REACHABLE. Pending the full acquisition of Nordhal.,NOT YET REACHABLE. Pending the full acquisition of Nordhal.,NOCH NICHT ERREICHBAR. Vorbehaltlich der vollständigen Übernahme von Nordhal.
+"The last address here that is not ours. A yard, a mailing list.","The last address here that is not ours. A yard, a mailing list.","Die letzte Adresse hier, die nicht uns gehört. Hof und Verteiler."
+"Visitors are logged once visible. They are visible on arrival.","Visitors are logged once visible. They are visible on arrival.","Besucher werden erfasst, sobald sichtbar. Sichtbar ab Ankunft."
+Development available: the Findings on hand cover at least one item of this programme below.,Development available: the Findings on hand cover at least one item of this programme below.,Weiterbildung verfügbar: Die vorhandenen Befunde decken mindestens einen Punkt dieses Programms unten.
+ISSUE PROJECTED ROUTE OVERLAYS,ISSUE PROJECTED ROUTE OVERLAYS,PROJIZIERTE ROUTENÜBERLAGEN AUSGEBEN
+"Staff routes are pencilled on the site plan before deployment. Deviations are noted.
+Needs 6 farms. While you hold a staff figure over a hatched zone, a pencil line on the war sheet shows the way it will walk to its first target.","Staff routes are pencilled on the site plan before deployment. Deviations are noted.
+Needs 6 farms. While you hold a staff figure over a hatched zone, a pencil line on the war sheet shows the way it will walk to its first target.","Die Wege des Personals werden vor dem Einsatz auf dem Lageplan vorgezeichnet. Abweichungen werden vermerkt.
+Braucht 6 Höfe. Halten Sie eine Personalfigur über eine schraffierte Zone, zeigt eine Bleistiftlinie auf der Kriegskarte den Weg zu ihrem ersten Ziel."
+IN TRAINING. Available for deployment in %d s.,IN TRAINING. Available for deployment in %d s.,IN AUSBILDUNG. Einsatzbereit in %d s.
+%d more awaiting induction.,%d more awaiting induction.,%d weitere warten auf die Einarbeitung.
+NO STAFF ON THE BOOKS.,NO STAFF ON THE BOOKS.,KEIN PERSONAL IM BESTAND.
+Requisition personnel at the depot first.,Requisition personnel at the depot first.,Personal bitte zuerst im Personaldepot anfordern.

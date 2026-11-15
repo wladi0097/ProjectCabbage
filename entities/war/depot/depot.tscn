@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" path="res://entities/war/depot/depot_model.tscn" id="1_model"]
 [ext_resource type="Script" path="res://entities/war/depot/depot.gd" id="2_depot"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="4_font"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_depot_drop.wav" id="sfx_war_depot_drop"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_depot_rattle_1.wav" id="sfx_war_depot_rattle_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_depot_rattle_2.wav" id="sfx_war_depot_rattle_2"]
@@ -39,6 +40,16 @@ stream_1/stream = ExtResource("sfx_war_depot_rattle_2")
 [node name="Depot" instance=ExtResource("1_model")]
 visible = false
 script = ExtResource("2_depot")
+
+[node name="Stencil" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.018, 0.114, 0.04)
+pixel_size = 0.00038
+modulate = Color(0.66, 0.7, 0.68, 1)
+text = "PERSONNEL\nDEPOT"
+font = ExtResource("4_font")
+font_size = 84
+outline_size = 0
+line_spacing = -16.0
 
 [node name="Dust" type="CPUParticles3D" parent="."]
 emitting = false

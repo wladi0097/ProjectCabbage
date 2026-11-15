@@ -1,6 +1,7 @@
 extends SceneTree
 # Args after --: <glb path> <res dir> <prefix>. Saves every mesh as <res dir>/<prefix>_<node>.res
-# with the shared materials (by Blender material name) baked into its surfaces.
+# with the shared materials (by Blender material name) baked into its surfaces. A name not in MATS
+# (maquette_card, maquette_balsa, ...) is a war maquette material in assets/materials/maquette/.
 const MATS := {
 	"machine_paint": "res://assets/materials/machine_paint_matte.tres",
 	"machine_metal": "res://assets/materials/machine_metal.tres",
@@ -20,7 +21,8 @@ func _initialize() -> void:
 		for k in src.get_surface_count():
 			var mat_name := src.surface_get_material(k).resource_name
 			mesh.add_surface_from_arrays(src.surface_get_primitive_type(k), src.surface_get_arrays(k))
-			mesh.surface_set_material(k, load(MATS[mat_name]))
+			var mat_path: String = MATS.get(mat_name, "res://assets/materials/maquette/%s.tres" % mat_name)
+			mesh.surface_set_material(k, load(mat_path))
 		var path := "%s/%s_%s.res" % [args[1], args[2], mi.name.to_snake_case()]
 		print(path, " surfaces ", mesh.get_surface_count(), " at ", mi.position, " aabb ", mesh.get_aabb())
 		ResourceSaver.save(mesh, path)

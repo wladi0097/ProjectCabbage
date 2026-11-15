@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/maps/world_owned/kohlmark.svg" id="layer_kohlmark"]
 [ext_resource type="Script" path="res://entities/map_table/world_register.gd" id="4_register"]
 [ext_resource type="Shader" path="res://assets/shaders/country_spread.gdshader" id="6_spread"]
+[ext_resource type="PackedScene" path="res://entities/map_table/map_flash.tscn" id="5_flash"]
 
 [sub_resource type="ShaderMaterial" id="Spread_kohlmark"]
 shader = ExtResource("6_spread")
@@ -1139,3 +1140,6 @@ title = "The Lower Provinces"
 transform = Transform3D(1.4489, 0, -0.3882, 0, 1.5000, 0, 0.3882, 0, 1.4489, 1.219, 0.002, 0.221)
 site = &"endmark"
 title = "Endmark Isle"
+
+[node name="Flash" parent="." instance=ExtResource("5_flash")]
+visible = false

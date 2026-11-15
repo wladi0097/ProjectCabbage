@@ -210,9 +210,10 @@ func test_the_world_sheet_shows_no_price_for_a_country() -> void:
 	for country: StringName in WorldRegister.COUNTRIES:
 		var text := WorldRegister.hint_text(save, country, "X")
 		assert_bool(text.contains("$")).override_failure_message(text).is_false()
-		assert_str(text).is_equal("X. Farms: %d of %d. Click for its farm register." % [WorldRegister.farms_of(save, country), WorldRegister.COUNTRIES[country].farms])
+		if WorldRegister.closed(save, country) == "":
+			assert_str(text).is_equal("X. Farms: %d of %d. Click for its farm register." % [WorldRegister.farms_of(save, country), WorldRegister.COUNTRIES[country].farms])
 	var sheet := _sheet()
-	assert_str(sheet.hint(&"ostrevia")).is_equal(WorldRegister.hint_text(SaveManager.save, &"ostrevia", "Ostrevia"))
+	assert_str(sheet.hint(&"kohlmark")).is_equal(WorldRegister.hint_text(SaveManager.save, &"kohlmark", "Kohlmark"))
 	for label: Label in sheet.get_node("Page/Sheet").find_children("*", "Label", true, false):
 		assert_bool(label.text.contains("$")).override_failure_message(label.text).is_false()
 
@@ -230,16 +231,71 @@ func test_hovering_a_country_only_shows_its_outline_and_lifts_its_token_whether_
 	assert_int(SaveManager.save.farms_owned.size()).is_equal(5)
 
 
-func test_clicking_a_country_on_the_world_sheet_opens_that_countrys_sheet() -> void:
-	var sheet := _sheet()
+func _wanted(sheet: WorldRegister) -> Array:
 	var wanted := []
 	sheet.sheet_wanted.connect(func(id: StringName, farm: StringName) -> void: wanted.append([id, farm]))
-	for country: StringName in [&"sulvania", &"endmark"]:  # Any country can be opened and looked at.
+	return wanted
+
+
+func test_a_reachable_country_opens_its_own_sheet_from_the_world_sheet() -> void:
+	_own(SaveManager.save, [WorldRegister.HOME])
+	var sheet := _sheet()
+	var wanted := _wanted(sheet)
+	for country: StringName in [WorldRegister.HOME, &"sulvania"]:
 		sheet.press(country)
 	sheet.press(&"")  # The sea: nothing.
-	assert_array(wanted).is_equal([[&"sulvania", &""], [&"endmark", &""]])
-	assert_int(SaveManager.save.farms_owned.size()).is_equal(5)
+	assert_array(wanted).is_equal([[WorldRegister.HOME, &""], [&"sulvania", &""]])
 	assert_int(SaveManager.save.coins).is_equal(1000000000)
+
+
+func test_an_unreachable_country_cannot_be_opened_from_the_world_sheet() -> void:
+	var sheet := _sheet()  # Five of Kohlmark's eight: no neighbour is wholly ours.
+	var wanted := _wanted(sheet)
+	for country: StringName in [&"sulvania", &"grauland", &"endmark"]:
+		sheet.press(country)
+	sheet.press(WorldRegister.HOME)  # Home always opens.
+	assert_array(wanted).is_equal([[WorldRegister.HOME, &""]])
+	assert_int(SaveManager.save.farms_owned.size()).is_equal(5)
+
+
+func test_a_country_partly_ours_always_opens_even_when_its_farms_are_out_of_reach() -> void:
+	var save := _rich()
+	save.farms_owned.append("ostrevia-1")  # A debug start, or an old save: no neighbour wholly ours.
+	assert_str(WorldRegister.reach(save, &"ostrevia")).is_equal(WorldRegister.NOT_ADJACENT)
+	assert_str(WorldRegister.closed(save, &"ostrevia")).is_equal("")
+
+
+func test_hovering_an_unreachable_country_names_why_and_fades_its_outline() -> void:
+	var save := _rich()
+	assert_str(WorldRegister.closed(save, &"sulvania")).is_equal(WorldRegister.CLOSED_LAND)
+	assert_str(WorldRegister.closed(save, &"grauland")).is_equal(WorldRegister.CLOSED_SEA)  # Across the water.
+	assert_str(WorldRegister.closed(save, &"endmark")).is_equal(WorldRegister.CLOSED_FINAL)
+	_own(save, [WorldRegister.HOME, &"sulvania"])
+	assert_str(WorldRegister.closed(save, &"lower_provinces")).is_equal(WorldRegister.CLOSED_SEA)  # The near end is ours, the card is not.
+	save.stamped.append(WorldRegister.SEA_CARD)
+	assert_str(WorldRegister.closed(save, &"morrow")).is_equal(WorldRegister.CLOSED_LAND)  # The lanes are open, nothing of ours touches it.
+	assert_str(WorldRegister.hint_text(_rich(), &"grauland", "Grauland")).is_equal("Grauland. NOT YET REACHABLE. Requires sea lanes.")
+	var sheet := _sheet()
+	assert_str(sheet.hint(&"endmark")).is_equal("Endmark Isle. NOT YET REACHABLE. Pending the full acquisition of Nordhal.")
+	sheet.hover(&"grauland")
+	assert_bool(sheet._outline(&"grauland").visible).is_true()
+	var faded := sheet._outline(&"grauland").default_color
+	sheet.hover(WorldRegister.HOME)
+	assert_float(faded.a).is_less(sheet._outline(WorldRegister.HOME).default_color.a)
+
+
+func test_after_sea_lanes_with_the_near_end_owned_the_far_continent_opens() -> void:
+	_own(SaveManager.save, [WorldRegister.HOME, &"sulvania"])
+	var sheet := _sheet()
+	var wanted := _wanted(sheet)
+	sheet.press(&"grauland")
+	assert_array(wanted).is_empty()
+	SaveManager.save.stamped.append(WorldRegister.SEA_CARD)
+	sheet.press(&"grauland")
+	sheet.press(&"lower_provinces")
+	assert_array(wanted).is_equal([[&"grauland", &""], [&"lower_provinces", &""]])
+	assert_str(sheet.hint(&"grauland")).is_equal(WorldRegister.hint_text(SaveManager.save, &"grauland", "Grauland"))
+	assert_bool(sheet.hint(&"grauland").contains("NOT YET")).is_false()
 
 
 func test_every_country_has_its_token_outline_overlay_count_tag_and_own_sheet() -> void:
@@ -351,8 +407,16 @@ func test_every_line_of_the_war_orders_is_in_the_translation_table() -> void:
 	var table := FileAccess.get_file_as_string("res://ressources/translations/game.csv")
 	var keys: Array = [WorldRegister.NOT_ADJACENT, WorldRegister.NO_SEA_LANES, "SEA LANES", "%s. Farms: %d of %d. Click for its farm register."]
 	keys.append_array(WorldRegister.REASONS.values())
+	keys.append_array([WorldRegister.CLOSED_LAND, WorldRegister.CLOSED_SEA, WorldRegister.CLOSED_FINAL])
 	for form: Dictionary in FarmDeed.FORMS.values():
 		keys.append_array(form.values())
 	for key: String in keys:
 		var quoted := '"%s"' % key if key.contains(",") else key
 		assert_bool(table.contains("\n%s,%s," % [quoted, quoted])).override_failure_message(key).is_true()
+
+
+func test_endmark_with_nordhal_ours_but_no_sea_lanes_waits_for_the_sea_lanes() -> void:
+	var save := _rich()
+	_own(save, [WorldRegister.HOME, &"nordhal"])
+	assert_str(WorldRegister.reach(save, WorldRegister.FINAL)).is_equal(WorldRegister.NO_SEA_LANES)
+	assert_str(WorldRegister.closed(save, WorldRegister.FINAL)).is_equal(WorldRegister.CLOSED_SEA)

@@ -69,6 +69,34 @@ func _fight_for(sheet: WarSheet, seconds: float) -> void:
 	sheet._process(0.0)
 
 
+## The figure of the sheet not in the fight yet, number k.
+func _figure(sheet: WarSheet, k := 0) -> Node3D:
+	return sheet.figures()[k]
+
+
+## Art pixel of cell-space point `p` on the map.
+func _at(p: Vector2) -> Vector2:
+	return WarSheet.pixel_of_cell(p)
+
+
+## The after-action report slides in after the end's stamp and its grade lands.
+func _report_in(sheet: WarSheet, wait: float) -> WarReport:
+	sheet._dealing.custom_step(wait + 0.01)
+	var report: WarReport = sheet.get_node("Report")
+	report._moving.custom_step(10.0)
+	return report
+
+
+## The report is filed and the sheet leaves.
+func _filed(sheet: WarSheet) -> void:
+	assert_bool(sheet.file_report()).is_true()
+	sheet._dealing.custom_step(WarReport.SLIDE_TIME + 0.01)
+
+
+func _settled() -> void:
+	await get_tree().create_timer(WarSheet.SETTLE_TIME + 0.05).timeout
+
+
 func test_a_war_won_takes_that_one_farm_and_costs_nothing_more() -> void:
 	var save := _at_war()
 	assert_bool(WarSheet.win(save, &"K-7")).is_true()
@@ -77,18 +105,45 @@ func test_a_war_won_takes_that_one_farm_and_costs_nothing_more() -> void:
 	assert_bool(WarSheet.win(save, &"K-7")).is_false()  # Once.
 
 
-func test_the_figures_taken_stand_in_the_tray_with_their_count_and_stats() -> void:
+func test_the_figures_taken_stand_on_the_desk_left_of_the_sheet_and_the_paper_has_no_lettering_but_its_title_block() -> void:
 	var sheet := _sheet()
-	assert_str(_text(sheet, "Farm")).contains("K-6")
-	assert_bool((sheet.get_node("Page/Sheet/Row0") as Control).visible).is_true()
-	assert_bool((sheet.get_node("Page/Sheet/Row1") as Control).visible).is_false()  # One unit type taken.
-	assert_str((sheet.get_node("Page/Sheet/Row0/Name") as Label).text).is_equal("FIELD ASSOCIATE")
-	assert_str((sheet.get_node("Page/Sheet/Row0/Count") as Label).text).is_equal("x 3")
-	var stats := (sheet.get_node("Page/Sheet/Row0/Stats") as Label).text
-	assert_str(stats).contains("HP 150").contains("DAMAGE 25").contains("SPEED 1.2").contains("TARGET: DEFENCES")
-	assert_int(sheet.get_node("Field/Tray").get_child_count()).is_equal(3)
-	assert_str(_text(sheet, "Clock")).is_equal("1:30")
+	assert_int(sheet.figures().size()).is_equal(3)
+	for holder in sheet.figures():
+		assert_bool(sheet.on_desk(holder)).is_true()
+		assert_float(WarSheet.pixel_of(holder.position).x).is_less(0.0)  # Left of the paper.
+	var words := sheet.get_node("Page/Sheet").find_children("*", "Label", true, false) \
+			.filter(func(l: Label) -> bool: return l.is_visible_in_tree() and not sheet.get_node("Page/Sheet/TitleBlock").is_ancestor_of(l))
+	assert_array(words).is_empty()  # The whole sheet is the battlefield.
 	assert_bool(sheet.busy()).is_true()  # The table does not roll it up under the war.
+
+
+func test_the_home_wars_fight_on_their_maps_in_order_and_a_war_without_one_on_the_test_map() -> void:
+	assert_str(_sheet({field_associate = 1}, &"K-7")._map.scene_file_path).is_equal("res://entities/war/maps/K-6.tscn")  # The first, whichever farm.
+	_owning(6)
+	assert_str(_sheet({field_associate = 1}, &"K-8")._map.scene_file_path).is_equal("res://entities/war/maps/K-7.tscn")
+	var sheet := _sheet({field_associate = 1}, &"K-8")
+	_owning(0)
+	sheet.begin(&"K-8", {field_associate = 1})  # The same sheet, a war with no map of its own (K-1's).
+	assert_str(sheet._map.scene_file_path).is_equal("res://entities/war/maps/test_map.tscn")
+	assert_int(sheet.get_node("Things/Board").get_child_count()).is_equal(1)
+
+
+func test_a_war_on_another_farms_map_starts_without_the_last_wars_figures() -> void:
+	var sheet := _sheet({field_associate = 1}, &"K-7")
+	sheet.place(FA, 0)
+	sheet.start_fight()
+	_fight_for(sheet, WarRules.fight_seconds(SaveManager.save))
+	sheet.begin(&"K-8", {field_associate = 1})
+	assert_array(sheet._view.units).is_empty()
+	assert_int(sheet.figures().size()).is_equal(1)
+
+
+func test_the_printed_grid_and_the_fight_grid_share_their_origin_and_cell() -> void:
+	var sheet := _sheet()
+	assert_vector(WarSheet.pixel_of(sheet._board.position)).is_equal_approx(WarSheet.GRID_AT, Vector2.ONE * 0.01)
+	assert_vector(WarSheet.pixel_of_cell(Vector2(20, 11))).is_equal_approx(WarSheet.GRID_AT + Vector2(3200, 1760), Vector2.ONE * 0.01)
+	var svg := FileAccess.get_file_as_string("res://assets/sprites/maps/war_map.svg")
+	assert_str(svg).contains("M0 20V1780").contains("M160 20V1780").contains("M0 20H3200")  # Heavy lines on the cells.
 
 
 func test_declaring_war_puts_the_way_out_and_the_currency_column_away_until_the_war_ends() -> void:
@@ -100,12 +155,15 @@ func test_declaring_war_puts_the_way_out_and_the_currency_column_away_until_the_
 	for exit: String in ["DeskButton", "FarmButton", "Tally"]:
 		assert_float((table.get_node(exit) as Node3D).scale.x).override_failure_message(exit).is_less(0.01)
 	assert_bool(table.sheet_of(table.held()).visible).is_false()  # The country's roll in the holder lifted away.
+	assert_bool((war.get_node("Control") as Node3D).visible).is_true()  # The control box stands beside the sheet.
 	war.place(FA, 0)
 	war.start_fight()
 	_fight_for(war, 200.0)
-	war._dealing.custom_step(10.0)
+	_report_in(war, 10.0)
+	_filed(war)
 	for exit: String in ["DeskButton", "FarmButton", "Tally"]:
 		assert_float((table.get_node(exit) as Node3D).scale.x).override_failure_message(exit).is_equal(1.0)
+	assert_bool((war.get_node("Control") as Node3D).visible).is_false()
 
 
 func test_while_the_war_is_on_the_sheet_takes_the_mouse_and_esc_leads_nowhere() -> void:
@@ -121,58 +179,197 @@ func test_while_the_war_is_on_the_sheet_takes_the_mouse_and_esc_leads_nowhere() 
 	assert_bool(war.get_viewport().is_input_handled()).is_true()  # The table never hears it.
 
 
-func test_a_figure_dropped_on_a_landing_spot_is_placed_and_anywhere_else_goes_back() -> void:
+func test_a_figure_set_down_in_a_zone_stands_right_there() -> void:
+	var sheet := _sheet()  # K-6: one zone, cells (0, 2) to (3, 9).
+	var holder := _figure(sheet)
+	assert_bool(sheet.move(holder, _at(Vector2(1.3, 4.6)))).is_true()
+	await _settled()
+	assert_bool(sheet.in_zone(holder)).is_true()
+	assert_vector(WarSheet.cell_at(WarSheet.pixel_of(holder.position))).is_equal_approx(Vector2(1.3, 4.6), Vector2.ONE * 0.001)
+	assert_int(sheet.fight.units.size()).is_equal(0)  # Not in the fight before START: it can still move.
+
+
+func test_a_figure_set_down_near_a_zone_slides_into_it() -> void:
 	var sheet := _sheet()
-	assert_bool(sheet.pick_up(FA)).is_true()
-	assert_bool(sheet.drop(-1)).is_false()
-	assert_int(sheet.tray[FA]).is_equal(3)
-	assert_int(sheet.fight.units.size()).is_equal(0)
-	assert_bool(sheet.place(FA, 2)).is_true()
-	assert_int(sheet.tray[FA]).is_equal(2)
-	assert_int(sheet.fight.units.size()).is_equal(1)
-	assert_int(sheet.get_node("Field/Tray").get_child_count()).is_equal(2)
-	assert_str((sheet.get_node("Page/Sheet/Row0/Count") as Label).text).is_equal("x 2")
+	var holder := _figure(sheet)
+	assert_bool(sheet.move(holder, _at(Vector2(3.7, 5.0)))).is_true()  # 0.7 cells right of the zone.
+	await _settled()
+	assert_bool(sheet.in_zone(holder)).is_true()
 
 
-func test_the_landing_spots_glow_while_a_figure_is_held() -> void:
+func test_a_figure_set_down_off_the_zones_on_the_paper_stands_there_and_start_is_refused() -> void:
 	var sheet := _sheet()
-	var spot: MeshInstance3D = sheet._map.landings()[0].get_node("Mesh")
-	sheet._process(0.0)
-	assert_object(spot.material_overlay).is_null()
-	sheet.pick_up(FA)
-	sheet._process(0.0)
-	assert_object(spot.material_overlay).is_not_null()
-	# The mouse over a landing spot, with the figure held: that is where it lands.
-	var centre := sheet.landing_rect(1).get_center()
-	assert_str(sheet.spot_under(centre)).is_equal(&"landing1")
-	sheet.drop(1)
-	sheet._process(0.0)
-	assert_object(spot.material_overlay).is_null()
+	sheet.place(FA, 0)
+	var holder := _figure(sheet, 0)
+	if sheet.in_zone(holder):
+		holder = _figure(sheet, 1)
+	assert_bool(sheet.move(holder, _at(Vector2(6.0, 1.0)))).is_false()
+	await _settled()
+	assert_bool(sheet.on_desk(holder)).is_false()
+	assert_int(sheet.strays()).is_equal(1)
+	assert_bool(sheet.can_start()).is_false()
+	assert_str(sheet.hint(WarSheet.START)).contains("hatched zones")
+	assert_bool(sheet.start_fight()).is_false()
+	sheet.move(holder, Vector2(-200.0, 900.0))  # Back onto the desk: that is fine.
+	await _settled()
+	assert_bool(sheet.on_desk(holder)).is_true()
+	assert_bool(sheet.can_start()).is_true()
+	assert_bool(sheet.start_fight()).is_true()
+	assert_int(sheet.fight.units.size()).is_equal(1)  # Only the one in the zone fights.
+	assert_int(sheet.left()).is_equal(2)
 
 
-func test_placing_after_start_is_refused_without_tactics() -> void:
+func test_start_needs_a_figure_in_a_zone_and_is_shut_once_started() -> void:
 	var sheet := _sheet()
-	assert_bool(sheet.start_fight()).is_false()  # Nobody placed yet.
+	assert_bool(sheet.can_start()).is_false()  # Nobody in a zone yet.
+	assert_str(sheet.hint(WarSheet.START)).is_equal("Set staff down in a hatched zone first.")
+	assert_bool(sheet.start_fight()).is_false()
 	sheet.place(FA, 0)
 	assert_bool(sheet.start_fight()).is_true()
+	assert_bool(sheet.can_start()).is_false()
 	assert_bool(sheet.can_place()).is_false()
 	assert_bool(sheet.place(FA, 0)).is_false()
-	assert_int(sheet.tray[FA]).is_equal(2)
-	assert_str(_text(sheet, "Start")).is_equal("ENGAGED")
+	assert_bool(sheet.pick_up(_figure(sheet))).is_false()
+	assert_int(sheet.left()).is_equal(2)
 
 
-func test_with_tactics_figures_may_still_be_placed_after_start() -> void:
+func test_figures_can_be_picked_up_again_and_moved_before_start() -> void:
+	var sheet := _sheet()
+	var holder := _figure(sheet)
+	sheet.move(holder, _at(Vector2(1.5, 3.0)))
+	assert_bool(sheet.move(holder, Vector2(-200.0, 700.0))).is_false()  # Back to the desk.
+	await _settled()
+	assert_bool(sheet.on_desk(holder)).is_true()
+	assert_bool(sheet.can_start()).is_false()
+
+
+func test_the_zones_glow_while_a_figure_is_held() -> void:
+	var sheet := _sheet()
+	var zone: GeometryInstance3D = sheet._map.zones()[0].get_node("Mesh")
+	sheet._process(0.0)
+	assert_float(zone.get_instance_shader_parameter(&"glow")).is_equal(0.0)
+	sheet.pick_up(_figure(sheet))
+	sheet._mouse_pixel = _at(Vector2(10.0, 1.0))
+	sheet._process(0.0)
+	assert_float(zone.get_instance_shader_parameter(&"glow")).is_equal(WarSheet.GLOW)
+	sheet._mouse_pixel = _at(Vector2(1.0, 5.0))  # Over it: it would land there.
+	sheet._process(0.0)
+	assert_float(zone.get_instance_shader_parameter(&"glow")).is_equal(WarSheet.GLOW_HOT)
+	sheet.drop(sheet._mouse_pixel)
+	sheet._process(0.0)
+	assert_float(zone.get_instance_shader_parameter(&"glow")).is_equal(0.0)
+
+
+func test_with_tactics_figures_set_down_in_a_zone_after_start_join_the_fight_at_once() -> void:
 	SaveManager.save.stamped.append("tactics")
 	var sheet := _sheet()
 	sheet.place(FA, 0)
 	sheet.start_fight()
-	assert_bool(sheet.place(FA, 1)).is_true()
+	assert_bool(sheet.move(_figure(sheet), _at(Vector2(6.0, 1.0)))).is_false()  # Off the zones: refused.
+	assert_bool(sheet.place(FA, 0)).is_true()
 	assert_int(sheet.fight.units.size()).is_equal(2)
+
+
+func test_the_control_box_shows_the_clock_and_start_only_while_the_war_may_start() -> void:
+	var sheet := _sheet()
+	var control: WarControl = sheet.get_node("Control")
+	sheet._process(0.0)
+	assert_float(control.seconds_left).is_equal(WarRules.fight_seconds(SaveManager.save))
+	assert_bool(control.start_enabled).is_false()
+	sheet.place(FA, 0)
+	sheet._process(0.0)
+	assert_bool(control.start_enabled).is_true()
+	assert_int(control.state).is_equal(WarControl.State.READY)
+	sheet.start_fight()
+	_fight_for(sheet, 1.0)
+	assert_int(control.state).is_equal(WarControl.State.RUNNING)
+	assert_float(control.seconds_left).is_equal_approx(WarRules.fight_seconds(SaveManager.save) - 1.0, 0.01)
+	assert_bool(control.flee_allowed).is_false()  # No RETREAT card: ABORT is dead in the fight.
+
+
+func test_abort_before_start_gives_every_figure_and_the_wars_coins_back() -> void:
+	var save := SaveManager.save
+	save.army = {field_associate = 4}
+	var coins := save.coins
+	var sheet := _sheet()  # (Made before the declaration, as the game makes it at load.)
+	assert_bool(FarmRegister.declare(save, &"K-6", {field_associate = 3})).is_true()
+	assert_int(save.coins).is_less(coins)
+	var wanted := []
+	sheet.sheet_wanted.connect(func(id: StringName, farm: StringName) -> void: wanted.append([id, farm]))
+	sheet.place(FA, 0)
+	assert_bool(sheet.abort()).is_true()
+	assert_int(save.coins).is_equal(coins)
+	assert_dict(save.army).is_equal({field_associate = 4})
+	assert_dict(save.war_pending).is_empty()
+	assert_bool(save.farms_owned.has("K-6")).is_false()
+	assert_array(wanted).is_equal([[WorldRegister.HOME, &"K-6"]])
+	assert_bool(sheet.busy()).is_false()
+
+
+func test_no_report_after_an_abort_before_start() -> void:
+	var save := SaveManager.save
+	save.army = {field_associate = 3}
+	var sheet := _sheet()
+	FarmRegister.declare(save, &"K-6", {field_associate = 3})
+	sheet.place(FA, 0)
+	sheet.abort()
+	assert_bool((sheet.get_node("Report") as WarReport).visible).is_false()
+	assert_bool(sheet.file_report()).is_false()
+	assert_dict(save.war_grades).is_empty()
+
+
+func test_the_report_is_filed_only_once_its_grade_is_on_it_and_the_grade_is_kept() -> void:
+	var sheet := _sheet({field_associate = 2})
+	for i in 2:
+		sheet.place(FA, 0)
+	sheet.start_fight()
+	_fight_for(sheet, WarRules.fight_seconds(SaveManager.save))
+	assert_bool(sheet.file_report()).is_false()  # Only the end's stamp so far.
+	sheet._dealing.custom_step(WarSheet.LEAVE_AFTER + 0.01)
+	assert_bool(sheet.file_report()).is_false()  # Sliding in, no grade yet.
+	var report: WarReport = sheet.get_node("Report")
+	report._moving.custom_step(10.0)
+	assert_bool((report.get_node("Page/Form/Grade") as Control).visible).is_true()
+	var grade: String = SaveManager.save.war_grades[&"K-6"]
+	assert_str((report.get_node("Page/Form/Grade/Word") as Label).text).is_equal(grade)
+	assert_bool(sheet.file_report()).is_true()
+	assert_bool(sheet.file_report()).is_false()  # Once.
+
+
+func test_quitting_before_start_brings_every_figure_taken_and_the_wars_coins_back() -> void:
+	var save := SaveManager.save
+	save.army = {field_associate = 3}
+	var sheet := _sheet()
+	var coins := save.coins
+	FarmRegister.declare(save, &"K-6", {field_associate = 3})
+	assert_int(save.coins).is_less(coins)
+	assert_dict(save.war_pending).is_equal({field_associate = 3})
+	sheet.place(FA, 0)
+	sheet.free()  # The game closes.
+	_sheet({})  # It loads again: the war sheet is made with no war on.
+	assert_dict(save.army).is_equal({field_associate = 3})
+	assert_dict(save.war_pending).is_empty()
+	assert_int(save.coins).is_equal(coins)  # The war never started: its coins come back too, as ABORT gives them.
+
+
+func test_quitting_after_start_brings_back_only_the_figures_never_placed() -> void:
+	var save := SaveManager.save
+	save.army = {field_associate = 3}
+	var sheet := _sheet()
+	FarmRegister.declare(save, &"K-6", {field_associate = 3})
+	sheet.place(FA, 0)
+	sheet.start_fight()
+	var coins := save.coins
+	assert_dict(save.war_pending).is_equal({field_associate = 2})  # The one placed is committed.
+	save.return_war_pending()  # The game closed and loads again.
+	assert_dict(save.army).is_equal({field_associate = 2})
+	assert_int(save.coins).is_equal(coins)  # Started: the war's coins stay spent.
 
 
 func test_survivors_of_a_won_war_go_back_into_the_army_and_the_farm_is_ours() -> void:
 	SaveManager.save.army = {field_associate = 0}
 	var sheet := _sheet({field_associate = 4})
+	SaveManager.save.war_pending = {field_associate = 4}
 	var wanted := []
 	sheet.sheet_wanted.connect(func(id: StringName, farm: StringName) -> void: wanted.append([id, farm]))
 	for i in 3:
@@ -183,17 +380,34 @@ func test_survivors_of_a_won_war_go_back_into_the_army_and_the_farm_is_ours() ->
 	var survivors: int = sheet.fight.survivors().get(FA, 0)
 	assert_int(survivors).is_greater(0)
 	assert_int(SaveManager.save.army[FA]).is_equal(survivors + 1)  # And the one never placed.
+	assert_dict(SaveManager.save.war_pending).is_empty()
 	assert_bool(SaveManager.save.farms_owned.has("K-6")).is_true()
 	assert_str(_text(sheet, "Imprint")).is_equal("VICTORY")
 	assert_bool(FarmRegister.lamp_held).is_true()  # The Field Line waits for the farm's moment.
 	assert_array(wanted).is_empty()
-	sheet._dealing.custom_step(WarSheet.LEAVE_AFTER + 0.01)
-	assert_array(wanted).is_equal([[WorldRegister.HOME, &"K-6"]])
+	var report := _report_in(sheet, WarSheet.LEAVE_AFTER)
+	assert_bool(report.visible).is_true()
+	assert_array(wanted).is_empty()  # The report waits to be filed.
+	_filed(sheet)
+	assert_array(wanted).is_equal([[WorldRegister.HOME, &"K-6"]])  # The farm's moment on its country's sheet.
 	assert_bool(sheet.busy()).is_false()
+	assert_bool(report.visible).is_false()
+
+
+func test_the_tutorial_farm_falls_once_its_fence_is_broken() -> void:
+	var sheet := _sheet({field_associate = 2})
+	for i in 2:
+		sheet.place(FA, 0)
+	sheet.start_fight()
+	_fight_for(sheet, WarRules.fight_seconds(SaveManager.save))
+	assert_int(sheet.fight.state).is_equal(WarFight.State.WON)
+	var walls := sheet.fight.buildings.filter(func(b: Dictionary) -> bool: return b.kind == "wall_wood")
+	assert_bool(walls.any(func(b: Dictionary) -> bool: return not b.alive)).is_true()  # They broke through.
 
 
 func test_a_lost_war_leaves_the_farm_unowned_and_the_placed_figures_gone() -> void:
-	var sheet := _sheet({field_associate = 3})
+	_owning(6)  # The second war at home: K-7's map, its tower.
+	var sheet := _sheet({field_associate = 3}, &"K-7")
 	var wanted := []
 	sheet.sheet_wanted.connect(func(id: StringName, farm: StringName) -> void: wanted.append([id, farm]))
 	sheet.place(FA, 0)
@@ -201,35 +415,43 @@ func test_a_lost_war_leaves_the_farm_unowned_and_the_placed_figures_gone() -> vo
 	_fight_for(sheet, WarRules.fight_seconds(SaveManager.save))
 	assert_int(sheet.fight.state).is_equal(WarFight.State.LOST)
 	assert_int(SaveManager.save.army[FA]).is_equal(2)  # Only the two never placed.
-	assert_bool(SaveManager.save.farms_owned.has("K-6")).is_false()
-	assert_str(_text(sheet, "Imprint")).is_equal("ACQUISITION UNSUCCESSFUL")
+	assert_bool(SaveManager.save.farms_owned.has("K-7")).is_false()
+	assert_bool((sheet.get_node("Page/Sheet/Imprint") as Label).visible).is_false()  # No stamp on the paper: the report says it.
 	assert_bool(FarmRegister.lamp_held).is_false()
-	sheet._dealing.custom_step(WarSheet.LOST_AFTER + 0.01)
-	assert_array(wanted).is_equal([[WorldRegister.HOME, &"K-6"]])  # Back to the country, nothing taken.
+	_report_in(sheet, WarSheet.LOST_AFTER)
+	assert_array(wanted).is_empty()
+	_filed(sheet)
+	assert_array(wanted).is_equal([[WorldRegister.HOME, &"K-7"]])  # Back to the country, nothing taken.
 
 
 func test_a_retreat_brings_its_share_of_the_figures_placed_home() -> void:
+	_owning(0)  # A war with no map of its own (K-1's): the test map, three zones.
 	SaveManager.save.stamped.append("retreat")
-	var sheet := _sheet({field_associate = 5})
+	var sheet := _sheet({field_associate = 5}, &"K-8")
 	for i in 4:
 		sheet.place(FA, 1)
 	sheet.start_fight()
 	_fight_for(sheet, 0.5)
-	assert_bool(sheet.call_retreat()).is_true()
+	assert_bool(sheet.can_abort()).is_true()  # ABORT is the flee now.
+	assert_bool(sheet.abort()).is_true()
 	sheet._process(0.0)
 	assert_int(SaveManager.save.army[FA]).is_equal(1 + 1)  # floor(4 * 30%), and the one never placed.
 	assert_str(_text(sheet, "Imprint")).is_equal("WITHDRAWN")
-	assert_bool(SaveManager.save.farms_owned.has("K-6")).is_false()
+	assert_str(SaveManager.save.war_grades[&"K-8"]).is_equal(WarReport.REGRETTABLE)
+	var report := _report_in(sheet, WarSheet.LOST_AFTER)
+	assert_str((report.get_node("Page/Form/Staff/field_associate/Lost") as Label).text).is_equal("3")  # 4 placed, 1 home.
+	assert_bool(SaveManager.save.farms_owned.has("K-8")).is_false()
 
 
-func test_retreat_is_not_authorised_without_its_card() -> void:
+func test_abort_is_dead_in_the_fight_without_the_retreat_card() -> void:
 	var sheet := _sheet()
 	sheet.place(FA, 0)
 	sheet.start_fight()
 	assert_bool(sheet.can_retreat()).is_false()
-	assert_bool(sheet.call_retreat()).is_false()
-	assert_str(_text(sheet, "RetreatNote")).is_equal("Not authorised.")
-	assert_str(sheet.spot_under(WarSheet.RETREAT_BOX.get_center())).is_equal(&"")
+	assert_bool(sheet.can_abort()).is_false()
+	assert_bool(sheet.abort()).is_false()
+	assert_int(sheet.fight.state).is_equal(WarFight.State.RUNNING)
+	assert_str(sheet.hint(WarSheet.ABORT)).is_equal("Not authorised.")
 
 
 func test_a_war_declared_without_figures_has_no_fight_and_the_way_back_stays() -> void:
@@ -238,12 +460,297 @@ func test_a_war_declared_without_figures_has_no_fight_and_the_way_back_stays() -
 	assert_bool(sheet.busy()).is_false()
 
 
-func test_the_war_sheet_is_german_in_german_and_never_says_units() -> void:
+func test_the_war_sheet_is_german_in_german() -> void:
 	TranslationServer.set_locale("de")
-	var sheet := _sheet()
-	assert_str((sheet.get_node("Page/Sheet/Row0/Stats") as Label).text).not_contains("units")
-	for key: String in ["PERSONNEL IN THEATRE", "ENGAGEMENT CONTROL", "TIME REMAINING", "START", "ENGAGED", "RETREAT",
-			"ACQUISITION UNSUCCESSFUL", "WITHDRAWN", "VICTORY", "FIELD ASSOCIATE", "HP %d  ·  DAMAGE %d  ·  SPEED %s",
-			"TARGET: %s", "DEFENCES", "Not authorised.", "%d%% of staff placed return", "Overtime is not authorised.",
-			"Commits all staff placed. No refunds.", "THEATRE OF OPERATIONS - FARM SITE"]:
+	for key: String in ["ACQUISITION UNSUCCESSFUL", "WITHDRAWN", "VICTORY", "Not authorised.", "%d%% of staff placed return",
+			"Staff are standing outside the hatched zones. Move them in, or back onto the desk.",
+			"Set staff down in a hatched zone first.", "Commence the engagement. Staff placed are committed.",
+			"Call it off. Staff and the war's fee are refunded."]:
 		assert_str(tr(key)).override_failure_message(key).is_not_equal(key)
+
+
+## A save owning the first `owned` home farms, at war: the next war at home is on map K-(owned + 1).
+func _owning(owned: int) -> SaveGame:
+	var save := _at_war()
+	save.farms_owned = PackedStringArray()
+	for k in owned:
+		save.farms_owned.append("K-%d" % (k + 1))
+	SaveManager.save = save
+	return save
+
+
+func _title(sheet: WarSheet, label: String) -> Label:
+	return sheet.get_node("Page/Sheet/TitleBlock/Box/" + label) as Label
+
+
+func test_the_title_block_names_the_site_and_says_sheet_n_of_19() -> void:
+	_owning(6)
+	var sheet := _sheet({field_associate = 1}, &"K-8")  # The second war: K-7's map.
+	assert_str(_title(sheet, "Code").text).is_equal("SITE K-7")
+	assert_str(_title(sheet, "Site").text).is_equal("THE SUPERVISED PLOT")
+	assert_str(_title(sheet, "Sheet").text).is_equal("SHEET 2 OF 19")
+	_owning(5)
+	sheet.begin(&"K-6", {field_associate = 1})
+	assert_str(_title(sheet, "Sheet").text).is_equal("SHEET 1 OF 19")
+	sheet.begin(&"endmark-1", {field_associate = 1})
+	assert_str(_title(sheet, "Sheet").text).is_equal("SHEET 19 OF 19")
+	TranslationServer.set_locale("de")
+	sheet.begin(&"K-6", {field_associate = 1})
+	assert_str(_title(sheet, "Sheet").text).is_equal("BLATT 1 VON 19")
+
+
+func test_the_title_block_is_printed_on_the_corner_cells_no_map_uses_clear_of_the_weight() -> void:
+	var sheet := _sheet()
+	var block := (sheet.get_node("Page/Sheet/TitleBlock") as Control).get_rect()
+	var cells := Rect2(WarSheet.pixel_of_cell(Vector2(WarSheet.TITLE_CELLS.position)), Vector2(WarSheet.TITLE_CELLS.size) * WarMap.CELL * 1000.0)
+	assert_bool(cells.encloses(block)).is_true()
+	assert_float(block.end.y).is_less_equal(cells.end.y - 90.0)  # The drafting weight sits on the corner.
+	var box := sheet.get_node("Page/Sheet/TitleBlock/Box") as VBoxContainer
+	var sites: Array[String] = []
+	for path in WarMap.map_paths():
+		var map: WarMap = load(path).instantiate()
+		sites.append(map.site_name)
+		map.free()
+	for locale: String in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		sheet.begin(&"endmark-1", {field_associate = 1})  # SHEET 19 OF 19: the widest number.
+		for site in sites:  # Every map's name, with the rest of the block.
+			var high := 0.0
+			for child: Control in box.get_children():
+				high += box.get_theme_constant(&"separation")
+				var label := child as Label
+				if label == null:
+					high += child.custom_minimum_size.y
+					continue
+				var text := tr(site) if label.name == &"Site" else tr(label.text)
+				var font := label.get_theme_font(&"font")
+				var size := label.get_theme_font_size(&"font_size")
+				high += font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, box.size.x, size).y
+				for word in text.split(" "):
+					var wide := font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+					assert_float(wide).override_failure_message(word).is_less_equal(box.size.x)
+			assert_float(high).override_failure_message("%s %s: %d px" % [locale, site, high]).is_less_equal(block.size.y - 10.0)
+
+
+func test_the_new_structure_slip_appears_only_on_a_buildings_first_map_and_goes_at_start() -> void:
+	_owning(6)
+	var sheet := _sheet({field_associate = 1}, &"K-8")  # K-7's map: the first tower.
+	assert_str(sheet.debut).is_equal("cannon")
+	assert_str(sheet._slip.words()[1]).is_equal("SUPERVISOR'S TOWER")
+	sheet._laying.custom_step(10.0)  # The sheet has rolled out.
+	assert_bool(sheet._slip.visible).is_true()
+	sheet.place(FA, 0)
+	assert_bool(sheet.start_fight()).is_true()
+	sheet._slip._moving.custom_step(1.0)
+	assert_bool(sheet._slip.visible).is_false()
+	_owning(5)
+	var first := _sheet({field_associate = 1}, &"K-6")  # Only what the first war already shows.
+	assert_str(first.debut).is_equal("")
+	first._laying.custom_step(10.0)
+	assert_bool(first._slip.visible).is_false()
+
+
+func test_every_structure_slip_is_german_in_german_and_fits_its_paper() -> void:
+	var sheet := _sheet()
+	var slip: WarSlip = sheet._slip
+	for locale: String in ["en", "de"]:
+		TranslationServer.set_locale(locale)
+		for kind: String in WarMap.DEBUT_KINDS:
+			slip.debut(kind)
+			for part: String in ["Title", "Line", "Body"]:
+				var label := slip.get_node("Page/Form/" + part) as Label
+				if locale == "de":
+					assert_str(tr(label.text)).override_failure_message(label.text).is_not_equal(label.text)
+				var font := label.get_theme_font(&"font")
+				var size := label.get_theme_font_size(&"font_size")
+				var room := font.get_multiline_string_size(tr(label.text), HORIZONTAL_ALIGNMENT_LEFT, label.size.x, size) \
+						if label.autowrap_mode != TextServer.AUTOWRAP_OFF else font.get_string_size(tr(label.text), HORIZONTAL_ALIGNMENT_LEFT, -1, size)
+				assert_float(room.x).override_failure_message(tr(label.text)).is_less_equal(label.size.x)
+				assert_float(room.y).override_failure_message(tr(label.text)).is_less_equal(label.size.y + 6.0)
+
+
+func test_a_hovered_defence_shows_its_range_ring_and_the_mailing_unit_its_dead_zone() -> void:
+	_owning(7)
+	var sheet := _sheet({field_associate = 1}, &"K-8")  # The test map: a tower and a mailing unit.
+	var ink: WarInk = sheet._ink
+	var rung := 0
+	for i in sheet.fight.buildings.size():
+		var kind: String = sheet.fight.buildings[i].kind
+		if kind not in ["cannon", "mortar"]:
+			continue
+		rung += 1
+		var centre := WarSheet.pixel_of_cell(sheet.fight.centre(i))
+		sheet._point(centre, &"")
+		sheet._process(0.0)
+		assert_vector(ink.ring_at).is_equal(centre)
+		assert_float(ink.ring_radius).is_equal_approx(WarFight.BUILDINGS[kind].range * 160.0, 0.01)
+		assert_float(ink.dead_radius).is_equal_approx(2.0 * 160.0 if kind == "mortar" else 0.0, 0.01)
+	assert_int(rung).is_equal(2)
+	sheet._point(Vector2(10.0, 10.0), &"")  # Off every defence: rubbed out.
+	sheet._process(0.0)
+	assert_float(ink.ring_radius).is_equal(0.0)
+	sheet.place(FA, 0)
+	sheet.start_fight()
+	for i in sheet.fight.buildings.size():
+		if sheet.fight.buildings[i].kind == "cannon":
+			sheet._point(WarSheet.pixel_of_cell(sheet.fight.centre(i)), &"")
+	sheet._process(0.0)
+	assert_float(ink.ring_radius).is_equal(0.0)  # Planning only.
+
+
+func test_the_path_line_follows_the_way_the_fight_walks_the_figure() -> void:
+	SaveManager.save.stamped.append(WarSheet.ROUTE_CARD)
+	var sheet := _sheet({field_associate = 1}, &"K-6")
+	var spot := Rect2(sheet.fight.zones[0]).get_center()
+	assert_bool(sheet.pick_up(_figure(sheet))).is_true()
+	sheet._point(_at(spot), &"")
+	sheet._process(0.0)
+	var line: PackedVector2Array = sheet._pencil.path
+	var fight := WarFight.new(sheet._map.layout(), sheet._map.grid_size, 90.0)
+	fight.place_at(FA, WarRules.unit_stats(SaveManager.save, FA), spot)
+	fight.start()
+	fight.tick(WarFight.STEP)
+	var walked := PackedVector2Array([_at(spot)])
+	for p: Vector2 in fight.units[0].path:
+		walked.append(_at(p))
+	assert_int(walked.size()).is_greater(3)
+	assert_array(Array(line)).is_equal(Array(walked))
+	var target: Dictionary = fight.buildings[fight.units[0].target]
+	assert_str(target.kind).is_equal("farmhouse")  # K-6: no defence, the farmhouse through the fence.
+	assert_bool(Rect2(Vector2(target.cell), Vector2(target.size)).has_point(WarSheet.cell_at(line[-1]))).is_true()
+	sheet.drop(_at(spot))
+	sheet._process(0.0)
+	assert_array(Array(sheet._pencil.path)).is_empty()  # Set down: rubbed out.
+	assert_bool(sheet._pencil_overlay.visible).is_false()
+
+
+func test_no_path_line_is_pencilled_before_the_route_card_and_one_is_with_it() -> void:
+	var sheet := _sheet({field_associate = 2}, &"K-6")
+	var spot := Rect2(sheet.fight.zones[0]).get_center()
+	sheet.pick_up(_figure(sheet))
+	sheet._point(_at(spot), &"")
+	sheet._process(0.0)
+	assert_array(Array(sheet._pencil.path)).is_empty()
+	assert_bool(sheet._pencil_overlay.visible).is_false()
+	sheet.drop(_at(spot))
+	SaveManager.save.stamped.append(WarSheet.ROUTE_CARD)
+	sheet._path_wait = 0.0
+	sheet.pick_up(_figure(sheet, 1))
+	sheet._point(_at(spot + Vector2(0.5, 0.5)), &"")
+	sheet._process(0.0)
+	assert_int(sheet._pencil.path.size()).is_greater(1)
+	assert_bool(sheet._pencil_overlay.visible).is_true()
+
+
+func test_the_path_line_is_drawn_over_every_piece_on_the_board() -> void:
+	var sheet := _sheet()
+	var material := (sheet.get_node("PencilOverlay") as MeshInstance3D).material_override as StandardMaterial3D
+	assert_bool(material.no_depth_test).is_true()
+	assert_int(material.render_priority).is_greater(0)
+	assert_int(material.shading_mode).is_equal(BaseMaterial3D.SHADING_MODE_UNSHADED)
+	assert_object(sheet.get_node("PencilPage/Sheet/Pencil")).is_instanceof(WarInk)
+
+
+func test_the_boss_arrival_plays_only_on_endmark_isle() -> void:
+	var sheet := _sheet({field_associate = 1}, &"endmark-1")
+	assert_bool(sheet.staging).is_true()
+	assert_bool(sheet.can_place()).is_false()  # FINAL ACQUISITION first.
+	assert_str(sheet._final.words()[0]).is_equal("FORM 9-F  FINAL ACQUISITION")
+	assert_bool(sheet.place(FA, 0)).is_false()
+	assert_bool(sheet.proceed()).is_true()
+	assert_bool(sheet.staging).is_false()
+	assert_bool(sheet.place(FA, 0)).is_true()
+	assert_bool(sheet.proceed()).is_false()  # Once.
+	for farm: StringName in [&"K-6", &"veldmark-1", &"nordhal-2"]:
+		sheet.begin(farm, {field_associate = 1})
+		assert_bool(sheet.staging).override_failure_message(farm).is_false()
+		assert_bool(sheet._final.visible).is_false()
+
+
+func test_the_new_war_sheet_words_are_german_in_german() -> void:
+	TranslationServer.set_locale("de")
+	for key: String in ["FORM 9-T", "SITE %s", "SHEET %d OF %d", "SCALE 1:100", "DRAWN: ACQUISITIONS", "APPROVED: PENDING OUTCOME",
+			"NEW STRUCTURE ON SITE", "Removed at START.", "FORM 9-F  FINAL ACQUISITION", "Click to proceed.", "ENDMARK ISLE",
+			"The last farm that is not ours. After this there is nothing left to acquire. The Board will be watching the clock."]:
+		assert_str(tr(key)).override_failure_message(key).is_not_equal(key)
+
+
+func test_picking_up_a_figure_puts_the_desks_glove_on_it_holding_it() -> void:
+	var sheet := _sheet()
+	var holder := _figure(sheet)
+	var glove: HandModel = sheet.get_node("Glove")
+	sheet.pick_up(holder)
+	sheet._process(0.016)
+	assert_bool(glove.visible).is_true()
+	assert_int(glove.pose).is_equal(HandModel.Pose.GRAB)
+	assert_float(glove.global_position.distance_to(holder.global_position)).is_less(0.3)
+	assert_bool(Hand.stand_in).is_true()  # The glove stands in for the cursor.
+	sheet.drop(_at(Vector2(1.3, 4.6)))
+
+
+func test_a_figure_dropped_in_a_zone_stands_there_and_the_glove_lets_go() -> void:
+	var sheet := _sheet()
+	var holder := _figure(sheet)
+	var glove: HandModel = sheet.get_node("Glove")
+	sheet.pick_up(holder)
+	sheet._process(0.016)
+	assert_bool(sheet.drop(_at(Vector2(1.3, 4.6)))).is_true()
+	sheet._process(0.016)
+	assert_int(glove.pose).is_equal(HandModel.Pose.OPEN)
+	assert_bool(Hand.stand_in).is_false()
+	await _settled()
+	assert_bool(sheet.in_zone(holder)).is_true()
+
+
+func test_the_glove_is_hidden_while_nothing_is_held() -> void:
+	var sheet := _sheet()
+	var glove: HandModel = sheet.get_node("Glove")
+	sheet._process(0.016)
+	assert_bool(glove.visible).is_false()
+	sheet.move(_figure(sheet), _at(Vector2(1.3, 4.6)))
+	sheet._process(WarSheet.LET_GO + 0.01)
+	assert_bool(glove.visible).is_false()
+	assert_bool(Hand.stand_in).is_false()
+
+
+func test_the_end_of_a_fight_leaves_abort_unlit_and_no_hint_slip_over_the_report() -> void:
+	var table := _table_at_war()
+	var war := table.sheet_of(&"war") as WarSheet
+	war._point(Vector2.ZERO, WarSheet.ABORT)
+	assert_str(table._hovered).is_equal(WarSheet.ABORT)
+	war.place(FA, 0)
+	war.start_fight()
+	_fight_for(war, 200.0)
+	assert_str(war._hot).is_empty()
+	assert_str((war.get_node("Control") as WarControl)._hover).is_empty()
+	assert_str(table._hovered).is_empty()
+
+
+func test_an_abort_right_after_declaring_brings_the_countrys_roll_back_for_good() -> void:
+	var table := _table_at_war()
+	var war := table.sheet_of(&"war") as WarSheet
+	var roll := table.sheet_of(table.held())
+	war._process(0.0)  # The roll in the holder starts to lift away.
+	assert_bool(war.abort()).is_true()
+	await get_tree().create_timer(WarSheet.AWAY_TIME * 2.0 + 0.2).timeout
+	assert_bool(roll.visible).is_true()
+
+
+func test_an_overlay_over_the_war_puts_the_figure_held_back_and_gives_the_cursor_back() -> void:
+	var table := _table_at_war()
+	var war := table.sheet_of(&"war") as WarSheet
+	table.go_to_map()
+	table._pan_tween.custom_step(10.0)
+	war._process(0.0)
+	var holder := _figure(war)
+	var from := holder.position
+	assert_bool(war.pick_up(holder)).is_true()
+	war._process(0.016)
+	assert_bool(Hand.stand_in).is_true()
+	var overlay: Control = auto_free(Control.new())
+	overlay.add_to_group(&"blocks_hand")
+	add_child(overlay)
+	war._process(0.016)
+	assert_object(war._held).is_null()
+	assert_bool(Hand.stand_in).is_false()
+	assert_vector(Vector2(holder.position.x, holder.position.z)).is_equal_approx(Vector2(from.x, from.z), Vector2.ONE * 0.001)

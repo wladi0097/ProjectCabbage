@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/maquette_cctv_base.res" id="1_base"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/maquette_cctv_turret.res" id="2_turret"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/War/maquette_cctv_rubble.res" id="3_rubble"]
+
+[sub_resource type="BoxShape3D" id="Box"]
+size = Vector3(0.1, 0.33, 0.1)
+
+[node name="Cctv" type="Node3D"]
+
+[node name="Base" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("1_base")
+
+[node name="Turret" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.334, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Turret"]
+gi_mode = 0
+mesh = ExtResource("2_turret")
+
+[node name="Muzzle" type="Marker3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0393, -0.0637)
+
+[node name="Rubble" type="MeshInstance3D" parent="."]
+visible = false
+gi_mode = 0
+mesh = ExtResource("3_rubble")
+
+[node name="Body" type="StaticBody3D" parent="."]
+
+[node name="Shape" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.165, 0)
+shape = SubResource("Box")

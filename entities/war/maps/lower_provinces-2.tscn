@@ -1,0 +1,147 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_r7pbc"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_uwxqa"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/wall_steel.tscn" id="3_drodu"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/mortar.tscn" id="4_jxfof"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="5_qx1pv"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/sprinkler.tscn" id="6_r5vcp"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="7_7ht1f"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="8_lphst"]
+
+[node name="LowerProvinces2" type="Node3D" unique_id=666540613]
+script = ExtResource("1_r7pbc")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 13,
+&"cabbages": 4500,
+&"k": 2.58,
+&"style": "mixed"
+}
+site_name = "REDUNDANT VAULTS"
+briefing = "Two vaults, in case one is compromised. The farmhouse is kept outside both, for insurance reasons."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=864975416 instance=ExtResource("2_uwxqa")]
+transform = Transform3D(3, 0, 0, 0, 1, 0, 0, 0, 3, 0.24, 0, 1.36)
+
+[node name="Zone2" type="Node3D" parent="." unique_id=93789064 instance=ExtResource("2_uwxqa")]
+transform = Transform3D(2, 0, 0, 0, 1, 0, 0, 0, 3, 2.8799999, 0, 0.39999998)
+
+[node name="WallSteel1" type="Node3D" parent="." unique_id=1998719777 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.71999997, 0, 0.24)
+
+[node name="WallSteel2" type="Node3D" parent="." unique_id=894470295 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.24)
+
+[node name="WallSteel3" type="Node3D" parent="." unique_id=1914965721 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 0.24)
+
+[node name="WallSteel4" type="Node3D" parent="." unique_id=1002837787 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1999999, 0, 0.24)
+
+[node name="WallSteel5" type="Node3D" parent="." unique_id=197181176 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.24)
+
+[node name="WallSteel6" type="Node3D" parent="." unique_id=1261534441 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.71999997, 0, 0.88)
+
+[node name="WallSteel7" type="Node3D" parent="." unique_id=815681072 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.88)
+
+[node name="WallSteel8" type="Node3D" parent="." unique_id=1199057802 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 0.88)
+
+[node name="WallSteel9" type="Node3D" parent="." unique_id=1366343869 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1999999, 0, 0.88)
+
+[node name="WallSteel10" type="Node3D" parent="." unique_id=1588306631 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.88)
+
+[node name="WallSteel11" type="Node3D" parent="." unique_id=757048593 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.71999997, 0, 0.39999998)
+
+[node name="WallSteel12" type="Node3D" parent="." unique_id=1872415356 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.71999997, 0, 0.56)
+
+[node name="WallSteel13" type="Node3D" parent="." unique_id=693606007 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.71999997, 0, 0.71999997)
+
+[node name="WallSteel14" type="Node3D" parent="." unique_id=819038379 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.39999998)
+
+[node name="WallSteel15" type="Node3D" parent="." unique_id=926262458 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.56)
+
+[node name="WallSteel16" type="Node3D" parent="." unique_id=704377502 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, 0.71999997)
+
+[node name="Mortar1" type="Node3D" parent="." unique_id=1970435627 instance=ExtResource("4_jxfof")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0, 0.48)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=111960804 instance=ExtResource("5_qx1pv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1999999, 0, 0.71999997)
+
+[node name="WallSteel17" type="Node3D" parent="." unique_id=1851705392 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 0.88)
+
+[node name="WallSteel18" type="Node3D" parent="." unique_id=726674377 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.88)
+
+[node name="WallSteel19" type="Node3D" parent="." unique_id=802487592 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 0.88)
+
+[node name="WallSteel20" type="Node3D" parent="." unique_id=797902423 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 0.88)
+
+[node name="WallSteel21" type="Node3D" parent="." unique_id=922685917 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 0.88)
+
+[node name="WallSteel22" type="Node3D" parent="." unique_id=1666734705 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 1.52)
+
+[node name="WallSteel23" type="Node3D" parent="." unique_id=363651807 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 1.52)
+
+[node name="WallSteel24" type="Node3D" parent="." unique_id=441522577 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 1.52)
+
+[node name="WallSteel25" type="Node3D" parent="." unique_id=1055752710 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0, 1.52)
+
+[node name="WallSteel26" type="Node3D" parent="." unique_id=1908678660 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 1.52)
+
+[node name="WallSteel27" type="Node3D" parent="." unique_id=753871887 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 1.04)
+
+[node name="WallSteel28" type="Node3D" parent="." unique_id=1972153714 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 1.1999999)
+
+[node name="WallSteel29" type="Node3D" parent="." unique_id=1559375080 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8399999, 0, 1.36)
+
+[node name="WallSteel30" type="Node3D" parent="." unique_id=1924661587 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 1.04)
+
+[node name="WallSteel31" type="Node3D" parent="." unique_id=1639389643 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 1.1999999)
+
+[node name="WallSteel32" type="Node3D" parent="." unique_id=1844667582 instance=ExtResource("3_drodu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.48, 0, 1.36)
+
+[node name="Cannon2" type="Node3D" parent="." unique_id=2083756192 instance=ExtResource("5_qx1pv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 1.04)
+
+[node name="Sprinkler1" type="Node3D" parent="." unique_id=935826475 instance=ExtResource("6_r5vcp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 1.1999999)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=504979222 instance=ExtResource("7_7ht1f")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5999999, 0, 1.12)
+
+[node name="Road1" type="Node3D" parent="." unique_id=404210560 instance=ExtResource("8_lphst")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5999999, 0, 0.39999998)
+size = Vector2i(2, 5)
+
+[node name="Road2" type="Node3D" parent="." unique_id=717871575 instance=ExtResource("8_lphst")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5999999, 0, 1.52)
+size = Vector2i(2, 3)

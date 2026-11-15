@@ -54,7 +54,7 @@ var pose := Pose.POINT:
 			_settling = SETTLE_TIME
 		pose = value
 ## Uniform scale about the anchor (the hired hands are half size).
-var size := 1.0
+@export var size := 1.0
 var _punch := 0.0
 var _angles: Array = POSES[Pose.POINT].duplicate(true)
 var _anchor: Vector3 = ANCHORS[Pose.POINT]
@@ -82,6 +82,9 @@ func _ready() -> void:
 func move_to(target: Vector3, delta: float) -> void:
 	if delta > 0.0:
 		var velocity := (target - _last_target) / delta if _last_target != Vector3.ZERO else Vector3.ZERO
+		var parent := get_parent_node_3d()
+		if parent != null:
+			velocity = parent.global_basis.orthonormalized().inverse() * velocity  # Leans in its own frame.
 		_sway = _sway.lerp(sway(velocity), 1.0 - exp(-SWAY_SPEED * delta))
 		if _settling > 0.0:
 			_settling -= delta

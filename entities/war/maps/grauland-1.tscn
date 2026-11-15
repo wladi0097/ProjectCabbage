@@ -1,0 +1,81 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/maps/war_map.gd" id="1_abest"]
+[ext_resource type="PackedScene" path="res://entities/war/maps/zone.tscn" id="2_ws7r2"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/hedge.tscn" id="3_ivtrv"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/shredder.tscn" id="4_yt4ce"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/sprinkler.tscn" id="5_abest"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/cannon.tscn" id="5_u6mit"]
+[ext_resource type="PackedScene" path="res://entities/war/buildings/farmhouse.tscn" id="7_wdhor"]
+[ext_resource type="PackedScene" path="res://entities/war/terrain/road.tscn" id="8_6ckxx"]
+
+[node name="Grauland1" type="Node3D" unique_id=741276916]
+script = ExtResource("1_abest")
+grid_size = Vector2i(20, 11)
+difficulty = {
+&"associates": 10,
+&"cabbages": 7500,
+&"k": 2.17,
+&"style": "mixed"
+}
+site_name = "THE FRONT DESK"
+briefing = "All applications go through the front desk. The front desk is a shredder."
+
+[node name="Zone1" type="Node3D" parent="." unique_id=663476332 instance=ExtResource("2_ws7r2")]
+transform = Transform3D(2, 0, 0, 0, 1, 0, 0, 0, 7, 0.16, 0, 0.88)
+
+[node name="Hedge1" type="Node3D" parent="." unique_id=714107414 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.08)
+
+[node name="Hedge2" type="Node3D" parent="." unique_id=761831818 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.24)
+
+[node name="Hedge3" type="Node3D" parent="." unique_id=486728882 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.39999998)
+
+[node name="Hedge4" type="Node3D" parent="." unique_id=67988160 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.56)
+
+[node name="Hedge5" type="Node3D" parent="." unique_id=1846924343 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.71999997)
+
+[node name="Shredder1" type="Node3D" parent="." unique_id=1195697004 instance=ExtResource("4_yt4ce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 0.88)
+
+[node name="Hedge6" type="Node3D" parent="." unique_id=913431617 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.04)
+
+[node name="Hedge7" type="Node3D" parent="." unique_id=403743612 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.1999999)
+
+[node name="Hedge8" type="Node3D" parent="." unique_id=882350675 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.36)
+
+[node name="Hedge9" type="Node3D" parent="." unique_id=2134381003 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.52)
+
+[node name="Hedge10" type="Node3D" parent="." unique_id=1378870074 instance=ExtResource("3_ivtrv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52, 0, 1.68)
+
+[node name="Sprinkler1" type="Node3D" parent="." unique_id=1553135271 instance=ExtResource("5_abest")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 0.39999998)
+
+[node name="Cannon1" type="Node3D" parent="." unique_id=1513877016 instance=ExtResource("5_u6mit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1599998, 0, 1.36)
+
+[node name="Shredder2" type="Node3D" parent="." unique_id=1084729729 instance=ExtResource("4_yt4ce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0.88)
+
+[node name="Cannon2" type="Node3D" parent="." unique_id=401569773 instance=ExtResource("5_u6mit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 0, 1.36)
+
+[node name="Farmhouse1" type="Node3D" parent="." unique_id=1351814009 instance=ExtResource("7_wdhor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.56, 0, 0.96)
+
+[node name="Road1" type="Node3D" parent="." unique_id=1440792655 instance=ExtResource("8_6ckxx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0, 0.88)
+size = Vector2i(7, 1)
+
+[node name="Road2" type="Node3D" parent="." unique_id=593345816 instance=ExtResource("8_6ckxx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.76, 0, 0.88)
+size = Vector2i(2, 1)

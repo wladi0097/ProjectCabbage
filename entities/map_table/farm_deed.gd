@@ -17,11 +17,16 @@ extends Node3D
 ## The stamp (`Stamp`: a cast-iron head on a knob) comes down on the box (strike), prints ACQUIRED
 ## (imprint: its own heavy slam, a ring, the paper gives) and lifts away (lift_stamp).
 ## A DECLARATION OF WAR (the paper of a farm taken by war that can be attacked: FarmRegister) prints
-## the war's coin price, its scouting view (print_scout) and, under STAFF COMMITTED,
-## one row per unit type the depot deals in (print_staff, depot_order_row.tscn): the figure standing
-## on the paper in 3D (`Figures`), how many are ready, and the [-] n [+] boxes (staff_box_at) that
-## choose how many go. Beside them the scouting view (print_scout): the farm's fighting map in
-## miniature on the paper (`Scout`), its defences counted under it.
+## the war's coin price, under STAFF COMMITTED one row per unit type hired (up to five: print_staff,
+## declaration_row.tscn): the figure standing on the paper in 3D (`Figures`), how many are ready,
+## and the [-] n [+] boxes (staff_box_at) that choose how many go; beside them ASSESSED RESISTANCE
+## (print_resistance): the map's rating in words and five pips, and the staff it is estimated to
+## take. No small print: the rows run down to the stamp box's foot. With nobody trained at all the
+## rows give way to the NO STAFF notice (`NoStaff`), and the stamp is refused. Under the farm's name
+## it prints the map's site name and its briefing in place of the site's code (print_site); the
+## campaign's last war (Endmark Isle) gets an oxblood border and a heavier stamp. A declaration lies
+## WAR_SCALE times the deed's size on the sheet (FarmRegister scales the whole paper, figures and
+## stamp with it) so it reads at 720p; its form is the same 1 px = 1 mm page.
 ## Sound moments, one cue each: Slide (it slides in or away), Strike (the stamp lands), Denied (the
 ## stamp refused, an offer that missed: a jammed lever's dead clunk), Roll (it rolls itself up), Dial
 ## (unused), MoodStamp (the mood stamped), Agreed (an offer that landed), PriceUp
@@ -55,19 +60,20 @@ const FORMS := {
 }
 ## The owner's five moods as stamped (FarmRegister.Mood, worst first), by what is offered: cabbages
 ## from stock, or coins in an envelope.
-## A declaration's staff rows (depot_order_row.tscn): the first one's top left corner on the form
-## (px), each this high, and its [-] and [+] boxes in the row. A figure stands FIGURE_SCALE times
-## its fighting size on the row's `Stand` point.
-const STAFF_AT := Vector2(420, 500)
-const ROW_HEIGHT := 90.0
-const LESS_IN_ROW := Rect2(186, 38, 50, 50)
-const MORE_IN_ROW := Rect2(296, 38, 50, 50)
+## A declaration's staff rows (declaration_row.tscn): the first one's top left corner on the form
+## (px), each this high (MAX_ROWS of them fit down to the frame), and its [-] and [+] boxes in the
+## row. A figure stands FIGURE_SCALE times its fighting size on the row's `Stand` point, a small
+## one scaled up to FIGURE_FOOT px across (figure_scale) so every type reads.
+const STAFF_AT := Vector2(44, 506)
+const ROW_HEIGHT := 98.0
+const MAX_ROWS := 5
+const LESS_IN_ROW := Rect2(262, 46, 52, 52)
+const MORE_IN_ROW := Rect2(398, 46, 52, 52)
 const FIGURE_SCALE := 0.5
-## The scouting view: the farm's fighting map in miniature, its grid's top left corner on this form
-## pixel, scaled to fill SCOUT_WIDTH px across.
-const SCOUT_AT := Vector2(44, 500)
-const SCOUT_WIDTH := 360.0
-const STAFF_ROW := preload("res://entities/war/depot/depot_order_row.tscn")
+const FIGURE_FOOT := 80.0
+## A declaration of war lies this many times a deed's SIZE on the sheet.
+const WAR_SCALE := 1.5
+const STAFF_ROW := preload("res://entities/map_table/declaration_row.tscn")
 const SOLDIER := "res://entities/war/soldiers/%s.tscn"
 ## A declaration's spots (box_at): "staff_less:<unit>", "staff_more:<unit>".
 const STAFF_LESS := "staff_less:"
@@ -88,6 +94,8 @@ const RING_TIME := 0.32
 const RING_Y := 0.004
 ## Sliding, the paper is turned this far (rad) and squares up as it arrives.
 const SLIDE_TURN := 0.22
+## A heavy stamp (the last war's declaration) squashes and rings this much more.
+const HEAVY := 1.6
 
 ## The stamp box's frame while the mouse is on it.
 @export var hot_box: StyleBox
@@ -99,6 +107,8 @@ var bill := {}
 var stamped := false
 ## The negotiation record lies over the deed (its boxes take the clicks).
 var haggling := false
+## The campaign's last war: the stamp comes down heavier (HEAVY).
+var heavy := false
 ## 1 lies flat, 0 is all rolled up at its top edge.
 var open := 1.0:
 	set(value):
@@ -114,6 +124,9 @@ var _haggle_moving: Tween
 @onready var _paper: ShaderMaterial = $Paper.material_override
 @onready var _title: Label = $Page/Form/Title
 @onready var _site: Label = $Page/Form/Site
+@onready var _site_name: Label = $Page/Form/SiteName
+@onready var _briefing: Label = $Page/Form/Briefing
+@onready var _final_frame: Control = $Page/Form/FinalFrame
 @onready var _coins: Label = $Page/Form/Coins
 @onready var _coins_short: Label = $Page/Form/CoinsShort
 @onready var _cabbages: Label = $Page/Form/Cabbages
@@ -133,13 +146,13 @@ var _haggle_moving: Tween
 @onready var _boxes: Dictionary[StringName, Panel] = {&"deed_stamp": _box, &"deed_haggle": $Page/Form/Start}
 @onready var _imprint: Control = $Page/Form/Imprint
 @onready var _strip: Control = $Page/Form/Strip
-@onready var _defences: Label = $Page/Form/Defences
 @onready var _staff_head: Label = $Page/Form/StaffHead
 @onready var _staff: Control = $Page/Form/Staff
+@onready var _no_staff: Control = $Page/Form/NoStaff
+## What flashes when the staff refuse the stamp (blink), and the ink each is printed in.
+@onready var _staff_inks: Dictionary[Label, Color] = {}
 @onready var _figures: Node3D = $Figures
-@onready var _scout: Node3D = $Scout
-## The map the scouting view shows now ("": none).
-var _scouted := ""
+@onready var _resistance: Control = $Page/Form/Resistance
 @onready var _stamp: Node3D = $Stamp
 @onready var _stamp_rest := _stamp.position
 @onready var _ring: MeshInstance3D = $Ring
@@ -155,6 +168,8 @@ var _scouted := ""
 
 func _ready() -> void:
 	_paper.set_shader_parameter(&"sheet_tex", _page.get_texture())
+	for label: Label in [_staff_head, $Page/Form/Box/Word, $Page/Form/NoStaff/Head, $Page/Form/NoStaff/Line]:
+		_staff_inks[label] = label.get_theme_color(&"font_color")
 
 
 func _notification(what: int) -> void:
@@ -198,6 +213,15 @@ static func staff_box_at(pixel: Vector2, units: Array[String]) -> StringName:
 	return &""
 
 
+## How many times its fighting size `figure` stands in a staff row: FIGURE_SCALE, or more for a small
+## one, to FIGURE_FOOT px across seen from above.
+static func figure_scale(figure: Node3D) -> float:
+	var box := AABB()
+	for mesh: MeshInstance3D in figure.find_children("*", "MeshInstance3D", true, false):
+		box = box.merge(mesh.transform * mesh.get_aabb())
+	return maxf(FIGURE_SCALE, FIGURE_FOOT / PIXELS_PER_METRE / maxf(box.size.x, box.size.z))
+
+
 ## Deed pixel `pixel` on the negotiation record's own page.
 static func page(pixel: Vector2) -> Vector2:
 	return HAGGLE_PAGE.affine_inverse() * pixel
@@ -239,7 +263,8 @@ func fill(called: String, at: StringName, price: Dictionary, lacks := {}, reason
 	_small_print.visible = not price.is_empty()
 	($Page/Form/PriceHead as Label).visible = not price.is_empty()
 	print_staff([])
-	print_scout("")
+	print_resistance({})
+	print_site({})
 	hot(&"")
 	print_price(price, lacks)
 	print_haggle()
@@ -269,12 +294,20 @@ func print_price(price: Dictionary, lacks := {}) -> void:
 
 
 ## Prints a declaration's staff: one row per `rows` entry ({unit, name, have, take}, in order), its
-## figure standing on the row; none (empty) hides the whole section.
+## figure standing on the row; none (empty) hides the whole section. Nobody trained in any row: the
+## NO STAFF notice instead of the rows.
 func print_staff(rows: Array) -> void:
-	_staff_head.visible = not rows.is_empty()
-	_staff.visible = not rows.is_empty()
-	_figures.visible = not rows.is_empty()
-	if rows.is_empty():
+	var war := not rows.is_empty()
+	var nobody := war and rows.all(func(row: Dictionary) -> bool: return int(row.have) <= 0)
+	_staff_head.visible = war
+	_staff.visible = war and not nobody
+	_figures.visible = war and not nobody
+	_no_staff.visible = nobody
+	($Page/Form/Rule2 as Control).visible = not war
+	($Page/Form/Rule3 as Control).visible = not war
+	if war:
+		_small_print.hide()
+	else:
 		reprint()
 		return
 	var units := rows.map(func(row: Dictionary) -> String: return row.unit)
@@ -293,7 +326,7 @@ func print_staff(rows: Array) -> void:
 			_staff.add_child(line)
 			var figure: Node3D = (load(SOLDIER % row.unit) as PackedScene).instantiate()
 			figure.name = row.unit
-			figure.scale = Vector3.ONE * FIGURE_SCALE
+			figure.scale = Vector3.ONE * figure_scale(figure)
 			_figures.add_child(figure)
 		line.position = Vector2(0.0, i * ROW_HEIGHT)
 		(line.get_node("Name") as Label).text = row.name
@@ -304,42 +337,38 @@ func print_staff(rows: Array) -> void:
 	reprint()
 
 
-## Shows the scouting view of fighting map `map` (a WarMap scene; "": none, hidden): the map in
-## miniature and its defences counted under it.
-func print_scout(map: String) -> void:
-	var on := map != ""
-	for part: String in ["ScoutHead", "ScoutFrame", "Defences"]:
-		($Page/Form.get_node(part) as Control).visible = on
-	($Page/Form/Rule2 as Control).visible = not on
-	_scout.visible = on
-	if on and map != _scouted:
-		for old in _scout.get_children():
-			old.free()
-		var shown: WarMap = (load(map) as PackedScene).instantiate()
-		_scout.add_child(shown)
-		var fit := SCOUT_WIDTH / (shown.grid_size.x * WarMap.CELL * PIXELS_PER_METRE)
-		shown.scale = Vector3.ONE * fit
-		shown.position = Vector3(SCOUT_AT.x / PIXELS_PER_METRE - SIZE.x / 2.0, 0.0, SCOUT_AT.y / PIXELS_PER_METRE)
-		_scouted = map
-	if on:  # Again each time: the words follow the language.
-		_defences.text = defences_text((_scout.get_child(0) as WarMap).layout())
+## Prints ASSESSED RESISTANCE from `rating` (WarMap.difficulty_for: its band 1 .. 5 lights as many
+## pips, band_name in words, and the field associates estimated to take it; -1: more than the army
+## cap allows); {} hides it.
+func print_resistance(rating: Dictionary) -> void:
+	_resistance.visible = not rating.is_empty()
+	if rating.is_empty():
+		reprint()
+		return
+	($Page/Form/Resistance/Rating as Label).text = tr(rating.band_name)
+	for k in WarMap.BAND_NAMES.size():
+		($Page/Form/Resistance/Pips.get_node("Pip%d/Fill" % k) as Control).visible = k < int(rating.band)
+	var associates := int(rating.associates)
+	($Page/Form/Resistance/Estimate as Label).text = tr("Estimated staff required: %d field associates.") % associates \
+			if associates > 0 else tr("Estimated staff required: exceeds current headcount.")
 	reprint()
 
 
-## A fighting map's defences counted, as the scouting view prints them: "CANNONS 2  MORTARS 1  WOODEN
-## WALLS" (`layout`: WarMap.layout).
-static func defences_text(layout: Array) -> String:
-	var count := {}
-	for building: Dictionary in layout:
-		count[building.kind] = int(count.get(building.kind, 0)) + 1
-	var words := PackedStringArray()
-	for kind: String in ["cannon", "mortar"]:
-		if count.has(kind):
-			words.append(TranslationServer.translate({cannon = "CANNONS %d", mortar = "MORTARS %d"}[kind]) % count[kind])
-	for wall: String in ["wall_wood", "wall_stone", "wall_steel"]:
-		if count.has(wall):
-			words.append(TranslationServer.translate({wall_wood = "WOODEN WALLS", wall_stone = "STONE WALLS", wall_steel = "STEEL WALLS"}[wall]))
-	return "  ".join(words)
+## Prints the war's site under the farm's name from `brief` (WarMap.brief_for: site_name and briefing,
+## keys, "" unfilled; final: the campaign's last war, an oxblood border and a heavier stamp); {} or
+## an unfilled map prints none and the name has its two lines back.
+func print_site(brief: Dictionary) -> void:
+	var shown: bool = brief.get("site_name", "") != ""
+	_site_name.visible = shown
+	_briefing.visible = shown
+	_site.visible = not shown  # The site's name says where; its code would crowd the briefing.
+	_site_name.text = tr(brief.get("site_name", ""))
+	_briefing.text = tr(brief.get("briefing", ""))
+	_title.vertical_alignment = VERTICAL_ALIGNMENT_TOP if shown else VERTICAL_ALIGNMENT_CENTER
+	_title.max_lines_visible = 1 if shown else -1
+	heavy = brief.get("final", false)
+	_final_frame.visible = heavy
+	reprint()
 
 
 ## A declaration's count of staff turned a notch: the dial's click.
@@ -379,7 +408,8 @@ func hot(spot: StringName) -> void:
 	reprint()
 
 
-## The stamp refused: what is short flashes red twice, to a jammed lever's dead clunk.
+## The stamp refused: what is short flashes red twice, to a jammed lever's dead clunk; `staff`:
+## STAFF COMMITTED, the NO STAFF notice and STAMP HERE flash instead (nobody chosen, nobody trained).
 func blink(staff := false) -> void:
 	_denied_sound.cue(global_position)
 	if _blinking != null:
@@ -388,7 +418,7 @@ func blink(staff := false) -> void:
 	for colour: Color in [INK, DENIED_RED, INK, DENIED_RED]:
 		_blinking.tween_callback(_ink_short.bind(colour, staff))
 		_blinking.tween_interval(BLINK_TIME)
-	_blinking.tween_callback(_ink_short.bind(DENIED_RED, false))  # STAFF COMMITTED goes back to ink.
+	_blinking.tween_callback(_ink_short.bind(DENIED_RED, false))  # The staff's lettering goes back to ink.
 
 
 ## Slides flat over the sheet from `from` to `to` (in the parent's space) in `time` s, squaring up
@@ -485,12 +515,13 @@ func envelope() -> void:
 
 ## The stamp's hit: the head squashed, a ring from under it.
 func _hit() -> void:
-	_stamp.scale = Vector3(1.12, 0.8, 1.12)
+	var weight := HEAVY if heavy else 1.0
+	_stamp.scale = Vector3(1.0 + 0.12 * weight, 1.0 - 0.2 * weight, 1.0 + 0.12 * weight)
 	var ink := _ring.get_surface_override_material(0) as StandardMaterial3D
 	_ring.show()
 	var burst := create_tween().set_parallel().set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
-	burst.tween_property(_ring, "scale", Vector3(RING_TO, 1.0, RING_TO), RING_TIME).from(Vector3(0.5, 1.0, 0.5))
-	burst.tween_property(ink, "albedo_color:a", 0.0, RING_TIME).from(0.8)
+	burst.tween_property(_ring, "scale", Vector3(RING_TO * weight, 1.0, RING_TO * weight), RING_TIME * weight).from(Vector3(0.5, 1.0, 0.5))
+	burst.tween_property(ink, "albedo_color:a", 0.0, RING_TIME * weight).from(0.8)
 	burst.chain().tween_callback(_ring.hide)
 
 
@@ -511,7 +542,6 @@ func roll_away(to: Vector3, roll_time: float, drop_time: float) -> void:
 	_still()
 	shut_haggle()
 	_figures.hide()  # They would stand in the air over the rolled paper.
-	_scout.hide()
 	_roll_sound.cue(global_position)
 	_moving = create_tween()
 	_moving.tween_property(self, "open", 0.0, roll_time).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
@@ -522,7 +552,8 @@ func roll_away(to: Vector3, roll_time: float, drop_time: float) -> void:
 func _ink_short(colour: Color, staff := false) -> void:
 	for label: Label in [_coins_short, _cabbages_short]:
 		label.add_theme_color_override(&"font_color", colour)
-	_staff_head.add_theme_color_override(&"font_color", colour if staff else INK)
+	for label: Label in _staff_inks:
+		label.add_theme_color_override(&"font_color", colour if staff and colour != INK else _staff_inks[label])
 	reprint()
 
 

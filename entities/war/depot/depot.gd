@@ -10,9 +10,9 @@ extends Node3D
 
 ## The desk card that brings the depot (and the field associates).
 const WAR_CARD := "war_mode"
-## The unit types the depot deals in today, in its column order (a subset of WarRules.UNITS; more
-## types join this list as they are designed). Each is shown once its card is stamped.
-const IN_SERVICE: Array[String] = ["field_associate"]
+## The unit types the depot deals in, in its column order (WarRules.UNITS: the whole roster of
+## research/war-units.md). Each is shown once its card is stamped.
+const IN_SERVICE: Array[String] = ["field_associate", "restructuring_charge", "senior_asset", "pult_crew", "courier"]
 ## The drop: it waits DROP_AFTER s once the camera is there, falls DROP_FROM m in DROP_TIME s,
 ## squashes and settles.
 const DROP_AFTER := 0.5

@@ -7,8 +7,7 @@ extends Node3D
 ## The number has a limit (SaveGame.LIMITS: coin_limit, findings_limit), lettered in cream on a black
 ## enamel plate in a steel rim on the machine's top ($LimitPlate, $Limit: "MAX $40K"), as the
 ## drums' own windows are. While the purse is full the plate reads FULL in red instead ($Full,
-## "FULL $40K") and a red warning light ($FullLamp) is on, both steady, as the supply console's
-## ticker reads FULL for cabbages. Full means the save and what lies unbanked on the desk
+## "FULL $40K"), steady, as the supply console's ticker reads FULL for cabbages. Full means the save and what lies unbanked on the desk
 ## (SaveManager.pending_coins / pending_findings) reach the limit, or income was just lost to it
 ## (refuse: CoinPile.refused, QaBay._eject). The buzzer sounds once as it becomes full, never while
 ## it stays full, and at most once in QUIET seconds. The limits end under what the drums show
@@ -41,8 +40,6 @@ var _bones := PackedInt32Array()
 @onready var _tick: SoundCue = $Tick
 @onready var _limit: Label3D = $Limit
 @onready var _full: Label3D = $Full
-## The red warning light on the machine's face, lit with FULL.
-@onready var _lamp: OmniLight3D = $FullLamp
 @onready var _buzzer: SoundCue = $Refuse
 ## FULL shows; seconds until the buzzer may sound again.
 var _is_full := false
@@ -68,7 +65,6 @@ func _process(delta: float) -> void:
 		lettering.text = limit
 	_limit.visible = not _is_full
 	_full.visible = _is_full
-	_lamp.visible = _is_full
 	var target := float(save.get(field))
 	if _shown == target:
 		return

@@ -1247,16 +1247,14 @@ func test_the_stamp_tag_tells_the_player_to_pull_the_handle() -> void:
 	assert_str((desk._tag as Label3D).text).is_equal("PULL TO STAMP")
 
 
-const CHAPTER_3 := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm", "negotiation", "rejected_goods", "hand_schedule", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "tactics", "retreat", "stars", "farm_shortcut"]
+const CHAPTER_3 := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm", "negotiation", "rejected_goods", "hand_schedule", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "route_planning", "unit_charge", "bigger_armies", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier", "stars", "farm_shortcut"]
 ## Chapter 3's chain as it is dealt: each entry arrives once the one before it is stamped, a group all at once.
 const CHAPTER_3_DEALS := [["market_intelligence"], ["cash_holding", "big_ideas", "archive_capacity"], ["condense", "structured_farm"],
 		["negotiation"], ["rejected_goods"], ["bribery"], ["war_mode"], ["world_map"], ["no_taxes"], ["sea_lanes"], ["stars"]]
 ## Its optional cards, beside the chain: nothing waits for them.
 const CHAPTER_3_OPTIONAL := ["map_readout", "hand_schedule", "farm_shortcut"]
 ## The war line, beside the main line from the first law on, one card after the other; stars waits for it.
-const CHAPTER_3_WAR := ["tactics", "retreat"]
-## Unit types parked 2026-11-14 (figures, stats and copy kept): their cards are never dealt.
-const PARKED_UNIT_CARDS := ["unit_compliance", "unit_senior", "unit_pult"]
+const CHAPTER_3_WAR := ["route_planning", "unit_charge", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier"]
 ## The war line's card dealt by the boss's paper.
 const WAR_EVENT_CARD := "bigger_armies"
 
@@ -1776,18 +1774,19 @@ func test_nothing_waits_on_faster_to_our_farms() -> void:
 		assert_bool(node.get("needs", []).has("farm_shortcut")).override_failure_message(node.id + " waits for it").is_false()
 
 
-## The war line: after the first law (the home farms 6 to 8 are fought with field associates alone),
-## one card after the other beside the sea lanes, each needing more farms; stars waits for its end.
-func test_the_war_line_starts_after_the_first_law_and_deals_one_card_at_a_time_beside_the_sea_lanes() -> void:
+## The war line: from the world map on (the home farms 6 to 8 are fought with field associates alone),
+## one card after the other beside the first law and the sea lanes, never behind them, each needing
+## more farms; stars waits for its end.
+func test_the_war_line_starts_with_the_world_map_and_deals_one_card_at_a_time_without_waiting_for_the_first_law() -> void:
 	var save := _all_stamped_but(["no_taxes", "sea_lanes", "stars", WAR_EVENT_CARD] + CHAPTER_3_WAR)
 	save.farms_owned = _home_farms(UpgradeDesk.Events.HOME_SITES)  # Every home farm: no paper for bigger armies yet.
+	for id: String in CHAPTER_3_WAR:  # NO MORE TAXES left on the desk: the war line goes on without it.
+		assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).override_failure_message(id).is_equal(["no_taxes", id])
+		save.stamped.append(id)
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["no_taxes"])
 	save.stamped.append("no_taxes")
-	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["sea_lanes", "tactics"])
+	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["sea_lanes"])
 	save.stamped.append("sea_lanes")
-	for id: String in CHAPTER_3_WAR:
-		assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).override_failure_message(id).is_equal([id])
-		save.stamped.append(id)
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_empty()  # stars waits for the workforce card.
 	var farms := 0
 	for id: String in CHAPTER_3_WAR:  # Spread over the farms taken by war, the home ones' tutorials past.
@@ -1796,15 +1795,30 @@ func test_the_war_line_starts_after_the_first_law_and_deals_one_card_at_a_time_b
 		assert_array(UpgradeDesk.costs(card).keys()).override_failure_message(id).is_equal(["farms", "coins"])
 		farms = card.farms
 	assert_int(farms).is_less(UpgradeDesk.Events.FARMS)
-	assert_int(UpgradeDesk.card_data(CHAPTER_3_WAR[0]).farms).is_greater(UpgradeDesk.Events.HOME_SITES)
+	# The route overlay comes first and early (the sixth farm); the first unit card needs every home
+	# farm: the tutorials (6 to 8) are fought with field associates alone.
+	assert_int(UpgradeDesk.card_data(CHAPTER_3_WAR[0]).farms).is_less_equal(6)
+	assert_int(UpgradeDesk.card_data(CHAPTER_3_WAR[1]).farms).is_greater_equal(UpgradeDesk.Events.HOME_SITES)
 	assert_array(UpgradeDesk.card_data("stars").needs).contains([CHAPTER_3_WAR[-1], WAR_EVENT_CARD])
 
 
-func test_the_parked_unit_types_have_no_card_on_the_desk() -> void:
-	for id: String in PARKED_UNIT_CARDS:
-		assert_dict(UpgradeDesk.card_data(id)).override_failure_message(id).is_empty()
-		for card: Dictionary in UpgradeDesk.CARDS:
-			assert_bool(card.get("needs", []).has(id)).override_failure_message(card.id + " waits for " + id).is_false()
+## Each unit card can land before the country whose maps teach it (research/war-maps.md, in the
+## countries' order: home 8, Veldmark 2, Ostrevia 2, Sulvania 3, Grauland 2, the Lower Provinces 2).
+func test_each_unit_card_is_due_before_the_country_that_teaches_it() -> void:
+	assert_int(UpgradeDesk.card_data("unit_charge").farms).is_less_equal(8)  # Veldmark's masonry ring.
+	assert_int(UpgradeDesk.card_data("unit_senior").farms).is_less_equal(12)  # Sulvania's gun line.
+	assert_int(UpgradeDesk.card_data("unit_pult").farms).is_less_equal(15)  # Grauland's shredders, across the sea.
+	assert_int(UpgradeDesk.card_data("unit_courier").farms).is_less_equal(19)  # Morrow.
+	for id: String in CHAPTER_3_WAR:
+		for card: String in ["no_taxes", "sea_lanes"]:
+			assert_array(UpgradeDesk.card_data(id).needs).override_failure_message(id + " waits for " + card).not_contains([card])
+
+func test_each_unit_card_hires_the_unit_type_the_war_rules_give_it() -> void:
+	for unit: String in WarRules.UNITS:
+		var card := UpgradeDesk.card_data(WarRules.UNIT_CARD[unit])
+		assert_dict(card).override_failure_message(unit).is_not_empty()
+		if unit != "field_associate":
+			assert_array(CHAPTER_3_WAR).override_failure_message(unit).contains([card.id])
 
 
 func test_the_bigger_armies_memo_deals_the_workforce_card() -> void:
@@ -1866,3 +1880,15 @@ func test_esc_closes_the_approved_list_before_the_pause_menu_can_take_it() -> vo
 	desk._input(esc)  # _input runs before any _unhandled_input, so the menu never sees this Esc.
 	assert_bool(get_viewport().is_input_handled()).is_true()
 	assert_bool(desk.get_node("Approved").visible).is_false()
+
+
+func test_migrating_drops_figures_of_retired_unit_types_from_the_army_training_and_a_war_under_way() -> void:
+	var old := SaveGame.new()
+	old.migration = 6
+	old.army = {field_associate = 2, compliance_officer = 1}
+	old.army_training = [{unit = "compliance_officer", left = 4.0}, {unit = "field_associate", left = 5.0}]
+	old.war_pending = {compliance_officer = 2, courier = 1}
+	UpgradeDesk.migrate(old)
+	assert_dict(old.army).is_equal({field_associate = 2})
+	assert_array(old.army_training).is_equal([{unit = "field_associate", left = 5.0}])
+	assert_dict(old.war_pending).is_equal({courier = 1})

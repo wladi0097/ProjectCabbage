@@ -7,7 +7,7 @@ func _view() -> FightView:
 	var sheet: Node3D = auto_free(load(SHEET).instantiate())
 	add_child(sheet)
 	var view: FightView = sheet.get_node("Field")
-	view.setup(sheet.get_node("Things/Map"))
+	view.setup(sheet.get_node("Things/Board/Map"))
 	return view
 
 
@@ -69,3 +69,131 @@ func test_a_building_at_zero_hp_turns_to_rubble_and_its_wall_neighbours_drop_the
 	for i in nodes.size():
 		if WarMap.cell_of(nodes[i]) == Vector2i(3, 1):
 			assert_bool((nodes[i].get_node("Arms/East") as Node3D).visible).is_false()
+
+
+func test_a_placed_figure_first_stands_where_it_was_set_down_even_beside_others() -> void:
+	var view := _view()
+	var fight := WarFight.new(view.map.layout(), view.map.grid_size, 90.0)
+	for i in 3:
+		fight.place_at("field_associate", WarRules.unit_stats(SaveGame.new(), "field_associate"), Vector2(4.0 + i * 0.2, 1.5))
+		var holder := FightView.figure("field_associate")
+		view.figures.add_child(holder)  # Off the desk, as the war sheet hands it over.
+		view.add_unit(holder)
+	view.follow(fight, 0.0)
+	for i in 3:
+		assert_vector(view.units[i].position).is_equal_approx(WarMap.point(fight.units[i].pos), Vector3.ONE * 0.0001)
+
+
+## A view on a map laid out from `text` (BattleSim.parse_layout), on the war sheet.
+func _view_on(text: String) -> FightView:
+	var sheet: Node3D = auto_free(load(SHEET).instantiate())
+	add_child(sheet)
+	var map := WarMap.new()
+	sheet.get_node("Things/Board").add_child(map)
+	for piece: Dictionary in BattleSim.parse_layout(text):
+		var zone: bool = piece.kind == "zone"
+		var node: Node3D = load("res://entities/war/%s/%s.tscn" % ["maps" if zone else "buildings", piece.kind]).instantiate()
+		node.position = WarMap.point(Vector2(piece.cell) + Vector2(piece.size) / 2.0)
+		if zone:
+			node.scale = Vector3(piece.size.x, 1.0, piece.size.y)
+		map.add_child(node)
+	var view: FightView = sheet.get_node("Field")
+	view.setup(map)
+	return view
+
+
+## Places a figure of `unit` at `pos` in `fight` and on `view`.
+func _put(view: FightView, fight: WarFight, unit: String, pos: Vector2) -> void:
+	assert_bool(fight.place_at(unit, WarRules.unit_stats(SaveGame.new(), unit), pos)).is_true()
+	var holder := FightView.figure(unit)
+	view.figures.add_child(holder)
+	view.add_unit(holder)
+
+
+## The effect scenes `path` under Shots not in `seen` (instance ids), added to it.
+func _new_effects(view: FightView, path: String, seen: Dictionary) -> Array[CPUParticles3D]:
+	var out: Array[CPUParticles3D] = []
+	for child in view.get_node("Shots").get_children():
+		if child.scene_file_path == path and not seen.has(child.get_instance_id()):
+			seen[child.get_instance_id()] = true
+			out.append(child)
+	return out
+
+
+func test_a_courier_jumps_over_the_fence_cell_during_its_hop() -> void:
+	var view := _view_on("farmhouse@10,1; wall_steel@5,0,1x6; zone@1,1,3x3")
+	var fight := WarFight.new(view.map.layout(), view.map.grid_size, 90.0)
+	_put(view, fight, "courier", Vector2(2.5, 2.5))
+	fight.start()
+	var over := 0.0  # Its highest lift while it is seen over the fence's cells.
+	for k in 240:
+		fight.tick(1.0 / 60.0)
+		view.follow(fight, 1.0 / 60.0)
+		var seen_at := Vector2(view.units[0].position.x, view.units[0].position.z) / WarMap.CELL
+		if seen_at.x >= 5.0 and seen_at.x <= 6.0:
+			over = maxf(over, (view.units[0].get_node("Soldier") as Node3D).position.y)
+	assert_float(fight.units[0].pos.x).is_greater(6.5)  # It is past the fence,
+	assert_float(over).is_greater(0.076)  # cleared the security grade's post in the air,
+	assert_bool(fight.buildings.all(func(b: Dictionary) -> bool: return b.kind not in WarFight.WALLS or b.hp == b.max_hp)).is_true()  # and left it standing.
+	assert_float((view.units[0].get_node("Soldier") as Node3D).position.y).is_equal_approx(0.0, 0.0001)  # Down again.
+
+
+func test_the_shredders_stream_of_strips_grows_with_its_streak() -> void:
+	var view := _view_on("shredder@6,4; farmhouse@14,4; zone@3,3,2x3")
+	var fight := WarFight.new(view.map.layout(), view.map.grid_size, 90.0)
+	_put(view, fight, "senior_asset", Vector2(4.0, 4.5))
+	fight.start()
+	var seen := {}
+	var strips: Array[int] = []
+	for k in 600:
+		fight.tick(1.0 / 60.0)
+		view.follow(fight, 1.0 / 60.0)
+		for stream in _new_effects(view, "res://entities/war/fight/strips.tscn", seen):
+			strips.append(stream.amount)
+	assert_int(strips.size()).is_greater(5)
+	assert_int(strips[0]).is_equal(FightView.STRIPS_MIN)
+	for k in range(1, strips.size()):
+		assert_int(strips[k]).is_greater_equal(strips[k - 1])  # It only thickens while it holds its figure,
+	assert_int(strips[-1]).is_greater(strips[0] * 3)  # and by a lot.
+	assert_int(FightView.strip_count(1000)).is_equal(FightView.STRIPS_MAX)
+
+
+func test_a_fallen_silo_bursts_and_rocks_the_figure_it_spares() -> void:
+	var view := _view_on("silo@6,4; farmhouse@14,4; zone@4,4,2x2")
+	var fight := WarFight.new(view.map.layout(), view.map.grid_size, 90.0)
+	_put(view, fight, "senior_asset", Vector2(5.5, 5.0))
+	_put(view, fight, "field_associate", Vector2(5.5, 4.4))
+	fight.units[1].hp = WarFight.BUILDINGS.silo.burst / 2.0  # Hit on the way in: the burst finishes it.
+	fight.start()
+	view.follow(fight, 0.0)
+	fight._hurt(0, 10000.0)  # The silo falls.
+	var seen := {}
+	view.follow(fight, 1.0 / 60.0)
+	assert_bool((view.map.buildings()[0].get_node("Rubble") as Node3D).visible).is_true()
+	assert_int(_new_effects(view, "res://entities/war/fight/debris.tscn", seen).size()).is_equal(1)  # Card bits,
+	assert_int(_new_effects(view, "res://entities/war/fight/puff.tscn", seen).size()).is_greater(FightView.BURST_PUFFS)  # a ring of puffs.
+	for k in 30:
+		view.follow(fight, 1.0 / 60.0)
+	assert_bool(fight.units[0].alive).is_true()
+	var up := (view.units[0].get_node("Soldier") as Node3D).transform.basis.y.normalized()
+	assert_float(up.y).is_less(0.9)  # The senior asset rocks over,
+	assert_bool(fight.units[1].alive).is_false()
+	for k in 60:
+		view.follow(fight, 1.0 / 60.0)
+	up = (view.units[0].get_node("Soldier") as Node3D).transform.basis.y.normalized()
+	assert_float(up.y).is_greater(0.999)  # and stands again;
+	up = (view.units[1].get_node("Soldier") as Node3D).transform.basis.y.normalized()
+	assert_float(up.y).is_less(0.2)  # the associate lies where it fell.
+
+
+func test_a_new_map_with_as_many_buildings_keeps_its_own_building_spots() -> void:
+	var view := _view_on("farmhouse@10,1")
+	var first := view.map
+	var second := WarMap.new()
+	first.get_parent().add_child(second)
+	var house: Node3D = load("res://entities/war/buildings/farmhouse.tscn").instantiate()
+	var spot := WarMap.point(Vector2(3.5, 4.5))
+	house.position = spot
+	second.add_child(house)
+	view.setup(second)
+	assert_vector(second.buildings()[0].position).is_equal(spot)

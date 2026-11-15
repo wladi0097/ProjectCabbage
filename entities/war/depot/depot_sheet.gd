@@ -3,11 +3,12 @@ extends MapSheet
 ## The depot sheet (FORM 7-P PERSONNEL REQUISITION): rolls out when the PERSONNEL DEPOT on the map
 ## table is clicked (MapTable.open_depot), with the sheet it replaced rolled up in the holder (the
 ## way back). One column per unit type the depot deals in (Depot.units: hired ones only; the
-## others are not on the sheet at all), laid out from the left at fixed places (COLUMN_LEFT, then
-## one COLUMN_WIDTH + COLUMN_GAP further each), so later types fill in to the right. Each column
-## (depot_column.tscn):
-## - its name, and its figure standing on the paper in 3D (entities/war/soldiers/<unit>.tscn under
-##   `Things`, FIGURE_SCALE times its fighting size so it reads); the mouse on it (spot
+## others are not on the sheet at all), across the top of the sheet at fixed places (COLUMN_LEFT, then
+## one COLUMN_WIDTH + COLUMN_GAP further each), so later types fill in to the right; all five fit at
+## full size. Each column (depot_column.tscn):
+## - its name (shrunk to fit: German runs long), and its figure standing on the paper in 3D (entities/war/soldiers/<unit>.tscn under
+##   `Things`, FIGURE_SCALE times its fighting size so it reads, less for the big ones so it stands
+##   no wider than FIGURE_FOOT: figure_size); the mouse on it (spot
 ##   "figure:<unit>") lifts it and turns it towards the camera, eased back when it leaves;
 ## - its stats as small plates (WarRules.unit_stats, research applied): HP, damage, speed, target;
 ## - how many are ready (save.army), big under the figure: "3×"; it bumps when a trainee joins;
@@ -15,13 +16,18 @@ extends MapSheet
 ##   icon and the price under it, and under that why it is refused (STAFF AT CAPACITY: the HEADCOUNT
 ##   in the title block, bottom right; NOT ENOUGH CABBAGES), blinking with the jam when it is;
 ## - the trainee: the front of this unit's training queue as a small grey (unpainted) figure beside
-##   the button, a thin line under its feet filling with its training, "+N" beside it for the rest
-##   of the queue (training_of). A new front lands with a drop; finished, it jumps into the big figure.
+##   the button, a progress bar under its feet (an inked track, filling green with its training:
+##   bar_fill), under that the seconds it has left (seconds_left) and "+N" for the rest of the queue
+##   (training_of). A new front lands with a drop; finished, it jumps into the big figure.
 ##   A loaded save shows the queue as it stands, without the moments;
-## - its DEVELOPMENT PROGRAMME: the shared upgrade tree (UpgradeTree, `Tree`, rules DepotResearch:
-##   Findings, parent first, held to buy). The table hands the mouse to it (take_mouse) while it is
-##   over the tree's box, and shows the node under the mouse (hovered_spot, "research:<id>") in its
-##   screen-space hint slip (hint) instead of the tree's own popup on the paper.
+## - a ¶ mark while a research node of its unit can be bought (has_news).
+## Below the columns, the one DEVELOPMENT PROGRAMME, beside the title block of the same height (bottom
+## right: PERSONNEL DEPOT, the form line, the FILED stamp, STAFF n / cap): the shared upgrade tree
+## (UpgradeTree, `Tree`, rules DepotResearch: an org chart, the hub on top, a department per hired
+## unit in a row below it, each unit's research going down under its plate, the GENERAL programme
+## above the hub; Findings or coins, parent first, held to buy; panned and zoomed and hovered like the
+## projector's, its popup drawn popup_scale times bigger so it reads from the map camera). The table
+## hands the mouse to the tree (take_mouse) while it is over the tree's box.
 ## The page is printed every frame while the sheet is out (the tree's hover and hold animate on it).
 ## ponytail: a 2560 x 1440 page redrawn each frame while the depot sheet is open; reprint on
 ## changes only if that ever shows in a profile.
@@ -30,29 +36,35 @@ const COLUMN := preload("res://entities/war/depot/depot_column.tscn")
 const SOLDIER := "res://entities/war/soldiers/%s.tscn"
 ## Columns (px): the first one's left edge, each this wide and this far apart, their tops here.
 const COLUMN_LEFT := 110.0
-const COLUMN_WIDTH := 680.0
-const COLUMN_GAP := 90.0
+const COLUMN_WIDTH := 560.0
+const COLUMN_GAP := 45.0
 const COLUMN_TOP := 150.0
 ## A figure on the sheet is this many times its size on a fighting map; the mouse within FIGURE_HIT
 ## px of its stage is on it. Hovered it lifts FIGURE_LIFT m and turns to the camera, leaning
 ## FIGURE_LEAN of the way back towards it, in FIGURE_TIME s.
 const FIGURE_SCALE := 2.3
+const FIGURE_FOOT := 0.27
 const FIGURE_HIT := 120.0
 const FIGURE_LIFT := 0.05
 const FIGURE_LEAN := 0.15
 const FIGURE_TIME := 0.18
-## The research tree's zoom on the sheet (its nodes read from the map camera).
-const TREE_ZOOM := 1.7
+## The research tree's zoom on the sheet: every branch in its box, its nodes read from the map camera.
+const TREE_ZOOM := 1.25
 ## Each unit's name as printed, and each target rule (WarRules.BASE_STATS `target`) in words.
-const NAMES := {field_associate = "FIELD ASSOCIATE"}
+const NAMES := {field_associate = "FIELD ASSOCIATE", restructuring_charge = "RESTRUCTURING CHARGE",
+		senior_asset = "SENIOR ASSET", pult_crew = "CABBAGE-PULT CREW", courier = "EXPRESS COURIER"}
 ## The same in a sentence (hint slips).
-const CALLED := {field_associate = "field associate"}
-const TARGETS := {defence = "NEAREST DEFENCE", tower = "TOWERS ONLY", wall = "WALLS FIRST"}
+const CALLED := {field_associate = "field associate", restructuring_charge = "restructuring charge",
+		senior_asset = "senior asset", pult_crew = "cabbage-pult crew", courier = "express courier"}
+const TARGETS := {defence = "NEAREST DEFENCE", wall = "WALLS FIRST"}
 const BUY := "buy:"
 const FIGURE := "figure:"
-const RESEARCH := "research:"
-## A line break in copy (the slip runs a body on one line).
-const BREAK := "\n"
+const NEWS := "news:"
+const TRAINEE := "trainee:"
+## The grey trainee's figure on the art round its Trainee mark (px): it stands up from its feet.
+const TRAINEE_BOX := Rect2(-45.0, -120.0, 90.0, 125.0)
+## What the ¶ mark on a column means (its hint slip).
+const NEWS_HINT := "Development available: the Findings on hand cover at least one item of this programme below."
 const DENIED_RED := Color(0.9, 0.12, 0.08)
 const BLINK_TIME := 0.12
 ## A figure just requisitioned jumps to this size and settles.
@@ -67,6 +79,8 @@ const JUMP_OVER := 0.45
 const JUMP_HEIGHT := 0.18
 ## The count under the big figure swells this much when it goes up.
 const BUMP := 1.3
+## fit never prints smaller than this (px).
+const MIN_FIT := 16
 
 ## The unpainted plastic of a figure still in training.
 @export var grey_plastic: Material
@@ -76,6 +90,8 @@ var _columns: Dictionary[String, Control] = {}
 var _figures: Dictionary[String, Node3D] = {}
 var _trainees: Dictionary[String, Node3D] = {}
 var _jumpers: Dictionary[String, Node3D] = {}
+## Each unit's figure_size: its figure, trainee and jumper are printed that much smaller.
+var _sizes: Dictionary[String, float] = {}
 ## What each unit's trainee showed last (queue length, figures ready): changes play its moments.
 var _seen: Dictionary[String, Vector2i] = {}
 var _landing: Dictionary[String, Tween] = {}
@@ -83,11 +99,12 @@ var _turning: Dictionary[String, Tween] = {}
 var _hot := &""
 var _printed := ""
 var _blinking: Tween
-## The research tree the mouse is in (null: none).
+## The research tree when the mouse is in it (null: not).
 var _tree_in: UpgradeTree
 
 @onready var _staff: Label = $Page/Sheet/Staff
 @onready var _sheet_root: Control = $Page/Sheet
+@onready var _tree: UpgradeTree = $Page/Sheet/Tree
 @onready var _denied_sound: SoundCue = $Denied
 @onready var _research_sound: SoundCue = $Research
 @onready var _hire_sound: SoundCue = $Hire
@@ -99,6 +116,10 @@ var _tree_in: UpgradeTree
 func _ready() -> void:
 	for unit in Depot.IN_SERVICE:
 		_build(unit)
+	_tree.bought.connect(_approved)
+	_tree.denied.connect(func() -> void: _denied_sound.cue(global_position))
+	_tree.rules = DepotResearch
+	_tree.home(TREE_ZOOM, 0.0)
 	super()  # The figures are things on the sheet: they tuck away and pop up with it.
 	refresh()
 
@@ -117,12 +138,20 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
 		_printed = ""
 		refresh()
+	elif what == NOTIFICATION_VISIBILITY_CHANGED and is_node_ready():
+		if not visible:  # Put away (kept): the page stops printing every frame.
+			_page.render_target_update_mode = SubViewport.UPDATE_DISABLED
+			return
+		for unit in Depot.units(SaveManager.save):  # Training went on while it was away: no moments for it.
+			_train(unit, false)
+		refresh()
 
 
 ## Everything the page prints for `save`, as one string: when it changes, the page is printed again
 ## (the seconds of training left only in whole seconds).
 static func _state(save: SaveGame, out: Vector2i) -> String:
-	var parts := [save.army, save.army_training.size(), WarRules.army_cap(save), save.unit_research, Depot.units(save)]
+	var parts := [save.army, save.army_training.size(), WarRules.army_cap(save), save.unit_research, Depot.units(save),
+			DepotResearch.drawn_key(save)]
 	if not save.army_training.is_empty():
 		parts.append([save.army_training[0].unit, ceili(float(save.army_training[0].left))])
 	for unit in Depot.units(save):
@@ -133,7 +162,7 @@ static func _state(save: SaveGame, out: Vector2i) -> String:
 
 ## What a column's note under its REQUISITION box says for `save` (a key; "": it can be bought).
 static func refusal(save: SaveGame, unit: String, out := Vector2i.ZERO) -> String:
-	if WarRules.army_size(save) >= WarRules.army_cap(save):
+	if not WarRules.fits(save, unit):
 		return "STAFF AT CAPACITY"
 	if UpgradeDesk.spendable(save, "stock", out) < WarRules.unit_cabbage_price(unit):
 		return "NOT ENOUGH CABBAGES"
@@ -147,8 +176,34 @@ static func training_of(save: SaveGame, unit: String) -> Array[float]:
 	for i in save.army_training.size():
 		var entry: Dictionary = save.army_training[i]
 		if entry.unit == unit:
-			out.append(clampf(1.0 - float(entry.left) / WarRules.training_seconds(save, unit), 0.0, 1.0) if i == 0 else 0.0)
+			var total := float(entry.get("total", WarRules.training_seconds(save, unit)))  # Old saves: no total kept.
+			out.append(clampf(1.0 - float(entry.left) / total, 0.0, 1.0) if i == 0 else 0.0)
 	return out
+
+
+## The width of a training bar's fill at `progress` (0..1): the track `track` px wide, inset `inset`
+## px on each side by its inked frame.
+static func bar_fill(track: float, inset: float, progress: float) -> float:
+	return maxf(track - 2.0 * inset, 0.0) * clampf(progress, 0.0, 1.0)
+
+
+## Whole seconds `unit`'s trainee still trains for `save` (-1: none of its figures is training now:
+## its queue is empty or waits behind another unit's).
+static func seconds_left(save: SaveGame, unit: String) -> int:
+	if save.army_training.is_empty() or save.army_training[0].unit != unit:
+		return -1
+	return ceili(float(save.army_training[0].left))
+
+
+## Seconds until `unit`'s next figure is ready for `save`: what the queue in front of it still trains,
+## and its own training (0: nothing of it in training).
+static func ready_in(save: SaveGame, unit: String) -> float:
+	var wait := 0.0
+	for entry: Dictionary in save.army_training:
+		wait += float(entry.left)
+		if entry.unit == unit:
+			return wait
+	return 0.0
 
 
 ## Prints the whole page as the save has it.
@@ -158,6 +213,7 @@ func refresh() -> void:
 	_printed = _state(save, out)
 	var shown := Depot.units(save)
 	_staff.text = tr("STAFF %d / %d") % [WarRules.army_size(save), WarRules.army_cap(save)]
+	fit(_staff)
 	var x := COLUMN_LEFT
 	for unit: String in _columns:
 		var column := _columns[unit]
@@ -168,11 +224,45 @@ func refresh() -> void:
 			continue
 		column.position = Vector2(x, COLUMN_TOP)
 		x += COLUMN_WIDTH + COLUMN_GAP
+		(column.get_node("News") as Control).visible = has_news(save, unit)
 		var stage := _stage(unit)
+		var figure: Node3D = _figures[unit]
+		var i := _standing.find(figure)
+		if open > 0.0 and i >= 0 and figure.scale.x > _stand_scale[i].x * 0.002:
+			figure.show()  # Hired while the sheet lies open: it stands raised as the others (raise_thing hid it).
 		_figures[unit].position = Vector3(stage.x / PIXELS_PER_METRE - SIZE.x / 2.0, _figures[unit].position.y, stage.y / PIXELS_PER_METRE)
 		_train(unit, false)  # The trainee on its place, as the queue stands.
 		_print_column(save, unit, column, out)
 	reprint()
+
+
+## Whether one of `unit`'s research nodes can be bought for `save` now (its column's ¶ mark).
+static func has_news(save: SaveGame, unit: String) -> bool:
+	for node: Dictionary in DepotResearch.ALL:
+		if DepotResearch.unit_of(node.id) == unit and DepotResearch.can_buy(node.id, save):
+			return true
+	return false
+
+
+## `label` printed at the size its scene gives it, or smaller (steps of 2 px) until its text fits its
+## box: its width on one line, or width and height wrapped if the label wraps (a word is never split).
+static func fit(label: Label) -> void:
+	var base: int = label.get_meta(&"base_size", label.get_theme_font_size(&"font_size"))
+	label.set_meta(&"base_size", base)
+	var size := base
+	while size > MIN_FIT and not fits(label, size):
+		size -= 2
+	label.add_theme_font_size_override(&"font_size", size)
+
+
+## Whether `label`'s text fits its box at font size `size` (as fit).
+static func fits(label: Label, size: int) -> bool:
+	var font := label.get_theme_font(&"font")
+	var text := label.tr(label.text) if label.auto_translate_mode != Node.AUTO_TRANSLATE_MODE_DISABLED else label.text
+	if label.autowrap_mode == TextServer.AUTOWRAP_OFF:
+		return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x <= label.size.x
+	var drawn := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, label.size.x, size)
+	return drawn.x <= label.size.x and drawn.y <= label.size.y
 
 
 ## One figure of `unit` requisitioned for `save`: its cabbages paid, queued for training (WarRules.buy),
@@ -194,6 +284,11 @@ func requisition(unit: String) -> bool:
 
 func spot_at(pixel: Vector2) -> StringName:
 	for unit in Depot.units(SaveManager.save):
+		var news := _columns[unit].get_node("News") as Control
+		if news.visible and _art_rect(news).grow(6.0).has_point(pixel):
+			return StringName(NEWS + unit)
+		if not training_of(SaveManager.save, unit).is_empty() and _trainee_box(unit).has_point(pixel):
+			return StringName(TRAINEE + unit)
 		var hire := _art_rect(_columns[unit].get_node("Hire"))
 		if pixel.distance_to(hire.get_center()) < hire.size.x / 2.0:
 			return StringName(BUY + unit)
@@ -205,8 +300,12 @@ func spot_at(pixel: Vector2) -> StringName:
 func hint(spot: StringName) -> String:
 	var save := SaveManager.save
 	var what := String(spot)
-	if what.begins_with(RESEARCH):
-		return research_hint(save, what.trim_prefix(RESEARCH))
+	if what.begins_with(NEWS):
+		return tr(NEWS_HINT)
+	if what.begins_with(TRAINEE):
+		var queue := training_of(save, what.trim_prefix(TRAINEE)).size()
+		var soon := tr("IN TRAINING. Available for deployment in %d s.") % ceili(ready_in(save, what.trim_prefix(TRAINEE)))
+		return soon + (" " + tr("%d more awaiting induction.") % (queue - 1) if queue > 1 else "")
 	if not what.begins_with(BUY):
 		return ""
 	var unit := what.trim_prefix(BUY)
@@ -220,35 +319,32 @@ func hint(spot: StringName) -> String:
 	return text
 
 
-## What the hint slip says for research node `node_id`: its name, what it does, and its cost, that it
-## is approved, or what it waits for (and what is short).
-static func research_hint(save: SaveGame, node_id: String) -> String:
-	var node := DepotResearch.node_data(node_id)
-	if node.is_empty():
-		return ""
-	var text := "%s. %s" % [TranslationServer.translate(node.title), TranslationServer.translate(node.body).replace(BREAK, " ")]
-	if DepotResearch.is_bought(node_id, save):
-		return text + " " + TranslationServer.translate("Approved.")
-	var price := DepotResearch.price_of(node_id, save)
-	text += " " + TranslationServer.translate("Cost: ¶%s.") % FarmScreen._thousands(price)
-	if node.parent != "" and not DepotResearch.is_bought(node.parent, save):
-		return text + " " + TranslationServer.translate("Needs %s first.") % TranslationServer.translate(DepotResearch.node_data(node.parent).title)
-	if save.findings < price:
-		text += " " + TranslationServer.translate("Short: ¶%s.") % FarmScreen._thousands(price - save.findings)
-	return text
+## What spot `spot` covers of the art (px), for the hint slip to lie beside it (MapTable.beside): a
+## HIRE AND TRAIN button with its price, refusal note and the trainee's bar under it (the slip never
+## hides them), or a column's ¶ mark.
+func spot_box(spot: StringName) -> Rect2:
+	var what := String(spot)
+	if what.begins_with(NEWS):
+		return _art_rect(_columns[what.trim_prefix(NEWS)].get_node("News"))
+	if what.begins_with(TRAINEE):
+		var bar := _columns[what.trim_prefix(TRAINEE)]
+		var figure := _trainee_box(what.trim_prefix(TRAINEE))
+		for part: String in ["Line", "Left", "More"]:
+			figure = figure.merge(_art_rect(bar.get_node(part)))
+		return figure
+	if not what.begins_with(BUY):
+		return Rect2()
+	var column := _columns[what.trim_prefix(BUY)]
+	var box := _art_rect(column.get_node("Hire"))
+	for part: String in ["Price", "Note", "Line", "Left", "More"]:
+		box = box.merge(_art_rect(column.get_node(part)))
+	return box
 
 
-## The spot the table shows while it hands the mouse to a research tree (take_mouse): the node under
-## the mouse ("research:<id>"), or nothing.
-func hovered_spot() -> StringName:
-	if _tree_in == null or _tree_in.hovered() == "":
-		return &""
-	return StringName(RESEARCH + _tree_in.hovered())
-
-
-## The hint slip lies in the empty middle of the sheet, right of the first column.
+## Where a slip without a spot_box would lie (none here: every spot with words has its box): the
+## title block.
 func hint_pixel() -> Vector2:
-	return Vector2(COLUMN_LEFT + COLUMN_WIDTH + 60.0, 1100.0)
+	return Vector2(2500.0, 1100.0)
 
 
 func hover(spot: StringName) -> void:
@@ -274,11 +370,7 @@ func press(spot: StringName) -> void:
 ## The map table's mouse at art pixel `pixel`: taken (true) while it is over a research tree (or a
 ## hold or pan begun there), handed into the page for the tree; else left to spot_at and press.
 func take_mouse(event: InputEventMouse, pixel: Vector2) -> bool:
-	var over: UpgradeTree = null
-	for unit in Depot.units(SaveManager.save):
-		var tree := _columns[unit].get_node("Tree") as UpgradeTree
-		if _art_rect(tree).has_point(pixel):
-			over = tree
+	var over: UpgradeTree = _tree if _art_rect(_tree).has_point(pixel) else null
 	var held := _tree_in != null and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not event is InputEventMouseButton
 	if over == null and not held:
 		if _tree_in != null:
@@ -313,28 +405,32 @@ func _build(unit: String) -> void:
 	$Page/Sheet/Columns.add_child(column)
 	_columns[unit] = column
 	(column.get_node("Name") as Label).text = NAMES[unit]
-	var tree := column.get_node("Tree") as UpgradeTree
-	tree.rules = DepotResearch
-	tree.home(TREE_ZOOM, 0.0)
-	tree.bought.connect(_approved)
-	tree.denied.connect(func() -> void: _denied_sound.cue(global_position))
 	var figure: Node3D = (load(SOLDIER % unit) as PackedScene).instantiate()
 	figure.name = unit
 	figure.set_meta(&"unit", unit)
-	figure.scale = Vector3.ONE * FIGURE_SCALE
 	$Things.add_child(figure)
+	_sizes[unit] = figure_size(figure)
+	figure.scale = Vector3.ONE * FIGURE_SCALE * _sizes[unit]
 	_figures[unit] = figure
 	for role: String in ["trainee", "jumper"]:  # The one in training, and the one jumping over.
 		var grey: Node3D = (load(SOLDIER % unit) as PackedScene).instantiate()
 		grey.name = "%s_%s" % [role, unit]
 		grey.set_meta(&"unit", unit)
 		grey.set_meta(&"role", role)
-		grey.scale = Vector3.ONE * TRAINEE_SCALE
+		grey.scale = Vector3.ONE * TRAINEE_SCALE * _sizes[unit]
 		(grey.get_node("Model") as GeometryInstance3D).material_override = grey_plastic
 		$Things.add_child(grey)
 		grey.hide()
 		(_trainees if role == "trainee" else _jumpers)[unit] = grey
 	_train(unit, false)
+
+
+## How much smaller than FIGURE_SCALE `figure` (at its fighting size, in the tree) is printed so its
+## footprint on the paper is at most FIGURE_FOOT m across: 1 for the small ones.
+static func figure_size(figure: Node3D) -> float:
+	var model := figure.get_node("Model") as VisualInstance3D
+	var box := (figure.global_transform.affine_inverse() * model.global_transform) * model.get_aabb()
+	return minf(1.0, FIGURE_FOOT / (FIGURE_SCALE * maxf(box.size.x, box.size.z)))
 
 
 ## `unit`'s trainee as the save has it: shown with its line and "+N" while its queue is not empty.
@@ -350,8 +446,13 @@ func _train(unit: String, moments: bool) -> void:
 	var trainee := _trainees[unit]
 	var at := _art_to_local(column.position + (column.get_node("Trainee") as Control).position)
 	var line := column.get_node("Line") as Control
-	(line.get_node("Fill") as Control).size.x = line.size.x * (queue[0] if not queue.is_empty() else 0.0)
+	var fill := line.get_node("Fill") as Control
+	fill.size.x = bar_fill(line.size.x, fill.position.x, queue[0] if not queue.is_empty() else 0.0)
 	line.visible = not queue.is_empty()
+	var left := column.get_node("Left") as Label
+	var seconds := seconds_left(save, unit)
+	left.visible = seconds >= 0
+	left.text = "%d s" % seconds
 	var more := column.get_node("More") as Label
 	more.visible = queue.size() > 1
 	more.text = "+%d" % (queue.size() - 1)
@@ -390,7 +491,7 @@ func _jump(unit: String, from: Vector3) -> void:
 	var tween := create_tween()
 	tween.tween_method(func(k: float) -> void:
 		jumper.position = from.lerp(to, k) + Vector3.UP * sin(k * PI) * JUMP_HEIGHT
-		jumper.scale = Vector3.ONE * lerpf(TRAINEE_SCALE, FIGURE_SCALE, k), 0.0, 1.0, JUMP_OVER).set_trans(Tween.TRANS_SINE)
+		jumper.scale = Vector3.ONE * lerpf(TRAINEE_SCALE, FIGURE_SCALE, k) * _sizes[unit], 0.0, 1.0, JUMP_OVER).set_trans(Tween.TRANS_SINE)
 	tween.tween_callback(jumper.hide)
 	tween.tween_callback(_bump.bind(unit))
 
@@ -401,7 +502,7 @@ func _bump(unit: String) -> void:
 	count.pivot_offset = count.size / 2.0
 	create_tween().tween_property(count, "scale", Vector2.ONE, JUMP_TIME).from(Vector2.ONE * BUMP) \
 			.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	create_tween().tween_property(_figures[unit], "scale", Vector3.ONE * FIGURE_SCALE, JUMP_TIME).from(Vector3.ONE * FIGURE_SCALE * JUMP) \
+	create_tween().tween_property(_figures[unit], "scale", Vector3.ONE * FIGURE_SCALE * _sizes[unit], JUMP_TIME).from(Vector3.ONE * FIGURE_SCALE * JUMP * _sizes[unit]) \
 			.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	refresh()
 
@@ -413,7 +514,7 @@ func _art_to_local(pixel: Vector2) -> Vector3:
 
 ## A research node bought on the tree (held): logged, saved, its stamp.
 func _approved(node_id: String, paid: int) -> void:
-	SaveManager.log_event("staff_research", node_id, paid, "findings")
+	SaveManager.log_event("staff_research", node_id, paid, UpgradeTree.currency_of(DepotResearch.node_data(node_id)))
 	SaveManager.autosave()
 	_research_sound.cue(global_position)
 	refresh()
@@ -434,6 +535,12 @@ func _turn(unit: String, up: bool) -> void:
 	_turning[unit].tween_property(figure, "rotation", to, FIGURE_TIME)
 
 
+## What `unit`'s grey trainee covers on the art (px).
+func _trainee_box(unit: String) -> Rect2:
+	var column := _columns[unit]
+	return Rect2(column.position + (column.get_node("Trainee") as Control).position + TRAINEE_BOX.position, TRAINEE_BOX.size)
+
+
 ## Where `unit`'s figure stands on the art (px): its column's Stage.
 func _stage(unit: String) -> Vector2:
 	var column := _columns[unit]
@@ -451,6 +558,8 @@ func _print_column(save: SaveGame, unit: String, column: Control, out: Vector2i)
 	(column.get_node("Price/Amount") as Label).text = FarmScreen._thousands(WarRules.unit_cabbage_price(unit))  # After the cabbage icon.
 	var why := refusal(save, unit, out)
 	(column.get_node("Note") as Label).text = tr(why) if why != "" else ""
+	for label: String in ["Name", "Hire/Word", "Note", "Hp/Text", "Damage/Text", "Speed/Text", "Target/Text"]:
+		fit(column.get_node(label) as Label)
 
 
 ## Where control `c` lies on the art (px).

@@ -286,6 +286,17 @@ extends Resource
 @export var unit_research := PackedStringArray()
 ## The depot's first drop onto the map table has played.
 @export var depot_dropped := false
+## The figures of the war under way that are not committed yet: unit id -> count. Written at the
+## declaration (FarmRegister.declare), less the ones set down at START (and each one placed after it),
+## cleared at the war's end. A game closed mid-war gives them back (return_war_pending), and before
+## START the war's coins too (war_fee).
+@export var war_pending := {}
+## The coins paid to declare the war under way while it has not started (FarmRegister.declare; 0 from
+## START on): a game closed before START gives them back (return_war_pending), as ABORT does.
+@export var war_fee := 0
+## The grade of the last war on each farm (WarReport: "EXEMPLARY", "ACCEPTABLE", "REGRETTABLE"), set as
+## its after-action report is written: farm id -> grade.
+@export var war_grades := {}
 ## The CH1 squares made farm squares, one per farm owned, picked by the player (FarmScreen.place_farm),
 ## and how many times a plain square's cabbages each farm square harvests (CH2's FARM OUTPUT raises it).
 @export var farm_squares := PackedInt32Array()
@@ -340,9 +351,21 @@ extends Resource
 ## Saves from before that kept it here; loading one fills this, and SaveManager moves it to the file.
 var playtest_log: Array[Dictionary] = []
 
-const MIGRATION := 6
+const MIGRATION := 7
 ## The save field that caps each capped one (room, earn).
 const LIMITS := {&"coins": &"coin_limit", &"findings": &"findings_limit"}
+
+
+## A war cut off (the game closed mid-war): its uncommitted figures (war_pending) go back into
+## `army`, and its coins (war_fee) if it never started. The war sheet calls it as the world loads,
+## when no war can be on.
+func return_war_pending() -> void:
+	for unit: String in war_pending:
+		if int(war_pending[unit]) > 0:
+			army[unit] = int(army.get(unit, 0)) + int(war_pending[unit])
+	war_pending = {}
+	coins += war_fee  # Not earn(): what was paid comes back whole, as with ABORT.
+	war_fee = 0
 
 
 ## How much more of `field` ("coins", "findings") fits under its limit: 0 at the limit or over it.
