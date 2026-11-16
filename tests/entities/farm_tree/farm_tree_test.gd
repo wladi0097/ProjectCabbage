@@ -16,6 +16,8 @@ const ROT := ["rot_after"]
 const FARM_OUTPUT := ["farm_square_mult"]
 ## Seeds a farm square holds (SEED BEDS).
 const SEED_BEDS := ["farm_slots"]
+## FIELD THINNING minis out at once (THINNING).
+const THINNING := ["thinning_cap"]
 ## The outer ring: what only shows once the desk card STRUCTURED FARM is stamped. Its own nodes, and
 ## the late steps that moved behind it.
 const RING: Array[String] = ["farm_slots_1", "farm_slots_2", "farm_slots_3", "hand_route_2", "hand_shift_2"]
@@ -57,10 +59,10 @@ func test_every_farm_node_is_paid_in_findings_so_coins_stay_for_the_projector() 
 		assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("findings")
 
 
-func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_the_seed_order_the_rot_delay_farm_output_and_seed_beds() -> void:
+func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_the_seed_order_the_rot_delay_farm_output_seed_beds_and_the_thinning_cap() -> void:
 	for node: Dictionary in FarmTree.NODES:
 		for stat: String in node.get("add", {}).keys() + node.get("mul", {}).keys():
-			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER or stat in ROT or stat in FARM_OUTPUT or stat in SEED_BEDS).override_failure_message("%s: %s" % [node.id, stat]).is_true()
+			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER or stat in ROT or stat in FARM_OUTPUT or stat in SEED_BEDS or stat in THINNING).override_failure_message("%s: %s" % [node.id, stat]).is_true()
 
 
 func test_every_number_a_node_changes_is_tracked_by_the_save() -> void:
@@ -370,7 +372,7 @@ func _ring_save(cards: Array = []) -> SaveGame:
 	var save := _save(["farm_terminal", "seasonal_workforce", "mechanisation", "archive_capacity"] + cards, 0, 100000000)
 	save.findings_limit = 1000000000
 	save.farms_owned.append("site_a")
-	for id: String in ["hand_2", "hand_route", "hand_shift", "farm_mult_1"]:
+	for id: String in ["hand_2", "hand_route", "estate_permit", "hand_shift", "farm_mult_1"]:
 		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
 	return save
 
@@ -430,13 +432,16 @@ func test_farm_rounds_send_farm_hands_to_farm_squares_first_and_satchels_add_two
 	assert_int(FarmScreen.shift(save, false)).is_equal(4)
 
 
-func test_farm_rounds_wait_for_the_planting_roster_and_satchels_for_overtime() -> void:
+func test_farm_rounds_wait_for_the_planting_roster_and_the_estate_planting_permit_and_satchels_for_overtime() -> void:
 	var save := _save(["farm_terminal", "seasonal_workforce", "structured_farm"], 0, 100000000)
+	save.farms_owned.append("site_a")
 	FarmTree.buy("hand_2", save)
 	assert_bool(FarmTree.can_buy("hand_route_2", save)).is_false()
 	assert_bool(FarmTree.can_buy("hand_shift_2", save)).is_false()
 	FarmTree.buy("hand_route", save)
 	FarmTree.buy("hand_shift", save)
+	assert_bool(FarmTree.can_buy("hand_route_2", save)).is_false()
+	FarmTree.buy("estate_permit", save)
 	assert_bool(FarmTree.can_buy("hand_route_2", save)).is_true()
 	assert_bool(FarmTree.can_buy("hand_shift_2", save)).is_true()
 
@@ -491,3 +496,65 @@ func test_the_archive_is_no_longer_on_the_farm_tree_it_moved_to_the_projector() 
 		assert_dict(FarmTree.node_data(id)).override_failure_message(id).is_empty()
 		assert_dict(Projector.node_data(id)).override_failure_message(id).is_not_empty()
 	assert_bool(FarmTree.THEMES.any(func(theme: Array) -> bool: return theme[0] == "ARCHIVE")).is_false()
+
+
+## ESTATE PLANTING PERMIT / HARVEST LICENCE: the workers' way onto farm squares, bought once a farm is owned.
+func test_the_estate_permit_and_licence_show_only_once_a_farm_is_owned_and_let_the_workers_onto_farm_squares() -> void:
+	var save := _save(["farm_terminal", "seasonal_workforce", "mechanisation"], 0, 100000)
+	for id: String in ["hand_2", "hand_route", "tractor_2", "tractor_route"]:
+		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
+	for id: String in ["estate_permit", "estate_licence"]:
+		assert_bool(FarmTree.is_shown(id, save)).override_failure_message(id).is_false()
+	save.farms_owned.append("site_a")  # An old save that owns a farm still pays for them.
+	assert_bool(save.farm_bought.has(FarmScreen.PLANT_PERMIT)).is_false()
+	assert_bool(FarmTree.buy("estate_permit", save)).is_true()
+	assert_bool(FarmTree.buy("estate_licence", save)).is_true()
+	assert_bool(save.farm_bought.has(FarmScreen.PLANT_PERMIT)).is_true()
+	assert_bool(save.farm_bought.has(FarmScreen.HARVEST_LICENCE)).is_true()
+
+
+func test_compost_detail_waits_for_the_cold_frames_and_puts_the_farm_hands_on_rotten_squares() -> void:
+	var save := _save(["farm_terminal", "seasonal_workforce", "golden_cabbage"], 0, 100000)
+	assert_bool(FarmTree.can_buy("compost_detail", save)).is_false()
+	FarmTree.buy("cold_frames", save)
+	assert_bool(FarmTree.buy("compost_detail", save)).is_true()
+	assert_bool(save.farm_bought.has(FarmScreen.COMPOST)).is_true()
+
+
+func test_the_estate_rotation_policy_waits_for_one_in_one_out_and_a_farm() -> void:
+	var save := _save(["farm_terminal", "green_thumb"], 0, 100000)
+	FarmTree.buy("thumb_yield", save)
+	FarmTree.buy("thumb_replant", save)
+	assert_bool(FarmTree.is_shown("farm_replant", save)).is_false()
+	save.farms_owned.append("site_a")
+	assert_bool(FarmTree.buy("farm_replant", save)).is_true()
+	assert_bool(save.farm_bought.has(FarmScreen.FARM_REPLANT)).is_true()
+
+
+func test_the_fourth_and_fifth_farm_hand_and_tractor_wait_for_structured_farm_then_make_five_of_each() -> void:
+	var save := _ring_save()
+	for id: String in ["hand_speed", "hand_3", "tractor_2", "tractor_speed", "tractor_3"]:
+		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
+	for id: String in ["hand_4", "tractor_4"]:
+		assert_bool(FarmTree.is_shown(id, save)).override_failure_message(id).is_false()
+		assert_bool(FarmTree.can_buy(id, save)).override_failure_message(id).is_false()
+	save.stamped.append("structured_farm")
+	save.farm_hands = 3
+	save.farm_tractors = 3
+	for id: String in ["hand_4", "hand_5", "tractor_4", "tractor_5"]:
+		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
+	assert_int(save.farm_hands).is_equal(FarmScreen.SLOTS)
+	assert_int(save.farm_tractors).is_equal(FarmScreen.SLOTS)
+
+
+func test_the_thinning_quota_nodes_wait_for_the_thinning_card_and_raise_the_cap_from_six_to_eight_then_ten() -> void:
+	var save := _save(["farm_terminal"], 0, 100000)
+	assert_int(save.thinning_cap).is_equal(MiniDrop.MAX_MINIS)
+	assert_bool(FarmTree.is_shown("thinning_cap_1", save)).is_false()
+	assert_bool(FarmTree.buy("thinning_cap_1", save)).is_false()
+	save.stamped.append("mini_thinning")
+	for step: Array in [["thinning_cap_1", 8], ["thinning_cap_2", 10]]:
+		var was := save.thinning_cap
+		assert_bool(FarmTree.buy(step[0], save)).override_failure_message(step[0]).is_true()
+		assert_int(save.thinning_cap).is_equal(step[1])
+		assert_float(float(save.thinning_cap) / was).override_failure_message(step[0]).is_greater_equal(1.25)  # Each step felt.

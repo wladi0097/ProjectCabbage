@@ -122,9 +122,9 @@ func test_the_sheets_carry_their_title_blocks_farm_names_and_country_names_and_t
 	assert_array(_texts(_sheet("kohlmark"))).contains(["KOHLMARK - NATIONAL FARM REGISTER", "WIRSINGEN"])
 	assert_array(_texts(_sheet("world"))).contains(
 			["WORLD MARKETS - GENERAL CHART", "Kohlmark", "The Lower Provinces", "Endmark Isle", "Grey Sea"])
-	var war := _sheet("war")  # The paper is the battlefield: only the end's stamp and the small title block in its corner.
+	var war := _sheet("war")  # The paper is the battlefield: only a retreat's stamp and the small title block in its corner.
 	var block := war.get_node("Page/Sheet/TitleBlock")
-	assert_array(_labels(war).filter(func(l: Label) -> bool: return not block.is_ancestor_of(l)).map(func(l: Label) -> String: return l.text)) 			.is_equal(["VICTORY"])
+	assert_array(_labels(war).filter(func(l: Label) -> bool: return not block.is_ancestor_of(l)).map(func(l: Label) -> String: return l.text)) 			.is_equal(["WITHDRAWN"])
 
 
 func test_lettering_too_small_to_read_from_the_map_camera_is_left_off_outside_the_title_block() -> void:

@@ -7,9 +7,9 @@ ceiling_db = -1.0
 [sub_resource type="AudioEffectAmplify" id="MusicDuck"]
 resource_name = "Duck"
 
-[sub_resource type="AudioEffectLowPassFilter" id="MusicMuffle"]
-resource_name = "LowPassFilter"
-cutoff_hz = 20000.0
+[sub_resource type="AudioEffectHighShelfFilter" id="MusicMuffle"]
+resource_name = "HighShelfFilter"
+cutoff_hz = 800.0
 
 [sub_resource type="AudioEffectCompressor" id="SfxGlue"]
 resource_name = "Compressor"
@@ -20,9 +20,9 @@ release_ms = 150.0
 [sub_resource type="AudioEffectAmplify" id="SfxDuck"]
 resource_name = "Duck"
 
-[sub_resource type="AudioEffectLowPassFilter" id="SfxMuffle"]
-resource_name = "LowPassFilter"
-cutoff_hz = 20000.0
+[sub_resource type="AudioEffectHighShelfFilter" id="SfxMuffle"]
+resource_name = "HighShelfFilter"
+cutoff_hz = 800.0
 
 [sub_resource type="AudioEffectHighPassFilter" id="RadioLowCut"]
 resource_name = "HighPassFilter"

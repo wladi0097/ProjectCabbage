@@ -22,8 +22,8 @@ extends MapSheet
 ## START or placed after it are taken off it), so a game closed mid-war gives them back (_ready).
 ## The end: WON (farmhouse down) the survivors go back into save.army, the farm is ours (win) and the
 ## sheet asks for its country's sheet again (`sheet_wanted`), where the farm's moment plays
-## (FarmRegister.celebrate). LOST (time out, every figure down, retreat): no stamp on the paper but
-## WITHDRAWN after a retreat (the report says the rest), the retreat's share
+## (FarmRegister.celebrate); no stamp on the paper (the report says it). LOST (time out, every figure
+## down, retreat): no stamp on the paper but WITHDRAWN after a retreat (the report says the rest), the retreat's share
 ## goes back into save.army, the placed figures are gone, the farm stays as it was. Figures never
 ## placed always go back. After the end's stamp (won or lost, never after an ABORT before START) the
 ## after-action report (`Report`, WarReport) slides in over the sheet with its grade (kept in
@@ -33,7 +33,8 @@ extends MapSheet
 ## shows its range ring (the mailing unit also its dead zone), and, once ROUTE_CARD is stamped, a
 ## figure held over a zone shows the pencil line of the way it would walk to its first target
 ## (path_line: a planning copy of the fight, at most every PATH_EVERY s), drawn over the pieces. The first map to hold a building type (WarMap.debuts) gets the
-## NEW STRUCTURE ON SITE slip on the desk (`Slip`, WarSlip) until START. The campaign's last war
+## NEW STRUCTURE ON SITE slip on the desk (`Slip`, WarSlip) until START: only the building's name on it;
+## hovered, its card fades in mid-screen (`Note`, PaperNote: the tray's form popup, WarSlip.card). The campaign's last war
 ## (WarMap.is_final, Endmark Isle) arrives staged: FINAL ACQUISITION in an oxblood border (`Final`)
 ## lies over the sheet first and holds the planning (staging) until a click files it; then the
 ## farmhouse drops onto the paper with a stamp's beat (`Beat`).
@@ -43,8 +44,10 @@ extends MapSheet
 ## seconds (Tick, TICK_FROM), RETREAT (Retreat), the end's stamp (Won, Lost), a refusal (Denied); the report has its own.
 ## Every war sound plays on the War bus; while a war is on (fight set) every other sound sits in the
 ## background (duck: Music and SFX go down and muffled), eased in over DUCK_IN s and out over DUCK_OUT s.
-## The desk's glove (`Glove`) is the cursor the whole time the sheet takes the mouse: open over the
-## paper, closed on a figure held, the pointing finger tapping on START and ABORT.
+## The desk's glove (`Glove`) is the cursor while the sheet takes the mouse: open over the
+## paper, closed on a figure held, the pointing finger tapping on START and ABORT. Once the
+## after-action report is in, the map table's own cursor is back (the pointing hand on FILE REPORT).
+## No boss paper comes while a war is on (BossReport.hold): it waits until the sheet has left.
 ## No class_name: whoever needs it preloads this script.
 
 const World := preload("res://entities/map_table/world_register.gd")
@@ -99,12 +102,13 @@ const ROUTE_CARD := "route_planning"
 ## The farmhouse of the last war drops from this high (m) in BEAT_TIME s, with a stamp's beat.
 const BEAT_FROM := 0.3
 const BEAT_TIME := 0.24
-## The duck at its full depth: Music and SFX this much quieter (dB) and low-passed down to DUCK_HZ
-## (from OPEN_HZ at rest, log-spaced), through each bus's Duck (AudioEffectAmplify) and
-## LowPassFilter in default_bus_layout.tres. Both are switched off at rest.
+## The duck at its full depth: Music and SFX this much quieter (dB), and above DUCK_HZ muffled
+## MUFFLE_DB more, through each bus's Duck (AudioEffectAmplify) and HighShelfFilter in
+## default_bus_layout.tres. Both are switched off at rest. A shelf, not a low-pass: the low-pass at
+## 800 Hz took a coin's clink 41 dB down (gone); the shelf takes it about 20 dB (damped, still heard).
 const DUCK_DB := -12.0
 const DUCK_HZ := 800.0
-const OPEN_HZ := 20000.0
+const MUFFLE_DB := -8.0
 const DUCKED: Array[StringName] = [&"Music", &"SFX"]
 const DUCK_IN := 0.6
 const DUCK_OUT := 1.0
@@ -112,6 +116,8 @@ const DUCK_OUT := 1.0
 ## fingertip touches a button this far toward the player from the cap's middle (m), like the desk's.
 const HOVER := 0.16
 const TIP_BACK := 0.02
+## The debut slip's card fades in and out this fast (s), like a form's in the tray (UpgradeDesk.NOTE_FADE).
+const NOTE_FADE := 0.15
 
 ## The farm the war is for (&"": none yet).
 var farm := &""
@@ -149,6 +155,10 @@ var _laying: Tween
 var _roll_at: Transform3D
 ## How far the duck is in (0..1).
 var _ducked := 0.0
+## The debut slip's card is up, and its fade; the mouse is on the report's FILE REPORT.
+var _noting := false
+var _note_fade: Tween
+var _on_file := false
 
 @onready var _board: Node3D = $Things/Board
 @onready var _map: WarMap = $Things/Board/Map
@@ -176,6 +186,8 @@ var _ducked := 0.0
 @onready var _pencil: WarInk = $PencilPage/Sheet/Pencil
 @onready var _pencil_page: SubViewport = $PencilPage
 @onready var _pencil_overlay: MeshInstance3D = $PencilOverlay
+@onready var _note: Control = $Note/Center
+@onready var _note_paper: PaperNote = $Note/Center/Paper
 
 
 func _ready() -> void:
@@ -202,12 +214,13 @@ func _process(delta: float) -> void:
 	_took = taking
 	if _held != null:
 		_carry(delta)
-	_hold_glove(delta, taking)
+	_hold_glove(delta, taking and not _report.visible)  # The report in: the table's cursor is back.
 	if fight.state == WarFight.State.RUNNING:
 		fight.tick(delta)
 	_view.follow(fight, delta)
 	_glow_zones()
 	_planning_ink(delta)
+	_show_note(taking and _held == null and on_slip(_mouse_pixel))
 	if ceili(fight.time_left()) != _clock_shown and fight.state == WarFight.State.RUNNING \
 			and ceili(fight.time_left()) in range(1, TICK_FROM + 1):
 		_tick_sound.cue(global_position)
@@ -215,8 +228,7 @@ func _process(delta: float) -> void:
 	_show_control()
 	if _dealing == null and fight.state in [WarFight.State.WON, WarFight.State.LOST]:
 		_end()
-	if _report.visible:
-		BossReport.hold = maxf(BossReport.hold, 0.5)  # No boss paper over the report.
+	BossReport.hold = maxf(BossReport.hold, 0.5)  # No boss paper while a war is on: it waits until the sheet has left.
 
 
 func _input(event: InputEvent) -> void:
@@ -230,8 +242,11 @@ func _input(event: InputEvent) -> void:
 		return
 	get_viewport().set_input_as_handled()  # The table behind takes nothing while the fight is on.
 	var camera := get_viewport().get_camera_3d()
-	_point(_pixel_under(mouse.position), _control.part_at(camera.project_ray_origin(mouse.position),
-			camera.project_ray_normal(mouse.position)))
+	var from := camera.project_ray_origin(mouse.position)
+	var dir := camera.project_ray_normal(mouse.position)
+	if _dealing == null:  # Once the end plays out, nothing on the box lights again.
+		_point(_pixel_under(mouse.position), _control.part_at(from, dir))
+	_file_hover(_report.visible and _report.on_file(from, dir))
 	var button := mouse as InputEventMouseButton
 	if button == null or button.button_index != MOUSE_BUTTON_LEFT:
 		return
@@ -397,10 +412,46 @@ func _pencil_line(points: PackedVector2Array) -> void:
 	_pencil_overlay.visible = not points.is_empty()
 
 
+## Whether art pixel `pixel` lies on the NEW STRUCTURE ON SITE slip while it is out (planning).
+func on_slip(pixel: Vector2) -> bool:
+	if debut == "" or not _slip.visible or fight == null or fight.state != WarFight.State.PLANNING:
+		return false
+	var corner := pixel_of(_slip.position - Vector3(WarSlip.SIZE.x / 2.0, 0.0, 0.0))
+	return Rect2(corner, WarSlip.SIZE * PIXELS_PER_METRE).has_point(pixel)
+
+
+## The debut slip's card fades in (`on`) or out, like a hovered form's in the tray.
+func _show_note(on: bool) -> void:
+	if on == _noting:
+		return
+	_noting = on
+	if on:
+		_note_paper.set_card(WarSlip.card(debut))
+	if _note_fade != null:
+		_note_fade.kill()
+	_note_fade = create_tween()
+	_note_fade.tween_property(_note, "modulate:a", 1.0 if on else 0.0, NOTE_FADE)
+
+
+## The mouse is on the after-action report's FILE REPORT (`on`): the box lights and the table's
+## cursor points, as on any button at the map table.
+func _file_hover(on: bool) -> void:
+	if on == _on_file:
+		return
+	_on_file = on
+	_report.hover(on)
+	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND if on else DisplayServer.CURSOR_ARROW)
+
+
 ## The slips gone and the paper's ink rubbed out.
 func _put_papers_away() -> void:
 	if _laying != null:
 		_laying.kill()
+	if _note_fade != null:
+		_note_fade.kill()
+	_noting = false
+	_note.modulate.a = 0.0
+	_on_file = false
 	staging = false
 	debut = ""
 	_slip.put_away()
@@ -766,8 +817,8 @@ func _hover_point(up: Vector3) -> Vector3:
 	return hit if hit != null else global_transform * _local(_mouse_pixel) + up * HOVER
 
 
-## Music and SFX `k` of the way into the background (0: as they are, 1: DUCK_DB down, low-passed to
-## DUCK_HZ). Never touches a bus's volume: the sliders own those.
+## Music and SFX `k` of the way into the background (0: as they are, 1: DUCK_DB down, MUFFLE_DB more
+## above DUCK_HZ). Never touches a bus's volume: the sliders own those.
 static func duck(k: float) -> void:
 	for bus_name in DUCKED:
 		var bus := AudioServer.get_bus_index(bus_name)
@@ -775,8 +826,10 @@ static func duck(k: float) -> void:
 			var effect := AudioServer.get_bus_effect(bus, i)
 			if effect is AudioEffectAmplify:
 				(effect as AudioEffectAmplify).volume_db = DUCK_DB * k
-			elif effect is AudioEffectLowPassFilter:
-				(effect as AudioEffectLowPassFilter).cutoff_hz = OPEN_HZ * pow(DUCK_HZ / OPEN_HZ, k)
+			elif effect is AudioEffectHighShelfFilter:
+				var shelf := effect as AudioEffectHighShelfFilter
+				shelf.cutoff_hz = DUCK_HZ
+				shelf.gain = db_to_linear(MUFFLE_DB * k / 2.0)  # The shelf's gain counts twice in dB (measured).
 			else:
 				continue
 			AudioServer.set_bus_effect_enabled(bus, i, k > 0.0)
@@ -842,13 +895,11 @@ func _end() -> void:
 		win(save, farm)
 		SaveManager.log_event("war_won", farm)
 		FarmRegister.lamp_held = true  # The Field Line's lamp waits for the farm's moment on its country's sheet.
-		_imprint.text = "VICTORY"
 	else:
 		SaveManager.log_event("war_lost", farm)
-		_imprint.text = "WITHDRAWN"
 	SaveManager.autosave()
 	(_won_sound if won else _lost_sound).cue(global_position)
-	_imprint.visible = won or fight.end == WarFight.End.RETREAT  # A loss is stamped on the report alone.
+	_imprint.visible = fight.end == WarFight.End.RETREAT  # A win or a loss is stamped on the report alone.
 	_unhover()
 	_show_control()
 	reprint()

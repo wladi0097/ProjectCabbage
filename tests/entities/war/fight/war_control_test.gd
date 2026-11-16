@@ -98,11 +98,22 @@ func test_a_ray_down_onto_a_button_finds_it_and_a_ray_beside_finds_nothing() -> 
 	assert_str(c.part_at(timer + Vector3.UP, Vector3.DOWN)).is_equal("")
 
 
-func test_the_timer_sits_above_start_and_abort_which_stand_side_by_side() -> void:
+func test_the_timer_sits_above_start_and_start_above_abort_with_clear_space_between() -> void:
 	var c := _control()
 	var timer: Vector3 = c.get_node("Panel/Digits/Min").global_position
 	var start: Vector3 = c.get_node("Panel/StartCap").global_position
 	var abort: Vector3 = c.get_node("Panel/AbortCap").global_position
 	assert_float(timer.z).is_less(start.z)  # Up the screen (towards the wall) is -z.
-	assert_float(start.z).is_equal_approx(abort.z, 0.001)
-	assert_float(start.x).is_less(abort.x)
+	assert_float(start.z).is_less(abort.z)
+	assert_float(start.x).is_equal_approx(abort.x, 0.001)  # One above the other.
+	# START's plate lies between them, and the hit boxes leave a clear strip between the buttons.
+	var plate: Vector3 = c.get_node("Panel/StartPlate").global_position
+	assert_float(plate.z).is_between(start.z, abort.z)
+	var start_hit: CollisionShape3D = c.get_node("Panel/Hits/Start")
+	var abort_hit: CollisionShape3D = c.get_node("Panel/Hits/Abort")
+	var gap := abort_hit.position.z - (abort_hit.shape as BoxShape3D).size.z / 2.0 			- start_hit.position.z - (start_hit.shape as BoxShape3D).size.z / 2.0
+	assert_float(gap).is_greater(0.05)  # Panel metres: START's plate fits in it.
+	for part: StringName in [WarControl.START, WarControl.ABORT]:  # Hit boxes on the caps.
+		var cap: Vector3 = c.get_node("Panel/StartCap" if part == WarControl.START else "Panel/AbortCap").global_position
+		assert_str(c.part_at(cap + Vector3.UP, Vector3.DOWN)).is_equal(part)
+	assert_str(c.part_at(plate + Vector3.UP, Vector3.DOWN)).is_equal("")  # Between them: nothing.

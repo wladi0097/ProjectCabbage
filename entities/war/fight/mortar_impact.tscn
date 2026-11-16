@@ -1,0 +1,158 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/war/fight/mortar_impact.gd" id="1_impact"]
+
+[sub_resource type="StandardMaterial3D" id="Graphite"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.15, 0.16, 0.16, 0.95)
+
+[sub_resource type="TorusMesh" id="Shock"]
+material = SubResource("Graphite")
+inner_radius = 0.72
+outer_radius = 1.0
+rings = 64
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="Pencil"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.2, 0.21, 0.21, 0.9)
+
+[sub_resource type="TorusMesh" id="Line"]
+material = SubResource("Pencil")
+inner_radius = 0.94
+outer_radius = 1.0
+rings = 72
+ring_segments = 4
+
+[sub_resource type="Gradient" id="Soft"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="Blot"]
+gradient = SubResource("Soft")
+width = 64
+height = 64
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="StandardMaterial3D" id="Soot"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.14, 0.15, 0.15, 0.8)
+albedo_texture = SubResource("Blot")
+
+[sub_resource type="PlaneMesh" id="Mark"]
+material = SubResource("Soot")
+size = Vector2(1.7, 1.7)
+
+[sub_resource type="StandardMaterial3D" id="Dusty"]
+transparency = 1
+vertex_color_use_as_albedo = true
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="Blob"]
+material = SubResource("Dusty")
+size = Vector3(0.16, 0.03, 0.11)
+
+[sub_resource type="Curve" id="Swell"]
+_data = [Vector2(0, 0.4), 0.0, 0.0, 0, 0, Vector2(0.25, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.3), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Gradient" id="Fade"]
+colors = PackedColorArray(0.36, 0.39, 0.4, 0.9, 0.5, 0.53, 0.54, 0)
+
+[sub_resource type="StandardMaterial3D" id="Card"]
+vertex_color_use_as_albedo = true
+roughness = 0.9
+cull_mode = 2
+
+[sub_resource type="BoxMesh" id="Bit"]
+material = SubResource("Card")
+size = Vector3(0.13, 0.015, 0.08)
+
+[sub_resource type="Curve" id="Shrink"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.75, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Gradient" id="Tones"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(0.16, 0.17, 0.17, 1, 0.3, 0.32, 0.31, 1, 0.8, 0.79, 0.72, 1)
+
+[node name="MortarImpact" type="Node3D"]
+script = ExtResource("1_impact")
+
+[node name="Smudge" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("Mark")
+
+[node name="Edge" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.3, 0, 0, 0, 1, 0, 0.02, 0)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("Line")
+
+[node name="Ring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.25, 0, 0, 0, 1, 0, 0.03, 0)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("Shock")
+
+[node name="Dust" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 72
+lifetime = 0.9
+one_shot = true
+explosiveness = 0.9
+local_coords = true
+mesh = SubResource("Blob")
+particle_flag_rotate_y = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.0
+emission_ring_radius = 0.92
+emission_ring_inner_radius = 0.0
+direction = Vector3(0, 1, 0)
+spread = 25.0
+gravity = Vector3(0, -1.5, 0)
+initial_velocity_min = 0.4
+initial_velocity_max = 1.1
+damping_min = 1.0
+damping_max = 2.0
+angular_velocity_min = -200.0
+angular_velocity_max = 200.0
+angle_min = -180.0
+angle_max = 180.0
+scale_amount_min = 0.7
+scale_amount_max = 1.5
+scale_amount_curve = SubResource("Swell")
+color_ramp = SubResource("Fade")
+
+[node name="Bits" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 36
+lifetime = 0.6
+one_shot = true
+explosiveness = 1.0
+local_coords = true
+mesh = SubResource("Bit")
+particle_flag_rotate_y = true
+emission_shape = 1
+emission_sphere_radius = 0.15
+direction = Vector3(0, 1, 0)
+spread = 70.0
+gravity = Vector3(0, -12, 0)
+initial_velocity_min = 2.2
+initial_velocity_max = 3.6
+angular_velocity_min = -540.0
+angular_velocity_max = 540.0
+angle_min = -180.0
+angle_max = 180.0
+scale_amount_min = 0.6
+scale_amount_max = 1.4
+scale_amount_curve = SubResource("Shrink")
+color_initial_ramp = SubResource("Tones")

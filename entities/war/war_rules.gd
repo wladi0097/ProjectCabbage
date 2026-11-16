@@ -34,30 +34,44 @@ const BASE_STATS := {
 	pult_crew = {hp = 110.0, damage = 30.0, interval = 1.5, speed = 1.0, range = 3.5, splash = 1.0, wall_mult = 1.0, hops = false, target = "defence"},
 	courier = {hp = 110.0, damage = 40.0, interval = 1.2, speed = 2.0, range = 0.8, splash = 0.0, wall_mult = 1.0, hops = true, target = "defence"},
 }
-## Depot research, a small tree per unit: each node multiplies one stat by `step` (all >= +25%),
-## costs `findings`, and needs its `parent` bought first ("": none). The field associate's prices are
-## paced (tools/pace.py ch3); the others in the balance pass (research/war-balance.md), cheaper, so
-## each tree is bought between its card and the chapter's end.
+## Depot research, one chain of five per unit, bought top down: each node multiplies one stat by
+## `step` (+12% to +30%), costs `findings`, and needs its `parent` bought first ("": none). Prices
+## start cheap and climb (a few ¶K for the field associate's first step, user 2026-11-16), so the
+## early steps come at once and the later ones push the player to the projector's research nodes;
+## a unit hired later starts dearer. Paced with the war cards' Findings (tools/pace.py ch3 shy).
+## The big old steps were split in two (SPLITS): the old id is now the second half, the new id the
+## first, and the two multiply to the old step, so an old save's research is worth what it was.
 const RESEARCH: Array[Dictionary] = [
-	{id = "fa_hp_1", unit = "field_associate", stat = "hp", step = 1.3, findings = 100000, parent = ""},
-	{id = "fa_damage_1", unit = "field_associate", stat = "damage", step = 1.3, findings = 200000, parent = "fa_hp_1"},
-	{id = "fa_speed_1", unit = "field_associate", stat = "speed", step = 1.25, findings = 150000, parent = "fa_hp_1"},
-	{id = "fa_hp_2", unit = "field_associate", stat = "hp", step = 1.3, findings = 400000, parent = "fa_damage_1"},
-	{id = "rc_hp_1", unit = "restructuring_charge", stat = "hp", step = 1.5, findings = 40000, parent = ""},
-	{id = "rc_wall_1", unit = "restructuring_charge", stat = "wall_mult", step = 1.5, findings = 80000, parent = "rc_hp_1"},
-	{id = "rc_splash_1", unit = "restructuring_charge", stat = "splash", step = 1.3, findings = 200000, parent = "rc_wall_1"},
-	{id = "sa_hp_1", unit = "senior_asset", stat = "hp", step = 1.3, findings = 50000, parent = ""},
-	{id = "sa_damage_1", unit = "senior_asset", stat = "damage", step = 1.3, findings = 80000, parent = "sa_hp_1"},
+	{id = "fa_hp_0", unit = "field_associate", stat = "hp", step = 1.1402, findings = 3000, parent = ""},
+	{id = "fa_hp_1", unit = "field_associate", stat = "hp", step = 1.1402, findings = 8000, parent = "fa_hp_0"},
+	{id = "fa_speed_1", unit = "field_associate", stat = "speed", step = 1.25, findings = 20000, parent = "fa_hp_1"},
+	{id = "fa_damage_1", unit = "field_associate", stat = "damage", step = 1.3, findings = 50000, parent = "fa_speed_1"},
+	{id = "fa_hp_2", unit = "field_associate", stat = "hp", step = 1.3, findings = 120000, parent = "fa_damage_1"},
+	{id = "rc_hp_0", unit = "restructuring_charge", stat = "hp", step = 1.2248, findings = 10000, parent = ""},
+	{id = "rc_wall_0", unit = "restructuring_charge", stat = "wall_mult", step = 1.2248, findings = 20000, parent = "rc_hp_0"},
+	{id = "rc_hp_1", unit = "restructuring_charge", stat = "hp", step = 1.2248, findings = 40000, parent = "rc_wall_0"},
+	{id = "rc_wall_1", unit = "restructuring_charge", stat = "wall_mult", step = 1.2248, findings = 80000, parent = "rc_hp_1"},
+	{id = "rc_splash_1", unit = "restructuring_charge", stat = "splash", step = 1.3, findings = 150000, parent = "rc_wall_1"},
+	{id = "sa_hp_0", unit = "senior_asset", stat = "hp", step = 1.1402, findings = 15000, parent = ""},
+	{id = "sa_hp_1", unit = "senior_asset", stat = "hp", step = 1.1402, findings = 30000, parent = "sa_hp_0"},
 	{id = "sa_speed_1", unit = "senior_asset", stat = "speed", step = 1.25, findings = 60000, parent = "sa_hp_1"},
-	{id = "sa_hp_2", unit = "senior_asset", stat = "hp", step = 1.3, findings = 300000, parent = "sa_damage_1"},
-	{id = "pc_damage_1", unit = "pult_crew", stat = "damage", step = 1.3, findings = 60000, parent = ""},
-	{id = "pc_range_1", unit = "pult_crew", stat = "range", step = 1.25, findings = 100000, parent = "pc_damage_1"},
-	{id = "pc_splash_1", unit = "pult_crew", stat = "splash", step = 1.3, findings = 80000, parent = "pc_damage_1"},
-	{id = "pc_damage_2", unit = "pult_crew", stat = "damage", step = 1.3, findings = 300000, parent = "pc_range_1"},
-	{id = "cr_speed_1", unit = "courier", stat = "speed", step = 1.25, findings = 60000, parent = ""},
-	{id = "cr_hp_1", unit = "courier", stat = "hp", step = 1.3, findings = 100000, parent = "cr_speed_1"},
-	{id = "cr_damage_1", unit = "courier", stat = "damage", step = 1.3, findings = 200000, parent = "cr_speed_1"},
+	{id = "sa_damage_1", unit = "senior_asset", stat = "damage", step = 1.3, findings = 120000, parent = "sa_speed_1"},
+	{id = "sa_hp_2", unit = "senior_asset", stat = "hp", step = 1.3, findings = 200000, parent = "sa_damage_1"},
+	{id = "pc_damage_0", unit = "pult_crew", stat = "damage", step = 1.1402, findings = 20000, parent = ""},
+	{id = "pc_damage_1", unit = "pult_crew", stat = "damage", step = 1.1402, findings = 40000, parent = "pc_damage_0"},
+	{id = "pc_range_1", unit = "pult_crew", stat = "range", step = 1.25, findings = 80000, parent = "pc_damage_1"},
+	{id = "pc_splash_1", unit = "pult_crew", stat = "splash", step = 1.3, findings = 150000, parent = "pc_range_1"},
+	{id = "pc_damage_2", unit = "pult_crew", stat = "damage", step = 1.3, findings = 250000, parent = "pc_splash_1"},
+	{id = "cr_speed_0", unit = "courier", stat = "speed", step = 1.1181, findings = 30000, parent = ""},
+	{id = "cr_speed_1", unit = "courier", stat = "speed", step = 1.1181, findings = 60000, parent = "cr_speed_0"},
+	{id = "cr_hp_0", unit = "courier", stat = "hp", step = 1.1402, findings = 120000, parent = "cr_speed_1"},
+	{id = "cr_hp_1", unit = "courier", stat = "hp", step = 1.1402, findings = 200000, parent = "cr_hp_0"},
+	{id = "cr_damage_1", unit = "courier", stat = "damage", step = 1.3, findings = 300000, parent = "cr_hp_1"},
 ]
+## The split steps (2026-11-16): new first half -> the old id, now the second half. migrate_research
+## files the first half for a save that bought the old id before the split.
+const SPLITS := {fa_hp_0 = "fa_hp_1", rc_hp_0 = "rc_hp_1", rc_wall_0 = "rc_wall_1", sa_hp_0 = "sa_hp_1",
+		pc_damage_0 = "pc_damage_1", cr_speed_0 = "cr_speed_1", cr_hp_0 = "cr_hp_1"}
 
 const BASE_CAP := 3
 ## Army cap added by the BIGGER ARMIES card, and by each depot GENERAL war_cap_1..3 node.
@@ -177,6 +191,14 @@ static func can_buy_research(save: SaveGame, id: String) -> bool:
 	return not node.is_empty() and not save.unit_research.has(id) \
 			and (node.parent == "" or save.unit_research.has(node.parent)) \
 			and unit_unlocked(save, node.unit) and save.findings >= int(node.findings)
+
+
+## A save that bought a split step's old id before the split gets its new first half filed, so its
+## research is worth what it was (UpgradeDesk.migrate; idempotent: a new save buys the first half first).
+static func migrate_research(save: SaveGame) -> void:
+	for first: String in SPLITS:
+		if save.unit_research.has(SPLITS[first]) and not save.unit_research.has(first):
+			save.unit_research.append(first)
 
 
 static func buy_research(save: SaveGame, id: String) -> bool:

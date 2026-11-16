@@ -47,6 +47,7 @@
 [ext_resource type="Script" path="res://entities/map_table/war_ink.gd" id="10_ink"]
 [ext_resource type="PackedScene" path="res://entities/map_table/war_slip.tscn" id="11_slip"]
 [ext_resource type="PackedScene" path="res://entities/hand/hand_model.tscn" id="12_glove"]
+[ext_resource type="PackedScene" path="res://ui/elements/paper_note.tscn" id="13_note"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_1.wav" id="sfx_deed_stamp_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_2.wav" id="sfx_deed_stamp_2"]
 
@@ -240,7 +241,7 @@ pivot_offset = Vector2(500, 180)
 theme_type_variation = &"FormLabel"
 theme_override_colors/font_color = Color(0.416, 0.169, 0.157, 1)
 theme_override_font_sizes/font_size = 104
-text = "VICTORY"
+text = "WITHDRAWN"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -515,7 +516,7 @@ script = ExtResource("sfx_cue")
 
 [node name="Control" parent="." instance=ExtResource("8_control")]
 visible = false
-transform = Transform3D(0.92, 0, 0, 0, 0.92, 0, 0, 0, 0.92, -1.86, -0.018, 1.31)
+transform = Transform3D(0.92, 0, 0, 0, 0.92, 0, 0, 0, 0.92, -1.86, -0.018, 1.14)
 
 [node name="Report" parent="." instance=ExtResource("9_report")]
 transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -0.45, 0.34, 0.18)
@@ -562,3 +563,18 @@ cast_shadow = 0
 gi_mode = 0
 mesh = SubResource("PencilPlane")
 material_override = SubResource("PencilMat")
+
+[node name="Note" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="Center" type="CenterContainer" parent="Note"]
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Paper" parent="Note/Center" instance=ExtResource("13_note")]
+layout_mode = 2

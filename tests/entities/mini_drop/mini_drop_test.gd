@@ -254,3 +254,21 @@ func test_six_harvest_minis_on_the_desk_do_not_stop_the_tubes_timed_drop() -> vo
 	var sent := _minis_sent()
 	assert_int(MiniDrop.minis_out(sent, true)).is_equal(MiniDrop.MAX_MINIS)
 	assert_int(MiniDrop.minis_out(sent, false)).is_equal(1)
+
+
+func test_the_thinning_quota_raises_how_many_harvest_minis_queue() -> void:
+	assert_int(MiniDrop.thinned_after(4, 10, true, 10)).is_equal(10)
+
+
+func test_with_the_thinning_cap_at_eight_two_more_harvest_minis_go_out_but_not_a_ninth() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["mini_tube", "mini_thinning"])
+	save.thinning_cap = 8
+	var drop := _drop(save)
+	for i in MiniDrop.MAX_MINIS:
+		drop._spawn(true)
+	save.farm_harvests += 3
+	for i in 3:
+		drop._thin_wait = 0.0
+		drop._process(0.01)
+	assert_int(MiniDrop.minis_out(_minis_sent(), true)).is_equal(8)

@@ -1,0 +1,80 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="Graphite"]
+albedo_color = Color(0.13, 0.14, 0.14, 1)
+metallic = 0.55
+roughness = 0.38
+
+[sub_resource type="CapsuleMesh" id="Body"]
+material = SubResource("Graphite")
+radius = 0.024
+height = 0.075
+radial_segments = 12
+rings = 4
+
+[sub_resource type="BoxMesh" id="Fin"]
+material = SubResource("Graphite")
+size = Vector3(0.056, 0.004, 0.022)
+
+[sub_resource type="Gradient" id="Soft"]
+offsets = PackedFloat32Array(0, 0.55, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.75, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="Blot"]
+gradient = SubResource("Soft")
+width = 64
+height = 64
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="StandardMaterial3D" id="Shade"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.08, 0.09, 0.09, 0.85)
+albedo_texture = SubResource("Blot")
+
+[sub_resource type="PlaneMesh" id="Disc"]
+material = SubResource("Shade")
+size = Vector2(2, 2)
+
+[sub_resource type="StandardMaterial3D" id="Pencil"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.17, 0.18, 0.18, 0.6)
+
+[sub_resource type="TorusMesh" id="Line"]
+material = SubResource("Pencil")
+inner_radius = 0.95
+outer_radius = 1.0
+rings = 72
+ring_segments = 4
+
+[node name="MortarShell" type="Node3D"]
+
+[node name="Round" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+gi_mode = 0
+mesh = SubResource("Body")
+
+[node name="FinA" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.034)
+gi_mode = 0
+mesh = SubResource("Fin")
+
+[node name="FinB" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0.034)
+gi_mode = 0
+mesh = SubResource("Fin")
+
+[node name="Shadow" type="MeshInstance3D" parent="."]
+top_level = true
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("Disc")
+
+[node name="Target" type="MeshInstance3D" parent="."]
+top_level = true
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("Line")

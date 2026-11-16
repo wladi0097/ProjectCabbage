@@ -84,13 +84,18 @@ func test_a_node_is_found_by_its_id_and_an_unknown_id_finds_nothing() -> void:
 		assert_bool(Projector.node_data(node.id) == node).override_failure_message(node.id).is_true()
 
 
-func test_every_upgrade_hangs_under_exactly_one_department_and_only_departments_sit_on_the_hub() -> void:
+## The lamps' category is the one spoke off the hub that is not a department (2026-11-16: its own
+## category, not buried in one).
+const HUB_SPOKE: Array[String] = ["lamp_mult", "lab_lamp_mult"]
+
+
+func test_every_upgrade_hangs_under_one_department_or_the_lamps_own_spoke_and_only_those_sit_on_the_hub() -> void:
 	for node: Dictionary in Projector.NODES:
 		var top := node
 		while top.parent != "":
 			top = Projector.node_data(top.parent)
-		assert_bool(top.get("dept", false)).override_failure_message("%s hangs under no department" % node.id).is_true()
-		assert_bool(node.parent == "").override_failure_message(node.id).is_equal(node.get("dept", false))
+		assert_bool(top.get("dept", false) or top.id in HUB_SPOKE).override_failure_message("%s hangs under no department" % node.id).is_true()
+		assert_bool(node.parent == "").override_failure_message(node.id).is_equal(node.get("dept", false) or node.id in HUB_SPOKE)
 
 
 func test_departments_are_free_and_every_upgrade_costs_coins() -> void:
@@ -1145,13 +1150,47 @@ func test_the_golden_value_nodes_wait_for_the_golden_card_and_raise_sale_and_lab
 
 
 func test_gold_standard_only_shows_once_premium_cabbages_and_the_golden_lamp_exist() -> void:
-	var save := _save(["projector", "offsite_storage", "golden_cabbage", "big_ideas", "cash_holding"], 10000000)
-	save.tree_bought = PackedStringArray(["storage_2", "gold_sale_1"])
+	var save := _save(["projector", "golden_cabbage", "big_ideas", "cash_holding"], 10000000)
 	assert_bool(Projector.is_shown(SaleWindow.GOLD_AGE, save)).is_false()
 	save.stamped.append("golden_lamp")
 	assert_bool(Projector.is_shown(SaleWindow.GOLD_AGE, save)).is_true()
+	# It hangs under REVALUATION, the Golden Age branch's first step.
+	assert_bool(Projector.buy(SaleWindow.GOLD_AGE, save)).is_false()
+	assert_bool(Projector.buy("lamp_mult", save)).is_true()
 	assert_bool(Projector.buy(SaleWindow.GOLD_AGE, save)).is_true()
 	assert_bool(save.tree_bought.has(SaleWindow.GOLD_AGE)).is_true()
+	assert_bool(Projector.is_shown(SaleWindow.GOLD_AGE, _save(["projector", "golden_lamp", "big_ideas", "cash_holding"]))).is_false()
+
+
+func test_both_lamps_have_their_own_category_on_a_spoke_of_its_own_off_the_hub() -> void:
+	var heading := UpgradeTree.theme_of(Projector.THEMES, "lamp_mult")
+	assert_str(Projector.THEMES[heading][0]).is_equal("LIGHTING SCHEDULE")
+	assert_int(UpgradeTree.theme_of(Projector.THEMES, "lab_lamp_mult")).is_equal(heading)
+	assert_array(UpgradeTree.theme_members(Projector, heading)).contains_exactly_in_any_order(["lamp_mult", "lamp_time", "lamp_every",
+			SaleWindow.GOLD_AGE, "lab_lamp_mult", "lab_lamp_time", "lab_lamp_every", QaBay.LAB_GOLD])
+	for id: String in ["lamp_mult", "lab_lamp_mult"]:
+		assert_str(Projector.node_data(id).parent).override_failure_message(id).is_empty()
+	# Neither the sales events, the golden branch nor the research branch still holds them.
+	for other: String in ["combo_window", "gold_sale_1", "research_mult_1"]:
+		assert_array(UpgradeTree.theme_members(Projector, UpgradeTree.theme_of(Projector.THEMES, other))) 				.override_failure_message(other).not_contains(["lamp_mult", SaleWindow.GOLD_AGE, "lab_lamp_mult", QaBay.LAB_GOLD])
+
+
+func test_the_golden_age_branch_shows_once_its_cards_are_stamped_with_nothing_to_buy_first() -> void:
+	var late := ["projector", "big_ideas", "cash_holding"]
+	assert_bool(Projector.is_shown("lamp_mult", _save(late))).is_false()
+	var save := _save(late + ["golden_lamp"])
+	assert_bool(Projector.is_shown("lamp_mult", save)).is_true()
+	assert_bool(Projector.is_reachable("lamp_mult", save)).is_true()
+	assert_bool(Projector.themes_shown(save)[UpgradeTree.theme_of(Projector.THEMES, "lamp_mult")]).is_true()
+
+
+func test_the_research_light_branch_shows_once_the_light_is_stamped_with_nothing_to_buy_first() -> void:
+	var late := ["projector", "big_ideas", "cash_holding"]
+	assert_bool(Projector.is_shown("lab_lamp_mult", _save(late))).is_false()
+	var save := _save(late + ["research_light"])
+	assert_bool(Projector.is_shown("lab_lamp_mult", save)).is_true()
+	assert_bool(Projector.is_reachable("lab_lamp_mult", save)).is_true()
+	assert_bool(Projector.themes_shown(save)[UpgradeTree.theme_of(Projector.THEMES, "lab_lamp_mult")]).is_true()
 
 
 func test_gold_standard_is_the_dearest_golden_node_and_costs_over_three_times_the_capstones_coins() -> void:
@@ -1278,7 +1317,7 @@ func test_an_old_save_with_the_third_robot_gets_both_bag_steps_and_never_less_th
 
 ## Chapter 3 (desk cards big_ideas, condense). The first node of each late-game run moved behind
 ## BIG MINDS HAVE BIG IDEAS, and the nodes that only exist on the wide sheet.
-const LATE: Array[String] = ["slogan_6", "hire_associate_7", "conveyor_3", "gold_age", "bin_rebate_5", "research_mult_4",
+const LATE: Array[String] = ["slogan_6", "hire_associate_7", "conveyor_3", "lamp_mult", "bin_rebate_5", "research_mult_4",
 		"own_sale_3", "own_lab_3", "research_chance_3", "grow_4", "double_findings", "gold_sale_2", "gold_lab_2", "stock_3000"]
 const WIDE_ONLY: Array[String] = ["slogan_7", "slogan_8", "mandatory_consumption", "headcount_2", "two_handed",
 		"condense_gold", "condense_gold_3", "condense_gold_4", "condense_gold_6", "condense_2", "condense_3", "condense_4", "condense_5",

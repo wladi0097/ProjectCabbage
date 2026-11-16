@@ -151,11 +151,11 @@ den die Straße zahlt, ohne abzulehnen."
 MANUAL HANDLING,MANUAL HANDLING,HANDARBEIT
 "Work you still do yourself.
 Packs, desk space, minis, catches, the bin,
-targets, the Golden Age, the manager's quotas.","Work you still do yourself.
+targets and the manager's quotas.","Work you still do yourself.
 Packs, desk space, minis, catches, the bin,
-targets, the Golden Age, the manager's quotas.","Arbeit, die Sie noch selbst erledigen.
+targets and the manager's quotas.","Arbeit, die Sie noch selbst erledigen.
 Lieferungen, Tischfläche, Minis, Fänge, Eimer,
-Ziele, Goldenes Zeitalter, Vorgaben des Managers."
+Ziele und Vorgaben des Managers."
 RESEARCH LAB,RESEARCH LAB,FORSCHUNGSLABOR
 "Every cabbage is a lesson.
 Faster analysis, more Findings (¶) per cabbage, more
@@ -1143,9 +1143,9 @@ One more cabbage fits on the mat per step, up to 10.","The mat is leased by the 
 One more cabbage fits on the mat per step, up to 10.","Die Matte wird pro Kohlkopf gemietet.
 Pro Stufe passt ein Kohlkopf mehr auf die Matte, bis 10."
 "Incidents at the window, monetised.
-The catch combo, the lit crates in the street, what the bin pays for rot and the Golden Age.","Incidents at the window, monetised.
-The catch combo, the lit crates in the street, what the bin pays for rot and the Golden Age.","Zwischenfälle am Fenster, zu Geld gemacht.
-Die Fangserie, die beleuchteten Kisten auf der Straße, was der Eimer für Fäulnis zahlt, und das Goldene Zeitalter."
+The catch combo, the lit crates in the street and what the bin pays for rot.","Incidents at the window, monetised.
+The catch combo, the lit crates in the street and what the bin pays for rot.","Zwischenfälle am Fenster, zu Geld gemacht.
+Die Fangserie, die beleuchteten Kisten auf der Straße und was der Eimer für Fäulnis zahlt."
 "The manager's visits, made survivable.
 Longer and lower quotas, bigger bonuses, and more for cabbages you sell yourself.","The manager's visits, made survivable.
 Longer and lower quotas, bigger bonuses, and more for cabbages you sell yourself.","Die Besuche des Managers, überlebbar gemacht.
@@ -1175,9 +1175,9 @@ Minis drop more often, sell for more and grow into full cabbages in the growing 
 Minis drop more often, sell for more and grow into full cabbages in the growing station.","Kleinere Kohlköpfe, gleicher Papierkram.
 Minis fallen öfter, bringen mehr und wachsen in der Zuchtstation zu ganzen Kohlköpfen."
 "The blue ones are special. It says so here.
-More blue research cabbages off the chute, more Findings from each, and the research light.","The blue ones are special. It says so here.
-More blue research cabbages off the chute, more Findings from each, and the research light.","Die blauen sind besonders. Das steht hier.
-Mehr blaue Forschungskohlköpfe aus der Rutsche, mehr Befunde aus jedem und das Forschungslicht."
+More blue research cabbages off the chute and more Findings from each.","The blue ones are special. It says so here.
+More blue research cabbages off the chute and more Findings from each.","Die blauen sind besonders. Das steht hier.
+Mehr blaue Forschungskohlköpfe aus der Rutsche und mehr Befunde aus jedem."
 "The lab is staffed, eventually.
 More lab hands throwing cabbages into the research lab.","The lab is staffed, eventually.
 More lab hands throwing cabbages into the research lab.","Das Labor wird besetzt, irgendwann.
@@ -1535,9 +1535,9 @@ A square you pull by hand yields 3× instead of 2×.","Ihr Foto hängt an der Sc
 Ein Feld, das Sie von Hand ziehen, bringt 3× statt 2×."
 "ONE IN, ONE OUT","ONE IN, ONE OUT","EINER RAUS, EINER REIN"
 "The hole is never left empty. It is policy.
-A square you pull out yourself is replanted at once from the crate. Tractor harvests still wait for a farm hand.","The hole is never left empty. It is policy.
-A square you pull out yourself is replanted at once from the crate. Tractor harvests still wait for a farm hand.","Das Loch bleibt nie leer. So ist die Vorschrift.
-Ein Feld, das Sie selbst ziehen, wird sofort aus der Kiste neu bepflanzt. Traktorernten warten weiter auf einen Erntehelfer."
+A square you pull out yourself is replanted at once from the crate. A farm square only when you pull its last batch. Tractor harvests still wait for a farm hand.","The hole is never left empty. It is policy.
+A square you pull out yourself is replanted at once from the crate. A farm square only when you pull its last batch. Tractor harvests still wait for a farm hand.","Das Loch bleibt nie leer. So ist die Vorschrift.
+Ein Feld, das Sie selbst ziehen, wird sofort aus der Kiste neu bepflanzt. Ein Hoffeld erst, wenn Sie seine letzte Ernte ziehen. Traktorernten warten weiter auf einen Erntehelfer."
 SELECTIVE BREEDING,SELECTIVE BREEDING,SELEKTIVE ZUCHT
 "Only the promising seeds are spoken to.
 1 square in 25 grows golden, not 1 in 40.","Only the promising seeds are spoken to.
@@ -1848,8 +1848,8 @@ YOU ARE PROMOTED AGAIN,YOU ARE PROMOTED AGAIN,SIE WERDEN ERNEUT BEFÖRDERT
 "The board has reviewed your figures. You are now Head of Acquisitions, Desk 4. Your salary has been reviewed and found adequate. We are not expanding fast enough: cabbage grows at the speed of cabbage, and the board will not wait for it. From today we grow by buying out other farms. A form is in your tray. A map table has been set up to your right.","The board has reviewed your figures. You are now Head of Acquisitions, Desk 4. Your salary has been reviewed and found adequate. We are not expanding fast enough: cabbage grows at the speed of cabbage, and the board will not wait for it. From today we grow by buying out other farms. A form is in your tray. A map table has been set up to your right.","Der Vorstand hat Ihre Zahlen geprüft. Sie sind ab sofort Leiter Übernahmen, Schreibtisch 4. Ihr Gehalt wurde geprüft und für angemessen befunden. Wir expandieren nicht schnell genug: Kohl wächst mit der Geschwindigkeit von Kohl, und darauf wartet der Vorstand nicht. Ab heute wachsen wir, indem wir andere Höfe aufkaufen. Ein Formular liegt in Ihrer Ablage. Rechts von Ihnen steht nun ein Kartentisch."
 A FARM HAS BEEN ACQUIRED,A FARM HAS BEEN ACQUIRED,EIN HOF WURDE ERWORBEN
 "The company now owns a farm it has never seen. To keep a clean overview, check the TV, channel 1: green arrows mark your fields. Click one to upgrade it to a farm. It will produce accordingly. One field for every farm we own. Head office likes to see on a screen what is ours.","The company now owns a farm it has never seen. To keep a clean overview, check the TV, channel 1: green arrows mark your fields. Click one to upgrade it to a farm. It will produce accordingly. One field for every farm we own. Head office likes to see on a screen what is ours.","Die Firma besitzt nun einen Hof, den sie nie gesehen hat. Für einen sauberen Überblick sehen Sie auf dem Fernseher nach, Kanal 1: Grüne Pfeile markieren Ihre Felder. Klicken Sie eines an, um es zu einem Hof aufzuwerten. Es wird entsprechend liefern. Ein Feld für jeden Hof, den wir besitzen. Die Zentrale sieht gern auf einem Bildschirm, was uns gehört."
-THEY WILL NOT SELL ANY MORE,THEY WILL NOT SELL ANY MORE,SIE VERKAUFEN NICHT MEHR
-"The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. The authorisation is in your tray. Your maps will be extended beyond the border in due course.","The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. The authorisation is in your tray. Your maps will be extended beyond the border in due course.","Die übrigen Eigentümer beantworten unsere Angebote nicht mehr. Fünf Höfe, und sie nennen es genug. Es ist nicht genug. Sie verkaufen nicht mehr, also nehmen wir uns, was uns zusteht. Die Genehmigung liegt in Ihrer Ablage. Ihre Karten werden zu gegebener Zeit über die Grenze hinaus erweitert."
+THIS MEANS WAR,THIS MEANS WAR,DAS BEDEUTET KRIEG
+"The remaining owners have stopped answering our offers. The board has reviewed the matter. This means war. The authorisation is in your tray. Once it is stamped, a personnel depot is set up at your map table. Build an army there and take what is ours. Your maps will be extended beyond the border in due course.","The remaining owners have stopped answering our offers. The board has reviewed the matter. This means war. The authorisation is in your tray. Once it is stamped, a personnel depot is set up at your map table. Build an army there and take what is ours. Your maps will be extended beyond the border in due course.","Die übrigen Eigentümer beantworten unsere Angebote nicht mehr. Der Vorstand hat die Angelegenheit geprüft. Das bedeutet Krieg. Die Genehmigung liegt in Ihrer Ablage. Sobald sie gestempelt ist, wird an Ihrem Kartentisch ein Personaldepot eingerichtet. Stellen Sie dort eine Armee auf und nehmen Sie sich, was uns gehört. Ihre Karten werden zu gegebener Zeit über die Grenze hinaus erweitert."
 PROCURE MARKET INTELLIGENCE,PROCURE MARKET INTELLIGENCE,MARKTINFORMATIONEN BESCHAFFEN
 "We no longer buy cabbages. We buy what is known about those who grow them.
 The supply console is removed for good: no more crates. A field line takes its place: its lamps count the farms you own, of 24. Lift the handset to go to the map table.","We no longer buy cabbages. We buy what is known about those who grow them.
@@ -2262,6 +2262,11 @@ Last Water,Last Water,Letztes Wasser
 Port Dauerhaven,Port Dauerhaven,Hafen Dauerhaven
 ENDMARK ISLE - NATIONAL FARM REGISTER,ENDMARK ISLE - NATIONAL FARM REGISTER,INSEL ENDMARK - NATIONALES HOFREGISTER
 9 of 9,9 of 9,9 von 9
+HOME PORTFOLIO REVIEW,HOME PORTFOLIO REVIEW,PRÜFUNG DES INLANDSPORTFOLIOS
+"Five farms is a portfolio. Portfolios are reviewed.
+Costs nothing. The farms are only counted. Stamped, the board reviews what is still for sale at home.","Five farms is a portfolio. Portfolios are reviewed.
+Costs nothing. The farms are only counted. Stamped, the board reviews what is still for sale at home.","Fünf Höfe sind ein Portfolio. Portfolios werden geprüft.
+Kostet nichts. Die Höfe werden nur gezählt. Abgestempelt prüft der Vorstand, was im Inland noch zu verkaufen ist."
 AUTHORISE HOSTILE ACQUISITIONS,AUTHORISE HOSTILE ACQUISITIONS,FEINDLICHE ÜBERNAHMEN GENEHMIGEN
 "They will not sell. Selling was a courtesy.
 A farm that is not for sale can be taken by war: click it on its country's map for the war order. Stamp the order and the war sheet for that farm is rolled out. In Kohlmark that is the last three farms.","They will not sell. Selling was a courtesy.
@@ -2502,9 +2507,9 @@ HEAVIER CLIPBOARDS,HEAVIER CLIPBOARDS,SCHWERERE KLEMMBRETTER
 TIME AND MOTION,TIME AND MOTION,ZEIT UND BEWEGUNG
 HAZARD BRIEFING,HAZARD BRIEFING,GEFAHRENUNTERWEISUNG
 "Cardboard, laminated. Still issued.
-Field associates take 30% more damage before they fall.","Cardboard, laminated. Still issued.
-Field associates take 30% more damage before they fall.","Karton, laminiert. Wird weiterhin ausgegeben.
-Außendienstmitarbeiter halten 30 % mehr Schaden aus, bevor sie fallen."
+Field associates take another 14% more damage before they fall.","Cardboard, laminated. Still issued.
+Field associates take another 14% more damage before they fall.","Karton, laminiert. Wird weiterhin ausgegeben.
+Außendienstmitarbeiter halten weitere 14 % mehr Schaden aus, bevor sie fallen."
 "The clipboard is now a weapon. It always was.
 Field associates hit 30% harder.","The clipboard is now a weapon. It always was.
 Field associates hit 30% harder.","Das Klemmbrett ist jetzt eine Waffe. Das war es schon immer.
@@ -2555,14 +2560,14 @@ EXPRESS COURIER,EXPRESS COURIER,EILKURIER
 express courier,express courier,Eilkurier
 PADDED CASING,PADDED CASING,GEPOLSTERTES GEHÄUSE
 "Survives the commute. Usually.
-Restructuring charges take 50% more damage before they fall.","Survives the commute. Usually.
-Restructuring charges take 50% more damage before they fall.","Übersteht den Arbeitsweg. Meistens.
-Umstrukturierungsladungen halten 50 % mehr Schaden aus, bevor sie fallen."
+Restructuring charges take another 22% more damage before they fall.","Survives the commute. Usually.
+Restructuring charges take another 22% more damage before they fall.","Übersteht den Arbeitsweg. Meistens.
+Umstrukturierungsladungen halten weitere 22 % mehr Schaden aus, bevor sie fallen."
 STRUCTURAL ASSESSMENT,STRUCTURAL ASSESSMENT,STATISCHES GUTACHTEN
 "Every fence has a weak point. It has been found.
-Restructuring charges do 50% more damage to fences: security grade goes in one blast.","Every fence has a weak point. It has been found.
-Restructuring charges do 50% more damage to fences: security grade goes in one blast.","Jeder Zaun hat eine Schwachstelle. Sie wurde gefunden.
-Umstrukturierungsladungen richten an Zäunen 50 % mehr Schaden an: Die Sicherheitsstufe fällt mit einer Ladung."
+Restructuring charges do another 22% more damage to fences: with the site survey, security grade goes in one blast.","Every fence has a weak point. It has been found.
+Restructuring charges do another 22% more damage to fences: with the site survey, security grade goes in one blast.","Jeder Zaun hat eine Schwachstelle. Sie wurde gefunden.
+Umstrukturierungsladungen richten an Zäunen weitere 22 % mehr Schaden an: Mit der Geländeaufnahme fällt die Sicherheitsstufe mit einer Ladung."
 WIDER REMIT,WIDER REMIT,ERWEITERTES MANDAT
 "The restructuring now covers the adjoining departments.
 Restructuring charges blast 30% wider.","The restructuring now covers the adjoining departments.
@@ -2570,9 +2575,9 @@ Restructuring charges blast 30% wider.","Die Umstrukturierung erfasst jetzt auch
 Umstrukturierungsladungen sprengen 30 % weiter."
 EXECUTIVE PADDING,EXECUTIVE PADDING,FÜHRUNGSPOLSTERUNG
 "Upholstered at company expense.
-Senior assets take 30% more damage before they fall.","Upholstered at company expense.
-Senior assets take 30% more damage before they fall.","Auf Firmenkosten gepolstert.
-Leitende Mitarbeiter halten 30 % mehr Schaden aus, bevor sie fallen."
+Senior assets take another 14% more damage before they fall.","Upholstered at company expense.
+Senior assets take another 14% more damage before they fall.","Auf Firmenkosten gepolstert.
+Leitende Mitarbeiter halten weitere 14 % mehr Schaden aus, bevor sie fallen."
 FIRM HANDSHAKE,FIRM HANDSHAKE,FESTER HÄNDEDRUCK
 "Held slightly too long. On purpose.
 Senior assets hit 30% harder.","Held slightly too long. On purpose.
@@ -2590,9 +2595,9 @@ Senior assets take another 30% more damage before they fall.","Die Entfernung ko
 Leitende Mitarbeiter halten weitere 30 % mehr Schaden aus, bevor sie fallen."
 HEAVIER HEADS,HEAVIER HEADS,SCHWERERE KÖPFE
 "Selected for density, not flavour.
-Cabbage-pult crews hit 30% harder.","Selected for density, not flavour.
-Cabbage-pult crews hit 30% harder.","Nach Dichte ausgewählt, nicht nach Geschmack.
-Kohlschleuder-Trupps treffen 30 % härter."
+Cabbage-pult crews hit another 14% harder.","Selected for density, not flavour.
+Cabbage-pult crews hit another 14% harder.","Nach Dichte ausgewählt, nicht nach Geschmack.
+Kohlschleuder-Trupps treffen weitere 14 % härter."
 LONGER ARM,LONGER ARM,LÄNGERER ARM
 "The arm was extended. The budget was not.
 Cabbage-pult crews throw 25% further.","The arm was extended. The budget was not.
@@ -2610,14 +2615,14 @@ Cabbage-pult crews hit another 30% harder.","Unter Druck gewachsen. Wie alle hie
 Kohlschleuder-Trupps treffen weitere 30 % härter."
 GEARED HUB,GEARED HUB,GANGSCHALTUNG
 "Three speeds. All of them fast.
-Express couriers ride 25% faster.","Three speeds. All of them fast.
-Express couriers ride 25% faster.","Drei Gänge. Alle schnell.
-Eilkuriere fahren 25 % schneller."
+Express couriers ride another 12% faster.","Three speeds. All of them fast.
+Express couriers ride another 12% faster.","Drei Gänge. Alle schnell.
+Eilkuriere fahren weitere 12 % schneller."
 HELMET POLICY,HELMET POLICY,HELMPFLICHT
 "Mandatory since the incident.
-Express couriers take 30% more damage before they fall.","Mandatory since the incident.
-Express couriers take 30% more damage before they fall.","Pflicht seit dem Vorfall.
-Eilkuriere halten 30 % mehr Schaden aus, bevor sie fallen."
+Express couriers take another 14% more damage before they fall.","Mandatory since the incident.
+Express couriers take another 14% more damage before they fall.","Pflicht seit dem Vorfall.
+Eilkuriere halten weitere 14 % mehr Schaden aus, bevor sie fallen."
 PRIORITY POST,PRIORITY POST,VORRANGPOST
 "Delivered with force. Signed for by no one.
 Express couriers hit 30% harder.","Delivered with force. Signed for by no one.
@@ -2779,9 +2784,9 @@ NO STAFF ON THE BOOKS.,NO STAFF ON THE BOOKS.,KEIN PERSONAL IM BESTAND.
 Requisition personnel at the depot first.,Requisition personnel at the depot first.,Personal bitte zuerst im Personaldepot anfordern.
 QUARANTINE PROTOCOL,QUARANTINE PROTOCOL,QUARANTÄNEPROTOKOLL
 "Spoilage is to be isolated, not relocated.
-Rotten (grey) cabbages are quarantined: other cabbages pass straight through them, and no hired or lab hand grabs, carries or bins one. Only your own hand may still pick one up and throw it.","Spoilage is to be isolated, not relocated.
-Rotten (grey) cabbages are quarantined: other cabbages pass straight through them, and no hired or lab hand grabs, carries or bins one. Only your own hand may still pick one up and throw it.","Verderb wird isoliert, nicht verlagert.
-Verdorbene (graue) Kohlköpfe stehen unter Quarantäne: Andere Kohlköpfe gehen glatt durch sie hindurch, und keine angestellte Hand und keine Laborhand greift, trägt oder entsorgt einen. Nur Ihre eigene Hand darf einen noch aufheben und werfen."
+Rotten (grey) cabbages are quarantined: other cabbages pass straight through them, so no throw or roll knocks one out of the window. Hands handle them exactly as before.","Spoilage is to be isolated, not relocated.
+Rotten (grey) cabbages are quarantined: other cabbages pass straight through them, so no throw or roll knocks one out of the window. Hands handle them exactly as before.","Verderb wird isoliert, nicht verlagert.
+Verdorbene (graue) Kohlköpfe stehen unter Quarantäne: Andere Kohlköpfe gehen glatt durch sie hindurch, sodass kein Wurf und kein Rollen einen aus dem Fenster stößt. Die Hände behandeln sie genau wie zuvor."
 CONSOLIDATE LOOSE CHANGE,CONSOLIDATE LOOSE CHANGE,KLEINGELD KONSOLIDIEREN
 "Small coins are an administrative burden.
 Every 2 s the coins on the desk merge: 5 × $1 into a $5, 2 × $5 into a $10 and so on, up to $100. Faster and bigger merges on the projector.","Small coins are an administrative burden.
@@ -2908,6 +2913,26 @@ ESTATE SEED ALLOCATION,ESTATE SEED ALLOCATION,SAATGUT FÜR DIE HÖFE
 Farm squares can grow golden too, at the same chance as any square.","Promising seed is now issued to the estates, on signature.
 Farm squares can grow golden too, at the same chance as any square.","Vielversprechendes Saatgut wird jetzt gegen Unterschrift an die Höfe ausgegeben.
 Auch Hoffelder können golden wachsen, mit derselben Chance wie jedes Feld."
+ESTATE PLANTING PERMIT,ESTATE PLANTING PERMIT,HOF-PFLANZGENEHMIGUNG
+"Estate soil may now be touched by staff, in triplicate.
+Farm hands plant farm squares too. Until then you plant them yourself.","Estate soil may now be touched by staff, in triplicate.
+Farm hands plant farm squares too. Until then you plant them yourself.","Hofboden darf nun vom Personal berührt werden, in dreifacher Ausfertigung.
+Knechte bepflanzen auch Hoffelder. Bis dahin bepflanzen Sie sie selbst."
+ESTATE HARVEST LICENCE,ESTATE HARVEST LICENCE,ERNTELIZENZ FÜR DIE HÖFE
+"Leased machinery may now enter leased land.
+Tractors harvest farm squares too. Until then you pull them yourself.","Leased machinery may now enter leased land.
+Tractors harvest farm squares too. Until then you pull them yourself.","Geleaste Maschinen dürfen nun geleastes Land befahren.
+Traktoren ernten auch Hoffelder. Bis dahin ziehen Sie sie selbst."
+ESTATE ROTATION POLICY,ESTATE ROTATION POLICY,HOF-FRUCHTFOLGEERLASS
+"The policy has been extended to every batch. The batches were not consulted.
+Every farm batch you pull by hand puts one seed back from the crate, not just the last.","The policy has been extended to every batch. The batches were not consulted.
+Every farm batch you pull by hand puts one seed back from the crate, not just the last.","Die Vorschrift gilt jetzt für jede Ernte. Die Ernten wurden nicht gefragt.
+Jede Hofernte, die Sie von Hand ziehen, legt einen Samen aus der Kiste zurück, nicht nur die letzte."
+COMPOST DETAIL,COMPOST DETAIL,KOMPOSTKOMMANDO
+"Spoilage is now someone's job. It is not yours.
+Farm hands clear rotten squares and plant them again. Until then only your click clears one.","Spoilage is now someone's job. It is not yours.
+Farm hands clear rotten squares and plant them again. Until then only your click clears one.","Verderb ist jetzt jemandes Aufgabe. Nicht Ihre.
+Knechte räumen verrottete Felder und bepflanzen sie neu. Bis dahin räumt nur Ihr Klick eines."
 STEP 2,STEP 2,SCHRITT 2
 "The consultant now invoices in pairs.
 It taps the slate $2 at a time, not $1,
@@ -3031,3 +3056,78 @@ While the research light glows, golden cabbages
 in the lab get its bonus too.","Gold wird unter Cyan geprüft. Es fügt sich.
 Solange das Forschungslicht leuchtet, bekommen auch
 goldene Kohlköpfe im Labor seinen Bonus."
+FOURTH FARM HAND,FOURTH FARM HAND,VIERTER KNECHT
+"A second bunkhouse has been requisitioned. It was the first one's shed.
+One more farm hand plants empty squares: 3 to 4 hands.","A second bunkhouse has been requisitioned. It was the first one's shed.
+One more farm hand plants empty squares: 3 to 4 hands.","Eine zweite Unterkunft wurde beschlagnahmt. Es war der Schuppen der ersten.
+Ein Knecht mehr bepflanzt leere Felder: 3 auf 4 Knechte."
+FIFTH FARM HAND,FIFTH FARM HAND,FÜNFTER KNECHT
+"Headcount is now a line item.
+One more farm hand plants empty squares: 4 to 5 hands.","Headcount is now a line item.
+One more farm hand plants empty squares: 4 to 5 hands.","Die Kopfzahl ist jetzt ein Haushaltsposten.
+Ein Knecht mehr bepflanzt leere Felder: 4 auf 5 Knechte."
+FOURTH TRACTOR,FOURTH TRACTOR,VIERTER TRAKTOR
+"The lease now includes a fleet clause.
+One more tractor harvests ripe squares: 3 to 4 tractors.","The lease now includes a fleet clause.
+One more tractor harvests ripe squares: 3 to 4 tractors.","Der Leasingvertrag enthält jetzt eine Flottenklausel.
+Ein Traktor mehr erntet reife Felder: 3 auf 4 Traktoren."
+FIFTH TRACTOR,FIFTH TRACTOR,FÜNFTER TRAKTOR
+"A second gate was proposed. A fifth tractor was approved.
+One more tractor harvests ripe squares: 4 to 5 tractors.","A second gate was proposed. A fifth tractor was approved.
+One more tractor harvests ripe squares: 4 to 5 tractors.","Ein zweites Tor wurde beantragt. Ein fünfter Traktor wurde genehmigt.
+Ein Traktor mehr erntet reife Felder: 4 auf 5 Traktoren."
+THINNING QUOTA,THINNING QUOTA,AUSDÜNNUNGSSOLL
+"Thinning is now measured. It was found lacking.
+Up to 8 mini cabbages from farm harvests are out at once, not 6.","Thinning is now measured. It was found lacking.
+Up to 8 mini cabbages from farm harvests are out at once, not 6.","Das Ausdünnen wird jetzt gemessen. Es wurde für unzureichend befunden.
+Bis zu 8 Mini-Kohlköpfe aus Hofernten gleichzeitig unterwegs statt 6."
+REVISED THINNING QUOTA,REVISED THINNING QUOTA,NEUES AUSDÜNNUNGSSOLL
+"The quota was met. The quota was revised.
+Up to 10 mini cabbages from farm harvests are out at once, not 8.","The quota was met. The quota was revised.
+Up to 10 mini cabbages from farm harvests are out at once, not 8.","Das Soll wurde erfüllt. Das Soll wurde angehoben.
+Bis zu 10 Mini-Kohlköpfe aus Hofernten gleichzeitig unterwegs statt 8."
+THINNING,THINNING,AUSDÜNNUNG
+"The field is thinned for its own good.
+More mini cabbages from farm harvests out at once.","The field is thinned for its own good.
+More mini cabbages from farm harvests out at once.","Das Feld wird zu seinem eigenen Wohl ausgedünnt.
+Mehr Mini-Kohlköpfe aus Hofernten gleichzeitig unterwegs."
+LIGHTING SCHEDULE,LIGHTING SCHEDULE,BELEUCHTUNGSPLAN
+"Prosperity and insight, switched on by Facilities.
+The Golden Age and the research light: how strong, how long, how often, and for golden cabbages too.","Prosperity and insight, switched on by Facilities.
+The Golden Age and the research light: how strong, how long, how often, and for golden cabbages too.","Wohlstand und Erkenntnis, eingeschaltet von der Haustechnik.
+Goldenes Zeitalter und Forschungslicht: wie stark, wie lange, wie oft, auch für goldene Kohlköpfe."
+CARDBOARD VEST,CARDBOARD VEST,PAPPWESTE
+"Corrugated. Double-walled.
+Field associates take 14% more damage before they fall.","Corrugated. Double-walled.
+Field associates take 14% more damage before they fall.","Wellpappe. Doppelwandig.
+Außendienstmitarbeiter halten 14 % mehr Schaden aus, bevor sie fallen."
+BUBBLE WRAP,BUBBLE WRAP,LUFTPOLSTER
+"Fragile. Handle as such.
+Restructuring charges take 22% more damage before they fall.","Fragile. Handle as such.
+Restructuring charges take 22% more damage before they fall.","Zerbrechlich. Entsprechend behandeln.
+Umstrukturierungsladungen halten 22 % mehr Schaden aus, bevor sie fallen."
+SITE SURVEY,SITE SURVEY,GELÄNDEAUFNAHME
+"The fences were measured. Then they were judged.
+Restructuring charges do 22% more damage to fences.","The fences were measured. Then they were judged.
+Restructuring charges do 22% more damage to fences.","Die Zäune wurden vermessen. Dann wurden sie beurteilt.
+Umstrukturierungsladungen richten an Zäunen 22 % mehr Schaden an."
+EXECUTIVE LUNCH,EXECUTIVE LUNCH,GESCHÄFTSESSEN
+"Three courses. Billed to the war.
+Senior assets take 14% more damage before they fall.","Three courses. Billed to the war.
+Senior assets take 14% more damage before they fall.","Drei Gänge. Auf Kosten des Krieges.
+Leitende Mitarbeiter halten 14 % mehr Schaden aus, bevor sie fallen."
+FIRMER HEADS,FIRMER HEADS,FESTERE KÖPFE
+"Picked a week early. On purpose.
+Cabbage-pult crews hit 14% harder.","Picked a week early. On purpose.
+Cabbage-pult crews hit 14% harder.","Eine Woche zu früh geerntet. Absichtlich.
+Kohlschleuder-Trupps treffen 14 % härter."
+OILED CHAIN,OILED CHAIN,GEÖLTE KETTE
+"Lubricated quarterly. Now monthly.
+Express couriers ride 12% faster.","Lubricated quarterly. Now monthly.
+Express couriers ride 12% faster.","Bisher vierteljährlich geschmiert. Jetzt monatlich.
+Eilkuriere fahren 12 % schneller."
+REFLECTIVE VEST,REFLECTIVE VEST,WARNWESTE
+"Seen from a distance. Avoided at the same distance.
+Express couriers take 14% more damage before they fall.","Seen from a distance. Avoided at the same distance.
+Express couriers take 14% more damage before they fall.","Von Weitem zu sehen. Aus derselben Entfernung gemieden.
+Eilkuriere halten 14 % mehr Schaden aus, bevor sie fallen."

@@ -224,7 +224,7 @@ func test_a_home_farm_is_taken_by_war_only_once_nobody_sells_any_more() -> void:
 	assert_bool(FarmRegister.war_ready(save, &"K-8")).is_true()
 
 
-func test_buying_the_first_farm_starts_the_first_farm_paper_and_the_fifth_the_no_more_sellers_paper() -> void:
+func test_buying_the_first_farm_starts_the_first_farm_paper_and_the_fifth_alone_starts_no_war() -> void:
 	var save := _rich()
 	save.reports = PackedStringArray(["welcome", "invest_in_growth"])
 	assert_array(Report.due(save)).not_contains(["first_farm"])
@@ -234,7 +234,8 @@ func test_buying_the_first_farm_starts_the_first_farm_paper_and_the_fifth_the_no
 		FarmRegister.buy(save, StringName(site))
 	assert_bool(Events.due("no_more_sellers", save)).is_false()
 	FarmRegister.buy(save, &"K-5")
-	assert_bool(Events.due("no_more_sellers", save)).is_true()
+	assert_int(save.farms_owned.size()).is_equal(Events.HOME_SELLERS)
+	assert_bool(Events.due("no_more_sellers", save)).is_false()  # HOME PORTFOLIO REVIEW's stamp starts it.
 
 
 func test_the_price_tag_prints_the_sites_price_as_the_next_farm_in_coins() -> void:
@@ -775,7 +776,6 @@ func test_the_fifth_farm_needs_bribery() -> void:
 	save.stamped.append("bribery")
 	assert_dict(FarmRegister.price(save, &"K-5")).is_equal({coins = 2000000})  # 1,600,000 at K-5's worth.
 	assert_bool(FarmRegister.buy(save, &"K-5")).is_true()
-	assert_bool(Events.due("no_more_sellers", save)).is_true()
 
 
 func test_bribery_alone_does_not_open_the_farms_negotiation_opens() -> void:

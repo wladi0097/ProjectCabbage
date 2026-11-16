@@ -52,6 +52,62 @@ func test_a_thrown_cabbage_lands_where_the_shot_lands_after_its_travel() -> void
 	assert_vector(body.global_position).is_equal_approx(Vector3(0.4, 0.016, 0.9), Vector3.ONE * 0.0001)
 
 
+## A mortar's and a cannon's shot over the same way, from `view`'s fight on its map.
+func _mortar_and_cannon(view: FightView) -> void:
+	var fight := WarFight.new(view.map.layout(), view.map.grid_size, 90.0)
+	for by in ["mortar", "cannon"]:
+		view._event(fight, {kind = "shot", by = by, from = Vector2(1, 1), to = Vector2(6, 1), splash = WarFight.BUILDINGS[by].splash, travel = 1.0})
+
+
+func test_the_mortar_lobs_a_dark_shell_higher_than_the_cannons_cabbage() -> void:
+	var view := _view()
+	_mortar_and_cannon(view)
+	assert_int(view.shots_thrown()).is_equal(1)  # Only the cannon throws a cabbage;
+	var shell: Node3D = view._flying[0].body
+	assert_str(shell.scene_file_path).is_equal("res://entities/war/fight/mortar_shell.tscn")  # the mortar a shell.
+	view._fly(0.5)
+	assert_float(shell.global_position.y).is_greater((view._shots[0] as Node3D).global_position.y + 0.2)
+
+
+func test_the_mortar_shells_shadow_grows_on_the_paper_where_it_comes_down() -> void:
+	var view := _view()
+	_mortar_and_cannon(view)
+	var shell: Node3D = view._flying[0].body
+	var shadow: Node3D = shell.get_node("Shadow")
+	view._fly(0.2)
+	var early := shadow.global_transform.basis.get_scale().x
+	assert_vector(shadow.global_position * Vector3(1, 0, 1)).is_equal_approx(view.spot(Vector2(6, 1)) * Vector3(1, 0, 1), Vector3.ONE * 0.0001)
+	var target: MeshInstance3D = shell.get_node("Target")
+	var faint := target.transparency
+	view._fly(0.6)
+	assert_float(shadow.global_transform.basis.get_scale().x).is_greater(early * 1.5)
+	assert_float(target.transparency).is_less(faint)  # The splash circle draws in as it falls,
+	var splash: float = WarFight.BUILDINGS.mortar.splash
+	var edge := view.spot(Vector2(6, 1)).distance_to(view.spot(Vector2(6 + splash, 1)))
+	assert_float(target.global_transform.basis.get_scale().x * (target.mesh as TorusMesh).outer_radius).is_equal_approx(edge, 0.0001)  # exactly the splash wide.
+
+
+func test_the_mortars_impact_spans_its_splash_radius_and_lands_after_its_travel() -> void:
+	var view := _view()
+	_mortar_and_cannon(view)
+	var shell: Node3D = view._flying[0].body
+	view._fly(0.99)
+	assert_bool(shell.is_queued_for_deletion()).is_false()  # Still in the air,
+	view._fly(0.02)
+	assert_bool(shell.is_queued_for_deletion()).is_true()  # down on its travel, as the shot's sound has it.
+	var impacts := view.get_node("Shots").get_children().filter(func(n: Node) -> bool: return n.scene_file_path == "res://entities/war/fight/mortar_impact.tscn")
+	assert_int(impacts.size()).is_equal(1)
+	var impact: Node3D = impacts[0]
+	var splash: float = WarFight.BUILDINGS.mortar.splash
+	var edge := view.spot(Vector2(6, 1)).distance_to(view.spot(Vector2(6 + splash, 1)))
+	assert_float(impact.global_transform.basis.get_scale().x).is_equal_approx(edge, 0.0001)  # Scaled to the splash,
+	assert_float((impact.get_node("Ring") as MeshInstance3D).mesh.get("outer_radius")).is_equal(1.0)  # its shock ring
+	assert_float((impact.get_node("Edge") as MeshInstance3D).mesh.get("outer_radius")).is_equal(1.0)  # and pencil edge reach it,
+	var dust: CPUParticles3D = impact.get_node("Dust")
+	assert_float(dust.emission_ring_radius).is_between(0.85, 1.0)  # and dust covers it.
+	assert_bool(dust.local_coords).is_true()
+
+
 func test_a_building_at_zero_hp_turns_to_rubble_and_its_wall_neighbours_drop_their_arms() -> void:
 	var view := _view()
 	var map := view.map

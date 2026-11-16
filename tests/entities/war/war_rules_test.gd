@@ -67,7 +67,9 @@ func test_structural_assessment_takes_security_grade_fencing_in_one_blast() -> v
 		return float(stats.damage) * float(stats.wall_mult)
 	assert_float(blast.call()).is_greater_equal(WarFight.BUILDINGS.wall_stone.hp)
 	assert_float(blast.call()).is_less(WarFight.BUILDINGS.wall_steel.hp)
-	save.unit_research = PackedStringArray(["rc_hp_1", "rc_wall_1"])
+	save.unit_research = PackedStringArray(["rc_wall_0"])  # SITE SURVEY alone: not yet.
+	assert_float(blast.call()).is_less(WarFight.BUILDINGS.wall_steel.hp)
+	save.unit_research = PackedStringArray(["rc_wall_0", "rc_wall_1"])
 	assert_float(blast.call()).is_greater_equal(WarFight.BUILDINGS.wall_steel.hp)
 
 
@@ -184,46 +186,109 @@ func test_every_unit_has_a_price_a_training_time_and_stats() -> void:
 			assert_bool(stats.has(key)).is_true()
 
 
-func test_every_unit_has_a_small_research_tree() -> void:
+## A unit's research nodes in buying order (each the parent of the next).
+func _chain(unit: String) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var parent := ""
+	for i in WarRules.RESEARCH.size():
+		var next := WarRules.RESEARCH.filter(func(n: Dictionary) -> bool: return n.unit == unit and n.parent == parent)
+		if next.is_empty():
+			break
+		assert_int(next.size()).override_failure_message(unit + " branches").is_equal(1)
+		out.append(next[0])
+		parent = next[0].id
+	return out
+
+
+func test_every_unit_has_one_research_chain_of_five() -> void:
 	for unit in WarRules.UNITS:
 		var nodes := WarRules.RESEARCH.filter(func(node: Dictionary) -> bool: return node.unit == unit)
-		assert_int(nodes.size()).is_between(3, 4)
-		for node: Dictionary in nodes:
-			if node.parent != "":
-				assert_str(WarRules.research_node(node.parent).unit).is_equal(unit)
+		assert_int(nodes.size()).override_failure_message(unit).is_equal(5)
+		assert_int(_chain(unit).size()).override_failure_message(unit).is_equal(5)
 
 
-func test_each_research_step_raises_its_stat_by_at_least_a_quarter() -> void:
+func test_each_research_step_raises_its_stat_by_a_tenth_to_under_a_third() -> void:
 	var all := _save(["war_mode", "unit_charge", "unit_senior", "unit_pult", "unit_courier"])
 	for node in WarRules.RESEARCH:
 		var old := float(WarRules.unit_stats(all, node.unit)[node.stat])
 		all.unit_research.append(node.id)
-		assert_float(float(WarRules.unit_stats(all, node.unit)[node.stat])).is_greater_equal(old * 1.25)
+		var now := float(WarRules.unit_stats(all, node.unit)[node.stat])
+		assert_float(now).override_failure_message(node.id).is_greater_equal(old * 1.1)
+		assert_float(now).override_failure_message(node.id).is_less_equal(old * 1.3001)
+
+
+func test_each_units_research_starts_cheap_and_every_step_costs_more_than_the_one_before() -> void:
+	assert_int(int(_chain("field_associate")[0].findings)).is_less_equal(5000)  # Paid from what a player who ignored research holds at war start.
+	for unit in WarRules.UNITS:
+		var chain := _chain(unit)
+		for i in range(1, chain.size()):
+			assert_int(int(chain[i].findings)).override_failure_message(chain[i].id).is_greater(int(chain[i - 1].findings))
+		# The last step is no wall: at most about forty times the first.
+		assert_int(int(chain[-1].findings)).override_failure_message(unit).is_less_equal(int(chain[0].findings) * 40)
+
+
+func test_a_unit_hired_later_starts_its_research_dearer() -> void:
+	var first := 0
+	for unit: String in ["field_associate", "restructuring_charge", "senior_asset", "pult_crew", "courier"]:  # The cards' order.
+		var price := int(_chain(unit)[0].findings)
+		assert_int(price).override_failure_message(unit).is_greater(first)
+		first = price
+
+
+func test_a_split_step_and_its_first_half_together_raise_the_stat_as_much_as_the_old_step() -> void:
+	var old := {fa_hp_1 = 1.3, rc_hp_1 = 1.5, rc_wall_1 = 1.5, sa_hp_1 = 1.3, pc_damage_1 = 1.3, cr_speed_1 = 1.25, cr_hp_1 = 1.3}
+	assert_int(WarRules.SPLITS.size()).is_equal(old.size())
+	for first: String in WarRules.SPLITS:
+		var second: String = WarRules.SPLITS[first]
+		var above: Array[String] = []  # The second half's ancestors: the first half comes before it.
+		var up: String = WarRules.research_node(second).parent
+		while up != "":
+			above.append(up)
+			up = WarRules.research_node(up).parent
+		assert_array(above).override_failure_message(second).contains([first])
+		var both := float(WarRules.research_node(first).step) * float(WarRules.research_node(second).step)
+		assert_float(both).override_failure_message(second).is_greater_equal(float(old[second]))
+		assert_float(both).override_failure_message(second).is_less(float(old[second]) * 1.001)
+
+
+func test_an_old_save_that_bought_a_split_step_gets_its_first_half_filed_once_and_nothing_else() -> void:
+	var old := _save(["war_mode", "unit_charge"])
+	old.unit_research = PackedStringArray(["fa_hp_1", "fa_damage_1", "rc_wall_1"])
+	var hp_before := 150.0 * 1.3
+	WarRules.migrate_research(old)
+	WarRules.migrate_research(old)
+	assert_array(Array(old.unit_research)).contains_exactly_in_any_order(["fa_hp_1", "fa_damage_1", "rc_wall_1", "fa_hp_0", "rc_wall_0"])
+	assert_float(float(WarRules.unit_stats(old, "field_associate").hp)).is_equal_approx(hp_before, 0.1)
+	assert_float(float(WarRules.unit_stats(old, "restructuring_charge").wall_mult)).is_greater_equal(30.0)  # Security grade still goes in one blast.
+	var fresh := _save()
+	fresh.unit_research = PackedStringArray(["fa_hp_0"])  # Half bought in play: nothing added.
+	WarRules.migrate_research(fresh)
+	assert_array(Array(fresh.unit_research)).is_equal(["fa_hp_0"])
 
 
 func test_research_needs_its_parent_first() -> void:
 	var save := _save()
 	save.findings = 1000000
-	assert_bool(WarRules.buy_research(save, "fa_damage_1")).is_false()
+	assert_bool(WarRules.buy_research(save, "fa_hp_1")).is_false()
+	assert_bool(WarRules.buy_research(save, "fa_hp_0")).is_true()
 	assert_bool(WarRules.buy_research(save, "fa_hp_1")).is_true()
-	assert_bool(WarRules.buy_research(save, "fa_damage_1")).is_true()
 
 
 func test_research_is_paid_in_findings() -> void:
 	var save := _save()
-	var price: int = WarRules.research_node("fa_hp_1").findings
+	var price: int = WarRules.research_node("fa_hp_0").findings
 	save.findings = price - 1
-	assert_bool(WarRules.buy_research(save, "fa_hp_1")).is_false()
+	assert_bool(WarRules.buy_research(save, "fa_hp_0")).is_false()
 	save.findings = price
-	assert_bool(WarRules.buy_research(save, "fa_hp_1")).is_true()
+	assert_bool(WarRules.buy_research(save, "fa_hp_0")).is_true()
 	assert_int(save.findings).is_equal(0)
-	assert_bool(WarRules.buy_research(save, "fa_hp_1")).is_false()  # Once only.
+	assert_bool(WarRules.buy_research(save, "fa_hp_0")).is_false()  # Once only.
 
 
 func test_research_for_a_unit_not_hired_cannot_be_bought() -> void:
 	var save := _save()
 	save.findings = 1000000
-	assert_bool(WarRules.buy_research(save, "sa_hp_1")).is_false()
+	assert_bool(WarRules.buy_research(save, "sa_hp_0")).is_false()
 
 
 ## A war's cabbages are its soldiers: one figure always fits the biggest store with a full mat of

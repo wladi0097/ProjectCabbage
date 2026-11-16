@@ -32,9 +32,25 @@ const NODES := [
 	{id = "hand_3", parent = "hand_speed", at = Vector2(-1.5, -1.02), icon = "hand", price = 1200, currency = "findings",
 		add = {farm_hands = 1}, title = "THIRD FARM HAND",
 		body = "The bunkhouse is at capacity.\nOne more farm hand plants empty squares: 2 to 3 hands."},
+	# The fourth and fifth hand (and tractor, below): the outer ring (structured_farm), a hut each in
+	# the yard (FarmScreen.SLOTS). ¶30,000 / ¶80,000, tractors ¶40,000 / ¶100,000 (tools/pace.py ch3:
+	# 2-3.5 min of ¶ each, bought at ~70 / ~92 min and ~80 / ~96 min, each lifting its rate x1.22-1.32).
+	{id = "hand_4", parent = "hand_3", at = Vector2(-1.95, -1.32), icon = "hand", price = 30000, currency = "findings",
+		needs = ["structured_farm"], add = {farm_hands = 1}, title = "FOURTH FARM HAND",
+		body = "A second bunkhouse has been requisitioned. It was the first one's shed.\nOne more farm hand plants empty squares: 3 to 4 hands."},
+	{id = "hand_5", parent = "hand_4", at = Vector2(-2.4, -1.62), icon = "hand", price = 80000, currency = "findings",
+		add = {farm_hands = 1}, title = "FIFTH FARM HAND",
+		body = "Headcount is now a line item.\nOne more farm hand plants empty squares: 4 to 5 hands."},
 	{id = "hand_route", parent = "hand_2", at = Vector2(-1.1, -0.2), icon = "lens", price = 150,
 		currency = "findings", add = {farm_hand_route = 1}, title = "PLANTING ROSTER",
 		body = "A roster is pinned to the barn door.\nFarm hands walk straight to an empty square instead of wandering the field."},
+	# ESTATE PERMIT / LICENCE (FarmScreen.PLANT_PERMIT / HARVEST_LICENCE, can_work): until bought the
+	# workers leave farm squares to the player. Shown with the first farm (no free permits for old
+	# saves); ¶2,500 each (tools/pace.py ch3: ~3.5 min of ¶ at the first farm's ~700 a minute, both
+	# bought from savings within a minute of it; the licence lifts ¶/min ×1.6).
+	{id = "estate_permit", parent = "hand_route", at = Vector2(-1.6, -0.45), icon = "lens", price = 2500,
+		currency = "findings", needs_farm = true, title = "ESTATE PLANTING PERMIT",
+		body = "Estate soil may now be touched by staff, in triplicate.\nFarm hands plant farm squares too. Until then you plant them yourself."},
 	{id = "hand_shift", parent = "hand_2", at = Vector2(-0.55, -0.95), icon = "clock", price = 700, currency = "findings",
 		add = {farm_hand_shift = 1}, title = "MANDATORY OVERTIME",
 		body = "Overtime is voluntary. Volunteering is mandatory.
@@ -48,9 +64,18 @@ Farm hands carry one more seed per trip and plant one more square before returni
 	{id = "tractor_3", parent = "tractor_speed", at = Vector2(1.5, -1.02), icon = "tractor", price = 2500, currency = "findings",
 		add = {farm_tractors = 1}, title = "THIRD TRACTOR",
 		body = "Three tractors. One gate.\nOne more tractor harvests ripe squares: 2 to 3 tractors."},
+	{id = "tractor_4", parent = "tractor_3", at = Vector2(1.95, -1.32), icon = "tractor", price = 40000, currency = "findings",
+		needs = ["structured_farm"], add = {farm_tractors = 1}, title = "FOURTH TRACTOR",
+		body = "The lease now includes a fleet clause.\nOne more tractor harvests ripe squares: 3 to 4 tractors."},
+	{id = "tractor_5", parent = "tractor_4", at = Vector2(2.4, -1.62), icon = "tractor", price = 100000, currency = "findings",
+		add = {farm_tractors = 1}, title = "FIFTH TRACTOR",
+		body = "A second gate was proposed. A fifth tractor was approved.\nOne more tractor harvests ripe squares: 4 to 5 tractors."},
 	{id = "tractor_route", parent = "tractor_2", at = Vector2(1.1, -0.2), icon = "lens", price = 250,
 		currency = "findings", add = {farm_tractor_route = 1}, title = "HARVEST DISPATCH",
 		body = "Ripeness is now reported centrally.\nTractors drive straight to a ripe square instead of cruising the field."},
+	{id = "estate_licence", parent = "tractor_route", at = Vector2(1.6, -0.45), icon = "lens", price = 2500,
+		currency = "findings", needs_farm = true, title = "ESTATE HARVEST LICENCE",
+		body = "Leased machinery may now enter leased land.\nTractors harvest farm squares too. Until then you pull them yourself."},
 	{id = "tractor_shift", parent = "tractor_2", at = Vector2(0.55, -0.95), icon = "clock", price = 1600, currency = "findings",
 		add = {farm_tractor_shift = 1}, title = "DOUBLE SHIFT",
 		body = "The night shift is the day shift, continued.
@@ -85,7 +110,14 @@ The standing seed order buys the 50-seed pack instead of the 10."},
 		body = "Your photograph is on the barn wall.\nA square you pull by hand yields 3× instead of 2×."},
 	{id = "thumb_replant", parent = "thumb_yield", at = Vector2(0.0, -1.45), icon = "sprout", price = 900, currency = "findings",
 		add = {hand_replant = 1}, title = "ONE IN, ONE OUT",
-		body = "The hole is never left empty. It is policy.\nA square you pull out yourself is replanted at once from the crate. Tractor harvests still wait for a farm hand."},
+		body = "The hole is never left empty. It is policy.\nA square you pull out yourself is replanted at once from the crate. A farm square only when you pull its last batch. Tractor harvests still wait for a farm hand."},
+	# ONE IN, ONE OUT on farm squares (FarmScreen.FARM_REPLANT, harvest): without it only the pull that
+	# empties a farm square puts a seed back; with it every hand pull does (the square stays full).
+	# ¶3,000 (tools/pace.py ch3: bought at ~21 min, ~5.5 min after the first farm and 73 s after the
+	# previous buy, from savings).
+	{id = "farm_replant", parent = "thumb_replant", at = Vector2(0.0, -1.9), icon = "sprout", price = 3000, currency = "findings",
+		needs_farm = true, title = "ESTATE ROTATION POLICY",
+		body = "The policy has been extended to every batch. The batches were not consulted.\nEvery farm batch you pull by hand puts one seed back from the crate, not just the last."},
 	# GREEN THUMB on farm squares (save.farm_hand_share, FarmScreen.hand_factor): a farm square pulled by
 	# hand gets none of GREEN THUMB's bonus until this chain, then 25%, 50%, all of it. Shown once a
 	# farm is owned; the last two wait for EXTEND THE ARCHIVE (they pass ¶8,000). ¶4,000 / ¶12,000 / ¶30,000 (tools/pace.py ch3: about 2-4k ¶ a minute at farms 1-2).
@@ -119,6 +151,11 @@ The standing seed order buys the 50-seed pack instead of the 10."},
 	{id = "cold_frames", parent = "", at = Vector2(1.55, 0.05), icon = "crate", price = 250, currency = "findings",
 		needs = ["golden_cabbage"], add = {rot_after = 120.0}, title = "COLD FRAMES",
 		body = "The cabbages are kept cool. The staff are kept informed.\nA ripe square rots after 5 min instead of 3."},
+	# COMPOST DETAIL (FarmScreen.COMPOST, can_work / _finish): farm hands clear a rotten square and sow
+	# the seed they carry in it. ¶600 (tools/pace.py: ~2 min of ¶ at ~280 a minute, bought ~6 min after the rot starts).
+	{id = "compost_detail", parent = "cold_frames", at = Vector2(2.05, 0.3), icon = "hand", price = 600,
+		currency = "findings", title = "COMPOST DETAIL",
+		body = "Spoilage is now someone's job. It is not yours.\nFarm hands clear rotten squares and plant them again. Until then only your click clears one."},
 	{id = "refrigerated_tarpaulin", parent = "cold_frames", at = Vector2(1.6, 0.55), icon = "crate", price = 500,
 		currency = "findings", add = {rot_after = 180.0}, title = "REFRIGERATED TARPAULIN",
 		body = "Patent pending. Electricity extra.\nA ripe square rots after 8 min instead of 5."},
@@ -154,12 +191,22 @@ The standing seed order buys the 50-seed pack instead of the 10."},
 		body = "A second layer has been approved.\nEvery farm square holds 6 seeds instead of 4."},
 	# The farm hands follow: farm squares first (save.farm_hand_route 2, FarmScreen.target_for), then
 	# more seeds a trip (farm_hand_shift), so the beds above are filled.
-	{id = "hand_route_2", parent = "hand_route", at = Vector2(-1.6, -0.45), icon = "lens", price = 20000, currency = "findings",
+	{id = "hand_route_2", parent = "estate_permit", at = Vector2(-2.05, -0.5), icon = "lens", price = 20000, currency = "findings",
 		needs = ["structured_farm"], add = {farm_hand_route = 1}, title = "FARM ROUNDS",
 		body = "The roster now has a first page.\nFarm hands plant the farm squares first, and plain squares only when every farm is full."},
 	{id = "hand_shift_2", parent = "hand_shift", at = Vector2(-1.0, -1.5), icon = "crate", price = 45000, currency = "findings",
 		needs = ["structured_farm"], add = {farm_hand_shift = 2}, title = "SEED SATCHELS",
 		body = "A bag is issued. Its weight is deducted.\nFarm hands carry two more seeds per trip and plant two more before returning to the yard."},
+	# THINNING (desk card mini_thinning): FIELD THINNING minis out at once (save.thinning_cap,
+	# MiniDrop._thin) 6 to 8, 10; the timed drop keeps its own 6. Felt, not an economy step (a mini is
+	# a quarter cabbage): ¶1,500 / ¶4,000, ~3 and ~8 min of late chapter 2's ¶ (tools/pace.py: ~500 a
+	# minute; the sim buys the first ~30 min after the card, the second early in chapter 3).
+	{id = "thinning_cap_1", parent = "", at = Vector2(0.55, 1.17), icon = "sprout", price = 1500, currency = "findings",
+		needs = ["mini_thinning"], add = {thinning_cap = 2}, title = "THINNING QUOTA",
+		body = "Thinning is now measured. It was found lacking.\nUp to 8 mini cabbages from farm harvests are out at once, not 6."},
+	{id = "thinning_cap_2", parent = "thinning_cap_1", at = Vector2(0.55, 1.62), icon = "sprout", price = 4000, currency = "findings",
+		add = {thinning_cap = 2}, title = "REVISED THINNING QUOTA",
+		body = "The quota was met. The quota was revised.\nUp to 10 mini cabbages from farm harvests are out at once, not 8."},
 ]
 ## Each theme's heading: [title, spot (as a node's `at`), its first nodes], part of its branch (the
 ## edges to its first nodes run through it; spots by tools/_theme_place.gd), and its category's
@@ -181,6 +228,8 @@ const THEMES := [
 		"Spoilage is a scheduling issue.\nRipe squares wait longer before they rot."],
 	["FARM OUTPUT", Vector2(-0.77, 0.00), ["farm_mult_1"],
 		"Acquired farms are held to the same targets.\nEvery farm square harvests more cabbages."],
+	["THINNING", Vector2(0.33, 0.70), ["thinning_cap_1"],
+		"The field is thinned for its own good.\nMore mini cabbages from farm harvests out at once."],
 ]
 
 @export var approve_sound: AudioStream

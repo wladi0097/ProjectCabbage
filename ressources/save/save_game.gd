@@ -169,6 +169,8 @@ extends Resource
 @export var mini_value := 0.25
 @export var tube_speed := 1.0
 @export var tube_split := 0.0
+## FIELD THINNING minis out (and queued) at once: MiniDrop.MAX_MINIS, raised by the farm tree's THINNING QUOTA nodes.
+@export var thinning_cap := 6
 @export var minis_sold := 0
 ## The mini growing station (desk card mini_station): the chance a tube mini passing through it comes
 ## out a full-size unit (still no stock, sold at the full price). Upgradeable (projector tree).

@@ -12,12 +12,18 @@ extends Node3D
 ## aside. All the money logic is in CoinPile (vacuum_at, bank_from); coins in a bag still count in
 ## pending_value. Once TOKEN_CARD is stamped they also take the QA bay's resting report slips (one
 ## per bag slot) and, home, the slips fly from them into the Findings counter (QaBay.file_from).
+## With a full bag of slips and coins on the mat, each unit alternates coin and slip trips (Trip); its
+## lamp glows cyan on a slip trip.
 ## The hand can pick a unit up and set it down anywhere on the mat (never past it: on_mat). About every
 ## TIP_EVERY one unit out driving falls onto its back and stops, brush spinning, until the player
 ## picks it up and sets it down; the projector's STABILISER node stops that. While it lies there a
 ## small stencilled HELP_TEXT hovers over it and shakes (asks_for_help).
 
 enum State { PARKED, ROAM, RETURN, TIPPED }
+## What a unit takes on this trip. MIXED (coins and slips alike) unless, as it sets out, the mat holds
+## coins and at least a full bag of slips (chapter 3): then it alternates COINS and SLIPS trips, else
+## the slips by the dock would fill its bag before it reached the money (trip_kind).
+enum Trip { MIXED, COINS, SLIPS }
 
 const BODY := preload("res://entities/vacuum/vacuum_body.tscn")
 ## Metres per second and radians per second at vacuum_speed 1. Slow on purpose.
@@ -37,6 +43,9 @@ const ROW_STEP := 0.135
 ## Where the units may drive: the open mat, clear of the press, the ramp and the window sill.
 const AREA := Rect2(-0.3, -0.6, 1.65, 1.25)
 const LAMP_ON := 3.0
+## The lamp's tint: amber, cold research cyan on a SLIPS trip.
+const LAMP_COINS := Color(1, 0.62, 0.22)
+const LAMP_SLIPS := Color(0.35, 0.85, 0.95)
 const RADIUS := 0.055
 const HEIGHT := 0.035
 ## Held, a unit hangs this far over the mat.
@@ -78,6 +87,9 @@ class Unit:
 	var value := 0
 	## QA report slips in the bag (token_recovery), filed when it empties.
 	var slips: Array[Node3D] = []
+	var trip := Trip.MIXED
+	## Its last alternating trip was a COINS one (set per unit index, so the fleet starts split).
+	var last_coins := false
 	var wait := 0.0
 	## In the player's hand.
 	var held := false
@@ -94,6 +106,9 @@ var _units: Array[Unit] = []
 var _time := 0.0
 ## The resting stacks the units can reach, refreshed every RESCAN (and right after a unit takes coins).
 var _spots: Array[Vector3] = []
+## The same, split by kind (for the trip kinds).
+var _coin_spots: Array[Vector3] = []
+var _slip_spots: Array[Vector3] = []
 var _rescan := 0.0
 ## The QA bay, found on the first _bay call.
 var _qa: QaBay
@@ -120,11 +135,11 @@ func _physics_process(delta: float) -> void:
 		_rescan = RESCAN
 		# Only the stacks a unit can get close enough to (inside AREA, give or take its reach). Measured,
 		# not boxed: one past a corner of AREA is further from it than one past an edge.
-		_spots.clear()
 		var bay := _bay(save)
-		for spot in coins.resting_spots() + (bay.resting_spots() if bay != null else [] as Array[Vector3]):
-			if reachable(spot, save.vacuum_reach):
-				_spots.append(spot)
+		_coin_spots = _reachable(coins.resting_spots(), save.vacuum_reach)
+		_slip_spots = _reachable(bay.resting_spots() if bay != null else [] as Array[Vector3], save.vacuum_reach)
+		_spots = _coin_spots.duplicate()
+		_spots.append_array(_slip_spots)
 	_tip_in -= delta
 	if _tip_in <= 0.0:
 		_tip_in = randf_range(TIP_EVERY.x, TIP_EVERY.y)
@@ -147,6 +162,39 @@ func _bay(save: SaveGame) -> QaBay:
 	if _qa == null:
 		_qa = get_tree().get_first_node_in_group(&"qa_bay") as QaBay
 	return _qa
+
+
+static func _reachable(spots: Array[Vector3], reach: float) -> Array[Vector3]:
+	var out: Array[Vector3] = []
+	for spot in spots:
+		if reachable(spot, reach):
+			out.append(spot)
+	return out
+
+
+## The kind of trip a unit sets out on, with `stacks` coin stacks and `slips` slips resting on the mat and a
+## bag of `capacity`: MIXED as before, unless there are coins and a full bag of slips; then the other
+## kind than its last trip (`last_coins`).
+static func trip_kind(stacks: int, slips: int, capacity: int, last_coins: bool) -> Trip:
+	if stacks == 0 or slips < capacity:
+		return Trip.MIXED
+	return Trip.SLIPS if last_coins else Trip.COINS
+
+
+## The kind a unit out on `trip` goes on with: its own while any of it lies on the mat, else the other
+## (never idling with work on the mat).
+static func trip_goes_on(trip: Trip, stacks: int, slips: int) -> Trip:
+	if trip == Trip.COINS and stacks == 0 and slips > 0:
+		return Trip.SLIPS
+	if trip == Trip.SLIPS and slips == 0 and stacks > 0:
+		return Trip.COINS
+	return trip
+
+
+## Whether the first alternating trip of the unit at `index` is a SLIPS one: every second unit, so
+## about half the fleet is on coins.
+static func starts_on_slips(index: int) -> bool:
+	return index % 2 == 1
 
 
 ## Whether a unit may fall over now: out driving, not in the hand, and no stabiliser bought.
@@ -227,12 +275,19 @@ func _drive(unit: Unit, spots: Array[Vector3], save: SaveGame, delta: float) -> 
 			if unit.wait <= 0.0 and not spots.is_empty() and nearest(spots, at, _taken(unit)) != null:
 				unit.state = State.ROAM
 				unit.wait = 0.0
+				unit.trip = trip_kind(_coin_spots.size(), _slip_spots.size(), save.vacuum_capacity, unit.last_coins)
+				if unit.trip != Trip.MIXED:
+					unit.last_coins = unit.trip == Trip.COINS
 			return
 		State.ROAM when collects(unit.state, unit.held):
-			var got := coins.vacuum_at(at, save.vacuum_reach, save.vacuum_capacity - unit.loaded)
+			unit.trip = trip_goes_on(unit.trip, _coin_spots.size(), _slip_spots.size())
+			spots = _spots if unit.trip == Trip.MIXED else _coin_spots if unit.trip == Trip.COINS else _slip_spots
+			var got := Vector2i.ZERO
+			if unit.trip != Trip.SLIPS:
+				got = coins.vacuum_at(at, save.vacuum_reach, save.vacuum_capacity - unit.loaded)
 			unit.loaded += got.x
 			var bay := _bay(save)
-			if bay != null:
+			if bay != null and unit.trip != Trip.COINS:
 				var slips := bay.vacuum_at(at, save.vacuum_reach, save.vacuum_capacity - unit.loaded)
 				unit.slips.append_array(slips)
 				unit.loaded += slips.size()
@@ -241,6 +296,7 @@ func _drive(unit: Unit, spots: Array[Vector3], save: SaveGame, delta: float) -> 
 			if got.x > 0:
 				_rescan = 0.0  # a stack shrank or went: look again next tick
 			unit.value += got.y
+			unit.lamp.emission = LAMP_SLIPS if unit.trip == Trip.SLIPS else LAMP_COINS
 			unit.lamp.emission_energy_multiplier = LAMP_ON * (0.8 + 0.2 * sin(_time * 3.0))
 			if unit.loaded >= save.vacuum_capacity or spots.is_empty():
 				unit.state = State.RETURN
@@ -443,6 +499,7 @@ func _add_unit() -> void:
 	unit.help.line_spacing = -6.0
 	unit.help.visible = false
 	add_child(unit.help)
+	unit.last_coins = starts_on_slips(_units.size())
 	var model := BODY.instantiate()
 	unit.body.add_child(model)
 	add_child(unit.body)

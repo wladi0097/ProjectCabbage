@@ -2,7 +2,8 @@ class_name WarSlip
 extends Node3D
 ## A small paper the war sheet lays out while a war is being planned (war_slip.tscn: a page printed
 ## on map paper like the report). Two uses, one scene: NEW STRUCTURE ON SITE (debut) on the desk the
-## first time a building type is on a map, its name, its one line and what it does in plain words,
+## first time a building type is on a map, only its name on the paper (like a form in the tray; the
+## war sheet shows its card, card(), on hover: its one line and what it does in plain words),
 ## taken away at START; and FINAL ACQUISITION (final) over the last war's sheet, in an oxblood border,
 ## filed with a click before planning starts. Its origin is the middle of its top edge.
 ## Sounds: Slide (it slides in or away).
@@ -46,10 +47,17 @@ func _ready() -> void:
 	_paper.set_shader_parameter(&"sheet_tex", _page.get_texture())
 
 
-## Prints the NEW STRUCTURE ON SITE slip for building kind `kind` (STRUCTURES).
+## Prints the NEW STRUCTURE ON SITE slip for building kind `kind` (STRUCTURES): its name only.
 func debut(kind: String) -> void:
+	_print("NEW STRUCTURE ON SITE", STRUCTURES[kind][0], "", "", "Removed at START.", false)
+
+
+## The card the war sheet shows (PaperNote, like a form's in the tray) while the debut slip for
+## building kind `kind` is hovered: its name, its line (the flavour) and what it does, translated.
+static func card(kind: String) -> Dictionary:
 	var said: Array = STRUCTURES[kind]
-	_print("NEW STRUCTURE ON SITE", said[0], said[1], said[2], "Removed at START.", false)
+	return {form = "NEW STRUCTURE ON SITE", title = said[0],
+			body = TranslationServer.translate(said[1]) + "\n" + TranslationServer.translate(said[2])}
 
 
 ## Prints FINAL ACQUISITION for the site called `site_name` with its `briefing` (keys).
@@ -105,6 +113,7 @@ func _print(form: String, title: String, line: String, body: String, foot: Strin
 	($Page/Form/Title as Label).text = title
 	($Page/Form/Line as Label).text = line
 	($Page/Form/Body as Label).text = body
+	($Page/Form/Rule as Control).visible = body != ""
 	($Page/Form/Foot as Label).text = foot
 	($Page/Form/Frame as Control).visible = not red
 	($Page/Form/RedFrame as Control).visible = red

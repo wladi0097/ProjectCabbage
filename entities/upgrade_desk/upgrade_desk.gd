@@ -71,12 +71,12 @@ const CARDS := [
 		body = "Some cabbages are worth more as data.\nA lever by the bin: SALES / SPLIT / RESEARCH (drag or click). RESEARCH sends tube minis into the research lab (onto the mat if it is full). SPLIT sends every second one."},
 	# No effect here: once it is stamped rotten and regular cabbages pass through each other
 	# (Cabbage.SHIELD_CARD, quarantine), so the hands' throws stop knocking a rotten one out of the
-	# window, and no hand picks one (Associate.skips_rotten, even with WASTE HANDLING). Optional (GameEvents.DRY_LEFT). Paced in
+	# window. Hands treat rotten ones exactly as without it. Optional (GameEvents.DRY_LEFT). Paced in
 	# tools/pace.py: under half a minute of income; dealt once rotten ones come (catch_combo)
 	# and the tube lever is in (earlier it held back the calibrated tube lever in the tray).
 	{id = "rotten_shield", price = 60, title = "QUARANTINE PROTOCOL", needs = ["catch_combo", "tube_lever"],
 		body = "Spoilage is to be isolated, not relocated.
-Rotten (grey) cabbages are quarantined: other cabbages pass straight through them, and no hired or lab hand grabs, carries or bins one. Only your own hand may still pick one up and throw it."},
+Rotten (grey) cabbages are quarantined: other cabbages pass straight through them, so no throw or roll knocks one out of the window. Hands handle them exactly as before."},
 	{id = "lab_priority", price = 40, currency = "findings", title = "MEMO: LAB PRIORITY", needs = ["research_assistant"],
 		body = "Research cabbages are not for sale.\nLab hands take blue research cabbages first. Other hired hands stop selling them."},
 	# Optional (no card needs it; one of GameEvents.DRY_LEFT). No effect here: entities/hand_schedule/
@@ -283,13 +283,26 @@ About every 150 s the ring light at the left of the desk glows cyan for 20 s. Wh
 	{id = "bribery", price = 1500000, also = {stock = 6000}, farms = 4, title = "BRIBERY", needs = ["rejected_goods"],
 		body = "Entered in the books as hospitality.
 The fifth farm on the country map is for sale. Its owner does not eat cabbage: its deed takes coins in an envelope. Same rules."},
-	# War mode: dealt by GameEvents "no_more_sellers" (the fifth farm is owned and the boss's THEY WILL
-	# NOT SELL ANY MORE paper has come: "we will take what should be ours"; `event`). No effect here:
+	# The war phase's trigger: dealt with BRIBERY stamped, it lies in the tray while the player works
+	# toward the fifth farm (so the tray is never empty there). Costs nothing (price 0: costs() leaves it
+	# out, the farm count stands in the price box); its stamp starts GameEvents "no_more_sellers", the
+	# boss's THIS MEANS WAR paper, which deals the war card. Plain stock: the war is no chapter change.
+	# Every card dealt from that paper on (the war card, the world map, the war line, the laws, stars)
+	# costs Findings on top of its coins or cabbages (`also`, user 2026-11-16): the war is research too.
+	# A ramp: the first cards a few ¶K (what a player who left research alone holds), rising card by
+	# card past the ¶40K archive the archive card gives, so mid-way through the war line the projector's
+	# research nodes are needed; sea lanes, the courier and stars are the big ones. Paced for that
+	# player: tools/pace.py ch3 shy ("war cards" line, "research push").
+	{id = "home_review", price = 0, farms = 5, title = "HOME PORTFOLIO REVIEW", needs = ["bribery"],
+		body = "Five farms is a portfolio. Portfolios are reviewed.
+Costs nothing. The farms are only counted. Stamped, the board reviews what is still for sale at home."},
+	# War mode: dealt by GameEvents "no_more_sellers" (HOME PORTFOLIO REVIEW is stamped and the boss's
+	# THIS MEANS WAR paper has come: "take what is ours"; `event`). No effect here:
 	# the country sheets read save.stamped (FarmRegister.WAR_CARD): a farm nobody sells (at home the
 	# last three, abroad every one) gets a WAR ORDER whose stamp rolls out the war sheet. Plain stock,
-	# not the oxblood form: that is for chapter changes only (user 2026-11-14). $3,000,000: about half
-	# a minute of income after the fifth farm's $5M (tools/pace.py `ch3`).
-	{id = "war_mode", price = 1000000, also = {stock = 5000}, farms = 5, title = "AUTHORISE HOSTILE ACQUISITIONS", event = "no_more_sellers", needs = ["bribery"],
+	# not the oxblood form: that is for chapter changes only (user 2026-11-14). $1,000,000, 5,000
+	# cabbages and ¶2,000 (the Findings ramp's first step; tools/pace.py `ch3 shy`).
+	{id = "war_mode", price = 1000000, also = {findings = 2000, stock = 5000}, title = "AUTHORISE HOSTILE ACQUISITIONS", event = "no_more_sellers", needs = ["bribery"],
 		body = "They will not sell. Selling was a courtesy.
 A farm that is not for sale can be taken by war: click it on its country's map for the war order. Stamp the order and the war sheet for that farm is rolled out. In Kohlmark that is the last three farms."},
 	# The world map (plain stock: it opens no chapter). Needs GameEvents.HOME_SELLERS farms
@@ -298,7 +311,7 @@ A farm that is not for sale can be taken by war: click it on its country's map f
 	# only. Stamped, the world sheet's roll arrives in the map table's holder (MapTable.WORLD_CARD).
 	# 13,000: paced in tools/pace.py (`python tools/pace.py ch3`), the chapter's last built purchase;
 	# it needs the 15,000 store (the fifth farm's 9,000 needed 9,999).
-	{id = "world_map", price = 13000, currency = "stock", farms = 5, title = "EXTEND THE MAPS BEYOND THE BORDER", needs = ["war_mode"],
+	{id = "world_map", price = 13000, currency = "stock", also = {findings = 3000}, farms = 5, title = "EXTEND THE MAPS BEYOND THE BORDER", needs = ["war_mode"],
 		body = "The home market is settled. Abroad has not been consulted.
 The cartographers are paid in cabbages. A chart of the world's markets is delivered to the holder at your map table: click its roll to lay it out, then click a country for its own map. Every farm abroad is taken by war."},
 	# The first law (the boss's THE COUNTRY IS OURS paper, GameEvents "home_country"): needs every farm
@@ -306,7 +319,7 @@ The cartographers are paid in cabbages. A chart of the world's markets is delive
 	# street's full-sale price is 19% higher (save.marketing x TAX_FREE) and the chalked price goes up
 	# with it. The home farms past the fifth are taken by war on the country sheet (the war card,
 	# FarmRegister.WAR_CARD). PROVISIONAL price, paced in tools/pace.py (`python tools/pace.py ch3`).
-	{id = "no_taxes", price = 3500000, home_farms = 8, title = "NO MORE TAXES ON CABBAGES", needs = ["world_map"],
+	{id = "no_taxes", price = 3500000, also = {findings = 120000}, home_farms = 8, title = "NO MORE TAXES ON CABBAGES", needs = ["world_map"],
 		body = "Taxing cabbages was found to be an oversight. It has been corrected.
 The 19% tax on cabbages is abolished and the company keeps it: every cabbage sells for 19% more."},
 	# The sea (plain stock: it opens no chapter). A farm abroad can be attacked only in a country next
@@ -329,33 +342,34 @@ The sea lanes drawn on the world chart are opened: farms in a country across a l
 	# asset before Sulvania, the pult crew before Grauland's shredders, the courier before Morrow.
 	# Prices paced with the fights (tools/pace.py ch3, war pass 2026-11-14; the unit cards' in the
 	# balance pass 2026-11-15, research/war-balance.md: each lands as soon as its `needs` and farms allow).
+	# Each also takes Findings since 2026-11-16, on the ramp described at the review card.
 	# The war line's first card, a plain form: the war sheet pencils a held figure's way to its first
 	# target only once this is stamped (WarSheet.ROUTE_CARD). Cheap, right after the world map (about
 	# 10 s of income at the sixth farm, tools/pace.py ch3), and 10,000 cabbages from stock (2 min of the
 	# farms' harvest; it needs COMMANDEERED RAILWAY's 30,000 store). TACTICAL ADJUSTMENTS and STRATEGIC
 	# WITHDRAWAL take 15,000 and 20,000 cabbages on top of their coins the same way.
-	{id = "route_planning", price = 350000, also = {stock = 10000}, farms = 6, title = "ISSUE PROJECTED ROUTE OVERLAYS", needs = ["world_map"],
+	{id = "route_planning", price = 350000, also = {findings = 5000, stock = 10000}, farms = 6, title = "ISSUE PROJECTED ROUTE OVERLAYS", needs = ["world_map"],
 		body = "Staff routes are pencilled on the site plan before deployment. Deviations are noted.
 While you hold a staff figure over a hatched zone, a pencil line on the war sheet shows the way it will walk to its first target."},
-	{id = "unit_charge", price = 1200000, farms = 8, title = "AUTHORISE RESTRUCTURING CHARGES", needs = ["route_planning"],
+	{id = "unit_charge", price = 1200000, also = {findings = 10000}, farms = 8, title = "AUTHORISE RESTRUCTURING CHARGES", needs = ["route_planning"],
 		body = "Every wall is a regulatory matter. Some are settled on contact.
 Restructuring charges join the personnel depot. Each walks straight at the first fence between it and the nearest defence and settles it on contact, itself included. Security grade takes two."},
-	{id = "bigger_armies", price = 1400000, farms = 10, title = "EXPAND THE FIELD WORKFORCE", event = "bigger_armies_memo", needs = ["no_taxes"],
+	{id = "bigger_armies", price = 1400000, also = {findings = 120000}, farms = 10, title = "EXPAND THE FIELD WORKFORCE", event = "bigger_armies_memo", needs = ["no_taxes"],
 		body = "Headcount is the only strategy the board understands.
 Two more staff of any kind may take the field in one war."},
-	{id = "tactics", price = 1500000, also = {stock = 15000}, farms = 10, title = "AUTHORISE TACTICAL ADJUSTMENTS", needs = ["unit_charge"],
+	{id = "tactics", price = 1500000, also = {findings = 20000, stock = 15000}, farms = 10, title = "AUTHORISE TACTICAL ADJUSTMENTS", needs = ["unit_charge"],
 		body = "The plan may now be revised while it fails.
 Staff may still be placed in a hatched zone after the attack has started."},
-	{id = "unit_senior", price = 1700000, farms = 11, title = "PROMOTE SENIOR ASSETS", needs = ["tactics"],
+	{id = "unit_senior", price = 1700000, also = {findings = 45000}, farms = 11, title = "PROMOTE SENIOR ASSETS", needs = ["tactics"],
 		body = "Slow, expensive and very hard to remove. Like all senior staff.
 Senior assets join the personnel depot. They go for the defences only, take a great deal of punishment on the way, and count as two staff in the field."},
-	{id = "unit_pult", price = 2000000, farms = 14, title = "COMMISSION CABBAGE-PULT CREWS", needs = ["unit_senior"],
+	{id = "unit_pult", price = 2000000, also = {findings = 60000}, farms = 14, title = "COMMISSION CABBAGE-PULT CREWS", needs = ["unit_senior"],
 		body = "The cabbage has always been a projectile. Now it is a budget line.
 Cabbage-pult crews join the personnel depot. They lob cabbages at the nearest defence from a distance, over any fence, and hit whatever stands next to it."},
-	{id = "retreat", price = 2400000, also = {stock = 20000}, farms = 15, title = "STRATEGIC WITHDRAWAL PROTOCOL", needs = ["unit_pult"],
+	{id = "retreat", price = 2400000, also = {findings = 80000, stock = 20000}, farms = 15, title = "STRATEGIC WITHDRAWAL PROTOCOL", needs = ["unit_pult"],
 		body = "It is not a retreat. It is a return to head office.
 A war can be called off with a RETREAT button. 30% of the staff placed come home; the rest are written off."},
-	{id = "unit_courier", price = 2700000, farms = 17, title = "ENGAGE EXPRESS COURIERS", needs = ["retreat"],
+	{id = "unit_courier", price = 2700000, also = {findings = 200000}, farms = 17, title = "ENGAGE EXPRESS COURIERS", needs = ["retreat"],
 		body = "Next-day delivery. Signature not required.
 Express couriers join the personnel depot. They ride fast, hop any fence and leave it standing, and deliver themselves to the nearest defence."},
 	# Chapter 3's end (`priority`, the end-of-chapter rule), last in the chain, so it reaches the tray
@@ -364,7 +378,7 @@ Express couriers join the personnel depot. They ride fast, hop any fence and lea
 	# (costs, spendable, pay). Stamped, the alpha's end popup comes (ui/sub/alpha_end); chapter 4 later.
 	# The farms are the wall (the last one is the final island); the coins and Findings on top are a
 	# last lap. PROVISIONAL price (tools/pace.py ch3).
-	{id = "stars", price = 10000000, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "retreat", "unit_courier"],
+	{id = "stars", price = 10000000, also = {findings = 250000}, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "retreat", "unit_courier"],
 		body = "There is nothing left to buy down here.
 The field line counts the farms. Stamped, the board looks up."},
 	# Optional (no card needs it; one of GameEvents.DRY_LEFT). No effect here: the map table puts TO
@@ -714,7 +728,7 @@ static func timed(card: Dictionary) -> bool:
 
 ## The only events a card may be dealt by: started by what the player does, never by a timer (the
 ## warning: the tray has run dry; the promotion and chapter 3's opening: a card is stamped; the war
-## card: the fifth farm is owned; the workforce card: the first law and Events.BIGGER_ARMIES farms). No upgrade card waits on a timer. Chapter 3's other cards follow
+## card: HOME PORTFOLIO REVIEW is stamped; the workforce card: the first law and Events.BIGGER_ARMIES farms). No upgrade card waits on a timer. Chapter 3's other cards follow
 ## each other by `needs` alone.
 const UNTIMED_EVENTS := ["supply_warning", "promotion", "invest_in_growth", "no_more_sellers", "bigger_armies_memo"]
 ## NO MORE TAXES ON CABBAGES (card no_taxes): what the street's full-sale price is multiplied by.
@@ -813,6 +827,13 @@ static func migrate(save: SaveGame) -> void:
 		save.stamped.append(FarmRegister.WAR_CARD)  # Past the war card before it existed (farms seized, countries annexed): filed; the farms stay.
 	if save.stamped.has(FarmRegister.BRIBE) and not save.stamped.has(FarmRegister.RECOVER):
 		save.stamped.append(FarmRegister.RECOVER)  # BRIBERY stamped before the card it now follows existed: filed.
+	var review: String = Events.EVENTS.no_more_sellers.card
+	if (save.reports.has("no_more_sellers") or save.stamped.has(FarmRegister.WAR_CARD) or save.offered.has(FarmRegister.WAR_CARD)) \
+			and not save.stamped.has(review):
+		save.stamped.append(review)  # Past the war's start from when the fifth farm started it: the review is filed.
+	WarRules.migrate_research(save)  # Depot research bought before its big steps were split in two.
+	if save.farm_bought.has("hand_route_2") and not save.farm_bought.has(FarmScreen.PLANT_PERMIT):
+		save.farm_bought.append(FarmScreen.PLANT_PERMIT)  # FARM ROUNDS bought before the permit became its parent: filed, its hands keep planting farms.
 	if save.migration < 7:
 		drop_retired_units(save)
 	if save.migration < 8:
@@ -939,7 +960,7 @@ static func apply(id: String, save: SaveGame) -> void:
 ## taken (pay).
 static func costs(card: Dictionary) -> Dictionary:
 	var all: Dictionary = card.get("also", {}).duplicate()
-	if card.has("price"):  # The reminder slip's NOTICE has none.
+	if card.get("price", 0) > 0:  # The reminder slip's NOTICE has none; HOME PORTFOLIO REVIEW only counts farms.
 		all[card.get("currency", "coins")] = card.price
 	for owned: String in ["farms", "home_farms"]:
 		if card.has(owned):

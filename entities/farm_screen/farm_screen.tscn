@@ -218,10 +218,10 @@ bus = &"SFX"
 [node name="AutoSeed" type="Button" parent="."]
 visible = false
 layout_mode = 0
-offset_left = 1264.0
-offset_top = 384.0
-offset_right = 1464.0
-offset_bottom = 464.0
+offset_left = 1240.0
+offset_top = 350.0
+offset_right = 1440.0
+offset_bottom = 430.0
 mouse_default_cursor_shape = 2
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("SwitchOff")
@@ -236,9 +236,9 @@ autowrap_mode = 2
 
 [node name="Packs" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 1134.0
+offset_left = 1063.0
 offset_top = 638.0
-offset_right = 1476.0
+offset_right = 1405.0
 offset_bottom = 700.0
 theme_override_constants/separation = 8
 

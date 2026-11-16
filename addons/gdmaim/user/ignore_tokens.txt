@@ -206,6 +206,7 @@ t
 target_every
 target_shower
 target_size
+thinning_cap
 thumb_replant
 title
 tooltips_seen
@@ -546,3 +547,11 @@ golden_condense
 schedule_mini
 schedule_research
 up
+fa_hp_0
+rc_hp_0
+rc_wall_0
+sa_hp_0
+pc_damage_0
+cr_speed_0
+cr_hp_0
+radius

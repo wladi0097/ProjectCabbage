@@ -65,7 +65,7 @@ const NODES := [
 		body = "The street is told what it wants.\nSlogans and campaigns. Each one raises the price\nthe street pays without refusing."},
 	{id = "dept_manual", parent = "", at = Vector2(0.84, 0.00), icon = "hand", price = 0,
 		dept = true, title = "MANUAL HANDLING",
-		body = "Work you still do yourself.\nPacks, desk space, minis, catches, the bin,\ntargets, the Golden Age, the manager's quotas."},
+		body = "Work you still do yourself.\nPacks, desk space, minis, catches, the bin,\ntargets and the manager's quotas."},
 	{id = "dept_qa", parent = "", at = Vector2(0.00, 0.77), icon = "lens", price = 0,
 		dept = true, needs = ["quality_assurance"], research = "research_inspection", title = "RESEARCH LAB",
 		body = "Every cabbage is a lesson.\nFaster analysis, more Findings (¶) per cabbage, more\nbenches, research cabbages and lab hands."},
@@ -153,14 +153,6 @@ A golden cabbage sold pays 15× your price, not 10×."},
 		needs = ["big_ideas"], add = {golden_sale = 5.0}, title = "LUXURY CLASSIFICATION",
 		body = "The street is told it cannot afford them.
 A golden cabbage sold pays 20× your price, not 15×."},
-	# Until this, the golden lamp's Golden Age skips golden units (SaleWindow.boosts_for, GOLD_AGE). No
-	# number: the window reads tree_bought. The dearest golden node (slogan_6 and hire_associate_8 cost more;
-	# tools/pace.py: "nogate"), bought after chapter 2's last card in the sim.
-	{id = "gold_age", parent = "gold_sale_1", at = Vector2(3.56, -0.27), icon = "crate", price = 75000,
-		needs = ["golden_cabbage", "golden_lamp", "big_ideas", "cash_holding"], title = "GOLD STANDARD",
-		body = "The Golden Age is extended to the premium range.
-In a Golden Age, golden cabbages get its bonus too.
-Until now they paid only their own premium."},
 	{id = "gold_lab_1", parent = "storage_2", at = Vector2(4.66, -0.27), icon = "pilcrow", price = 5000,
 		needs = ["golden_cabbage"], add = {golden_lab = 5.0}, title = "ASSAY OFFICE",
 		body = "Gold is tested. The test is gold.
@@ -532,8 +524,7 @@ when the target is at least $10 away."},
 		body = "The consultant no longer leaves.\nIt taps the slate every 1 s instead of 2 s."},
 	# Sales events (catch combo far up-left, waste bin down, window targets far right):
 	# entities/catch_combo/, rotten_bin/, window_targets/. The golden lamp's card (entities/golden_lamp/)
-	# is the last of its kind: nothing waits on it but the optional GOLD STANDARD (gold_age) and its own
-	# chain on the wide sheet (lamp_mult, lamp_time, lamp_every, past FRICTIONLESS HANDLING).
+	# is the last of its kind: its nodes are under LIGHTING SCHEDULE (lamp_mult, below).
 	{id = "combo_window", parent = "dept_manual", at = Vector2(1.74, 0.74), icon = "clock", price = 150,
 		needs = ["catch_combo"], add = {miss_keep = 0.5}, title = "GRACE PERIOD",
 		body = "Interceptions are counted generously.\nA missed catch halves the combo instead of ending it."},
@@ -546,20 +537,6 @@ when the target is at least $10 away."},
 	{id = "free_carry", parent = "combo_step", at = Vector2(3.13, 2.30), icon = "hand", price = 15000,
 		mul = {carry_weight = 0.0}, title = "FRICTIONLESS HANDLING",
 		body = "Cabbages have been reclassified as weightless.\nA held cabbage follows your mouse at once instead of lagging behind."},
-	# The golden lamp's chain (desk card golden_lamp; save.lamp_mult, lamp_time, lamp_every), back on
-	# the wide sheet (round 2, point 3: removed 2026-11-12, the old ids, so a save that bought them
-	# keeps them). Past the combo chain, in the sales events' free lower right (by hand). Each lifts the
-	# lamp's average sale boost by about a quarter (1.47 -> 1.82 -> 2.17 -> 2.75 times, the time it
-	# glows weighted); paced in tools/pace.py (`ch3`): a few minutes of income each in the wait for BRIBERY.
-	{id = "lamp_mult", parent = "free_carry", at = Vector2(3.59, 2.82), icon = "crate", price = 60000,
-		needs = ["golden_lamp", "big_ideas", "cash_holding"], add = {lamp_mult = 3.0}, title = "REVALUATION",
-		body = "The Golden Age is revalued upwards.\nDuring a Golden Age, sales pay 8× instead of 5×."},
-	{id = "lamp_time", parent = "lamp_mult", at = Vector2(4.05, 3.34), icon = "clock", price = 120000,
-		mul = {lamp_time = 1.5}, title = "PROLONGED PROSPERITY",
-		body = "The Golden Age is extended by memo.\nIt lasts 30 s instead of 20 s."},
-	{id = "lamp_every", parent = "lamp_time", at = Vector2(4.51, 3.86), icon = "clock", price = 250000,
-		mul = {lamp_every = 0.6}, title = "BOOM CYCLE",
-		body = "History is told to repeat itself.\nA Golden Age dawns about every 90 s instead of 150 s."},
 	{id = "bin_mouth", parent = "dept_manual", at = Vector2(1.43, 1.46), icon = "lens", price = 120,
 		needs = ["catch_combo"], mul = {bin_mouth = 1.35}, title = "WIDER RECEPTACLE",
 		body = "A larger bin is requisitioned.\nThe bin's opening is 35% wider: cabbages dropped\nnear it fall in from further away."},
@@ -637,20 +614,48 @@ when the target is at least $10 away."},
 	{id = "research_mult_4", parent = "research_mult_3", at = Vector2(-0.90, 2.95), icon = "pilcrow", price = 35000,
 		needs = ["big_ideas"], add = {research_mult = 8.0}, title = "PUBLISH OR PERISH",
 		body = "The findings are published internally.\nBlue research cabbages give 20× the Findings, not 12×."},
-	# The research light's chain (desk card research_light; save.lab_lamp_mult, _time, _every), the
-	# golden lamp's trio for Findings, then golden cabbages too (QaBay.LAB_GOLD; no number: the lab
-	# reads tree_bought). Down from PUBLISH OR PERISH into the free corner (by hand). Paced in
-	# tools/pace.py (`ch3`): each lifts the light's average Findings boost by about a quarter.
-	{id = "lab_lamp_mult", parent = "research_mult_4", at = Vector2(-0.90, 3.40), icon = "pilcrow", price = 40000,
-		needs = ["research_light"], add = {lab_lamp_mult = 3.0}, title = "CALIBRATED ILLUMINATION",
+	# LIGHTING SCHEDULE (THEMES): the two lamps' own category, a spoke of its own straight off the hub
+	# (parent "", like a department, no node to buy first) down the one clear lane between management
+	# and the lab hands, to the free bottom of the wheel (by hand, 2026-11-16: the user found them "way
+	# too hidden" under FRICTIONLESS HANDLING and PUBLISH OR PERISH). Each branch shows with its card;
+	# the old ids are kept, so a save keeps what it bought.
+	# The Golden Age (desk card golden_lamp; save.lamp_mult, lamp_time, lamp_every), forking right. Each
+	# lifts the lamp's average sale boost by about a quarter (1.47 -> 1.82 -> 2.17 -> 2.75 times, the time
+	# it glows weighted); paced in tools/pace.py (`ch3`): a few minutes of income each in the wait for
+	# BRIBERY. REVALUATION still waits for BIG MINDS and the cash card: the lamp is stamped about an hour
+	# earlier (2:06 in the sim, $1,900/min, a $40,000 purse), when $60,000 could not even be held.
+	{id = "lamp_mult", parent = "", at = Vector2(1.77, 4.12), icon = "crate", price = 60000,
+		needs = ["golden_lamp", "big_ideas", "cash_holding"], add = {lamp_mult = 3.0}, title = "REVALUATION",
+		body = "The Golden Age is revalued upwards.\nDuring a Golden Age, sales pay 8× instead of 5×."},
+	{id = "lamp_time", parent = "lamp_mult", at = Vector2(2.47, 4.12), icon = "clock", price = 120000,
+		mul = {lamp_time = 1.5}, title = "PROLONGED PROSPERITY",
+		body = "The Golden Age is extended by memo.\nIt lasts 30 s instead of 20 s."},
+	{id = "lamp_every", parent = "lamp_time", at = Vector2(3.17, 4.12), icon = "clock", price = 250000,
+		mul = {lamp_every = 0.6}, title = "BOOM CYCLE",
+		body = "History is told to repeat itself.\nA Golden Age dawns about every 90 s instead of 150 s."},
+	# Until this, the golden lamp's Golden Age skips golden units (SaleWindow.boosts_for, GOLD_AGE). No
+	# number: the window reads tree_bought. The dearest golden node (slogan_6 and hire_associate_8 cost more;
+	# tools/pace.py: "nogate"), bought right after REVALUATION in the sim.
+	{id = "gold_age", parent = "lamp_mult", at = Vector2(2.47, 4.57), icon = "crate", price = 75000,
+		needs = ["golden_cabbage"], title = "GOLD STANDARD",
+		body = "The Golden Age is extended to the premium range.
+In a Golden Age, golden cabbages get its bonus too.
+Until now they paid only their own premium."},
+	# The research light (desk card research_light, dealt after BIG MINDS; save.lab_lamp_mult, _time,
+	# _every), forking left: the golden lamp's trio for Findings, then golden cabbages too
+	# (QaBay.LAB_GOLD; no number: the lab reads tree_bought). Paced in tools/pace.py (`ch3`): each lifts
+	# the light's average Findings boost by about a quarter. big_ideas only marks it late (the card
+	# already comes after it).
+	{id = "lab_lamp_mult", parent = "", at = Vector2(1.74, 4.74), icon = "pilcrow", price = 40000,
+		needs = ["research_light", "big_ideas"], add = {lab_lamp_mult = 3.0}, title = "CALIBRATED ILLUMINATION",
 		body = "The light is calibrated to a higher standard.\nWhile the research light glows, cabbages in the\nlab give 8× the Findings, not 5×."},
-	{id = "lab_lamp_time", parent = "lab_lamp_mult", at = Vector2(-0.90, 3.85), icon = "clock", price = 80000,
+	{id = "lab_lamp_time", parent = "lab_lamp_mult", at = Vector2(1.04, 4.74), icon = "clock", price = 80000,
 		mul = {lab_lamp_time = 1.5}, title = "LONG EXPOSURE STUDY",
 		body = "The bulb is left on for the record.\nThe research light glows for 30 s, not 20 s."},
-	{id = "lab_lamp_every", parent = "lab_lamp_time", at = Vector2(-0.90, 4.30), icon = "clock", price = 160000,
+	{id = "lab_lamp_every", parent = "lab_lamp_time", at = Vector2(0.34, 4.74), icon = "clock", price = 160000,
 		mul = {lab_lamp_every = 0.6}, title = "SCHEDULED EUREKA",
 		body = "Inspiration is now booked in advance.\nThe research light glows about every 90 s, not 150 s."},
-	{id = "lab_lamp_gold", parent = "lab_lamp_mult", at = Vector2(-1.40, 3.85), icon = "pilcrow", price = 120000,
+	{id = "lab_lamp_gold", parent = "lab_lamp_mult", at = Vector2(1.04, 4.29), icon = "pilcrow", price = 120000,
 		after = "gold_lab_1", title = "ASSAY UNDER LIGHT",
 		body = "Gold is examined under cyan. It complies.\nWhile the research light glows, golden cabbages\nin the lab get its bonus too."},
 	{id = "research_chance_1", parent = "research_mult_1", at = Vector2(-0.79, 1.80), icon = "lens", price = 800,
@@ -863,7 +868,7 @@ const THEMES := [
 	["DESK SPACE", Vector2(1.55, -0.79), ["mat_4"],
 		"The mat is leased by the cabbage.\nOne more cabbage fits on the mat per step, up to 10."],
 	["SALES EVENTS", Vector2(1.25, 0.46), ["combo_window", "target_size", "bin_mouth"],
-		"Incidents at the window, monetised.\nThe catch combo, the lit crates in the street, what the bin pays for rot and the Golden Age."],
+		"Incidents at the window, monetised.\nThe catch combo, the lit crates in the street and what the bin pays for rot."],
 	["MANAGEMENT", Vector2(0.90, 0.46), ["manager_time"],
 		"The manager's visits, made survivable.\nLonger and lower quotas, bigger bonuses, and more for cabbages you sell yourself."],
 	["CONSULTANCY", Vector2(-0.69, -0.68), ["consultant_speed_1"],
@@ -879,11 +884,13 @@ const THEMES := [
 	["MINI CABBAGES", Vector2(0.90, -0.38), ["mini_rate_1"],
 		"Smaller cabbages, same paperwork.\nMinis drop more often, sell for more and grow into full cabbages in the growing station."],
 	["RESEARCH", Vector2(-0.16, 1.05), ["research_mult_1"],
-		"The blue ones are special. It says so here.\nMore blue research cabbages off the chute, more Findings from each, and the research light."],
+		"The blue ones are special. It says so here.\nMore blue research cabbages off the chute and more Findings from each."],
 	["LAB HANDS", Vector2(0.32, 1.52), ["lab_hand_2"],
 		"The lab is staffed, eventually.\nMore lab hands throwing cabbages into the research lab."],
 	["CONDENSATION", Vector2(2.57, 0.70), ["condense_2", "condense_research", "condense_gold"],
 		"Less air, more cabbage.\nHow many cabbages a condensed cabbage holds: one chain each for plain, research and golden cabbages."],
+	["LIGHTING SCHEDULE", Vector2(1.10, 2.80), ["lamp_mult", "lab_lamp_mult"],
+		"Prosperity and insight, switched on by Facilities.\nThe Golden Age and the research light: how strong, how long, how often, and for golden cabbages too."],
 ]
 ## The screen's rect as fractions of the view: centred, 70% wide, unrolled down to 88% of the height;
 ## SCREEN_WIDE once the desk card BIG_IDEAS is stamped (screen_for): nearly the whole view, the

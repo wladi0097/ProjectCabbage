@@ -5,7 +5,10 @@ extends Node3D
 ## the map, hop toy-like while they walk, face what they go for, lunge when they strike and tip over
 ## on their base's back edge when they fall. Turrets turn toward the nearest figure in range and
 ## recoil on a shot; every shot throws a small physics cabbage from the Muzzle along an arc timed to
-## the shot's travel (pooled, at most MAX_SHOTS; they lie on the board until clear()); splash shots,
+## the shot's travel (pooled, at most MAX_SHOTS; they lie on the board until clear()), but the mortar
+## lobs a dark shell high, its shadow growing and a pencil circle (its splash) drawing in where it
+## comes down, and lands in an impact (shock
+## ring, pencil edge, dust, graphite bits) exactly its splash wide; other splash shots,
 ## blasts and buildings going down raise a dust puff; a hit flashes and shakes what it hit; a
 ## building at 0 HP shows its Rubble and its wall neighbours drop their arms toward it.
 ## Each kind its own way (research/war-units.md): the CCTV mast's head sweeps and fires rapid small
@@ -29,6 +32,13 @@ const FLASH := preload("res://entities/war/fight/hit_flash.tres")
 const STRIPS := preload("res://entities/war/fight/strips.tscn")
 const SPRAY := preload("res://entities/war/fight/spray.tscn")
 const DEBRIS := preload("res://entities/war/fight/debris.tscn")
+const SHELL := preload("res://entities/war/fight/mortar_shell.tscn")
+const IMPACT := preload("res://entities/war/fight/mortar_impact.tscn")
+## The mortar lobs its shell this many times the usual arc; its shadow on the paper grows from
+## SHADOW_FROM to SHADOW (x the splash radius) as it falls.
+const MORTAR_ARC := 3.2
+const SHADOW_FROM := 0.15
+const SHADOW := 0.6
 ## The soldier figures are built for 0.2 m cells; the map's are WarMap.CELL (their sizes to each
 ## other stay: the senior asset stays the big one).
 const FIGURE_SCALE := WarMap.CELL / 0.2
@@ -126,7 +136,8 @@ var _hop_from: Array[Vector2] = []
 var _time := 0.0
 ## Where each placed figure was set down (cell space; INF until the fight has it).
 var _from: Array[Vector2] = []
-## Cabbages in the air: {body, from, to, t, travel, height, splash, tower}.
+## Cabbages in the air: {body, from, to, t, travel, height, splash, tower}; a mortar shell has
+## radius (its impact's, m) instead of splash.
 var _flying: Array[Dictionary] = []
 ## Every cabbage thrown, oldest first (the pool).
 var _shots: Array[RigidBody3D] = []
@@ -419,6 +430,9 @@ func _event(fight: WarFight, e: Dictionary) -> void:
 	var by_tower: bool = e.by in WarFight.DEFENCES
 	if e.by != "cctv":  # The mast's rattle has no sound of its own yet.
 		_sound(("Cannon" if e.by == "cannon" else "Mortar") if by_tower else "Throw", from)
+	if e.by == "mortar":
+		_lob(from, to, float(e.travel), _metres(e.to, float(e.splash)))
+		return
 	var style: Dictionary = SHOT_STYLE.get(e.by, {})
 	_throw(from, to, float(e.travel), float(e.splash), by_tower, style.get("size", 1.0), style.get("arc", 1.0))
 
@@ -513,18 +527,48 @@ func _throw(from: Vector3, to: Vector3, travel: float, splash: float, tower := f
 			height = (ARC + ARC_PER_M * from.distance_to(to)) * arc, splash = splash, tower = tower})
 
 
+## Lobs the mortar's shell from `from` to `to` (MORTAR_ARC high, `travel` s): a dark round with its
+## shadow growing on the paper where it comes down, landing in an impact `radius` m wide (its splash).
+func _lob(from: Vector3, to: Vector3, travel: float, radius: float) -> void:
+	var shell: Node3D = SHELL.instantiate()
+	_shots_node.add_child(shell)
+	shell.global_position = from
+	_flying.append({body = shell, from = from, to = to, t = 0.0, travel = maxf(travel, 0.12),
+			height = (ARC + ARC_PER_M * from.distance_to(to)) * MORTAR_ARC, radius = radius, tower = true})
+
+
 func _fly(delta: float) -> void:
 	var still: Array[Dictionary] = []
 	for f in _flying:
 		f.t += delta
 		var k := minf(f.t / f.travel, 1.0)
-		var body: RigidBody3D = f.body
+		var body: Node3D = f.body
 		body.global_position = (f.from as Vector3).lerp(f.to, k) + Vector3.UP * f.height * 4.0 * k * (1.0 - k)
+		var ground: Vector3 = f.to - Vector3.UP * (SHOT_RADIUS - 0.001)
+		if f.has("radius"):  # The shell points along its way; its shadow grows where it falls.
+			var way: Vector3 = f.to - f.from + Vector3.UP * f.height * 4.0 * (1.0 - 2.0 * k)
+			if way.length() > 0.0001 and absf(way.normalized().y) < 0.99:
+				body.global_basis = Basis.looking_at(way)
+			var size: float = f.radius * lerpf(SHADOW_FROM, SHADOW, k)
+			var shadow: MeshInstance3D = body.get_node("Shadow")
+			shadow.global_transform = Transform3D(Basis.from_scale(Vector3(size, 1.0, size)), ground)
+			shadow.transparency = 0.6 * (1.0 - k)
+			var target: MeshInstance3D = body.get_node("Target")  # A pencil circle, the splash wide, drawn in as it falls.
+			target.global_transform = Transform3D(Basis.from_scale(Vector3(f.radius, 0.3, f.radius)), ground)
+			target.transparency = 1.0 - k
 		if k < 1.0:
 			still.append(f)
 			continue
-		body.freeze = false  # Landed: it rolls a little and lies there.
-		body.linear_velocity = ((f.to - f.from) - Vector3.UP * 4.0 * f.height) / f.travel * KEEP_SPEED
+		if f.has("radius"):  # The shell goes up in its impact.
+			body.queue_free()
+			var impact: Node3D = IMPACT.instantiate()
+			impact.transform = _shots_node.global_transform.affine_inverse() * Transform3D(Basis.from_scale(Vector3.ONE * f.radius), ground)
+			_shots_node.add_child(impact)
+			_sound("Hit", f.to)
+			continue
+		var cabbage := body as RigidBody3D
+		cabbage.freeze = false  # Landed: it rolls a little and lies there.
+		cabbage.linear_velocity = ((f.to - f.from) - Vector3.UP * 4.0 * f.height) / f.travel * KEEP_SPEED
 		if f.splash > 0.0:
 			_puff(f.to, 1.0 + f.splash)
 		_sound("Hit" if f.tower else "Land", f.to)

@@ -123,7 +123,7 @@ static func create(card: Dictionary) -> UpgradeCard:
 
 func _fill(card: Dictionary) -> void:
 	id = card.id
-	price = card.price
+	price = card.get("price", 0)
 	currency = card.get("currency", "coins")
 	costs = UpgradeDesk.costs(card)
 	var is_wide := wide(costs)
@@ -150,9 +150,14 @@ func _fill(card: Dictionary) -> void:
 	var text := TITLE_FONT.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * PIXEL
 	var width := price_width(shown, boxed, size)
 	var left := WIDE_RIGHT - WIDE_PAD - width if is_wide else PRICE_AT.x - width * 0.5
-	label.position.x = left + width - text * 0.5
-	icon.pixel_size = em * ICON_EM / ICON.get_height()
-	icon.position = Vector3(left + em * ICON_EM * 0.5, PRICE_AT.y, PRICE_AT.z)
+	var side := em * icon_em(boxed)
+	if icon.visible:
+		icon.texture = icon_of(boxed)
+		icon.pixel_size = side / icon.texture.get_height()
+	# The cabbage icon before the number; a bill of farms alone boxes their count, the farm icon after it.
+	var follows := icon_follows(boxed)
+	label.position.x = left + text * 0.5 if follows else left + width - text * 0.5
+	icon.position = Vector3(left + width - side * 0.5 if follows else left + side * 0.5, PRICE_AT.y, PRICE_AT.z)
 	# Left of the box (on wide paper: of the price), right to left: the other prices, then the farm
 	# icon and the farms' count.
 	var also := $Look/Also as Label3D
@@ -163,15 +168,15 @@ func _fill(card: Dictionary) -> void:
 	also.position.x = (left if is_wide else PRICE_AT.x - PRICE_WIDTH * 0.5) - ALSO_GAP
 	var count := $Look/Farms as Label3D
 	var farm_icon := $Look/FarmIcon as Sprite3D
-	count.visible = farms > 0
-	farm_icon.visible = farms > 0
-	var side := also.font_size * PIXEL * FARM_EM
+	count.visible = farms > 0 and boxed not in FARM_SIGNS
+	farm_icon.visible = count.visible
+	var barn := also.font_size * PIXEL * FARM_EM
 	var icon_right := also.position.x - TITLE_FONT.get_string_size(also.text + " ", HORIZONTAL_ALIGNMENT_LEFT, -1, also.font_size).x * PIXEL
-	farm_icon.pixel_size = side / FARM_ICON.get_height()
-	farm_icon.position = Vector3(icon_right - side * 0.5, PRICE_AT.y, PRICE_AT.z)
+	farm_icon.pixel_size = barn / FARM_ICON.get_height()
+	farm_icon.position = Vector3(icon_right - barn * 0.5, PRICE_AT.y, PRICE_AT.z)
 	count.text = str(farms)
 	count.font_size = also.font_size
-	count.position.x = icon_right - side * (1.0 + ICON_GAP)
+	count.position.x = icon_right - barn * (1.0 + ICON_GAP)
 
 
 ## Whether `bill` (UpgradeDesk.costs) has more than two price items (farms count as one): it prints on
@@ -182,10 +187,13 @@ static func wide(bill: Dictionary) -> bool:
 
 ## The currency whose price stands in the box (on wide paper: rightmost): `bill`'s last
 ## (UpgradeDesk.costs orders coins, Findings, units), so units, whose icon has no room on the line
-## beside it, are always the box's. `paid_in` (the card's currency) for a bill of farms alone.
+## beside it, are always the box's. A bill of farms alone (nothing spent) boxes the farms; an empty
+## one `paid_in` (the card's currency).
 static func boxed_in(bill: Dictionary, paid_in: String) -> String:
 	var keys := bill.keys().filter(func(each: String) -> bool: return each not in FARM_SIGNS)
-	return keys.back() if not keys.is_empty() else paid_in
+	if keys.is_empty():
+		return bill.keys().front() if not bill.is_empty() else paid_in
+	return keys.back()
 
 
 ## How wide `bill`'s whole row prints on wide paper at font size `size` (m): the farms, the other
@@ -209,10 +217,10 @@ static func wide_size(bill: Dictionary) -> int:
 ## (`bill`: UpgradeDesk.costs; "" for a card in one currency). Never units: they are always the box's
 ## (boxed_in).
 ## Farms the card needs are not in it: their count and icon stand before it, and it starts with
-## their "+" ("+ $2.5M +", or "+" alone).
+## their "+" ("+ $2.5M +", or "+" alone; nothing for farms alone, which stand in the box).
 static func also_text(bill: Dictionary, paid_in: String) -> String:
 	var parts := PackedStringArray()
-	if farms_of(bill) > 0:
+	if farms_of(bill) > 0 and bill.size() > 1:  # Farms alone stand in the box (boxed_in): no "+".
 		parts.append("+")
 	for other: String in bill:
 		if other != paid_in and other not in FARM_SIGNS:

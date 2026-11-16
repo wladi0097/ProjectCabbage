@@ -64,19 +64,20 @@ func _vo_won(id: String, army: Dictionary, use: Array, research := PackedStringA
 func test_the_last_neighbour_takes_four_associates_and_three_with_body_armour() -> void:
 	assert_bool(_vo_won("K-8", {field_associate = 4}, [0, 1])).is_true()
 	assert_bool(_vo_won("K-8", {field_associate = 3}, [0, 1])).is_false()
-	assert_bool(_vo_won("K-8", {field_associate = 3}, [0], PackedStringArray(["fa_hp_1"]))).is_true()
+	assert_bool(_vo_won("K-8", {field_associate = 3}, [0], PackedStringArray(["fa_hp_0", "fa_hp_1"]))).is_true()
 
 
+## BODY ARMOUR is two steps since the split (fa_hp_0, fa_hp_1): +30% HP as before.
 func test_the_gated_community_opens_at_the_garden_gate_or_with_a_charge_at_the_front() -> void:
 	assert_bool(_vo_won("veldmark-1", {field_associate = 4}, [1])).is_true()
 	assert_bool(_vo_won("veldmark-1", {field_associate = 4}, [0])).is_false()
-	assert_bool(_vo_won("veldmark-1", {field_associate = 4}, [0], PackedStringArray(["fa_hp_1"]))).is_false()
+	assert_bool(_vo_won("veldmark-1", {field_associate = 4}, [0], PackedStringArray(["fa_hp_0", "fa_hp_1"]))).is_false()
 	# With BODY ARMOUR, three at the front and a charge set apart from them (a mailing crate meant
 	# for the crowd would take it on the way) open the masonry where the player wants it.
 	var map: WarMap = auto_free(load(WarMap.MAPS + "veldmark-1.tscn").instantiate())
 	var plan := [{unit = "field_associate", pos = Vector2(1.5, 4.75)}, {unit = "field_associate", pos = Vector2(1.5, 5.25)},
 			{unit = "field_associate", pos = Vector2(1.5, 5.75)}, {unit = "restructuring_charge", pos = Vector2(0.5, 7.5)}]
-	assert_bool(BattleSim.run(map.layout(), map.grid_size, plan, PackedStringArray(["fa_hp_1"])).won).is_true()
+	assert_bool(BattleSim.run(map.layout(), map.grid_size, plan, PackedStringArray(["fa_hp_0", "fa_hp_1"])).won).is_true()
 
 
 func test_visitor_management_falls_from_the_top_strip_and_watches_the_long_walk_to_death() -> void:

@@ -59,13 +59,13 @@ mesh = ExtResource("2_body")
 transform = Transform3D(1.4, 0, 0, 0, 1.3776, -0.2497, 0, 0.2497, 1.3776, 0, 0.0966, 0)
 
 [node name="StartCap" type="MeshInstance3D" parent="Panel"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.039, 0.003, 0.049)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.003, 0.049)
 gi_mode = 0
 mesh = ExtResource("3_start")
 surface_material_override/0 = SubResource("StartLens")
 
 [node name="AbortCap" type="MeshInstance3D" parent="Panel"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.039, 0.003, 0.049)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.003, 0.184)
 gi_mode = 0
 mesh = ExtResource("4_abort")
 surface_material_override/0 = SubResource("AbortLens")
@@ -117,7 +117,7 @@ font_size = 128
 outline_size = 0
 
 [node name="StartPlate" type="Label3D" parent="Panel"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.039, 0.0068, 0.111)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0068, 0.111)
 pixel_size = 0.00036
 modulate = Color(0.78, 0.76, 0.68, 1)
 shaded = false
@@ -127,7 +127,7 @@ font_size = 64
 outline_size = 0
 
 [node name="AbortPlate" type="Label3D" parent="Panel"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.039, 0.0068, 0.111)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0068, 0.246)
 pixel_size = 0.00036
 modulate = Color(0.78, 0.76, 0.68, 1)
 shaded = false
@@ -151,11 +151,11 @@ collision_layer = 0
 collision_mask = 0
 
 [node name="Start" type="CollisionShape3D" parent="Panel/Hits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.039, 0.01, 0.049)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0.049)
 shape = SubResource("StartHit")
 
 [node name="Abort" type="CollisionShape3D" parent="Panel/Hits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.039, 0.01, 0.049)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0.184)
 shape = SubResource("AbortHit")
 
 [node name="Press" type="AudioStreamPlayer3D" parent="."]

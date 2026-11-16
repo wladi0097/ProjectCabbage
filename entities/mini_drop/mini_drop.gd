@@ -15,8 +15,8 @@ extends Node3D
 ## QA bay's mouth as if thrown in, or are thrown back onto the mat if it is full (QaBay.file_direct); SPLIT alternates, counted like SaleWindow._owed. The lever is dragged
 ## left/right, or clicked to step to the next position. FIELD THINNING PROGRAMME (mini_thinning): every
 ## farm harvest (save.farm_harvests going up) also sends one mini, queued THIN_GAP apart; at most
-## MAX_MINIS wait in the queue (harvests past that are skipped) and the queue waits while MAX_MINIS
-## thinning minis are out. The timed drop has its own MAX_MINIS, so the two add up (minis_out). The growing station (mini_station, entities/growing_station/) sits on the intake:
+## save.thinning_cap wait in the queue (harvests past that are skipped) and the queue waits while that
+## many thinning minis are out (MAX_MINIS, raised by the farm tree's THINNING QUOTA nodes). The timed drop has its own MAX_MINIS, so the two add up (minis_out). The growing station (mini_station, entities/growing_station/) sits on the intake:
 ## out of sight in the tube, a mini passing it may grow into a full-size unit (GrowingStation.grows).
 ## Built in world space: the node stays at the world origin.
 
@@ -148,12 +148,12 @@ func _send_one(thinned: bool) -> void:
 ## FIELD THINNING PROGRAMME: new farm harvests queue minis, sent THIN_GAP apart while there is room.
 func _thin(delta: float) -> void:
 	var save := SaveManager.save
-	_thinned = thinned_after(_thinned, save.farm_harvests - _harvests_seen, save.stamped.has("mini_thinning"))
+	_thinned = thinned_after(_thinned, save.farm_harvests - _harvests_seen, save.stamped.has("mini_thinning"), save.thinning_cap)
 	_harvests_seen = save.farm_harvests
 	_thin_wait -= delta
 	if _thinned <= 0 or _thin_wait > 0.0:
 		return
-	if minis_out(get_tree().get_nodes_in_group(&"cabbages"), true) >= MAX_MINIS:
+	if minis_out(get_tree().get_nodes_in_group(&"cabbages"), true) >= save.thinning_cap:
 		return
 	_thinned -= 1
 	_thin_wait = THIN_GAP
@@ -161,15 +161,15 @@ func _thin(delta: float) -> void:
 
 
 ## The thinning queue after `harvests` new farm harvests on top of `queued` (`on`: the card is
-## stamped): one mini each, MAX_MINIS at most (the rest are skipped); nothing without the card.
-static func thinned_after(queued: int, harvests: int, on: bool) -> int:
-	return mini(queued + maxi(harvests, 0), MAX_MINIS) if on else 0
+## stamped): one mini each, `cap` at most (save.thinning_cap; the rest are skipped); nothing without the card.
+static func thinned_after(queued: int, harvests: int, on: bool, cap := MAX_MINIS) -> int:
+	return mini(queued + maxi(harvests, 0), cap) if on else 0
 
 
 ## Minis on the desk or on their way (not sold yet), of one pool: the FIELD THINNING ones
-## (`thinned`, group THINNED) or the timed ones. Each pool has its own MAX_MINIS, so the thinning
+## (`thinned`, group THINNED) or the timed ones. Each pool has its own cap (thinning: save.thinning_cap), so the thinning
 ## card's harvest minis never crowd out the timed drop the projector's MINIATURISATION and
-## PNEUMATIC PRESSURE nodes speed up: the two stack (at most 2 x MAX_MINIS minis out).
+## PNEUMATIC PRESSURE nodes speed up: the two stack (at most MAX_MINIS + save.thinning_cap minis out).
 static func minis_out(cabbages: Array, thinned: bool) -> int:
 	var count := 0
 	for cabbage: Cabbage in cabbages:

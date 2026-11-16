@@ -44,6 +44,10 @@ const STAMP_AFTER := 0.3
 const STAMP_SCALE := 2.4
 const STAMP_TIME := 0.12
 const DIP := 0.012
+## FILE REPORT hovered: its dark ink and box go oxblood (the ink times this).
+const HOT := Color(3.6, 1.4, 1.3)
+## The page's pixels per metre (1 px = 1 mm).
+const PAGE_PER_METRE := 1000.0
 
 ## Filed by a click: the grade is on the paper and it has not been filed yet.
 var waiting := false
@@ -54,6 +58,7 @@ var _moving: Tween
 @onready var _staff: Control = $Page/Form/Staff
 @onready var _row: Control = $Page/Form/Staff/Row
 @onready var _grade: Control = $Page/Form/Grade
+@onready var _file_box: Control = $Page/Form/File
 @onready var _slide_sound: SoundCue = $Slide
 @onready var _strike_sound: SoundCue = $Strike
 
@@ -171,10 +176,25 @@ func file() -> bool:
 	return true
 
 
+## Whether the ray from `from` along `dir` (global) hits FILE REPORT while it waits to be filed.
+func on_file(from: Vector3, dir: Vector3) -> bool:
+	var hit: Variant = Plane(global_basis.y.normalized(), global_position).intersects_ray(from, dir)
+	if not waiting or hit == null:
+		return false
+	var local := to_local(hit as Vector3)
+	return _file_box.get_rect().has_point(Vector2(local.x + SIZE.x / 2.0, local.z) * PAGE_PER_METRE)
+
+
+## FILE REPORT lit (`on`: the mouse is on it) or not.
+func hover(on: bool) -> void:
+	_file_box.modulate = HOT if on else Color.WHITE
+
+
 ## Gone at once.
 func put_away() -> void:
 	_still()
 	waiting = false
+	hover(false)
 	hide()
 	_page.render_target_update_mode = SubViewport.UPDATE_DISABLED
 

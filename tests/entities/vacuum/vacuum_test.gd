@@ -208,3 +208,37 @@ func test_a_robot_set_down_on_a_cabbage_stays_soft_until_the_cabbage_is_gone() -
 	vacuums._settle(unit)
 
 	assert_int(unit.body.collision_layer).is_equal(CoinVacuums.SOLID_LAYER)
+
+
+func test_with_few_slips_on_the_mat_a_robot_takes_coins_and_slips_alike() -> void:
+	assert_int(CoinVacuums.trip_kind(5, 3, 4, false)).is_equal(CoinVacuums.Trip.MIXED)
+	assert_int(CoinVacuums.trip_kind(5, 3, 4, true)).is_equal(CoinVacuums.Trip.MIXED)
+
+
+func test_with_no_coins_on_the_mat_a_robot_takes_slips_as_before() -> void:
+	assert_int(CoinVacuums.trip_kind(0, 20, 4, false)).is_equal(CoinVacuums.Trip.MIXED)
+
+
+func test_with_a_full_bag_of_slips_and_coins_on_the_mat_a_robot_alternates_coin_and_slip_trips() -> void:
+	var last := false
+	var trips: Array[CoinVacuums.Trip] = []
+	for i in 4:
+		var trip := CoinVacuums.trip_kind(5, 4, 4, last)
+		trips.append(trip)
+		last = trip == CoinVacuums.Trip.COINS
+	assert_array(trips).is_equal([CoinVacuums.Trip.COINS, CoinVacuums.Trip.SLIPS, CoinVacuums.Trip.COINS, CoinVacuums.Trip.SLIPS])
+
+
+func test_robots_start_on_different_kinds_so_about_half_the_fleet_is_on_coins() -> void:
+	var on_coins := 0
+	for i in 6:
+		if CoinVacuums.trip_kind(5, 20, 4, CoinVacuums.starts_on_slips(i)) == CoinVacuums.Trip.COINS:
+			on_coins += 1
+	assert_int(on_coins).is_equal(3)
+	assert_bool(CoinVacuums.starts_on_slips(0)).is_not_equal(CoinVacuums.starts_on_slips(1))
+
+
+func test_a_robot_with_nothing_of_its_kind_on_the_mat_takes_the_other_kind() -> void:
+	assert_int(CoinVacuums.trip_goes_on(CoinVacuums.Trip.COINS, 0, 7)).is_equal(CoinVacuums.Trip.SLIPS)
+	assert_int(CoinVacuums.trip_goes_on(CoinVacuums.Trip.SLIPS, 3, 0)).is_equal(CoinVacuums.Trip.COINS)
+	assert_int(CoinVacuums.trip_goes_on(CoinVacuums.Trip.COINS, 2, 7)).is_equal(CoinVacuums.Trip.COINS)

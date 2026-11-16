@@ -365,15 +365,18 @@ func test_the_first_farm_brings_the_farm_paper_once() -> void:
 	assert_array(Report.due(save)).is_empty()
 
 
-func test_five_farms_bring_the_no_more_sellers_paper() -> void:
+func test_the_war_paper_comes_with_the_home_portfolio_review_stamp_not_with_the_fifth_farm() -> void:
 	var save := SaveGame.new()
 	save.reports = PackedStringArray(["welcome", "first_farm"])
-	save.farms_owned = PackedStringArray(["K-1", "K-2", "K-3", "K-4"])
-	assert_bool(Events.due("no_more_sellers", save)).is_false()
-	save.farms_owned.append("K-5")
+	save.farms_owned = PackedStringArray(["K-1", "K-2", "K-3", "K-4", "K-5"])
 	assert_int(Events.HOME_SELLERS).is_equal(5)
+	assert_bool(Events.due("no_more_sellers", save)).is_false()  # Five farms alone start nothing.
+	assert_array(Report.due(save)).is_empty()
+	save.stamped.append("home_review")
 	assert_array(Report.due(save)).is_equal(["no_more_sellers"])
-	assert_str(Report.report("no_more_sellers").body).contains("take what should be ours")
+	assert_str(Report.report("no_more_sellers").re).is_equal("THIS MEANS WAR")
+	assert_str(Report.report("no_more_sellers").body).contains("personnel depot")
+	assert_str(Report.report("no_more_sellers").body).contains("take what is ours")
 
 
 func test_wholesale_prices_never_explode_once_the_supply_console_is_gone() -> void:

@@ -123,14 +123,28 @@ func test_the_spoilage_memo_keeps_hands_off_rotten_units_until_they_bin_them() -
 	assert_bool(Associate.skips_rotten(save)).is_false()
 
 
-func test_after_the_quarantine_card_no_hand_touches_a_rotten_cabbage_not_even_to_bin_it() -> void:
+func test_the_quarantine_card_leaves_how_hands_treat_rotten_cabbages_unchanged() -> void:
+	for memo: bool in [false, true]:
+		for hands_bin: int in [0, 1]:
+			var save := SaveGame.new()
+			if memo:
+				save.stamped.append("spoilage_memo")
+			save.hands_bin = hands_bin
+			var unquarantined := Associate.skips_rotten(save)
+			save.stamped.append(Cabbage.SHIELD_CARD)
+			assert_bool(Associate.skips_rotten(save)).is_equal(unquarantined)
+
+
+func test_after_quarantine_and_the_memo_waste_handling_hands_still_bin_a_rotten_cabbage() -> void:
 	var save := SaveGame.new()
-	save.stamped.append(Cabbage.SHIELD_CARD)
-	save.hands_bin = 1  # WASTE HANDLING bought: still no hand takes one.
-	assert_bool(Associate.skips_rotten(save)).is_true()
+	save.stamped.append_array([Cabbage.SHIELD_CARD, "spoilage_memo"])
 	var rotten := _cabbage(Vector3(1.1, 0.87, 1.0), true)
-	for for_research: bool in [false, true]:
-		assert_object(Associate.pick_target([rotten], ENTRY, null, [], Associate.skips_rotten(save), for_research)).is_null()
+	assert_object(Associate.pick_target([rotten], ENTRY, null, [], Associate.skips_rotten(save))).is_null()
+
+	save.hands_bin = 1
+	assert_object(Associate.pick_target([rotten], ENTRY, null, [], Associate.skips_rotten(save))).is_same(rotten)
+	var bin := auto_free(RottenBin.new()) as RottenBin
+	assert_object(Associate.bin_for(rotten, save.hands_bin, bin)).is_same(bin)
 
 
 func test_a_research_hand_never_takes_a_rotten_unit() -> void:

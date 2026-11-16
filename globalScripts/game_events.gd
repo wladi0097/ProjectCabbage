@@ -57,11 +57,12 @@ const EVENTS := {
 	## The TV's channel 1 lets the player make one of their fields a farm square (entities/farm_screen/).
 	first_farm = {farms = 1, report = {re = "A FARM HAS BEEN ACQUIRED",
 		body = "The company now owns a farm it has never seen. To keep a clean overview, check the TV, channel 1: green arrows mark your fields. Click one to upgrade it to a farm. It will produce accordingly. One field for every farm we own. Head office likes to see on a screen what is ours."}},
-	## Chapter 3: HOME_SELLERS farms owned, and nobody at home sells any more. War starts from here:
-	## the paper deals the war card (UpgradeDesk "war_mode", `event`); with it the other home farms,
-	## and later every farm abroad, are taken by war, one at a time (FarmRegister.war_ready).
-	no_more_sellers = {farms = HOME_SELLERS, report = {re = "THEY WILL NOT SELL ANY MORE",
-		body = "The remaining owners have stopped answering our offers. Five farms, and they call it enough. It is not enough. They will not sell any more, so we will take what should be ours. The authorisation is in your tray. Your maps will be extended beyond the border in due course."}},
+	## Chapter 3: the HOME PORTFOLIO REVIEW card is stamped (UpgradeDesk "home_review": HOME_SELLERS farms
+	## owned, nothing spent), and nobody at home sells any more. War starts from here: the paper deals the
+	## war card (UpgradeDesk "war_mode", `event`), which sets up the personnel depot; with it the other
+	## home farms, and later every farm abroad, are taken by war, one at a time (FarmRegister.war_ready).
+	no_more_sellers = {card = "home_review", report = {re = "THIS MEANS WAR",
+		body = "The remaining owners have stopped answering our offers. The board has reviewed the matter. This means war. The authorisation is in your tray. Once it is stamped, a personnel depot is set up at your map table. Build an army there and take what is ours. Your maps will be extended beyond the border in due course."}},
 	## Chapter 3: every farm site of the home country is owned (`home_farms`: home_farms(save), the
 	## country sheet's HOME_SITES sites, not just any 8 farms). The country is ours: we make the laws
 	## (UpgradeDesk "no_taxes" needs the same farms).

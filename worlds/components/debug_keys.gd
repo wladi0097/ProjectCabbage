@@ -5,8 +5,8 @@ extends Node
 ## 4 takes the camera to chapter 3's map table and back (MapTable.toggle_view; nothing before
 ## chapter 3): the shortcut for the FieldLine's handset.
 ## 5 gives the company one more farm for free (save.farms_owned, up to GameEvents.FARMS), the home
-## sites not yet bought on the map first: the first brings the "first_farm" paper, the fifth
-## "no_more_sellers", the eighth (every home site) "home_country"; then the farms abroad, nearest
+## sites not yet bought on the map first: the first brings the "first_farm" paper, the fifth lets
+## HOME PORTFOLIO REVIEW be stamped (its stamp brings "no_more_sellers"), the eighth (every home site) "home_country"; then the farms abroad, nearest
 ## country first (WorldRegister.next_farm: a country turns green on the world sheet with its last).
 
 const SALES := {KEY_1: 10, KEY_2: 100}

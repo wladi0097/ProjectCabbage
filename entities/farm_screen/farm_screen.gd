@@ -56,6 +56,15 @@ const ROT_AFTER := 180.0
 const THUMB_CARD := "green_thumb"
 ## The CH2 node that lets farm squares grow golden (sow): until it is bought only plain squares roll.
 const FARM_GOLD := "farm_gold"
+## The CH2 nodes that let the workers onto farm squares (can_work): until bought, farm hands never
+## sow one and tractors never harvest one (the player still can by hand).
+const PLANT_PERMIT := "estate_permit"
+const HARVEST_LICENCE := "estate_licence"
+## The CH2 node that lets farm hands clear a rotten square (and sow the seed they carry in it).
+const COMPOST := "compost_detail"
+## The CH2 node under ONE IN, ONE OUT: every hand pull of a farm square puts one seed back, not
+## only the last one that empties it (harvest).
+const FARM_REPLANT := "farm_replant"
 ## A hand harvest's readout: "+N" rising POP_RISE px over POP_TIME s from the square.
 const POP_TIME := 1.1
 const POP_RISE := 60.0
@@ -179,15 +188,15 @@ const TRACTOR_SPRITES: Array[Texture2D] = [preload("res://assets/sprites/farm/tr
 const WORKER_PIXEL := 3.0
 const TRACTOR_PIXEL := 5.0
 const WALK_STEP := 16.0
-## Worker slots of each kind (hands and tractors, up to 3 each): a hut per hand in the yard's top
-## right, two in a row and the third under them (HUT_SPRITE, HUT_LIT while its hand is in, at
-## HUT_PIXEL: 80 px, a tractor's size), a parking bay (BAY px, open to the field) per tractor stacked
-## down its left side. The AUTO SEED switch (the scene's AutoSeed, a lever sprite per state) sits under the huts.
-const SLOTS := 3
+## Worker slots of each kind (hands and tractors, up to 5 each): a hut per hand in the yard's top
+## right, three in a row and the other two under them (HUT_SPRITE, HUT_LIT while its hand is in, at
+## HUT_PIXEL: 80 px, a tractor's size), a parking bay (BAY px, open to the field) per tractor in two
+## columns down its left side. The AUTO SEED switch (the scene's AutoSeed, a lever sprite per state) sits under the huts.
+const SLOTS := 5
 const HUT_SPRITE: Texture2D = preload("res://assets/sprites/farm/hut.svg")
 const HUT_LIT: Texture2D = preload("res://assets/sprites/farm/hut_lit.svg")
 const HUT_PIXEL := 5.0
-const BAY := Vector2(116, 108)
+const BAY := Vector2(96, 96)
 ## Unbought huts and bays: drawn at this alpha.
 const FAINT := 0.2
 ## A farm hand's target while it goes to the seed crate (squares are 0 and up, -1 is none).
@@ -198,11 +207,11 @@ const CABBAGE := Color(0.48, 0.75, 0.26)
 const GOLD := Color(0.86, 0.76, 0.45)
 const ROT := Color(0.42, 0.38, 0.3)
 ## Kept ~36 px off the edges: the CRT glass warps the corners (FarmTv.WARP). The field is the left
-## 3/4, the yard the right 1/4: the workers' huts and bays in its top, the seed box at its bottom with
-## the seed pack buttons (the scene's Packs) under it.
-const FIELD := Rect2(36, 80, 1080, 620)
-const YARD := Rect2(1134, 80, 342, 620)
-const SEED_BOX := Rect2(1134, 486, 342, 140)
+## ~2/3 (just wide enough for its squares), the yard the rest: the workers' huts and bays in its top,
+## the seed box centred at its bottom with the seed pack buttons (the scene's Packs) under it.
+const FIELD := Rect2(36, 80, 940, 620)
+const YARD := Rect2(992, 80, 484, 620)
+const SEED_BOX := Rect2(1063, 486, 342, 140)
 const GAP := 8.0
 
 
@@ -649,7 +658,8 @@ static func place_farm(save: SaveGame, i: int) -> bool:
 ## ripe and its cabbages fit under save.storage_cap: they go into stock
 ## (into save.golden_stock too from a golden batch). Returns how many (0 if not ripe or storage is
 ## full; the square stays ripe). A farm square's other seeds stay and keep growing. Pulled `by_hand` (the player's pull, never a
-## tractor) it yields harvest_yield, and with hand_replant a seed from the crate goes straight back in.
+## tractor) it yields harvest_yield, and with hand_replant a seed from the crate goes straight back in (a farm
+## square only on the pull that empties it, or on every pull with FARM_REPLANT).
 ## The first harvest records its farm_seconds
 ## (save.farm_first_harvest).
 static func harvest(save: SaveGame, i: int, by_hand := false) -> int:
@@ -678,7 +688,9 @@ static func harvest(save: SaveGame, i: int, by_hand := false) -> int:
 		save.tractor_harvested += units
 	if save.farm_first_harvest < 0.0:
 		save.farm_first_harvest = save.farm_seconds
-	if by_hand and save.hand_replant > 0 and plant(save, i):
+	# A farm square: one seed back on the pull that empties it, or on every pull with FARM_REPLANT.
+	var replant := at < 0 or save.farm_bought.has(FARM_REPLANT) or save.farm_seed_clocks[at].is_empty()
+	if by_hand and save.hand_replant > 0 and replant and plant(save, i):
 		save.hand_planted += 1
 	return units
 
@@ -690,11 +702,15 @@ static func storage_room(save: SaveGame, by_hand := false, i := -1) -> bool:
 
 ## Whether a worker could do its job on open square `i` now: a farm hand plants an empty square
 ## or a farm square with a slot free (with a seed it carries), a tractor harvests a ripe one (a farm
-## square as soon as one of its batches is ripe; with storage room for a batch).
+## square as soon as one of its batches is ripe; with storage room for a batch). Farm squares only
+## with CH2's PLANT_PERMIT (hands) / HARVEST_LICENCE (tractors); with COMPOST a hand also takes a
+## rotten square (clears it and sows there, _finish).
 static func can_work(save: SaveGame, tractor: bool, i: int) -> bool:
+	if is_farm(save, i) and not save.farm_bought.has(HARVEST_LICENCE if tractor else PLANT_PERMIT):
+		return false
 	if tractor:
 		return save.farm_growth[i] >= 0.0 and is_ripe(save, i) and storage_room(save, false, i)
-	return can_sow(save, i)
+	return can_sow(save, i) or (save.farm_growth[i] == ROTTEN and save.farm_bought.has(COMPOST))
 
 
 ## The square a worker heads for next (-1: no job anywhere, it goes home and waits). Route 0: any
@@ -723,14 +739,15 @@ static func home(tractor: bool, n: int) -> Vector2:
 	return hut_rect(n).position + Vector2(10, 12.5) * HUT_PIXEL
 
 
-## Tractor `n`'s parking bay, stacked down the yard's left side under its YARD heading.
+## Tractor `n`'s parking bay down the yard's left side under its YARD heading: bays 0-2 stacked in
+## the first column, 3 and 4 in the second.
 static func bay_rect(n: int) -> Rect2:
-	return Rect2(YARD.position + Vector2(10, 34 + n * (BAY.y + 8)), BAY)
+	return Rect2(YARD.position + Vector2(10 + floori(n / 3.0) * (BAY.x + 6), 34 + n % 3 * (BAY.y + 6)), BAY)
 
 
-## Farm hand `n`'s hut in the yard's top right: huts 0 and 1 side by side, hut 2 centred under them.
+## Farm hand `n`'s hut in the yard's top right: huts 0-2 in a row, 3 and 4 centred under them.
 static func hut_rect(n: int) -> Rect2:
-	var at := Vector2(190, 114) if n == 2 else Vector2(140 + n * 100, 30)
+	var at := Vector2(220 + n * 88, 30) if n < 3 else Vector2(264 + (n - 3) * 88, 114)
 	return Rect2(YARD.position + at, HUT_SPRITE.get_size() * HUT_PIXEL)
 
 
@@ -872,6 +889,8 @@ static func stay(save: SaveGame, i: int) -> float:
 ## Worker `w`'s job on its square is done: plant or harvest it (a tractor on a farm square: one
 ## batch, and it stays for the next while one is left and fits), then on to the next or home.
 static func _finish(w: Worker, save: SaveGame) -> void:
+	if not w.tractor and save.farm_bought.has(COMPOST):
+		clear_rot(save, w.target)
 	var done := harvest(save, w.target) > 0 if w.tractor else sow(save, w.target)
 	if done and w.tractor and can_work(save, true, w.target):
 		w.busy = w.batch

@@ -65,7 +65,8 @@ const COUNT_COLOURS: Array[Color] = [
 ## a short toss lands by then).
 const BIN_GRACE := 1.0
 ## With no carry weight (save.carry_weight 0) a held unit keeps up with the hand, up to this speed (m/s).
-const FREE_SPEED := 14.0
+## 11.2: 20% under the first 14, which the user found too hardcore (2026-11-16); still 2x max_speed.
+const FREE_SPEED := 11.2
 ## A flying unit touching something with its centre this high or lower has landed. The desk top is
 ## at 0.76, so the biggest unit lies on it at 0.88 (tools/_combo_probe.gd saw desk landings at
 ## 0.84-0.90); the chute's lip grazes a unit at 1.06 as it is flung.
@@ -78,7 +79,7 @@ const REST_TIME := 0.3
 ## no throw or roll knocks a rotten one out of the window. Everything else (desk, walls, the hands,
 ## the player, other rotten ones) it still meets as before; its layers and mass never change.
 const SHIELD_CARD := "rotten_shield"
-## A rotten one left on the desk bursts after FUSE seconds (held by the hand the count pauses; binned
+## A rotten one left on the desk bursts after FUSE seconds (held by any hand the count pauses; binned
 ## or sold it never bursts): a grey-green puff (ROT_PUFF) and the same fine as selling it
 ## (SaleWindow.fine). Its last SWELL_FROM seconds it swells up to SWELL bigger and shakes harder
 ## (shake_at), its last QUIVER_FROM seconds a fast quiver.
@@ -336,9 +337,10 @@ func _physics_process(delta: float) -> void:
 		linear_velocity = carry_velocity(linear_velocity, target - global_position, delta, follow, max_accel, max_speed)
 
 
-## Its fuse is burning: rotten, out on the desk and not in the player's hand.
+## Its fuse is burning: rotten, out on the desk and in nobody's hand (the player's, or a hired hand
+## carrying it to the bin: frozen, like rolling down the ramp or being pulled into the bin).
 func burning() -> bool:
-	return rotten and not sold and not away and not _held
+	return rotten and not sold and not away and not _held and not freeze
 
 
 ## A rotten one on the desk burns `delta` of its fuse: in the last SWELL_FROM seconds it swells and

@@ -293,9 +293,9 @@ func test_each_units_research_hangs_off_its_own_department() -> void:
 		assert_str(node.parent).override_failure_message(node.id).is_equal(parent)
 	assert_int(DepotResearch.DEPTS.size()).is_equal(Depot.IN_SERVICE.size())
 	# A root is reachable as soon as its unit is hired; it never asks for its department.
-	assert_bool(DepotResearch.is_reachable("fa_hp_1", SaveManager.save)).is_true()
-	assert_array(DepotResearch.requirement("fa_hp_1", SaveManager.save)).is_empty()
-	assert_bool(DepotResearch.is_reachable("sa_hp_1", SaveManager.save)).is_false()  # Not hired.
+	assert_bool(DepotResearch.is_reachable("fa_hp_0", SaveManager.save)).is_true()
+	assert_array(DepotResearch.requirement("fa_hp_0", SaveManager.save)).is_empty()
+	assert_bool(DepotResearch.is_reachable("sa_hp_0", SaveManager.save)).is_false()  # Not hired.
 
 
 func test_the_research_is_an_org_chart_hub_on_top_plates_in_a_row_in_column_order_and_each_units_nodes_below_its_plate() -> void:
@@ -348,8 +348,8 @@ func test_every_node_plate_and_title_fits_the_research_box_at_home_without_meeti
 
 func test_a_unit_with_research_it_can_buy_carries_a_mark_on_its_column() -> void:
 	SaveManager.save.stamped.append("unit_senior")
-	SaveManager.save.findings = DepotResearch.price_of("fa_hp_1", SaveManager.save)
-	SaveManager.save.unit_research.append_array(["sa_hp_1", "sa_damage_1", "sa_speed_1", "sa_hp_2"])
+	SaveManager.save.findings = DepotResearch.price_of("fa_hp_0", SaveManager.save)
+	SaveManager.save.unit_research.append_array(["sa_hp_0", "sa_hp_1", "sa_damage_1", "sa_speed_1", "sa_hp_2"])
 	var sheet := _sheet()
 	assert_bool(DepotSheet.has_news(SaveManager.save, "field_associate")).is_true()
 	assert_bool(sheet._columns["field_associate"].get_node("News").visible).is_true()
@@ -399,18 +399,18 @@ func test_research_is_bought_on_the_shared_upgrade_tree_by_holding_parent_first_
 	var tree := sheet.get_node("Page/Sheet/Tree") as UpgradeTree
 	assert_object(tree.rules).is_same(DepotResearch)
 	var findings := SaveManager.save.findings
-	assert_bool(DepotResearch.can_hold("fa_damage_1", SaveManager.save)).is_false()  # Its parent first.
-	tree._holding = "fa_hp_1"
+	assert_bool(DepotResearch.can_hold("fa_hp_1", SaveManager.save)).is_false()  # Its parent first.
+	tree._holding = "fa_hp_0"
 	tree._process(UpgradeTree.HOLD_TIME + 0.01)
-	assert_bool(SaveManager.save.unit_research.has("fa_hp_1")).is_true()
-	assert_int(SaveManager.save.findings).is_equal(findings - DepotResearch.price_of("fa_hp_1", SaveManager.save))
+	assert_bool(SaveManager.save.unit_research.has("fa_hp_0")).is_true()
+	assert_int(SaveManager.save.findings).is_equal(findings - DepotResearch.price_of("fa_hp_0", SaveManager.save))
 	assert_bool((sheet.get_node("Research") as SoundCue).playing).is_true()
-	assert_bool(DepotResearch.can_hold("fa_damage_1", SaveManager.save)).is_true()
+	assert_bool(DepotResearch.can_hold("fa_hp_1", SaveManager.save)).is_true()
 
 
 func test_short_of_findings_a_research_node_cannot_be_bought() -> void:
 	SaveManager.save.findings = 0
-	assert_bool(DepotResearch.buy("fa_hp_1", SaveManager.save)).is_false()
+	assert_bool(DepotResearch.buy("fa_hp_0", SaveManager.save)).is_false()
 	assert_bool(SaveManager.save.unit_research.is_empty()).is_true()
 
 

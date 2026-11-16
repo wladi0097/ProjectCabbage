@@ -382,7 +382,7 @@ func test_survivors_of_a_won_war_go_back_into_the_army_and_the_farm_is_ours() ->
 	assert_int(SaveManager.save.army[FA]).is_equal(survivors + 1)  # And the one never placed.
 	assert_dict(SaveManager.save.war_pending).is_empty()
 	assert_bool(SaveManager.save.farms_owned.has("K-6")).is_true()
-	assert_str(_text(sheet, "Imprint")).is_equal("VICTORY")
+	assert_bool((sheet.get_node("Page/Sheet/Imprint") as Label).visible).is_false()  # No victory stamp on the paper.
 	assert_bool(FarmRegister.lamp_held).is_true()  # The Field Line waits for the farm's moment.
 	assert_array(wanted).is_empty()
 	var report := _report_in(sheet, WarSheet.LEAVE_AFTER)
@@ -557,10 +557,12 @@ func test_every_structure_slip_is_german_in_german_and_fits_its_paper() -> void:
 		TranslationServer.set_locale(locale)
 		for kind: String in WarMap.DEBUT_KINDS:
 			slip.debut(kind)
-			for part: String in ["Title", "Line", "Body"]:
+			var said: Array = WarSlip.STRUCTURES[kind]
+			if locale == "de":
+				for key: String in said:
+					assert_str(tr(key)).override_failure_message(key).is_not_equal(key)
+			for part: String in ["Title"]:
 				var label := slip.get_node("Page/Form/" + part) as Label
-				if locale == "de":
-					assert_str(tr(label.text)).override_failure_message(label.text).is_not_equal(label.text)
 				var font := label.get_theme_font(&"font")
 				var size := label.get_theme_font_size(&"font_size")
 				var room := font.get_multiline_string_size(tr(label.text), HORIZONTAL_ALIGNMENT_LEFT, label.size.x, size) \
@@ -797,18 +799,18 @@ func test_an_overlay_over_the_war_puts_the_figure_held_back_and_gives_the_cursor
 	assert_vector(Vector2(holder.position.x, holder.position.z)).is_equal_approx(Vector2(from.x, from.z), Vector2.ONE * 0.001)
 
 
-## The duck's depth on bus `bus_name` (dB, cutoff Hz; 0 dB and no cutoff while switched off).
+## The duck's depth on bus `bus_name`: (dB down, dB more above its shelf; 0 while switched off).
 func _duck_on(bus_name: String) -> Vector2:
 	var bus := AudioServer.get_bus_index(bus_name)
-	var out := Vector2(0.0, INF)
+	var out := Vector2.ZERO
 	for i in AudioServer.get_bus_effect_count(bus):
 		var effect := AudioServer.get_bus_effect(bus, i)
 		if not AudioServer.is_bus_effect_enabled(bus, i):
 			continue
 		if effect is AudioEffectAmplify:
 			out.x = (effect as AudioEffectAmplify).volume_db
-		elif effect is AudioEffectLowPassFilter:
-			out.y = (effect as AudioEffectLowPassFilter).cutoff_hz
+		elif effect is AudioEffectHighShelfFilter:
+			out.y = 2.0 * linear_to_db((effect as AudioEffectHighShelfFilter).gain)  # The shelf's gain counts twice.
 	return out
 
 
@@ -819,7 +821,7 @@ func test_while_a_war_is_on_every_other_sound_sits_in_the_background_and_eases_b
 	assert_float(_duck_on("SFX").x).is_equal_approx(WarSheet.DUCK_DB / 2.0, 0.01)  # Easing in.
 	sheet._process(WarSheet.DUCK_IN / 2.0)
 	for bus_name: String in ["Music", "SFX"]:
-		assert_vector(_duck_on(bus_name)).is_equal_approx(Vector2(WarSheet.DUCK_DB, WarSheet.DUCK_HZ), Vector2(0.01, 1.0))
+		assert_vector(_duck_on(bus_name)).is_equal_approx(Vector2(WarSheet.DUCK_DB, WarSheet.MUFFLE_DB), Vector2(0.01, 0.01))
 	assert_float(_duck_on("War").x).is_equal(0.0)  # The war itself stays in front.
 	assert_array([AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Music")), AudioServer.get_bus_volume_db(AudioServer.get_bus_index("SFX"))]).is_equal(volumes)  # The sliders' volumes are left alone.
 	assert_bool(sheet.abort()).is_true()
@@ -827,7 +829,7 @@ func test_while_a_war_is_on_every_other_sound_sits_in_the_background_and_eases_b
 	assert_float(_duck_on("Music").x).is_equal_approx(WarSheet.DUCK_DB / 2.0, 0.01)  # Easing out.
 	sheet._process(WarSheet.DUCK_OUT / 2.0)
 	for bus_name: String in ["Music", "SFX"]:
-		assert_vector(_duck_on(bus_name)).is_equal(Vector2(0.0, INF))
+		assert_vector(_duck_on(bus_name)).is_equal(Vector2.ZERO)
 
 
 func test_a_war_cut_off_by_leaving_the_scene_gives_every_sound_back_at_once() -> void:
@@ -835,7 +837,7 @@ func test_a_war_cut_off_by_leaving_the_scene_gives_every_sound_back_at_once() ->
 	sheet._process(WarSheet.DUCK_IN)
 	assert_float(_duck_on("Music").x).is_equal_approx(WarSheet.DUCK_DB, 0.01)
 	remove_child(sheet)  # auto_free frees it.
-	assert_vector(_duck_on("Music")).is_equal(Vector2(0.0, INF))
+	assert_vector(_duck_on("Music")).is_equal(Vector2.ZERO)
 
 
 func test_every_war_sound_plays_on_the_war_bus() -> void:
@@ -844,3 +846,109 @@ func test_every_war_sound_plays_on_the_war_bus() -> void:
 	assert_int(players.size()).is_greater_equal(25)
 	for player: AudioStreamPlayer3D in players:
 		assert_str(player.bus).override_failure_message(str(sheet.get_path_to(player))).is_equal("War")
+
+
+func test_under_the_war_duck_desk_sounds_are_damped_but_still_heard() -> void:
+	var sheet := _sheet()
+	sheet._process(WarSheet.DUCK_IN)
+	for bus_name: String in ["Music", "SFX"]:
+		var bus := AudioServer.get_bus_index(bus_name)
+		for i in AudioServer.get_bus_effect_count(bus):
+			# A low-pass took a coin's clink 41 dB down (measured): only a shelf with a floor muffles.
+			assert_bool(AudioServer.get_bus_effect(bus, i) is AudioEffectLowPassFilter and AudioServer.is_bus_effect_enabled(bus, i)) \
+					.override_failure_message(bus_name).is_false()
+		var depth := _duck_on(bus_name)
+		assert_float(depth.x).is_equal_approx(-12.0, 0.01)  # Damped,
+		assert_float(depth.x + depth.y).is_greater_equal(-20.0)  # even the highest clink at most 20 dB down,
+		assert_float(depth.y).is_less(-3.0)  # and muffled.
+	assert_float(WarSheet.DUCK_HZ).is_equal(800.0)
+
+
+func test_no_boss_paper_comes_while_a_war_is_on_it_waits_until_the_sheet_has_left() -> void:
+	var sheet := _sheet()
+	BossReport.hold = 0.0
+	sheet._process(0.016)
+	assert_float(BossReport.hold).is_greater_equal(0.5)  # Held back the whole war.
+	assert_bool(sheet.abort()).is_true()
+	BossReport.hold = 0.0
+	sheet._process(0.016)
+	assert_float(BossReport.hold).is_equal(0.0)  # Left: the paper may come.
+
+
+func test_once_the_after_action_report_of_a_won_war_is_in_the_war_glove_gives_the_cursor_back() -> void:
+	_glove_gives_the_cursor_back("won")
+
+
+func test_once_the_after_action_report_of_a_retreat_is_in_the_war_glove_gives_the_cursor_back() -> void:
+	SaveManager.save.stamped.append("retreat")
+	_glove_gives_the_cursor_back("retreat")
+
+
+## The war ends `ending` ("won", "retreat") at the map: once its report is in, the glove is gone.
+func _glove_gives_the_cursor_back(ending: String) -> void:
+	var war := _war_at_map()
+	var glove: HandModel = war.get_node("Glove")
+	war.place(FA, 0)
+	if ending == "won":
+		war.place(FA, 0)
+		war.place(FA, 0)
+	war.start_fight()
+	war._process(0.016)
+	assert_bool(glove.visible).is_true()  # The glove during the fight.
+	if ending == "won":
+		_fight_for(war, 200.0)
+	else:
+		_fight_for(war, 0.5)
+		assert_bool(war.abort()).is_true()
+		war._process(0.0)
+	assert_bool(war.fight.state in [WarFight.State.WON, WarFight.State.LOST]).is_true()
+	_report_in(war, WarSheet.LOST_AFTER)
+	war._process(0.016)
+	assert_bool(glove.visible).is_false()
+	assert_bool(Hand.stand_in).is_false()  # The OS cursor is back.
+	_filed(war)
+	assert_bool(Hand.stand_in).is_false()
+
+
+func test_file_report_lights_under_the_mouse_once_the_grade_is_on() -> void:
+	var sheet := _sheet()
+	var report: WarReport = sheet.get_node("Report")
+	var box: Control = report.get_node("Page/Form/File")
+	report.lay(Vector3.ZERO)
+	report._moving.custom_step(WarReport.SLIDE_TIME + 0.01)  # In, the grade not landed yet.
+	var centre := box.get_rect().get_center() / WarReport.PAGE_PER_METRE
+	var on_box := report.global_transform * Vector3(centre.x - WarReport.SIZE.x / 2.0, 0.0, centre.y)
+	var up := report.global_basis.y.normalized()
+	assert_bool(report.on_file(on_box + up, -up)).is_false()  # Not before the grade has landed.
+	report._moving.custom_step(10.0)
+	assert_bool(report.on_file(on_box + up, -up)).is_true()
+	var top := report.global_transform * Vector3(0.0, 0.0, 0.1)
+	assert_bool(report.on_file(top + up, -up)).is_false()
+	report.hover(true)
+	assert_object(box.modulate).is_equal(WarReport.HOT)
+	report.put_away()
+	assert_object(box.modulate).is_equal(Color.WHITE)
+
+
+func test_a_new_structure_slip_bears_only_its_name_and_hovered_shows_its_card() -> void:
+	_owning(6)
+	var sheet := _sheet({field_associate = 1}, &"K-8")  # K-7's map: the first tower.
+	sheet._laying.custom_step(10.0)
+	assert_array(Array(sheet._slip.words()).slice(1, 4)).is_equal(["SUPERVISOR'S TOWER", "", ""])  # Only its name.
+	var slip_middle := WarSheet.pixel_of(sheet._slip.position + Vector3(0.0, 0.0, WarSlip.SIZE.y / 2.0))
+	assert_bool(sheet.on_slip(slip_middle)).is_true()
+	assert_bool(sheet.on_slip(WarSheet.pixel_of_cell(Vector2(5, 5)))).is_false()  # On the battlefield.
+	var note: Control = sheet.get_node("Note/Center")
+	sheet._show_note(true)
+	sheet._note_fade.custom_step(1.0)
+	assert_float(note.modulate.a).is_equal(1.0)
+	var paper: PaperNote = sheet.get_node("Note/Center/Paper")
+	assert_str(paper._title).is_equal("SUPERVISOR'S TOWER")
+	assert_str(paper._form).is_equal("NEW STRUCTURE ON SITE")
+	var card := WarSlip.card("cannon")
+	assert_str(card.body).is_equal("Someone is always watching. Occasionally, someone throws something.\n"
+			+ "Shoots the nearest figure within 6 squares and stays on it until it falls or walks away.")
+	assert_dict(UpgradeDesk.costs(card)).is_empty()  # Nothing to pay: no price box on it.
+	sheet.place(FA, 0)
+	assert_bool(sheet.start_fight()).is_true()
+	assert_bool(sheet.on_slip(slip_middle)).is_false()  # Started: the slip goes, and its card with it.

@@ -280,10 +280,10 @@ static func bin_for(target: Cabbage, hands_bin: int, bin: RottenBin) -> RottenBi
 	return bin if target.rotten and hands_bin > 0 and bin != null and bin.visible else null
 
 
-## Hands leave rotten units alone: the spoilage memo is stamped and they don't bin them yet, or the
-## quarantine card (Cabbage.SHIELD_CARD) is stamped: then no hand ever touches one, binning or not.
+## Hands leave rotten units alone: the spoilage memo is stamped and they don't bin them yet. The
+## quarantine card (Cabbage.SHIELD_CARD) changes nothing here: it only stops collisions.
 static func skips_rotten(save: SaveGame) -> bool:
-	return save.stamped.has(Cabbage.SHIELD_CARD) or (save.stamped.has("spoilage_memo") and save.hands_bin == 0)
+	return save.stamped.has("spoilage_memo") and save.hands_bin == 0
 
 
 ## Hands of this kind may take golden units: their projector node (GOLD_SALE / GOLD_LAB) is bought.

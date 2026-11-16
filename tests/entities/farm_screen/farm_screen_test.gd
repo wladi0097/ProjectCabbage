@@ -777,16 +777,31 @@ func test_a_farm_hand_sent_away_puts_its_seeds_back_in_the_crate() -> void:
 	assert_int(save.farm_seeds).is_equal(FarmScreen.START_SEEDS + 2)
 
 
-func test_each_tractor_waits_in_its_own_parking_bay_stacked_down_the_yards_left_side() -> void:
+func test_each_tractor_waits_in_its_own_parking_bay_down_the_yards_left_side() -> void:
 	for n in FarmScreen.SLOTS:
 		var bay := FarmScreen.bay_rect(n)
 		assert_bool(FarmScreen.YARD.encloses(bay)).is_true()
 		assert_bool(bay.has_point(FarmScreen.home(true, n))).is_true()
 		assert_float(bay.position.x).is_less(FarmScreen.YARD.get_center().x)
+		assert_float(bay.end.y).is_less(FarmScreen.SEED_BOX.position.y - 12)  # Inside the yard's frame.
 		var tractor := Vector2.ONE * FarmScreen.PIXEL * FarmScreen.TRACTOR_PIXEL
 		assert_bool(bay.encloses(Rect2(bay.get_center() - tractor * 0.5, tractor))).is_true()
-		if n > 0:
-			assert_float(bay.position.y).is_greater_equal(FarmScreen.bay_rect(n - 1).end.y)
+		for other in n:
+			assert_bool(bay.intersects(FarmScreen.bay_rect(other))).override_failure_message("bay %d" % n).is_false()
+
+
+func test_the_yard_has_room_for_five_farm_hands_and_five_tractors_and_all_ten_go_to_work() -> void:
+	assert_int(FarmScreen.SLOTS).is_equal(5)
+	var save := _farm()
+	save.farm_hands = 5
+	save.farm_tractors = 5
+	var workers: Array[FarmScreen.Worker] = []
+	FarmScreen.sync_workers(workers, save)
+	assert_int(workers.size()).is_equal(10)
+	var homes := {}
+	for w in workers:
+		homes[FarmScreen.home(w.tractor, w.slot)] = true
+	assert_int(homes.size()).is_equal(10)  # Each in its own hut or bay.
 
 
 func test_each_farm_hand_lives_in_its_own_tractor_sized_hut_in_the_yards_top_right() -> void:
@@ -795,7 +810,8 @@ func test_each_farm_hand_lives_in_its_own_tractor_sized_hut_in_the_yards_top_rig
 		assert_bool(FarmScreen.YARD.encloses(hut)).is_true()
 		assert_bool(hut.has_point(FarmScreen.home(false, n))).is_true()
 		assert_float(hut.size.x).is_equal(FarmScreen.PIXEL * FarmScreen.TRACTOR_PIXEL)
-		assert_float(hut.position.x).is_greater_equal(FarmScreen.bay_rect(0).end.x)
+		for bay in FarmScreen.SLOTS:
+			assert_float(hut.position.x).is_greater_equal(FarmScreen.bay_rect(bay).end.x)
 		assert_float(hut.end.y).is_less(FarmScreen.SEED_BOX.position.y)
 		for other in n:
 			assert_bool(hut.intersects(FarmScreen.hut_rect(other))).is_false()
@@ -805,10 +821,11 @@ func test_the_auto_seed_switch_sits_in_the_yard_under_the_huts_clear_of_the_bays
 	var switch: Button = _screen(_farm()).get_node("AutoSeed")
 	var r := switch.get_rect()
 	assert_bool(FarmScreen.YARD.encloses(r)).is_true()
-	assert_float(r.position.x).is_greater_equal(FarmScreen.bay_rect(0).end.x)
-	assert_float(r.end.y).is_less(FarmScreen.SEED_BOX.position.y - 12)  # Inside the yard's frame.
+	# Clear of the yard frame's bottom line (SEED_BOX.position.y - 12) by a margin, not sitting on it.
+	assert_float(r.end.y).is_less_equal(FarmScreen.SEED_BOX.position.y - 12 - 24)
 	for n in FarmScreen.SLOTS:
-		assert_bool(r.intersects(FarmScreen.hut_rect(n))).is_false()
+		assert_float(r.position.x).is_greater_equal(FarmScreen.bay_rect(n).end.x)
+		assert_bool(r.grow(16).intersects(FarmScreen.hut_rect(n))).is_false()
 	# Its lever sprite is drawn at whole pixels: the button is exactly its face's size.
 	var on := switch.get_theme_stylebox("pressed") as StyleBoxTexture
 	var off := switch.get_theme_stylebox("normal") as StyleBoxTexture
@@ -1375,6 +1392,7 @@ func test_a_farm_harvest_still_needs_room_for_all_of_it_in_storage() -> void:
 
 func test_a_tractor_sent_out_harvests_a_farm_square_at_its_multiplier() -> void:
 	var save := _farm_owner()
+	_permits(save)
 	save.farm_growth[1] = FarmScreen.EMPTY
 	FarmScreen.place_farm(save, 0)
 	save.farm_tractors = 1
@@ -1632,9 +1650,10 @@ func test_a_farm_square_shows_its_most_advanced_seed_and_the_bar_its_next_to_rip
 	assert_float(FarmScreen.growing_in(save, 0)).is_equal(-1.0)
 
 
-func test_one_in_one_out_replants_the_batch_pulled_from_a_farm_and_the_rest_grow_on() -> void:
+func test_with_the_estate_rotation_policy_one_in_one_out_replants_the_batch_pulled_from_a_farm_and_the_rest_grow_on() -> void:
 	var save := _seeded_farm(0)
 	save.hand_replant = 1
+	save.farm_bought.append(FarmScreen.FARM_REPLANT)
 	FarmScreen.plant(save, 0)
 	FarmScreen.tick(save, 20.0)
 	FarmScreen.plant(save, 0)
@@ -1646,6 +1665,7 @@ func test_one_in_one_out_replants_the_batch_pulled_from_a_farm_and_the_rest_grow
 
 func test_a_tractor_comes_for_a_farm_as_soon_as_one_batch_is_ripe_and_leaves_the_growing_one() -> void:
 	var save := _seeded_farm(0)
+	_permits(save)
 	FarmScreen.plant(save, 0)
 	FarmScreen.tick(save, FarmScreen.GROW_TIME)
 	FarmScreen.plant(save, 0)
@@ -1688,6 +1708,7 @@ func test_a_hand_pull_takes_one_batch_of_a_farm_and_the_next_pull_the_next() -> 
 
 func test_a_tractor_stays_three_times_as_long_on_a_farm_and_unloads_in_batches() -> void:
 	var save := _seeded_farm(2)
+	_permits(save)
 	var workers := _crew(save, true)
 	var tractor := workers[0]
 	assert_bool(_run_until(workers, save, func() -> bool: return tractor.busy > 0.0)).is_true()
@@ -1716,6 +1737,7 @@ func test_a_tractor_takes_as_long_on_a_farm_with_one_seed_as_on_a_full_one() -> 
 
 func test_a_tractor_leaves_a_farm_when_its_next_batch_does_not_fit_and_the_rest_stays_ripe() -> void:
 	var save := _seeded_farm(2)
+	_permits(save)
 	save.storage_cap = 45  # Room for one batch of 30, not two.
 	var workers := _crew(save, true)
 	_run_until(workers, save, func() -> bool: return false, 20.0)
@@ -1727,6 +1749,7 @@ func test_a_tractor_leaves_a_farm_when_its_next_batch_does_not_fit_and_the_rest_
 
 func test_a_farm_hand_plants_one_seed_per_trip_so_a_farm_takes_it_two() -> void:
 	var save := _seeded_farm(0)
+	_permits(save)
 	for i in range(1, save.farm_plots):
 		FarmScreen.plant(save, i)  # Only the farm is left to plant.
 	var workers := _crew(save, false)
@@ -1742,6 +1765,7 @@ func test_a_farm_hand_plants_one_seed_per_trip_so_a_farm_takes_it_two() -> void:
 
 func test_on_farm_rounds_a_farm_hand_plants_farm_squares_before_plain_ones() -> void:
 	var save := _seeded_farm(0)
+	_permits(save)
 	for k in 30:
 		assert_int(FarmScreen.target_for(save, false, 2, [])).is_equal(0)
 	FarmScreen.plant(save, 0)
@@ -1879,6 +1903,7 @@ func test_the_screen_draws_a_farm_with_its_seed_count_without_errors() -> void:
 
 func test_a_tractor_loading_a_batch_off_a_farm_square_is_heard_and_a_plain_harvest_is_not() -> void:
 	var save := _seeded_farm(2)
+	_permits(save)
 	var workers := _crew(save, true)
 	var heard := [false]
 	var at_work := [false]
@@ -1904,3 +1929,127 @@ func test_a_seed_planted_onto_a_farm_square_that_already_holds_one_ticks() -> vo
 	assert_bool(FarmScreen.stacks(save, 1)).is_false()  # A plain square never stacks.
 	FarmScreen.plant(save, 1, 1.0)
 	assert_bool(FarmScreen.stacks(save, 1)).is_false()
+
+
+## ESTATE PLANTING PERMIT / HARVEST LICENCE (CH2): the workers keep off farm squares until bought.
+func _permits(save: SaveGame) -> void:
+	save.farm_bought.append_array([FarmScreen.PLANT_PERMIT, FarmScreen.HARVEST_LICENCE])
+
+
+func test_farm_hands_leave_farm_squares_to_the_player_until_the_estate_planting_permit_is_bought() -> void:
+	var save := _seeded_farm(0)
+	for i in [1, 2, 3]:
+		FarmScreen.plant(save, i)
+	assert_bool(FarmScreen.can_work(save, false, 0)).is_false()
+	assert_int(FarmScreen.target_for(save, false, 2, [])).is_equal(-1)
+	assert_bool(FarmScreen.plant(save, 0)).is_true()  # The player still can.
+	save.farm_bought.append(FarmScreen.PLANT_PERMIT)
+	assert_bool(FarmScreen.can_work(save, false, 0)).is_true()
+	assert_int(FarmScreen.target_for(save, false, 1, [])).is_equal(0)
+
+
+func test_a_farm_hand_with_seeds_and_only_farm_squares_free_goes_home_and_puts_them_back() -> void:
+	var save := _seeded_farm(0)
+	for i in [1, 2, 3]:
+		FarmScreen.plant(save, i)
+	var workers := _crew(save, false)
+	var hand := workers[0]
+	hand.seeds = 2
+	save.farm_seeds -= 2
+	save.farm_seeds_carried = 2
+	assert_bool(_run_until(workers, save, func() -> bool: return hand.seeds == 0)).is_true()
+	assert_bool(FarmScreen.indoors(hand)).is_true()
+	assert_int(save.farm_seeds).is_equal(50 - 3)  # The three plain squares' seeds only.
+	assert_int(FarmScreen.seeds_in(save, 0)).is_equal(0)
+	FarmScreen.work(workers, save, 5.0)
+	assert_int(hand.target).is_equal(-1)  # It waits in the hut, no trip to the crate.
+
+
+func test_with_the_planting_permit_a_farm_hand_plants_the_farm_square() -> void:
+	var save := _seeded_farm(0)
+	for i in [1, 2, 3]:
+		FarmScreen.plant(save, i)
+	save.farm_bought.append(FarmScreen.PLANT_PERMIT)
+	var workers := _crew(save, false)
+	assert_bool(_run_until(workers, save, func() -> bool: return FarmScreen.seeds_in(save, 0) > 0)).is_true()
+
+
+func test_tractors_leave_ripe_farm_squares_to_the_player_until_the_estate_harvest_licence_is_bought() -> void:
+	var save := _seeded_farm(1)
+	assert_bool(FarmScreen.is_ripe(save, 0)).is_true()
+	assert_bool(FarmScreen.can_work(save, true, 0)).is_false()
+	var workers := _crew(save, true)
+	assert_bool(_run_until(workers, save, func() -> bool: return save.farm_harvests > 0, 10.0)).is_false()
+	save.farm_bought.append(FarmScreen.HARVEST_LICENCE)
+	assert_bool(FarmScreen.can_work(save, true, 0)).is_true()
+	assert_bool(_run_until(workers, save, func() -> bool: return save.farm_harvests > 0)).is_true()
+
+
+## COMPOST DETAIL (CH2): farm hands clear a rotten square and plant it again.
+func test_with_compost_detail_a_farm_hand_clears_a_rotten_square_and_plants_it() -> void:
+	var save := _farm()
+	for i in [1, 2, 3]:
+		FarmScreen.plant(save, i)
+	save.farm_growth[0] = FarmScreen.ROTTEN
+	save.farm_bought.append(FarmScreen.COMPOST)
+	assert_bool(FarmScreen.can_work(save, false, 0)).is_true()
+	assert_bool(FarmScreen.can_work(save, true, 0)).is_false()
+	var workers := _crew(save, false)
+	assert_bool(_run_until(workers, save, func() -> bool: return save.farm_growth[0] >= 0.0)).is_true()
+	assert_int(save.farm_hand_planted).is_equal(1)
+
+
+func _two_ripe_batches_with_one_in_one_out() -> SaveGame:
+	var save := _seeded_farm(0)
+	save.hand_replant = 1
+	FarmScreen.plant(save, 0)
+	FarmScreen.plant(save, 0)
+	FarmScreen.tick(save, FarmScreen.GROW_TIME)
+	return save
+
+
+func test_with_one_in_one_out_a_hand_pull_that_leaves_a_farm_square_seeds_behind_replants_nothing() -> void:
+	var save := _two_ripe_batches_with_one_in_one_out()
+	var seeds := save.farm_seeds
+	assert_int(FarmScreen.harvest(save, 0, true)).is_greater(0)
+	assert_int(FarmScreen.seeds_in(save, 0)).is_equal(1)
+	assert_int(save.farm_seeds).is_equal(seeds)
+
+
+func test_with_one_in_one_out_the_hand_pull_that_empties_a_farm_square_replants_one_seed() -> void:
+	var save := _two_ripe_batches_with_one_in_one_out()
+	var seeds := save.farm_seeds
+	FarmScreen.harvest(save, 0, true)
+	assert_int(FarmScreen.harvest(save, 0, true)).is_greater(0)
+	assert_int(FarmScreen.seeds_in(save, 0)).is_equal(1)
+	assert_int(save.farm_seeds).is_equal(seeds - 1)
+	assert_int(save.hand_planted).is_equal(1)
+
+
+func test_without_one_in_one_out_the_hand_pull_that_empties_a_farm_square_replants_nothing() -> void:
+	var save := _two_ripe_batches_with_one_in_one_out()
+	save.hand_replant = 0
+	FarmScreen.harvest(save, 0, true)
+	FarmScreen.harvest(save, 0, true)
+	assert_int(FarmScreen.seeds_in(save, 0)).is_equal(0)
+
+
+func test_with_the_estate_rotation_policy_every_hand_pull_from_a_farm_square_replants_one_seed() -> void:
+	var save := _two_ripe_batches_with_one_in_one_out()
+	save.farm_bought.append(FarmScreen.FARM_REPLANT)
+	var seeds := save.farm_seeds
+	FarmScreen.harvest(save, 0, true)
+	assert_int(FarmScreen.seeds_in(save, 0)).is_equal(2)
+	FarmScreen.harvest(save, 0, true)
+	assert_int(FarmScreen.seeds_in(save, 0)).is_equal(2)
+	assert_int(save.farm_seeds).is_equal(seeds - 2)
+
+
+func test_with_an_empty_crate_the_last_hand_pull_from_a_farm_square_replants_nothing() -> void:
+	var save := _two_ripe_batches_with_one_in_one_out()
+	save.farm_bought.append(FarmScreen.FARM_REPLANT)
+	save.farm_seeds = 0
+	FarmScreen.harvest(save, 0, true)
+	FarmScreen.harvest(save, 0, true)
+	assert_int(FarmScreen.seeds_in(save, 0)).is_equal(0)
+	assert_int(save.hand_planted).is_equal(0)

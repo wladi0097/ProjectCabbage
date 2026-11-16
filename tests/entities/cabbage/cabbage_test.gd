@@ -722,6 +722,15 @@ func test_holding_a_rotten_cabbage_pauses_its_count_but_does_not_reset_it() -> v
 	assert_float(rotten.fuse).is_equal(Cabbage.FUSE - 20.0)
 
 
+func test_a_hired_hand_carrying_a_rotten_cabbage_pauses_its_count() -> void:
+	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
+	rotten.freeze = true  # Associate._take
+	assert_bool(rotten.burning()).is_false()
+
+	rotten.freeze = false  # thrown toward the bin
+	assert_bool(rotten.burning()).is_true()
+
+
 func test_a_rotten_cabbage_already_binned_or_sold_never_bursts() -> void:
 	var rotten := spawn(func(c: Cabbage) -> void: c.rotten = true)
 	rotten.sold = true

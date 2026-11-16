@@ -67,6 +67,19 @@ func test_every_card_price_fits_its_box_and_short_ones_keep_the_full_size() -> v
 	assert_int(UpgradeCard.price_size("¶3000")).is_less(UpgradeCard.PRICE_SIZE)
 
 
+func test_a_card_that_only_counts_farms_prints_their_count_and_the_farm_icon_in_the_box_and_nothing_else() -> void:
+	var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("home_review")))
+	var price := card.get_node("Look/Price") as Label3D
+	var icon := card.get_node("Look/PriceIcon") as Sprite3D
+
+	assert_str(price.text).is_equal(str(UpgradeDesk.Events.HOME_SELLERS))
+	assert_bool(icon.visible).is_true()
+	assert_object(icon.texture).is_same(UpgradeCard.FARM_ICON)
+	assert_float(icon.position.x).is_greater(price.position.x)  # "5 [farm]": the barn after the count.
+	for path in ["Look/Also", "Look/Farms", "Look/FarmIcon"]:  # No "$0", no second count.
+		assert_bool((card.get_node(path) as Node3D).visible).override_failure_message(path).is_false()
+
+
 func test_research_directives_print_their_own_form_line() -> void:
 	assert_str(UpgradeCard.form_of(UpgradeDesk.card_data("research_inspection"))).is_equal("FORM 7-R  RESEARCH DIRECTIVE")
 	assert_str(UpgradeCard.form_of(UpgradeDesk.card_data("projector"))).is_equal("FORM 7-B  REQUISITION")
@@ -229,16 +242,16 @@ func test_farms_a_card_needs_are_printed_left_of_its_price_box_as_their_count_an
 		assert_str(UpgradeCard.price_text(24, "farms")).is_equal("24")
 		assert_str(UpgradeCard.price_text(1, "farms")).is_equal("1")
 		assert_str(UpgradeCard.price_text(8, "home_farms")).is_equal("8")  # Home farms print as farms.
-		var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("stars")))
+		var card: UpgradeCard = auto_free(UpgradeCard.create(UpgradeDesk.card_data("negotiation")))
 		var also := card.get_node("Look/Also") as Label3D
 		var count := card.get_node("Look/Farms") as Label3D
 		var icon := card.get_node("Look/FarmIcon") as Sprite3D
 		assert_bool(count.visible).is_true()
 		assert_bool(icon.visible).is_true()
-		assert_str(count.text).is_equal("24")
+		assert_str(count.text).is_equal("1")
 		assert_object(icon.texture).is_same(UpgradeCard.FARM_ICON)
-		assert_str(also.text).is_equal("+")  # "24 [farm] +" and the price in its box: no word for farms.
-		assert_str((card.get_node("Look/Price") as Label3D).text).is_equal(UpgradeCard.price_text(UpgradeDesk.card_data("stars").price, "coins"))
+		assert_str(also.text).is_equal("+")  # "1 [farm] +" and the price in its box: no word for farms.
+		assert_str((card.get_node("Look/Price") as Label3D).text).is_equal(UpgradeCard.price_text(UpgradeDesk.card_data("negotiation").price, "coins"))
 		# Left to right: the count, the icon, the plus, the price box.
 		assert_float(count.position.x).is_less(icon.position.x)
 		assert_float(icon.position.x).is_less(also.position.x)
@@ -276,8 +289,8 @@ func test_every_card_that_needs_farms_prints_them_and_its_other_prices_on_the_ca
 		var bill := UpgradeDesk.costs(each)
 		var farms := UpgradeCard.farms_of(bill)
 		assert_int(farms).override_failure_message(each.id).is_equal(int(each.get("farms", each.get("home_farms", 0))))
-		if farms == 0:
-			continue
+		if farms == 0 or bill.size() == 1:
+			continue  # Farms alone stand in the price box: test_a_card_that_only_counts_farms_prints_their_count_and_the_farm_icon_in_the_box_and_nothing_else.
 		with_farms += 1
 		var shown := UpgradeCard.also_text(bill, UpgradeCard.boxed_in(bill, each.get("currency", "coins")))
 		assert_bool(shown.begins_with("+")).override_failure_message(each.id).is_true()
