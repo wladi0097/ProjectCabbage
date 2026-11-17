@@ -6,6 +6,8 @@ extends Control
 ## The body's first line is flavour (deadpan, no rules in it): it is slanted (italic) and a touch darker, the rest upright.
 
 const PAPER := preload("res://assets/textures/card_paper/card_paper_albedo.png")
+## A war card's paper (UpgradeCard.war_card): the same, its header band orange.
+const WAR_PAPER := preload("res://assets/textures/card_paper/card_paper_war_albedo.png")
 const TITLE_FONT := preload("res://assets/fonts/Oswald.ttf")
 const BODY_FONT := preload("res://assets/fonts/NunitoSans.ttf")
 const INK := Color(0.9, 0.89, 0.84)
@@ -41,6 +43,8 @@ var _title := ""
 var _bill := {}
 ## The card paper's dye (UpgradeCard.paper_tint): a priority form is oxblood here too.
 var _tint := Color.WHITE
+## The texture the paper is cut from: PAPER, or WAR_PAPER for a war card (a priority form keeps PAPER, dyed).
+var _paper: Texture2D = PAPER
 var _body := TextParagraph.new()
 ## Characters of _body that are the flavour line.
 var _flavour_len := 0
@@ -51,6 +55,7 @@ static var _italics := {}
 func set_card(card: Dictionary) -> void:
 	_form = tr(UpgradeCard.form_of(card))
 	_tint = UpgradeCard.paper_tint(card)
+	_paper = WAR_PAPER if _tint == Color.WHITE and UpgradeCard.war_card(card) else PAPER
 	_title = tr(card.title)
 	_bill = UpgradeDesk.costs(card)
 	_body.clear()
@@ -116,5 +121,5 @@ func _draw() -> void:
 
 ## Draws texture piece `region` across the paper's width at height `y`; returns where it ends.
 func _piece(region: Rect2, y: float) -> float:
-	draw_texture_rect_region(PAPER, Rect2(Vector2(0.0, y), region.size * SCALE), region, _tint)
+	draw_texture_rect_region(_paper, Rect2(Vector2(0.0, y), region.size * SCALE), region, _tint)
 	return y + region.size.y * SCALE

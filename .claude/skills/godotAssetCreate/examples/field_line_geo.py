@@ -65,16 +65,20 @@ def coil(guide, radius, turns, per_turn=10):
     return out
 
 
+# 2026-11-17 the box grew XS on each side (user: wider, so the count window gets a farm sign before
+# the numbers; the sign is a Sprite3D of farm_icon.svg in Godot, at WINDOW_ICON). The lamps moved
+# left by XS, the window grew by 2 XS, the handset stays centred.
+XS = 0.03
 body = bmesh.new()
-part_box(body, (-0.21, -0.12, 0), (0.21, 0.12, 0.022), 0.01, K)                     # plinth
+part_box(body, (-0.21 - XS, -0.12, 0), (0.21 + XS, 0.12, 0.022), 0.01, K)                # plinth
 SLO, SHI, TOP = (-0.112, 0.042), (0.016, 0.105), 0.105                              # the lamp slope (front), the handset deck behind it
-prism(body, [(-0.112, 0.02), (0.112, 0.02), (0.112, TOP), SHI, SLO], -0.2, 0.2, E, 0.012, 4)
+prism(body, [(-0.112, 0.02), (0.112, 0.02), (0.112, TOP), SHI, SLO], -0.2 - XS, 0.2 + XS, E, 0.012, 4)
 FM = slope_frame(SLO, SHI)
-part_box(body, (-0.186, -0.05, -0.002), (0.186, 0.05, 0.003), 0.002, K, FM)       # bakelite panel
-LR, LAMPS = 0.0088, [(-0.168 + 0.0275 * k, s) for s in (0.031, 0.0, -0.031) for k in range(8)]
+part_box(body, (-0.186 - XS, -0.05, -0.002), (0.186 + XS, 0.05, 0.003), 0.002, K, FM)       # bakelite panel
+LR, LAMPS = 0.0088, [(-0.168 - XS + 0.0275 * k, s) for s in (0.031, 0.0, -0.031) for k in range(8)]
 for x, s in LAMPS:
     ring(body, LR + 0.0004, LR + 0.004, 0.003, 0.0075, N, FM @ at(x, s, 0), 16)
-WX, WW, WS = 0.113, 0.058, 0.032                                                    # count window
+WX, WW, WS = 0.113, 0.058 + XS, 0.032                                                    # count window
 part_box(body, (WX - WW, -WS, 0.002), (WX + WW, WS, 0.005), 0.0, G, FM)
 for lo, hi in [((WX - WW - 0.008, -WS - 0.008, 0.002), (WX + WW + 0.008, -WS, 0.01)), ((WX - WW - 0.008, WS, 0.002), (WX + WW + 0.008, WS + 0.008, 0.01)),
                ((WX - WW - 0.008, -WS, 0.002), (WX - WW, WS, 0.01)), ((WX + WW, -WS, 0.002), (WX + WW + 0.008, WS, 0.01))]:
@@ -84,11 +88,11 @@ for x in (-CUP, CUP):                                                           
     ring(body, 0.037, 0.045, DZ - 0.002, DZ + 0.01, H, at(x, HY, 0), 32)
     spin(body, [(0, DZ), (0.037, DZ), (0.037, DZ + 0.003), (0, DZ + 0.003)], F, at(x, HY, 0), 32)   # dark felt in the ring
 spin(body, [(0, DZ), (0.013, DZ), (0.013, DZ + 0.004), (0.008, DZ + 0.004), (0.008, DZ + 0.02), (0, DZ + 0.02)], H, at(0, HY, 0), 12)   # hook switch
-for x in (-0.17, 0.17):                                                             # rubber feet
+for x in (-0.17 - XS, 0.17 + XS):                                                        # rubber feet
     for y in (-0.085, 0.085):
         spin(body, [(0, 0), (0.016, 0), (0.018, 0.006), (0, 0.006)], K, at(x, y, -0.004), 16)
-part_box(body, (-0.203, 0.105, 0.05), (0.203, 0.116, 0.06), 0.003, H)               # chrome trim on the back
-part_box(body, (-0.203, -0.116, 0.027), (0.203, -0.109, 0.035), 0.003, H)            # and the front
+part_box(body, (-0.203 - XS, 0.105, 0.05), (0.203 + XS, 0.116, 0.06), 0.003, H)               # chrome trim on the back
+part_box(body, (-0.203 - XS, -0.116, 0.027), (0.203 + XS, -0.109, 0.035), 0.003, H)            # and the front
 # The cord: from a grommet on the deck's back-left corner in a C over the deck into the left cup.
 GROM = Vector((-0.178, HY + 0.026, DZ))
 ring(body, 0.004, 0.011, DZ - 0.001, DZ + 0.005, H, at(GROM.x, GROM.y, 0), 16)
@@ -151,4 +155,7 @@ FRAME = ((0.42, -0.62, 0.62), (0.0, 0.0, 0.07), 50, 1280, 960)
 def godot(v): return Vector((v.x, v.z, -v.y))
 sd, nn, wc = godot(FM.col[1].to_3d()), godot(FM.col[2].to_3d()), godot(FM @ Vector((WX, 0, 0.0056)))
 print("WINDOW Transform3D(1, %.4f, %.4f, 0, %.4f, %.4f, 0, %.4f, %.4f, %.4f, %.4f, %.4f)" % (sd.x, nn.x, sd.y, nn.y, sd.z, nn.z, wc.x, wc.y, wc.z))
+for name, x in (("WINDOW_ICON", WX - WW + 0.024), ("WINDOW_COUNT", WX + 0.022)):
+    v = godot(FM @ Vector((x, 0, 0.0056)))
+    print(name, "%.4f %.4f %.4f" % tuple(v))
 print("WINDOW_SIZE", WW * 2, WS * 2, "RECEIVER_PIVOT", tuple(godot(Vector((0, HY, DZ + 0.02)))))

@@ -137,7 +137,10 @@ func _physics_process(delta: float) -> void:
 		# not boxed: one past a corner of AREA is further from it than one past an edge.
 		var bay := _bay(save)
 		_coin_spots = _reachable(coins.resting_spots(), save.vacuum_reach)
-		_slip_spots = _reachable(bay.resting_spots() if bay != null else [] as Array[Vector3], save.vacuum_reach)
+		# Typed on its own line: `[] as Array[Vector3]` inside the ternary came out untyped, and the call
+		# failed every rescan until token_recovery (no robot drove).
+		var none: Array[Vector3] = []
+		_slip_spots = _reachable(bay.resting_spots() if bay != null else none, save.vacuum_reach)
 		_spots = _coin_spots.duplicate()
 		_spots.append_array(_slip_spots)
 	_tip_in -= delta

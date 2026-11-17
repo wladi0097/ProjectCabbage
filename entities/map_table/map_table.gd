@@ -55,7 +55,8 @@ extends Node3D
 ## rolls itself up towards the holder; FETCH_AT the new roll leaves the holder (or comes in from
 ## above); STOW_AT the old roll hops into the holder (or leaves); LAND_AT the new roll lands with a little
 ## bounce; UNROLL_AT it unrolls across the desk, its edge still curled; WEIGHTS_ON_AT the weights
-## drop onto its corners and pin the edge; POP_AT what stands on it pops up in a wave.
+## drop onto its corners and pin the edge; USABLE_AT it lies open and takes the mouse; POP_AT
+## what stands on it pops up in a wave.
 
 const Events := preload("res://globalScripts/game_events.gd")
 const Tally := preload("res://entities/map_table/props/map_tally.gd")
@@ -67,27 +68,35 @@ const PAN_TIME := 1.1
 const LIGHT_FULL := 0.6
 
 const WEIGHTS_OFF_AT := 0.0
-const WEIGHT_HOP_TIME := 0.2
-const WEIGHT_STAGGER := 0.03
-const TUCK_TIME := 0.12
-const TUCK_STAGGER := 0.01
-const CURL_TIME := 0.14
-const ROLL_UP_AT := 0.14
-const ROLL_UP_TIME := 0.42
-const FETCH_AT := 0.46
-const STOW_AT := 0.54
-const FLIGHT_TIME := 0.3
+const WEIGHT_HOP_TIME := 0.1
+const WEIGHT_STAGGER := 0.015
+const TUCK_TIME := 0.05
+const TUCK_STAGGER := 0.004
+const CURL_TIME := 0.07
+const ROLL_UP_AT := 0.05
+const ROLL_UP_TIME := 0.13
+const FETCH_AT := 0.1
+const STOW_AT := 0.15
+const FLIGHT_TIME := 0.1
 const LAND_AT := FETCH_AT + FLIGHT_TIME
+const SWAP_BOUNCE_TIME := 0.07
+const UNROLL_AT := LAND_AT + 0.01
+const UNROLL_TIME := 0.14
+## From here the new sheet lies open and takes the mouse (`swapping` ends); the weights' squash, the
+## sheet's settle and the things' pop play on while it is already in use.
+const USABLE_AT := UNROLL_AT + UNROLL_TIME
+const WEIGHTS_ON_AT := USABLE_AT - 0.04
+const WEIGHT_DROP_TIME := 0.07
+const WEIGHT_DROP_STAGGER := 0.012
+const SWAP_SETTLE_TIME := 0.18
+const POP_AT := WEIGHTS_ON_AT + 0.04
+const POP_TIME := 0.12
+const POP_STAGGER := 0.01
+## The things' wave never spreads over more than this (s), however many stand on the sheet.
+const POP_SPREAD := 0.12
+## The bounce and the settle of a roll arriving in the holder, and of the tally landing.
 const BOUNCE_TIME := 0.14
-const UNROLL_AT := LAND_AT + 0.07
-const UNROLL_TIME := 0.42
-const WEIGHTS_ON_AT := UNROLL_AT + UNROLL_TIME - 0.06
-const WEIGHT_DROP_TIME := 0.16
-const WEIGHT_DROP_STAGGER := 0.04
 const SETTLE_TIME := 0.3
-const POP_AT := WEIGHTS_ON_AT + 0.14
-const POP_TIME := 0.2
-const POP_STAGGER := 0.022
 
 ## A weight hops this high (m) and lands this far beyond the sheet's end (m, along the sheet's width).
 const WEIGHT_HOP := 0.22
@@ -346,7 +355,13 @@ static func start_sheet(save: SaveGame) -> StringName:
 
 ## Seconds a whole swap takes, from the request until the new sheet's things stand.
 static func swap_time() -> float:
-	return POP_AT + POP_TIME
+	return POP_AT + POP_SPREAD + POP_TIME
+
+
+## Seconds between two things popping up on a sheet with `count` of them: POP_STAGGER, closer
+## together on a crowded sheet so the wave stays within POP_SPREAD.
+static func pop_stagger(count: int) -> float:
+	return minf(POP_STAGGER, POP_SPREAD / maxf(count - 1, 1))
 
 
 ## TO DESK and TO FARM that stand now: on the tally's console once it has landed, else the loose ones.
@@ -590,6 +605,10 @@ func _swap(old: MapSheet, new: MapSheet) -> void:
 	_swap_sound.cue(_lay.global_position)
 	var lay := _lay.global_transform
 	var weights := $Weights.get_children()
+	if _swap_tween != null and _swap_tween.is_valid():
+		_swap_tween.kill()  # The last swap's settle still plays: the weights stand up straight for the hop.
+		for weight: Node3D in weights:
+			weight.scale = Vector3.ONE
 	_swap_tween = create_tween().set_parallel()
 	# The weights hop off, the things tuck away, the free edge curls up.
 	for i in weights.size():
@@ -614,7 +633,7 @@ func _swap(old: MapSheet, new: MapSheet) -> void:
 	# The new roll flies out, lands with a little bounce and unrolls, its edge still curled.
 	_swap_tween.tween_method(_fly.bind(new, new_from, lay, FETCH_ARC if up else Vector3.ZERO), 0.0, 1.0, FLIGHT_TIME) \
 			.set_delay(FETCH_AT).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_swap_tween.tween_method(_bounce.bind(new, lay.origin), 0.0, 1.0, BOUNCE_TIME).set_delay(LAND_AT)
+	_swap_tween.tween_method(_bounce.bind(new, lay.origin), 0.0, 1.0, SWAP_BOUNCE_TIME).set_delay(LAND_AT)
 	_swap_tween.tween_property(new, "lift", 1.0, 0.01).set_delay(LAND_AT)
 	_swap_tween.tween_property(new, "open", 1.0, UNROLL_TIME).set_delay(UNROLL_AT) \
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -623,14 +642,15 @@ func _swap(old: MapSheet, new: MapSheet) -> void:
 		var at := WEIGHTS_ON_AT + i * WEIGHT_DROP_STAGGER
 		_swap_tween.tween_method(_hop_weight.bind(i), 1.0, 0.0, WEIGHT_DROP_TIME) \
 				.set_delay(at).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		_swap_tween.tween_property(weights[i], "scale", Vector3.ONE, SETTLE_TIME).from(WEIGHT_SQUASH) \
+		_swap_tween.tween_property(weights[i], "scale", Vector3.ONE, SWAP_SETTLE_TIME).from(WEIGHT_SQUASH) \
 				.set_delay(at + WEIGHT_DROP_TIME).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	_swap_tween.tween_property(new, "lift", 0.0, SETTLE_TIME).set_delay(WEIGHTS_ON_AT + WEIGHT_DROP_TIME) \
+	_swap_tween.tween_property(new, "lift", 0.0, SWAP_SETTLE_TIME).set_delay(WEIGHTS_ON_AT + WEIGHT_DROP_TIME) \
 			.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	var stagger := pop_stagger(new.thing_count())
 	for i in new.thing_count():
 		_swap_tween.tween_method(new.raise_thing.bind(i), 0.0, 1.0, POP_TIME) \
-				.set_delay(POP_AT + i * POP_STAGGER).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_swap_tween.finished.connect(_swap_done)
+				.set_delay(POP_AT + i * stagger).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_swap_tween.tween_callback(_swap_done).set_delay(USABLE_AT)
 
 
 ## The old sheet has reached the holder (`stow`: it is the new one's parent) or left the table.

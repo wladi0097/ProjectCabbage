@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://entities/components/interactable.gd" id="2_interactable"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
 [ext_resource type="PackedScene" path="res://assets/meshes/Machines/field_line.blend" id="4_model"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/farm_icon.svg" id="5_farm"]
 
 [ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_lift_1.wav" id="sfx_field_line_lift_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_lift_2.wav" id="sfx_field_line_lift_2"]
@@ -44,10 +45,10 @@ streams_count = 1
 stream_0/stream = ExtResource("sfx_console_drop")
 
 [sub_resource type="BoxShape3D" id="BodyShape"]
-size = Vector3(0.41, 0.1, 0.23)
+size = Vector3(0.47, 0.1, 0.23)
 
 [sub_resource type="BoxShape3D" id="HandsetShape"]
-size = Vector3(0.28, 0.055, 0.085)
+size = Vector3(0.34, 0.08, 0.15)
 
 [node name="FieldLine" type="Node3D"]
 script = ExtResource("1_script")
@@ -77,14 +78,28 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 [node name="Shape" type="CollisionShape3D" parent="Body"]
 shape = SubResource("BodyShape")
 
+[node name="Interactable" type="Node" parent="Body"]
+script = ExtResource("2_interactable")
+tooltip = "Field line.
+Lift the handset to be put through to the maps. One lamp for every farm the company holds."
+grip_height = 0.08
+reach = true
+
 [node name="Count" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.4416, 0.8972, 0, -0.8972, 0.4416, 0.113, 0.0785, 0.0505)
+transform = Transform3D(1, 0, 0, 0, 0.4416, 0.8972, 0, -0.8972, 0.4416, 0.135, 0.0785, 0.0505)
 pixel_size = 0.00062
 modulate = Color(1, 0.62, 0.18, 1)
 shaded = false
 text = "0/24"
 font_size = 64
 outline_size = 0
+
+[node name="FarmSign" type="Sprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.4416, 0.8972, 0, -0.8972, 0.4416, 0.049, 0.0785, 0.0505)
+pixel_size = 0.0006
+modulate = Color(1, 0.62, 0.18, 1)
+shaded = false
+texture = ExtResource("5_farm")
 
 [node name="Lift" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_lift")

@@ -90,6 +90,33 @@ func test_a_click_on_the_handset_lifts_it() -> void:
 	assert_bool(machine.is_open()).is_true()
 
 
+func test_a_click_anywhere_on_the_phones_box_lifts_the_handset_too() -> void:
+	var machine := _machine()
+	var box := machine.get_node("Body/Interactable") as Interactable
+	assert_object(Interactable.of(machine.get_node("Body"))).is_same(box)
+	box.grabbed.emit()
+	assert_bool(machine.is_open()).is_true()
+
+
+func test_the_handsets_hitbox_is_wider_and_deeper_than_the_handset_itself() -> void:
+	var shape := _shape(_machine(), HANDSET + "/Shape")
+	assert_float(shape.size.x).is_greater_equal(0.32)  # The handset with its cups: 0.25 m.
+	assert_float(shape.size.z).is_greater_equal(0.12)  # Its cups: 0.07 m.
+
+
+func test_the_farm_sign_sits_in_the_count_window_left_of_the_numbers() -> void:
+	var machine := _machine()
+	var farm_sign := machine.get_node("FarmSign") as Sprite3D
+	var count := machine.get_node("Count") as Label3D
+	assert_float(farm_sign.position.x).is_less(count.position.x)
+	assert_bool(farm_sign.transform.basis.is_equal_approx(count.transform.basis)).is_true()  # On the same glass.
+	assert_object(farm_sign.modulate).is_equal(count.modulate)  # Lit like the numbers.
+
+
+func _shape(machine: FieldLine, path: String) -> BoxShape3D:
+	return (machine.get_node(path) as CollisionShape3D).shape as BoxShape3D
+
+
 func test_the_handset_sits_behind_the_lamp_field_as_the_player_sees_it() -> void:
 	# The camera looks from +z: smaller z is further up the screen, nearer the middle of the desk.
 	var machine := _machine()

@@ -30,3 +30,13 @@ func test_the_paper_of_a_card_in_several_currencies_prints_every_price_in_a_row(
 	assert_dict(paper._bill).is_equal(bill)
 	# The row fits the writing's width.
 	assert_float(UpgradeCard.bill_row_width(bill, PaperNote.PRICE_SIZE)).is_less((PaperNote.TEXT_RIGHT - PaperNote.TEXT_LEFT) * PaperNote.SCALE)
+
+
+func test_a_war_card_note_is_cut_from_the_orange_header_paper_and_a_plain_card_from_the_green() -> void:
+	var paper: PaperNote = auto_free(preload("res://ui/elements/paper_note.tscn").instantiate())
+	paper.set_card(UpgradeDesk.card_data("tactics"))
+	assert_object(paper._paper).is_same(PaperNote.WAR_PAPER)
+	paper.set_card(UpgradeDesk.card_data("projector"))
+	assert_object(paper._paper).is_same(PaperNote.PAPER)
+	paper.set_card(UpgradeDesk.card_data("stars"))  # The oxblood form stays on the plain stock.
+	assert_object(paper._paper).is_same(PaperNote.PAPER)

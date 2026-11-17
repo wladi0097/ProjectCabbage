@@ -165,6 +165,26 @@ static func buy(save: SaveGame, unit: String, out := Vector2i.ZERO) -> bool:
 	return true
 
 
+## Whether `save` has a figure of `unit` to dismiss: one ready, or one in training.
+static func can_dismiss(save: SaveGame, unit: String) -> bool:
+	return int(save.army.get(unit, 0)) > 0 or save.army_training.any(func(entry: Dictionary) -> bool: return entry.unit == unit)
+
+
+## Dismisses one figure of `unit` (the depot's trash circle): a ready one first, else the newest of its
+## trainees (it never started, or the front trains on). Nothing is paid back: the cabbages went into
+## the requisition. False (nothing changes) if there is none.
+static func dismiss(save: SaveGame, unit: String) -> bool:
+	var ready := int(save.army.get(unit, 0))
+	if ready > 0:
+		save.army[unit] = ready - 1
+		return true
+	for i in range(save.army_training.size() - 1, -1, -1):
+		if save.army_training[i].unit == unit:
+			save.army_training.remove_at(i)
+			return true
+	return false
+
+
 ## Trains the queue's front figure for `delta` seconds; time left over goes on to the next one.
 ## Finished figures join save.army.
 static func tick_training(save: SaveGame, delta: float) -> void:

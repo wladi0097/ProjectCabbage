@@ -318,3 +318,48 @@ func test_on_paper_a_farm_count_is_drawn_with_the_farm_icon_after_it_and_cabbage
 	# The icon takes room in a row of prices (the note's bill, the press's card).
 	assert_float(UpgradeCard.price_width("5", "farms", 100)).is_greater(UpgradeCard.price_width("5", "coins", 100))
 	assert_float(UpgradeCard.bill_row_width({farms = 5, stock = 13000}, 34)).is_greater(UpgradeCard.bill_row_width({stock = 13000}, 34))
+
+
+func test_the_war_line_from_hostile_acquisitions_on_is_war_cards_and_everything_before_is_not() -> void:
+	for id: String in ["war_mode", "world_map", "no_taxes", "sea_lanes", "route_planning", "unit_charge",
+			"bigger_armies", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier", "stars"]:
+		assert_bool(UpgradeCard.war_card(UpgradeDesk.card_data(id))).override_failure_message(id).is_true()
+	for id: String in ["price_slate", "family_farm", "consolidation", "condense", "bribery", "home_review", "coin_merge"]:
+		assert_bool(UpgradeCard.war_card(UpgradeDesk.card_data(id))).override_failure_message(id).is_false()
+	assert_bool(UpgradeCard.war_card(UpgradeDesk.NOTICE)).is_false()
+
+
+func test_war_cards_carry_the_orange_header_and_other_cards_the_green_one() -> void:
+	for card: Dictionary in UpgradeDesk.CARDS:
+		var paper := UpgradeCard.paper_of(card)
+		var is_wide := UpgradeCard.wide(UpgradeDesk.costs(card))
+		if card.get("priority", false):
+			continue  # The oxblood form, below.
+		var expected: StandardMaterial3D
+		if UpgradeCard.war_card(card):
+			expected = UpgradeCard.WAR_WIDE_MATERIAL if is_wide else UpgradeCard.WAR_MATERIAL
+		else:
+			expected = UpgradeCard.WIDE_MATERIAL if is_wide else UpgradeCard.MATERIAL
+		assert_object(paper).override_failure_message(card.id).is_same(expected)
+	# The war's last card is a chapter change: it stays the oxblood form on plain stock.
+	var stars := UpgradeCard.paper_of(UpgradeDesk.card_data("stars"))
+	assert_object(stars.albedo_color).is_equal(UpgradeCard.PRIORITY_TINT)
+	assert_object(stars.albedo_texture).is_not_same(UpgradeCard.WAR_MATERIAL.albedo_texture)
+	assert_object(stars.albedo_texture).is_not_same(UpgradeCard.WAR_WIDE_MATERIAL.albedo_texture)
+
+
+func test_the_orange_header_is_as_muted_as_the_green_one_and_the_dark_body_is_unchanged() -> void:
+	var green := UpgradeCard.MATERIAL.albedo_texture.get_image()
+	var orange := UpgradeCard.WAR_MATERIAL.albedo_texture.get_image()
+	green.decompress()
+	orange.decompress()
+	var head_green := green.get_pixel(600, 50)
+	var head_orange := orange.get_pixel(600, 50)
+	assert_float(head_orange.h).is_between(0.04, 0.11)  # Orange, not red or yellow.
+	assert_float(head_orange.s).is_less(0.5)  # Muted, never a bright safety orange.
+	assert_float(absf(head_orange.v - head_green.v)).is_less(0.15)
+	for at: Vector2i in [Vector2i(600, 300), Vector2i(1000, 600)]:
+		# Same source pixels; the VRAM compression may round a step apart (editor vs headless import).
+		var a := orange.get_pixelv(at)
+		var b := green.get_pixelv(at)
+		assert_float(Vector3(a.r - b.r, a.g - b.g, a.b - b.b).length()).override_failure_message(str(at)).is_less(0.03)

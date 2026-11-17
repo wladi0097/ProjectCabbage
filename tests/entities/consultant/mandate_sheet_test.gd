@@ -55,7 +55,7 @@ func test_the_mandates_steppers_set_the_bounce_floor_and_ceiling() -> void:
 	(sheet.get_node("%CeilingDown") as Button).pressed.emit()
 
 	var save := SaveManager.save
-	assert_int(save.consultant_bounce).is_equal(15)
+	assert_float(save.consultant_bounce).is_equal(15.0)
 	assert_int(save.consultant_floor).is_equal(2)
 	assert_int(save.consultant_ceiling).is_equal(17)  # One under the slate's $18 top.
 

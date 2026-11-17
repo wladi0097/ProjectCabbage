@@ -8,10 +8,13 @@
 # wall direction TW (printed as DRUM_AXIS, in Godot space).
 from mathutils import Quaternion
 ASSET = "supply_ramp"
-E, K, H, B, D, S = range(6)
+E, K, H, B, D, S, P = range(7)   # P: the brass cabbage plate (dial atlas, machine_tex.py CAB_BOX)
 COLOURS = {E: (0.15, 0.19, 0.16), K: (0.025, 0.025, 0.024), H: (0.62, 0.63, 0.65), B: (0.62, 0.42, 0.14),
-           D: (1, 1, 1), S: (0.19, 0.2, 0.2)}
-SURFACE = {E: 0, K: 0, H: 1, B: 1, D: 2, S: 3}
+           D: (1, 1, 1), S: (0.19, 0.2, 0.2), P: (1, 1, 1)}
+SURFACE = {E: 0, K: 0, H: 1, B: 1, D: 2, S: 3, P: 2}
+# The stock counter's brass plate left of the drums, as the tally's "$$$" and the findings' "¶¶¶"
+# (2026-11-17): PL long, 2 PS high, its atlas block (u0, v0, du, dv).
+PL, PS, PLATE_UV = 0.112, 0.025, (0.25, 1 - 231 / 1024, 0.25, 115 / 1024)
 DRUMS, PITCH, DRUM_W, DRUM_R = 6, 0.049, 0.045, 0.06
 DRUM_U = 0.12
 WIN = 0.022
@@ -135,18 +138,28 @@ HX, HY, HD = WX + 0.015, DRUM_R + 0.008, 0.128       # housing half length, half
 origin = P0 - SDV * HY
 FRAME_M = Matrix(((TW.x, SDV.x, NRM.x, origin.x), (TW.y, SDV.y, NRM.y, origin.y), (TW.z, SDV.z, NRM.z, origin.z), (0, 0, 0, 1)))
 FRAME_INV = FRAME_M.inverted()
-x_of = lambda k: (DRUMS - 1) / 2 * PITCH - k * PITCH
+x_of = lambda k: (DRUMS - 1) / 2 * PITCH - k * PITCH   # drum k's centre (Drum0 = ones, rightmost)
 SDW, NW = SDV, NRM
 for lo, hi in [((-HX, WIN, -HD), (HX, HY, -0.004)), ((-HX, -HY, -HD), (HX, -WIN, -0.004)),
                ((-HX, -WIN, -HD), (-WX, WIN, -0.004)), ((WX, -WIN, -HD), (HX, WIN, -0.004)),
                ((-HX, -HY, -HD - 0.006), (HX, HY, -HD))]:
     part_box(body, lo, hi, 0.004, S, FRAME_M)
+# The housing runs on to the left under the plate, which sits on its face with a screw in each corner.
+px1 = -HX - 0.004; px0 = px1 - PL
+part_box(body, (px0 - 0.008, -HY, -HD), (-HX + 0.01, HY, -0.004), 0.004, S, FRAME_M)
+part_box(body, (px0, -PS, -0.004), (px1, PS, 0.003), 0.002, P, FRAME_M)
+for x, y in [(px0 + 0.006, -PS + 0.006), (px1 - 0.006, -PS + 0.006), (px0 + 0.006, PS - 0.006), (px1 - 0.006, PS - 0.006)]:
+    spin(body, [(0, 0), (0.003, 0), (0.0025, 0.002), (0, 0.0025)], H, FRAME_M @ at(x, y, 0.003), 8)
 B_ = 0.012
 for lo, hi in [((-WX - B_, -WIN - B_, -0.004), (WX + B_, -WIN, 0.006)), ((-WX - B_, WIN, -0.004), (WX + B_, WIN + B_, 0.006)),
                ((-WX - B_, -WIN, -0.004), (-WX, WIN, 0.006)), ((WX, -WIN, -0.004), (WX + B_, WIN, 0.006))]:
     part_box(body, lo, hi, 0.003, H, FRAME_M)
 for x in (-WX - B_ / 2, WX + B_ / 2):
     spin(body, [(0, 0), (0.005, 0), (0.004, 0.003), (0, 0.004)], H, FRAME_M @ at(x, 0, 0.006), 10)
+# A divider every three drums from the ones (2026-11-17), as on the tally: 001|234 reads at a glance.
+# Chrome like the bezel, not the tally's bakelite: in the chute's shade a black bar vanished in the drum gaps.
+for k in range(3, DRUMS, 3):
+    part_box(body, (x_of(k - 0.5) - 0.0025, -WIN, -0.02), (x_of(k - 0.5) + 0.0025, WIN, 0.004), 0.001, H, FRAME_M)
 
 
 def drum(k):
@@ -188,6 +201,11 @@ for poly in me.polygons:
     part = poly.material_index
     for li in poly.loop_indices:
         col.data[li].color = (*COLOURS[part], 1)
+    if part == P:
+        pu0, pv0, pdu, pdv = PLATE_UV
+        for li in poly.loop_indices:
+            lo = FRAME_INV @ me.vertices[me.loops[li].vertex_index].co
+            uv.data[li].uv = (pu0 + min(max((lo.x - px0) / PL, 0), 1) * pdu, pv0 + min(max((lo.y + PS) / (2 * PS), 0), 1) * pdv)
     if part == D:
         c = poly.center
         k = round(((DRUMS - 1) / 2 * PITCH - (FRAME_INV @ c).x) / PITCH)

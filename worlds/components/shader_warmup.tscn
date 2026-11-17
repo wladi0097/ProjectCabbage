@@ -58,6 +58,8 @@
 [ext_resource type="Material" path="res://assets/materials/cog_steel.tres" id="55_cog_steel"]
 [ext_resource type="Material" path="res://assets/materials/maquette/maquette_card.tres" id="57_maquette"]
 [ext_resource type="Material" path="res://assets/materials/card_paper_wide.tres" id="58_card_paper_wide"]
+[ext_resource type="Material" path="res://assets/materials/card_paper_war.tres" id="59_card_paper_war"]
+[ext_resource type="Material" path="res://assets/materials/card_paper_wide_war.tres" id="60_card_paper_wide_war"]
 
 [sub_resource type="BoxMesh" id="Box"]
 size = Vector3(0.12, 0.12, 0.12)
@@ -272,6 +274,18 @@ transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0280, 0.0140, 0.02
 gi_mode = 0
 mesh = SubResource("Quad")
 material_override = ExtResource("58_card_paper_wide")
+
+[node name="CardWar" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0280, 0.0140, 0.0560)
+gi_mode = 0
+mesh = SubResource("Quad")
+material_override = ExtResource("59_card_paper_war")
+
+[node name="CardWideWar" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.0280, 0.0140, 0.0840)
+gi_mode = 0
+mesh = SubResource("Quad")
+material_override = ExtResource("60_card_paper_wide_war")
 
 [node name="CardText" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0560, 0.0140, 0)

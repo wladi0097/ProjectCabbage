@@ -76,7 +76,9 @@ func _draw() -> void:
 			Color(hot, alpha * 0.8))
 	draw_rect(bar, ink, false, 1.5)
 	draw_string(FONT, Vector2(bar.end.x, 112), clock_text(manager.left), HORIZONTAL_ALIGNMENT_RIGHT, x + w - bar.end.x, 20, hot)
-	if manager.revised and manager.phase == Manager.Phase.QUOTA:
+	if manager.on_hold and manager.phase == Manager.Phase.QUOTA:
+		draw_string(FONT, Vector2(x, 130), tr("QUOTA ON HOLD. The war takes precedence."), HORIZONTAL_ALIGNMENT_LEFT, w, 13, Color(URGENT, alpha))
+	elif manager.revised and manager.phase == Manager.Phase.QUOTA:
 		draw_string(FONT, Vector2(x, 130), tr("Head office has revised the target."), HORIZONTAL_ALIGNMENT_LEFT, w, 13, Color(ink, alpha * 0.6))
 	draw_set_transform(Vector2.ZERO)
 

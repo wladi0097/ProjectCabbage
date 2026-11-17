@@ -8,7 +8,8 @@ extends Node3D
 ## filed with a click before planning starts. Its origin is the middle of its top edge.
 ## Sounds: Slide (it slides in or away).
 
-const SIZE := Vector2(0.6, 0.42)
+## Its paper's size (m) comes from the scene: the big form (war_slip.tscn, 0.6 x 0.42) or the small
+## debut card (war_debut_slip.tscn, only the form line, the name and the foot). See size().
 ## Slides in from (and away to) this far along -x (m, the parent's frame), turned SLIDE_TURN.
 const SLIDE_FROM := 1.2
 const SLIDE_TURN := 0.2
@@ -24,7 +25,7 @@ const STRUCTURES := {
 	sprinkler = ["FIRE SAFETY SPRINKLER", "Regulations require coverage. Of everyone nearby.",
 		"Reaches only 2.5 squares, but its spray hits the figure and everyone beside it. Spread out."],
 	shredder = ["DOCUMENT SHREDDER", "Every application is reviewed. Briefly.",
-		"Reaches 3 squares. The longer it holds one figure, the harder it hits. A new figure starts it over."],
+		"Chews on one figure within 3 squares. It starts weak and bites harder every half second, up to 18 times as hard. When it switches to another figure it starts weak again: send a tough figure in first, or several at once."],
 	silo = ["LIABILITY SILO", "It was always going to blow. Nobody budgeted for it.",
 		"Lobs cabbages 4 squares. When it falls it bursts and hurts every figure beside it."],
 	wall_stone = ["MASONRY FENCING", "Access is restricted. Restrictions are flexible.",
@@ -65,6 +66,11 @@ func final(site_name: String, briefing: String) -> void:
 	_print("FORM 9-F  FINAL ACQUISITION", site_name, briefing,
 			"The last farm that is not ours. After this there is nothing left to acquire. The Board will be watching the clock.",
 			"Click to proceed.", true)
+
+
+## How big the paper lies (m, the parent's frame: its scale included), from its mesh.
+func size() -> Vector2:
+	return ($Paper.mesh as PlaneMesh).size * Vector2(scale.x, scale.z)
 
 
 ## The printed words, top to bottom (keys or names): the form line, the title, the line, the body.

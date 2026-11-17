@@ -1251,12 +1251,12 @@ func test_the_stamp_tag_tells_the_player_to_pull_the_handle() -> void:
 	assert_str((desk._tag as Label3D).text).is_equal("PULL TO STAMP")
 
 
-const CHAPTER_3 := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm", "negotiation", "rejected_goods", "research_light", "bribery", "home_review", "war_mode", "world_map", "no_taxes", "sea_lanes", "route_planning", "unit_charge", "bigger_armies", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier", "stars", "farm_shortcut", "coin_merge", "token_merge"]
+const CHAPTER_3 := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm", "negotiation", "rejected_goods", "research_light", "bribery", "home_review", "war_mode", "world_map", "no_taxes", "sea_lanes", "route_planning", "unit_charge", "bigger_armies", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier", "stars", "annexed_grid", "farm_shortcut", "coin_merge", "token_merge"]
 ## Chapter 3's chain as it is dealt: each entry arrives once the one before it is stamped, a group all at once.
 const CHAPTER_3_DEALS := [["market_intelligence"], ["cash_holding", "big_ideas", "archive_capacity"], ["condense", "structured_farm"],
 		["negotiation"], ["rejected_goods"], ["bribery"], ["home_review"], ["war_mode"], ["world_map"], ["no_taxes"], ["sea_lanes"], ["stars"]]
 ## Its optional cards, beside the chain: nothing waits for them.
-const CHAPTER_3_OPTIONAL := ["map_readout", "research_light", "farm_shortcut", "coin_merge", "token_merge"]
+const CHAPTER_3_OPTIONAL := ["map_readout", "research_light", "annexed_grid", "farm_shortcut", "coin_merge", "token_merge"]
 ## The war line, beside the main line from the first law on, one card after the other; stars waits for it.
 const CHAPTER_3_WAR := ["route_planning", "unit_charge", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier"]
 ## The war line's card dealt by the boss's paper.
@@ -1367,6 +1367,34 @@ func test_stamping_the_world_map_card_takes_its_cabbages_and_findings_and_no_far
 	assert_int(save.stock).is_equal(500)
 	assert_int(save.findings).is_equal(100)
 	assert_int(save.farms_owned.size()).is_equal(5)
+
+
+func test_the_annexed_grid_card_needs_twenty_farms_and_makes_a_condensed_cabbage_hold_twelve() -> void:
+	var card := UpgradeDesk.card_data(Projector.GRID_CARD)
+	assert_int(card.farms).is_equal(20)
+	assert_array(card.needs).contains(["condense"])
+	assert_array(UpgradeDesk.Events.DRY_LEFT).contains([Projector.GRID_CARD])  # A reward: nothing waits for it.
+	var save := SaveGame.new()
+	save.coin_limit = card.price * 2
+	save.coins = card.price
+	save.findings_limit = card.also.findings * 2
+	save.findings = card.also.findings
+	for i in 19:
+		save.farms_owned.append("F-%d" % i)
+	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(card))).is_false()
+	save.farms_owned.append("F-19")
+	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(card))).is_true()
+	save.condense = 8
+	UpgradeDesk.apply(Projector.GRID_CARD, save)
+	assert_int(save.condense).is_equal(12)
+	save.condense = 16  # Never lowers what a save already holds.
+	UpgradeDesk.apply(Projector.GRID_CARD, save)
+	assert_int(save.condense).is_equal(16)
+	# It opens CONDENSE VII to IX: 16, 24, 32.
+	assert_str(Projector.node_data("condense_7").parent).is_equal("condense_5")
+	assert_array(Projector.node_data("condense_7").needs).contains([Projector.GRID_CARD])
+	assert_str(Projector.node_data("condense_8").parent).is_equal("condense_7")
+	assert_str(Projector.node_data("condense_9").parent).is_equal("condense_8")
 
 
 func test_stamping_condense_cabbages_makes_a_dropped_cabbage_hold_two() -> void:
@@ -2063,7 +2091,7 @@ func test_every_war_phase_card_fits_the_biggest_findings_archive_and_the_biggest
 
 ## The war cards in the order they come (the war line, then the laws and the end).
 const WAR_RAMP := ["war_mode", "world_map", "route_planning", "unit_charge", "tactics", "unit_senior", "unit_pult",
-		"retreat", "no_taxes", "bigger_armies", "sea_lanes", "unit_courier", "stars"]
+		"retreat", "no_taxes", "bigger_armies", "sea_lanes", "unit_courier", "annexed_grid", "stars"]
 
 
 func test_the_war_cards_findings_climb_card_by_card_from_a_few_thousand() -> void:

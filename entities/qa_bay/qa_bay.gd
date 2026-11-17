@@ -98,6 +98,8 @@ var _yields: Array[int] = []
 var _owed := 0.0
 ## Slips out of the bay and not filed yet (on their way out, on the desk or homing); value in meta.
 var _slips: Array[Node3D] = []
+## The slip merges in the air (merge_once): quitting (_file_pending) cuts them off with their slips.
+var _merges: Array[Tween] = []
 ## Findings held back while the desk in front is full, and the seconds until the next try.
 var _backlog := 0
 var _retry := 0.0
@@ -333,6 +335,9 @@ func _file_pending() -> void:
 	for slip in _slips:
 		slip.queue_free()
 	_slips.clear()
+	for merge in _merges:  # Their slips are gone: a merge still in the air must not move them again.
+		merge.kill()
+	_merges.clear()
 
 
 ## Files `amount` Findings: what fits under the limit comes in and counts as earned (as coins:
@@ -446,6 +451,8 @@ func merge_once(top: int) -> bool:
 	var spot := group[0].global_position + Vector3.UP * CoinPile.MERGE_LIFT
 	var value := values[pick[0]] * pick.size()
 	var tween := create_tween().set_parallel()
+	_merges = _merges.filter(func(running: Tween) -> bool: return running.is_valid())
+	_merges.append(tween)
 	for slip in group:
 		var rest := slip.global_position
 		tween.tween_method(func(t: float) -> void:

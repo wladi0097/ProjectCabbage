@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/icons/cabbage_icon.svg" id="2_cabbage"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/trash_icon.svg" id="3_trash"]
 
 [sub_resource type="StyleBoxFlat" id="Plate"]
 bg_color = Color(0.8, 0.815, 0.78, 1)
@@ -30,6 +31,29 @@ expand_margin_left = 0.0
 shadow_color = Color(0.11, 0.125, 0.118, 0.25)
 shadow_offset = Vector2(5, 6)
 
+[sub_resource type="StyleBoxFlat" id="SmallRound"]
+bg_color = Color(0.8, 0.815, 0.78, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.11, 0.125, 0.118, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+corner_detail = 16
+shadow_color = Color(0.11, 0.125, 0.118, 0.25)
+shadow_offset = Vector2(3, 4)
+
+[sub_resource type="StyleBoxFlat" id="HoldFill"]
+bg_color = Color(0.416, 0.169, 0.157, 0.85)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+corner_detail = 16
+
 [sub_resource type="StyleBoxFlat" id="Track"]
 bg_color = Color(0.875, 0.886, 0.851, 1)
 border_width_left = 4
@@ -58,6 +82,7 @@ offset_bottom = 676.0
 mouse_filter = 2
 
 [node name="Name" type="Label" parent="."]
+clip_text = true
 layout_mode = 0
 offset_right = 560.0
 offset_bottom = 70.0
@@ -114,6 +139,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("Plate")
 
 [node name="Text" type="Label" parent="Hp"]
+clip_text = true
 layout_mode = 0
 offset_left = 8.0
 offset_right = 262.0
@@ -136,6 +162,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("Plate")
 
 [node name="Text" type="Label" parent="Damage"]
+clip_text = true
 layout_mode = 0
 offset_left = 8.0
 offset_right = 262.0
@@ -157,6 +184,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("Plate")
 
 [node name="Text" type="Label" parent="Speed"]
+clip_text = true
 layout_mode = 0
 offset_left = 8.0
 offset_right = 262.0
@@ -179,6 +207,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("Plate")
 
 [node name="Text" type="Label" parent="Target"]
+clip_text = true
 layout_mode = 0
 offset_left = 8.0
 offset_right = 262.0
@@ -256,6 +285,36 @@ text = "HIRE AND TRAIN"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
+
+[node name="Dismiss" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 214.0
+offset_top = 122.0
+offset_right = 294.0
+offset_bottom = 202.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("SmallRound")
+
+[node name="Fill" type="Panel" parent="Dismiss"]
+layout_mode = 0
+offset_right = 80.0
+offset_bottom = 80.0
+scale = Vector2(0, 0)
+pivot_offset = Vector2(40, 40)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("HoldFill")
+
+[node name="Icon" type="TextureRect" parent="Dismiss"]
+self_modulate = Color(0.11, 0.125, 0.118, 1)
+layout_mode = 0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 64.0
+offset_bottom = 64.0
+mouse_filter = 2
+texture = ExtResource("3_trash")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Trainee" type="Control" parent="."]
 layout_mode = 0

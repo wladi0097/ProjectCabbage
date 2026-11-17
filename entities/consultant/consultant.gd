@@ -8,8 +8,9 @@ extends Node3D
 ## by the slate for the next tap. On target it withdraws off screen.
 ## Its mandate (save.consultant_bounce, consultant_floor, consultant_ceiling) is the player's word:
 ## it holds the whole-dollar price whose refusals at the street's current mood come nearest the share
-## allowed, within the floor and ceiling (and squeeze_cap). The player outranks it: after a press on
-## the slate it backs off for PLAYER_PAUSE seconds, then returns to its mandate.
+## allowed, within the floor and ceiling (and squeeze_cap). The player outranks it: a price chalked by
+## hand becomes the mandate (adopt), so it never fights a press or a held arrow and keeps the player's
+## refusal share as the mood moves.
 ## A light switch on the slate's frame (there once the card is stamped) opens the mandate sheet
 ## (mandate_sheet.tscn); its lamp shows whether the consultant is on duty (save.consultant_on).
 
@@ -22,8 +23,8 @@ const CARD := "pricing_consultant"
 ## Off screen past the left edge, at the slate's depth.
 const ENTRY := Vector3(-2.6, 1.25, -0.3)
 const SIZE := 0.9
-const PLAYER_PAUSE := 15.0
-## The mandate's refusals allowed (percent): stepped by BOUNCE_STEP from 0 to BOUNCE_MAX.
+## The mandate's refusals allowed (percent): stepped by BOUNCE_STEP from 0 to BOUNCE_MAX (a share
+## adopted from the player's own price may sit above it).
 const BOUNCE_STEP := 5
 const BOUNCE_MAX := 50
 ## The projector node with which it chalks its target in one tap.
@@ -31,6 +32,10 @@ const SMART := "consultant_smart"
 ## The projector nodes STEP 2, 5 and 10 (step size -> node): a tap moves the price by the biggest bought
 ## that doesn't overshoot the target, $1 without.
 const STEPS := {2: "consultant_step_2", 5: "consultant_step_5", 10: "consultant_step_10"}
+## The projector node (EXPRESS ENGAGEMENT, after RETAINER) with which its hand crosses the desk
+## EXPRESS_SPEED times as fast (its tap interval halves through the node's own `mul`).
+const EXPRESS := "consultant_express"
+const EXPRESS_SPEED := 2.0
 ## Fingertip distances off an arrow along the slate face's normal (FACE): hovering, and pressed.
 ## From the front, so the finger is not hidden behind the tilted slate.
 const FACE := Vector3(0.0, 0.875, 0.485)
@@ -149,9 +154,21 @@ static func ceiling_of(save: SaveGame) -> int:
 	return Slate.max_price(save.marketing) if save.consultant_ceiling <= 0 else save.consultant_ceiling
 
 
-## The mandate's refusals allowed after a stepper click `dir` (-1, 1): BOUNCE_STEP a click, 0..BOUNCE_MAX.
-static func step_bounce(allowed: int, dir: int) -> int:
-	return clampi(allowed + dir * BOUNCE_STEP, 0, BOUNCE_MAX)
+## The mandate's refusals allowed after a stepper click `dir` (-1, 1): BOUNCE_STEP a click onto the
+## next multiple of it, 0..BOUNCE_MAX (or the adopted share, if that is higher).
+static func step_bounce(allowed: float, dir: int) -> float:
+	return clampf(snappedf(allowed + dir * BOUNCE_STEP, BOUNCE_STEP), 0.0, maxf(BOUNCE_MAX, allowed))
+
+
+## The player chalked the price by hand: it becomes the mandate. The refusals allowed are the share
+## refused at that price at the current mood; the floor and ceiling widen to take it in, and a price
+## under the dearest that sells every cabbage becomes the ceiling (else a share of 0 would raise it).
+static func adopt(save: SaveGame) -> void:
+	var price := save.sale_price
+	save.consultant_bounce = 100.0 * bounce(price, Slate.ref_price(save.marketing, Slate.street_mood(save)))
+	save.consultant_floor = mini(save.consultant_floor, price)
+	if price > ceiling_of(save) or target_price(save) > price:
+		save.consultant_ceiling = price
 
 
 ## The floor after a click `dir`: $1 a click, from the slate's lowest price up to the ceiling.
@@ -218,15 +235,22 @@ func _show_switch(animate := true) -> void:
 	_switch.show_on(save.consultant_on, animate)
 
 
-## A press on the slate: the consultant waits PLAYER_PAUSE seconds, then returns to its mandate.
+## A press (or a held arrow's repeat) on the slate: the price becomes the mandate (adopt) and a hand
+## on its way withdraws; with nothing left to change it stays away until the mood moves.
 func _back_off() -> void:
-	_wait = PLAYER_PAUSE
+	if SaveManager.save.stamped.has(CARD):
+		adopt(SaveManager.save)
 	if _phase != Phase.AWAY:
 		_step = 0
 		_phase = Phase.WITHDRAW
 
 
+## How fast the hand crosses the desk (m/s): REACH_SPEED, EXPRESS_SPEED times that with EXPRESS.
+static func reach_speed(save: SaveGame) -> float:
+	return REACH_SPEED * (EXPRESS_SPEED if save.tree_bought.has(EXPRESS) else 1.0)
+
+
 ## Moves the fingertip toward `to`; true once it is there.
 func _move(to: Vector3, delta: float) -> bool:
-	_tip = _tip.move_toward(to, REACH_SPEED * delta)
+	_tip = _tip.move_toward(to, reach_speed(SaveManager.save) * delta)
 	return _tip.is_equal_approx(to)

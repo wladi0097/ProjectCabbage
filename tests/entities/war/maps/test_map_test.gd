@@ -264,3 +264,16 @@ func test_hedges_join_toward_hedge_neighbours_and_a_bridge_deck_crosses_its_rive
 	var deck := func(cell: Vector2i) -> float: return (_node_at(map, cell).get_node("Deck") as Node3D).rotation.y
 	assert_float(deck.call(Vector2i(6, 3))).is_equal_approx(PI / 2.0, 0.001)  # The river runs north-south here.
 	assert_float(deck.call(Vector2i(9, 6))).is_equal(0.0)
+
+
+func test_a_wall_with_no_wall_neighbour_stands_as_a_segment_across_its_cell_not_a_lone_post() -> void:
+	assert_array(WarMap.wall_arms(Vector2i(4, 4), {Vector2i(4, 4): true})).is_equal(["North", "South"])
+	assert_array(WarMap.wall_arms(Vector2i(4, 4), {Vector2i(4, 4): true, Vector2i(5, 4): true})).is_equal(["East"])
+	var map := _map()
+	var corner := _node_at(map, Vector2i(7, 2))
+	var alive := []
+	for node in map.buildings():
+		alive.append(WarMap.cell_of(node) not in [Vector2i(8, 2), Vector2i(7, 3)])  # Both its neighbours down.
+	map.show_walls(alive)
+	for arm: String in WarMap.ARMS:
+		assert_bool((corner.get_node("Arms/" + arm) as Node3D).visible).override_failure_message(arm).is_equal(arm in WarMap.LONE_ARMS)

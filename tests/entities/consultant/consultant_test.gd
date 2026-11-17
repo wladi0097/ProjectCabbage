@@ -85,10 +85,15 @@ func test_the_helper_never_chalks_below_the_floor_or_above_the_ceiling() -> void
 
 
 func test_the_bounce_allowed_steps_by_five_percent_from_none_to_half() -> void:
-	assert_int(Consultant.step_bounce(10, 1)).is_equal(15)
-	assert_int(Consultant.step_bounce(10, -1)).is_equal(5)
-	assert_int(Consultant.step_bounce(0, -1)).is_equal(0)
-	assert_int(Consultant.step_bounce(50, 1)).is_equal(50)
+	assert_float(Consultant.step_bounce(10, 1)).is_equal(15.0)
+	assert_float(Consultant.step_bounce(10, -1)).is_equal(5.0)
+	assert_float(Consultant.step_bounce(0, -1)).is_equal(0.0)
+	assert_float(Consultant.step_bounce(50, 1)).is_equal(50.0)
+	# A share adopted from a hand-set price steps back onto the fives, and never up past itself over half.
+	assert_float(Consultant.step_bounce(43.75, -1)).is_equal(40.0)
+	assert_float(Consultant.step_bounce(43.75, 1)).is_equal(50.0)
+	assert_float(Consultant.step_bounce(73.0, 1)).is_equal(73.0)
+	assert_float(Consultant.step_bounce(73.0, -1)).is_equal(70.0)
 
 
 func test_the_floor_never_climbs_over_the_ceiling_nor_the_ceiling_under_the_floor() -> void:
@@ -112,7 +117,7 @@ func test_with_no_ceiling_set_the_ceiling_steps_down_from_the_slates_top_and_up_
 
 func test_a_new_mandate_lets_ten_percent_be_refused_with_no_price_limits() -> void:
 	var save := SaveGame.new()
-	assert_int(save.consultant_bounce).is_equal(10)
+	assert_float(save.consultant_bounce).is_equal(10.0)
 	assert_int(save.consultant_floor).is_equal(Slate.MIN_PRICE)
 	assert_int(save.consultant_ceiling).is_equal(0)
 	assert_bool(save.consultant_on).is_true()
@@ -180,17 +185,87 @@ func test_the_consultant_does_nothing_before_its_card_is_stamped() -> void:
 	assert_int(SaveManager.save.sale_price).is_equal(2)
 
 
-func test_a_hand_press_only_pauses_the_helper() -> void:
-	var consultant := _desk()
+## The player chalks `price` by hand on the desk's slate.
+func _press(consultant: Consultant, price: int) -> void:
+	SaveManager.save.sale_price = price
 	consultant.slate.player_rewrote.emit()
 
-	_run(consultant, Consultant.PLAYER_PAUSE - 1.0)
-	assert_int(SaveManager.save.sale_price).is_equal(2)
+
+func test_a_manual_change_sets_the_mandate_to_the_new_prices_refusal_share() -> void:
+	var save := _street(1.5, 1.0)
+	save.stamped.append(Consultant.CARD)
+	save.sale_price = 6
+	Consultant.adopt(save)
+	# $6 against the $4.50 full-sale price: 1 - (4.5 / 6)^2 = 43.75% refused.
+	assert_float(save.consultant_bounce).is_equal_approx(43.75, 0.001)
+	assert_int(Consultant.target_price(save)).is_equal(6)
+
+
+func test_the_consultant_keeps_the_players_price_at_an_unchanged_mood() -> void:
+	var consultant := _desk()
+	_press(consultant, 6)
+	_run(consultant, 20.0)
+	assert_int(SaveManager.save.sale_price).is_equal(6)
 	assert_int(consultant._phase).is_equal(Consultant.Phase.AWAY)
 
-	# Then back to its mandate, not to the player's price.
-	_run(consultant, 6.0)
-	assert_int(SaveManager.save.sale_price).is_equal(3)
+	# Even under the full-sale price, where every cabbage sells: that price becomes the ceiling.
+	_press(consultant, 2)
+	_run(consultant, 20.0)
+	assert_int(SaveManager.save.sale_price).is_equal(2)
+	assert_int(SaveManager.save.consultant_ceiling).is_equal(2)
+
+
+func test_a_price_outside_the_mandates_limits_widens_them() -> void:
+	var save := _street(1.5, 1.0)
+	save.consultant_floor = 5
+	save.consultant_ceiling = 7
+	save.sale_price = 9
+	Consultant.adopt(save)
+	assert_int(save.consultant_ceiling).is_equal(9)
+	save.sale_price = 3
+	Consultant.adopt(save)
+	assert_int(save.consultant_floor).is_equal(3)
+	assert_int(Consultant.target_price(save)).is_equal(3)
+
+
+func test_after_a_hand_change_the_consultant_follows_the_mood_with_the_players_share() -> void:
+	var save := _street(1.5, 1.0)
+	save.sale_price = 6
+	Consultant.adopt(save)
+	# A better mood: the $5.40 full-sale price refuses about the same share at $7 (40.5%).
+	save.demand_mood = 1.2
+	assert_int(Consultant.target_price(save)).is_equal(7)
+	save.demand_mood = 0.8
+	assert_int(Consultant.target_price(save)).is_equal(5)
+	assert_float(save.consultant_bounce).is_equal_approx(43.75, 0.001)
+
+
+func test_holding_an_arrow_is_never_fought() -> void:
+	var consultant := _desk()
+	_run(consultant, 3.0)  # On its way to $5.
+	for price in range(3, 13):
+		_press(consultant, price)
+		_run(consultant, 0.1)
+		assert_int(SaveManager.save.sale_price).is_equal(price)
+	_run(consultant, 30.0)
+	assert_int(SaveManager.save.sale_price).is_equal(12)
+	assert_int(consultant._phase).is_equal(Consultant.Phase.AWAY)
+
+
+func test_there_is_no_hidden_pause_after_a_hand_change() -> void:
+	var consultant := _desk()
+	_press(consultant, 6)
+	SaveManager.save.demand_mood = 1.2
+	# Well inside the old 15 s pause: one tap interval and the reach.
+	_run(consultant, 7.0)
+	assert_int(SaveManager.save.sale_price).is_equal(7)
+
+
+func test_with_express_engagement_the_consultants_hand_crosses_the_desk_twice_as_fast() -> void:
+	var save := SaveGame.new()
+	assert_float(Consultant.reach_speed(save)).is_equal(Consultant.REACH_SPEED)
+	save.tree_bought.append(Consultant.EXPRESS)
+	assert_float(Consultant.reach_speed(save)).is_equal(Consultant.REACH_SPEED * 2.0)
 
 
 func test_switched_off_mid_reach_the_consultant_withdraws_and_stays_away() -> void:
@@ -254,7 +329,7 @@ func test_an_old_save_with_the_retired_skill_and_markup_still_loads() -> void:
 
 	assert_object(old).is_not_null()
 	assert_int(old.sale_price).is_equal(7)
-	assert_int(old.consultant_bounce).is_equal(10)
+	assert_float(old.consultant_bounce).is_equal(10.0)
 
 
 func test_the_consultant_taps_the_biggest_step_bought_that_does_not_overshoot() -> void:

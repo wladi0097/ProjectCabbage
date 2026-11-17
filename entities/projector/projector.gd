@@ -57,6 +57,11 @@ const MAT_MAX := 10
 ## (MAT_OLD_STEPS: the size reached, its price). migrate_mat brings an old save down to MAT_MAX and
 ## gives the coins of those steps back.
 const MAT_OLD_STEPS := [[11, 22150], [14, 100000], [17, 300000], [20, 700000]]
+## The desk card that takes a plain condensed cabbage past CONDENSE V (8) to 12 and opens CONDENSE
+## VII to IX (their `needs`). It replaced CONDENSE VI (CAPPED_CONDENSE, the old 8 to 12 step, $3.5M):
+## migrate_condense_cap files the card for a save that bought it.
+const GRID_CARD := "annexed_grid"
+const CAPPED_CONDENSE := "condense_6"
 const NODES := [
 	# Departments: free sub-hubs around the hub, one per direction, never bought (`dept`). Greyed until
 	# their own `needs` / `research` are met; every upgrade hangs under exactly one of them.
@@ -416,6 +421,38 @@ Each robot carries 66 coins per trip, not 36."},
 		mul = {vacuum_speed = 1.4}, title = "FIRMWARE UPDATE III",
 		body = "The speed limiter is reclassified as a suggestion.
 Coin robots drive 40% faster."},
+	# Chapter 3's coin units (BIG MINDS and the cash card on): the spine goes on left to the fourth
+	# robot and turns down to the fifth (the wheel must still fit the wide sheet zoomed out; the dock
+	# row still fits the mat edge), a bag step before each robot, the drive and the nozzle beside them.
+	# Paced against chapter 3's coins and slips (reports/fb17_robots, tools/pace.py ch3).
+	{id = "vacuum_hopper_3", parent = "vacuum_3", at = Vector2(-4.29, 0.27), icon = "puck", price = 20000,
+		needs = ["big_ideas", "cash_holding"], add = {vacuum_capacity = 34}, title = "BAG RECLASSIFICATION",
+		body = "The bag is reclassified as a sack.
+Each coin robot carries 100 coins per trip
+before it drives home, not 66."},
+	{id = "vacuum_4", parent = "vacuum_hopper_3", at = Vector2(-4.85, 0.31), icon = "puck", price = 45000,
+		add = {vacuums = 1}, title = "FOURTH UNIT",
+		body = "The department has requested a subcommittee.
+A fourth coin robot docks on the mat:
+4 instead of 3."},
+	{id = "vacuum_speed_4", parent = "vacuum_4", at = Vector2(-4.29, 0.70), icon = "puck", price = 90000,
+		mul = {vacuum_speed = 1.5}, title = "FIRMWARE UPDATE IV",
+		body = "Braking is now optional and logged.
+Coin robots drive 50% faster."},
+	{id = "vacuum_hopper_4", parent = "vacuum_4", at = Vector2(-4.85, 0.74), icon = "puck", price = 150000,
+		add = {vacuum_capacity = 50}, title = "BAG CONSOLIDATION",
+		body = "Two sacks are merged into one larger sack.
+Each coin robot carries 150 coins per trip
+before it drives home, not 100."},
+	{id = "vacuum_5", parent = "vacuum_hopper_4", at = Vector2(-4.85, 1.17), icon = "puck", price = 300000,
+		add = {vacuums = 1}, title = "FIFTH UNIT",
+		body = "The fifth unit reports to the fourth.
+A fifth coin robot docks on the mat:
+5 instead of 4."},
+	{id = "vacuum_nozzle_2", parent = "vacuum_5", at = Vector2(-4.29, 1.13), icon = "puck", price = 900000,
+		mul = {vacuum_reach = 1.5}, title = "INDUSTRIAL NOZZLE",
+		body = "Borrowed from street cleaning. Not returned.
+Coin robots suck up coins from 50% further away."},
 	# No number: entities/vacuum/ reads tree_bought (CoinVacuums.STABILISER).
 	{id = "vacuum_gyro", parent = "vacuum_speed_1", at = Vector2(-2.08, -0.33), icon = "puck", price = 400,
 		title = "GYROSCOPIC STABILISER",
@@ -521,7 +558,11 @@ when the target is at least $10 away."},
 		body = "Billed per tap, delivered in one.\nThe consultant chalks its target price in a single\ntap instead of step by step. Wild streets, met at once."},
 	{id = "consultant_speed_2", parent = "consultant_smart", at = Vector2(-1.26, -4.20), icon = "clock", price = 18000,
 		mul = {consultant_interval = 0.5}, title = "RETAINER",
-		body = "The consultant no longer leaves.\nIt taps the slate every 1 s instead of 2 s."},
+		body = "Paid a year in advance. Refunds are not discussed.\nIt taps the slate every 1 s instead of 2 s."},
+	# The hand's speed: no number, the consultant reads tree_bought (Consultant.EXPRESS).
+	{id = "consultant_express", parent = "consultant_speed_2", at = Vector2(-1.32, -4.65), icon = "clock", price = 40000,
+		needs = ["big_ideas"], mul = {consultant_interval = 0.5}, title = "EXPRESS ENGAGEMENT",
+		body = "The consultant is now billed by the minute.\nIts hand crosses the desk twice as fast\nand taps the slate every 0.5 s instead of 1 s."},
 	# Sales events (catch combo far up-left, waste bin down, window targets far right):
 	# entities/catch_combo/, rotten_bin/, window_targets/. The golden lamp's card (entities/golden_lamp/)
 	# is the last of its kind: its nodes are under LIGHTING SCHEDULE (lamp_mult, below).
@@ -770,7 +811,9 @@ not 3: it takes 4 from your golden stock."},
 		body = "The cabbage is now legal tender in three districts.
 A condensed golden cabbage holds 6 cabbages,
 not 4: it takes 6 from your golden stock."},
-	# The ladder (2 from the card): 3, 4, 6, 8, 12, 16, 24, 32, each +33% or +50%. The mat stops at
+	# The ladder (2 from the card): 3, 4, 6, 8, then the desk card GRID_CARD (12, at 20 farms: a
+	# playtest's x12 with conveyors and slogans jumped income twelvefold, so the chain stops at 8 until
+	# the war is nearly won), then 16, 24, 32, each +33% or +50%. The mat stops at
 	# MAT_MAX cabbages and the chute at CONVEYOR III, so what follows a bigger harvest (the farms, CH2's
 	# SEED BEDS) is what each cabbage holds; the first three steps cost what the mat's old steps to
 	# 14, 17 and 20 did. Paced in tools/pace.py (`ch3`, `flow`): at the end the desk moves what the farm
@@ -787,16 +830,15 @@ not 4: it takes 6 from your golden stock."},
 	{id = "condense_5", parent = "condense_4", at = Vector2(6.40, 0.85), icon = "crate", price = 1500000,
 		add = {condense = 2}, title = "CONDENSE V",
 		body = "It is heavier than it looks. So is the paperwork.\nA condensed cabbage holds 8 cabbages, not 6:\nit takes 8 from stock and counts as 8."},
-	{id = "condense_6", parent = "condense_5", at = Vector2(7.10, 0.85), icon = "crate", price = 3500000,
-		add = {condense = 4}, title = "CONDENSE VI",
-		body = "A dozen is now a unit of one.\nA condensed cabbage holds 12 cabbages, not 8:\nit takes 12 from stock and counts as 12."},
-	{id = "condense_7", parent = "condense_6", at = Vector2(7.80, 0.85), icon = "crate", price = 5000000,
-		add = {condense = 4}, title = "CONDENSE VII",
-		body = "The cabbage has been asked not to expand.\nA condensed cabbage holds 16 cabbages, not 12:\nit takes 16 from stock and counts as 16."},
-	{id = "condense_8", parent = "condense_7", at = Vector2(8.50, 0.85), icon = "crate", price = 10000000,
+	{id = "condense_7", parent = "condense_5", at = Vector2(7.10, 0.85), icon = "crate", price = 5000000,
+		needs = ["annexed_grid"], add = {condense = 4}, title = "CONDENSE VII",
+		body = "The cabbage has been asked not to expand.
+A condensed cabbage holds 16 cabbages, not 12:
+it takes 16 from stock and counts as 16."},
+	{id = "condense_8", parent = "condense_7", at = Vector2(7.80, 0.85), icon = "crate", price = 10000000,
 		add = {condense = 8}, title = "CONDENSE VIII",
 		body = "Scales are no longer issued. They kept breaking.\nA condensed cabbage holds 24 cabbages, not 16:\nit takes 24 from stock and counts as 24."},
-	{id = "condense_9", parent = "condense_8", at = Vector2(9.20, 0.85), icon = "crate", price = 14000000,
+	{id = "condense_9", parent = "condense_8", at = Vector2(8.50, 0.85), icon = "crate", price = 14000000,
 		add = {condense = 8}, title = "CONDENSE IX",
 		body = "It is a crate. It has the shape of a cabbage.\nA condensed cabbage holds 32 cabbages, not 24:\nit takes 32 from stock and counts as 32."},
 	# TREASURY: the most coins the save holds (save.coin_limit, SaveGame.earn), $200,000 from the desk
@@ -1375,6 +1417,19 @@ static func migrate_condense(save: SaveGame, root: String, stat: String) -> void
 				next = node.id
 		step = next
 	save.set(stat, maxi(save.get(stat), save.condense))
+
+
+## A save that bought CONDENSE VI before the chain stopped at V (2026-11-17): the node is dropped and
+## the desk card GRID_CARD that replaced it counts as stamped, so CONDENSE VII to IX stay open and
+## save.condense keeps what it had (12 or more: nothing lost, nothing added). Safe to rerun.
+static func migrate_condense_cap(save: SaveGame) -> void:
+	var at := save.tree_bought.find(CAPPED_CONDENSE)
+	if at < 0:
+		return
+	save.tree_bought.remove_at(at)
+	if not save.stamped.has(GRID_CARD):
+		save.stamped.append(GRID_CARD)
+	UpgradeDesk.apply(GRID_CARD, save)
 
 
 ## The chute's wait after a sale (save.restock_delay) with the nodes `bought`: a new save's, times

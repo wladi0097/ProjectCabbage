@@ -122,7 +122,13 @@ const NOTE_FADE := 0.15
 ## The farm the war is for (&"": none yet).
 var farm := &""
 ## The fight under way (null: none). Created at begin, PLANNING until START.
-var fight: WarFight
+var fight: WarFight:
+	set(value):
+		fight = value
+		at_war = value != null
+## A war is on: from the fight set up at begin until the sheet has left (or the scene goes). The one
+## check for "war is running" (the manager pauses on it).
+static var at_war := false
 ## The end playing out (null: none): from the stamp until the sheet leaves.
 var _dealing: Tween
 var _hot := &""
@@ -416,8 +422,8 @@ func _pencil_line(points: PackedVector2Array) -> void:
 func on_slip(pixel: Vector2) -> bool:
 	if debut == "" or not _slip.visible or fight == null or fight.state != WarFight.State.PLANNING:
 		return false
-	var corner := pixel_of(_slip.position - Vector3(WarSlip.SIZE.x / 2.0, 0.0, 0.0))
-	return Rect2(corner, WarSlip.SIZE * PIXELS_PER_METRE).has_point(pixel)
+	var corner := pixel_of(_slip.position - Vector3(_slip.size().x / 2.0, 0.0, 0.0))
+	return Rect2(corner, _slip.size() * PIXELS_PER_METRE).has_point(pixel)
 
 
 ## The debut slip's card fades in (`on`) or out, like a hovered form's in the tray.
@@ -918,6 +924,8 @@ func _site_title() -> String:
 
 func _exit_tree() -> void:
 	Hand.stand_in = false
+	if fight != null:
+		at_war = false
 	if _ducked > 0.0:
 		_ducked = 0.0
 		duck(0.0)  # The scene left: the other sounds come back at once.

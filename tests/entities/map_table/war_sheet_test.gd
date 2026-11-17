@@ -21,6 +21,7 @@ func after_test() -> void:
 	FarmRegister.lamp_held = false
 	BossReport.hold = 0.0
 	FarmTv.away = false
+	WarSheet.at_war = false  # A sheet never added to the tree ends no war on its own.
 	SaveManager.save = _real_save
 	TranslationServer.set_locale(_locale)
 
@@ -568,6 +569,7 @@ func test_every_structure_slip_is_german_in_german_and_fits_its_paper() -> void:
 				var room := font.get_multiline_string_size(tr(label.text), HORIZONTAL_ALIGNMENT_LEFT, label.size.x, size) \
 						if label.autowrap_mode != TextServer.AUTOWRAP_OFF else font.get_string_size(tr(label.text), HORIZONTAL_ALIGNMENT_LEFT, -1, size)
 				assert_float(room.x).override_failure_message(tr(label.text)).is_less_equal(label.size.x)
+				assert_float(room.y).override_failure_message(tr(label.text)).is_less_equal(label.size.y)  # Both lines show.
 				assert_float(room.y).override_failure_message(tr(label.text)).is_less_equal(label.size.y + 6.0)
 
 
@@ -875,6 +877,13 @@ func test_no_boss_paper_comes_while_a_war_is_on_it_waits_until_the_sheet_has_lef
 	assert_float(BossReport.hold).is_equal(0.0)  # Left: the paper may come.
 
 
+func test_a_war_counts_as_on_from_the_fight_set_up_until_the_sheet_has_left() -> void:
+	var sheet := _sheet()
+	assert_bool(WarSheet.at_war).is_true()
+	assert_bool(sheet.abort()).is_true()
+	assert_bool(WarSheet.at_war).is_false()
+
+
 func test_once_the_after_action_report_of_a_won_war_is_in_the_war_glove_gives_the_cursor_back() -> void:
 	_glove_gives_the_cursor_back("won")
 
@@ -935,7 +944,7 @@ func test_a_new_structure_slip_bears_only_its_name_and_hovered_shows_its_card() 
 	var sheet := _sheet({field_associate = 1}, &"K-8")  # K-7's map: the first tower.
 	sheet._laying.custom_step(10.0)
 	assert_array(Array(sheet._slip.words()).slice(1, 4)).is_equal(["SUPERVISOR'S TOWER", "", ""])  # Only its name.
-	var slip_middle := WarSheet.pixel_of(sheet._slip.position + Vector3(0.0, 0.0, WarSlip.SIZE.y / 2.0))
+	var slip_middle := WarSheet.pixel_of(sheet._slip.position + Vector3(0.0, 0.0, sheet._slip.size().y / 2.0))
 	assert_bool(sheet.on_slip(slip_middle)).is_true()
 	assert_bool(sheet.on_slip(WarSheet.pixel_of_cell(Vector2(5, 5)))).is_false()  # On the battlefield.
 	var note: Control = sheet.get_node("Note/Center")
@@ -952,3 +961,18 @@ func test_a_new_structure_slip_bears_only_its_name_and_hovered_shows_its_card() 
 	sheet.place(FA, 0)
 	assert_bool(sheet.start_fight()).is_true()
 	assert_bool(sheet.on_slip(slip_middle)).is_false()  # Started: the slip goes, and its card with it.
+
+
+func test_the_new_structure_slip_is_a_small_card_lying_clear_of_the_control_box_and_every_figure_place() -> void:
+	var sheet := _sheet()
+	var slip: WarSlip = sheet._slip
+	var size := slip.size()
+	assert_float(size.x * size.y).is_less(sheet._final.size().x * sheet._final.size().y / 8.0)
+	var card := Rect2(Vector2(slip.position.x - size.x / 2.0, slip.position.z), size)
+	var control: Node3D = sheet.get_node("Control")
+	var box: AABB = control.transform * (control.get_node("Body") as MeshInstance3D).get_aabb()
+	assert_bool(card.intersects(Rect2(box.position.x, box.position.z, box.size.x, box.size.z))).is_false()
+	for k in 11:  # The largest army.
+		var spot := WarSheet._local(WarSheet.desk_pixel(k))
+		assert_bool(card.grow(0.04).has_point(Vector2(spot.x, spot.z))).override_failure_message(str(k)).is_false()
+	assert_float(card.end.x).is_less(-WarSheet.SIZE.x / 2.0)  # On the desk, off the paper.

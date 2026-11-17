@@ -7,7 +7,8 @@ extends Node3D
 ## raised by save.manager_raise, but never more than can reach the street in the time (capped: at most
 ## MARGIN of deliverable, what the chute can drop and the stock, packs and farm can supply; with
 ## nothing to deliver he doesn't come in yet). Met: the street throws a bonus of quota × price × manager_reward
-## coins in through the window. Missed: a performance concern memo; after EASE_AFTER misses in a row
+## coins in through the window. While a war is on (WarSheet.at_war) he is on hold: no clock, no
+## quota, no verdict, sales meanwhile don't count; he resumes as he was. Missed: a performance concern memo; after EASE_AFTER misses in a row
 ## the next quotas ask EASE of it until one is met (save.quota_misses_row). Nothing about a
 ## visit is saved; quitting mid-quota just ends it.
 
@@ -37,6 +38,7 @@ const MARGIN := 0.9
 ## Seconds from a cabbage landing to its sale for a quick player (the average is about 1.9).
 const QUICK_FLICK := 1.0
 const Feeder := preload("res://worlds/components/cabbage_feeder.gd")
+const WarSheet := preload("res://entities/map_table/war_sheet.gd")
 const ARRIVE_TIME := 1.4
 const LEAVE_TIME := 1.2
 const VERDICT_TIME := 3.0
@@ -67,6 +69,9 @@ var met := false
 ## This visit's quota was eased after misses in a row (the bubble says so).
 var revised := false
 var bonus := 0
+## A war is on (WarSheet.at_war): everything waits, and the bubble says the quota is on hold.
+var on_hold := false
+var _sold_seen := 0
 var _wait := FIRST_VISIT
 var _t := 0.0
 var _sample_clock := 0.0
@@ -82,10 +87,17 @@ func _ready() -> void:
 	_bubble.manager = self
 	_wait = first_wait(SaveManager.save.stamped.has(CARD))
 
-
 func _process(delta: float) -> void:
 	var save := SaveManager.save
 	if not save.stamped.has(CARD):
+		return
+	# While a war is on he waits where he is: no clock, no new quota, no verdict, and what is sold in
+	# the meantime doesn't count toward a quota under way (sold_at moves with it).
+	on_hold = WarSheet.at_war
+	if on_hold:
+		sold_at += save.sold - _sold_seen
+	_sold_seen = save.sold
+	if on_hold:
 		return
 	# Sampling starts once the card is stamped, so sales from before it don't raise the first quota.
 	if _samples.is_empty():

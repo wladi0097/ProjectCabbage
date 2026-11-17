@@ -2,6 +2,7 @@ extends GdUnitTestSuite
 
 const MANAGER := preload("res://entities/manager/manager.tscn")
 const STEP := 0.1
+const WarSheet := preload("res://entities/map_table/war_sheet.gd")
 const FAKE_COINS := "extends CoinPile\nvar paid := 0\nfunc _ready() -> void:\n\tpass\nfunc _process(_delta: float) -> void:\n\tpass\nfunc throw_in_after(_delay: float, _origin: Vector3, amount: int) -> void:\n\tpaid += amount\n"
 const FAKE_MEMO := "extends Node\nvar posted: Array[Dictionary] = []\nfunc post(m: Dictionary) -> void:\n\tposted.append(m)\n"
 
@@ -11,10 +12,12 @@ var _real_save: SaveGame
 func before_test() -> void:
 	_real_save = SaveManager.save
 	SaveManager.save = SaveGame.new()
+	WarSheet.at_war = false  # No war left over from another suite.
 
 
 func after_test() -> void:
 	SaveManager.save = _real_save
+	WarSheet.at_war = false
 
 
 func _fake(source: String) -> Node:
@@ -310,6 +313,47 @@ func test_a_missed_quota_posts_a_performance_concern_and_pays_nothing() -> void:
 	assert_int(manager.coins.get("paid")).is_equal(0)
 	assert_int((manager.memo.get("posted") as Array).size()).is_equal(1)
 	assert_str(manager.memo.get("posted")[0].re).is_equal("PERFORMANCE CONCERN")
+
+
+func test_no_quota_starts_while_a_war_is_on() -> void:
+	var manager := _manager()
+	WarSheet.at_war = true
+
+	_asking(manager)
+	_run(manager, 60.0)
+
+	assert_int(manager.phase).is_equal(Manager.Phase.AWAY)
+	assert_bool(manager.on_hold).is_true()
+
+
+func test_a_running_quota_neither_meets_nor_misses_while_a_war_is_on() -> void:
+	var manager := _manager()
+	_asking(manager)
+	WarSheet.at_war = true
+
+	SaveManager.save.sold += manager.quota * 2  # Sold during the war: doesn't count.
+	_run(manager, SaveManager.save.manager_time * 2.0)
+
+	assert_int(manager.phase).is_equal(Manager.Phase.QUOTA)
+	assert_int(SaveManager.save.quotas_met + SaveManager.save.quotas_missed).is_equal(0)
+	WarSheet.at_war = false
+	_run(manager, STEP)
+	assert_int(manager.phase).is_equal(Manager.Phase.QUOTA)  # The war's sales still don't count after it.
+
+
+func test_after_the_war_the_quota_resumes_with_the_same_time_left() -> void:
+	var manager := _manager()
+	_asking(manager)
+	var left := manager.left
+	WarSheet.at_war = true
+
+	_run(manager, 30.0)
+	assert_float(manager.left).is_equal(left)
+	WarSheet.at_war = false
+	_run(manager, STEP)
+
+	assert_float(manager.left).is_equal_approx(left - STEP, 0.001)
+	assert_bool(manager.on_hold).is_false()
 
 
 func test_after_the_verdict_he_leaves_and_returns_two_and_a_half_to_four_minutes_later() -> void:

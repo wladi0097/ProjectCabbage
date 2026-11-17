@@ -347,13 +347,13 @@ func test_everything_bought_fills_the_mat_to_ten_and_hires_two_hands_more_than_t
 	assert_int(full.desk_capacity).is_equal(10)
 	assert_int(full.hands).is_equal(Associate.MAX_VISIBLE + 2)  # DEPARTMENTAL HEADCOUNT's two speed up the visible ten.
 	assert_int(full.hand_trip).is_equal(2)
-	assert_int(full.condense).is_equal(31)  # CONDENSE II to IX on a save without the card's own step.
+	assert_int(full.condense).is_equal(27)  # CONDENSE II to V, VII to IX on a save without the cards' own steps (2, 12).
 	assert_int(full.research_condense).is_equal(8)
 	assert_int(full.golden_condense).is_equal(6)
 	assert_float(full.restock_delay).is_equal_approx(SaveGame.new().restock_delay / 4.0, 0.0001)  # CONVEYOR II and III.
 	assert_float(full.hand_output).is_equal_approx(2.25, 0.0001)
 	assert_int(full.qa_slots).is_equal(5)
-	assert_int(full.vacuums).is_equal(3)
+	assert_int(full.vacuums).is_equal(5)  # Chapter 3's FOURTH and FIFTH UNIT.
 	assert_int(full.auto_reserve).is_equal(10)
 
 
@@ -1315,13 +1315,40 @@ func test_an_old_save_with_the_third_robot_gets_both_bag_steps_and_never_less_th
 	assert_int(save.vacuums).is_equal(3)
 
 
+const CH3_COIN_UNITS: Array[String] = ["vacuum_hopper_3", "vacuum_4", "vacuum_speed_4", "vacuum_hopper_4", "vacuum_5", "vacuum_nozzle_2"]
+
+
+func test_chapter_three_brings_a_fourth_and_fifth_coin_robot_only_behind_big_minds() -> void:
+	var early := _stamped_but(["big_ideas", "stars"])
+	var later := _stamped_but(["stars"])
+	assert_array(Projector.node_data("vacuum_hopper_3").needs).contains(["big_ideas"])
+	for id: String in CH3_COIN_UNITS:
+		assert_bool(Projector.is_shown(id, early)).override_failure_message(id).is_false()
+	assert_bool(Projector.is_shown("vacuum_hopper_3", later)).is_true()
+	var save := SaveGame.new()
+	UpgradeDesk.apply("coin_collector", save)
+	for id: String in _ancestors("vacuum_nozzle_2") + ["vacuum_nozzle_2"]:
+		Projector.apply(id, save)
+	assert_int(save.vacuums).is_equal(5)
+	assert_int(save.vacuum_capacity).is_equal(150)
+
+
+func test_each_chapter_three_coin_unit_step_costs_more_than_the_one_before() -> void:
+	var last: int = Projector.node_data("vacuum_speed_3").price
+	for id: String in CH3_COIN_UNITS:
+		var price: int = Projector.node_data(id).price
+		assert_int(price).override_failure_message(id).is_greater(last)
+		last = price
+
+
+
 ## Chapter 3 (desk cards big_ideas, condense). The first node of each late-game run moved behind
 ## BIG MINDS HAVE BIG IDEAS, and the nodes that only exist on the wide sheet.
 const LATE: Array[String] = ["slogan_6", "hire_associate_7", "conveyor_3", "lamp_mult", "bin_rebate_5", "research_mult_4",
 		"own_sale_3", "own_lab_3", "research_chance_3", "grow_4", "double_findings", "gold_sale_2", "gold_lab_2", "stock_3000"]
 const WIDE_ONLY: Array[String] = ["slogan_7", "slogan_8", "mandatory_consumption", "headcount_2", "two_handed",
 		"condense_gold", "condense_gold_3", "condense_gold_4", "condense_gold_6", "condense_2", "condense_3", "condense_4", "condense_5",
-		"condense_6", "condense_7", "condense_8", "condense_9"]
+		"condense_7", "condense_8", "condense_9"]
 
 
 ## Every desk card stamped but `missing`.
@@ -1532,11 +1559,67 @@ func test_the_plain_condense_chain_needs_no_research_switch_and_climbs_to_thirty
 	# Each of II and III is felt: +50%, then +33% on what a condensed cabbage holds.
 	assert_float(4.0 / 3.0).is_greater_equal(1.25)
 	# IV to IX (the mat stops at ten, so what follows the farm is what a cabbage holds): +50% and +33% in turn.
-	for step: Array in [["condense_4", 6], ["condense_5", 8], ["condense_6", 12], ["condense_7", 16], ["condense_8", 24], ["condense_9", 32]]:
+	# IV to IX (the mat stops at ten, so what follows the farm is what a cabbage holds): +50% and +33% in
+	# turn, the annexed grid card taking 8 to 12 between V and VII.
+	for step: Array in [["condense_4", 6], ["condense_5", 8], [Projector.GRID_CARD, 12], ["condense_7", 16], ["condense_8", 24], ["condense_9", 32]]:
 		var was := save.condense
-		assert_bool(Projector.buy(step[0], save)).override_failure_message(step[0]).is_true()
+		if step[0] == Projector.GRID_CARD:
+			UpgradeDesk.apply(step[0], save)
+		else:
+			assert_bool(Projector.buy(step[0], save)).override_failure_message(step[0]).is_true()
 		assert_int(save.condense).is_equal(step[1])
 		assert_float(float(save.condense) / was).is_greater_equal(1.25)
+
+
+func test_the_plain_condense_chain_stops_at_eight_until_the_annexed_grid_card_is_stamped() -> void:
+	var save := _stamped_but([Projector.GRID_CARD, "stars"])
+	save.coins = 100000000
+	save.coin_limit = 1000000000
+	UpgradeDesk.apply("condense", save)
+	for id: String in ["condense_2", "condense_3", "condense_4", "condense_5"]:
+		assert_bool(Projector.buy(id, save)).override_failure_message(id).is_true()
+	assert_int(save.condense).is_equal(8)
+	assert_bool(Projector.node_data(Projector.CAPPED_CONDENSE).is_empty()).is_true()  # CONDENSE VI is gone.
+	for id: String in ["condense_7", "condense_8", "condense_9"]:
+		assert_bool(Projector.is_shown(id, save)).override_failure_message(id).is_false()
+	assert_bool(Projector.buy("condense_7", save)).is_false()
+	assert_int(save.condense).is_equal(8)
+	save.stamped.append(Projector.GRID_CARD)
+	UpgradeDesk.apply(Projector.GRID_CARD, save)
+	assert_int(save.condense).is_equal(12)
+	assert_bool(Projector.is_reachable("condense_7", save)).is_true()
+	assert_bool(Projector.buy("condense_7", save)).is_true()
+	assert_int(save.condense).is_equal(16)
+
+
+func test_an_old_save_that_bought_condense_six_and_seven_keeps_sixteen_with_the_grid_card_filed_once() -> void:
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["condense"])
+	save.condense = 16
+	save.tree_bought = PackedStringArray(["condense_2", "condense_3", "condense_4", "condense_5", "condense_6", "condense_7"])
+	UpgradeDesk.migrate(save)
+	UpgradeDesk.migrate(save)  # Safe to rerun.
+	assert_int(save.condense).is_equal(16)  # Nothing lost, nothing added.
+	assert_bool(save.tree_bought.has(Projector.CAPPED_CONDENSE)).is_false()
+	assert_bool(save.tree_bought.has("condense_7")).is_true()
+	assert_int(Array(save.stamped).count(Projector.GRID_CARD)).is_equal(1)
+	assert_bool(Projector.is_reachable("condense_8", save)).is_true()
+	# Only CONDENSE VI bought: 12, and VII is next.
+	var six := SaveGame.new()
+	six.stamped = PackedStringArray(["condense"])
+	six.condense = 12
+	six.tree_bought = PackedStringArray(["condense_2", "condense_3", "condense_4", "condense_5", "condense_6"])
+	UpgradeDesk.migrate(six)
+	assert_int(six.condense).is_equal(12)
+	assert_bool(six.stamped.has(Projector.GRID_CARD)).is_true()
+	assert_bool(Projector.is_reachable("condense_7", six)).is_true()
+	# A save that never bought it gets no card.
+	var five := SaveGame.new()
+	five.condense = 8
+	five.tree_bought = PackedStringArray(["condense_5"])
+	UpgradeDesk.migrate(five)
+	assert_bool(five.stamped.has(Projector.GRID_CARD)).is_false()
+	assert_int(five.condense).is_equal(8)
 
 
 func test_every_wide_sheet_node_is_dearer_than_the_big_ideas_card_itself() -> void:
@@ -1680,6 +1763,14 @@ func test_the_consultants_step_nodes_sit_between_reading_the_room_and_yield_opti
 	assert_str(Projector.node_data(Consultant.SMART).parent).is_equal("consultant_step_10")
 	for step: Array in [["consultant_step_2", 350], ["consultant_step_5", 700], ["consultant_step_10", 1200]]:
 		assert_int(Projector.node_data(step[0]).price).override_failure_message(step[0]).is_equal(step[1])
+
+
+func test_express_engagement_follows_the_retainer_and_halves_the_consultants_tap_interval_again() -> void:
+	assert_str(Projector.node_data(Consultant.EXPRESS).parent).is_equal("consultant_speed_2")
+	var save := SaveGame.new()
+	for id: String in ["consultant_speed_1", "consultant_speed_2", Consultant.EXPRESS]:
+		Projector.apply(id, save)
+	assert_float(save.consultant_interval).is_equal_approx(0.5, 0.0001)
 
 
 func _old_save() -> SaveGame:

@@ -373,6 +373,9 @@ func test_every_column_word_fits_its_box_in_english_and_german_and_short_ones_ke
 				var size := label.get_theme_font_size(&"font_size")
 				assert_bool(DepotSheet.fits(label, size)).override_failure_message("%s %s %s" % [locale, unit, path]).is_true()
 				assert_int(size).override_failure_message("%s %s %s" % [locale, unit, path]).is_greater(DepotSheet.MIN_FIT)
+			# A long name must not stretch its box into the next column (it did in German: the label grew).
+			var title := sheet._columns[unit].get_node("Name") as Label
+			assert_float(title.size.x).override_failure_message("%s %s" % [locale, unit]).is_equal(DepotSheet.COLUMN_WIDTH)
 
 
 func test_a_senior_asset_is_refused_when_only_one_place_is_left() -> void:
@@ -539,3 +542,108 @@ func test_a_training_node_bought_mid_training_keeps_the_trainees_bar_where_it_wa
 	save.army_training[0].left = WarRules.training_seconds(save, "field_associate") / 2.0
 	save.tree_bought.append("war_training_1")
 	assert_array(DepotSheet.training_of(save, "field_associate")).is_equal([0.5])
+
+
+## The art pixel in the middle of `unit`'s trash circle.
+func _bin(sheet: DepotSheet, unit := "field_associate") -> Vector2:
+	return sheet._art_rect(sheet._columns[unit].get_node("Dismiss")).get_center()
+
+
+func test_holding_the_trash_circle_dismisses_one_figure_and_letting_go_early_dismisses_nobody() -> void:
+	SaveManager.save.army = {field_associate = 2}
+	var sheet := _sheet()
+	var spot := sheet.spot_at(_bin(sheet))
+	assert_str(spot).is_equal(&"dismiss:field_associate")
+	assert_str(sheet.hint(spot)).contains("Hold to dismiss one field associate")
+	sheet.hover(spot)
+	sheet.press(spot)
+	sheet._process(UpgradeTree.HOLD_TIME * 0.5)
+	assert_float((sheet._columns["field_associate"].get_node("Dismiss/Fill") as Control).scale.x).is_equal_approx(0.5, 0.01)
+	sheet.release(spot)
+	sheet._process(UpgradeTree.HOLD_TIME)
+	assert_int(int(SaveManager.save.army.field_associate)).is_equal(2)
+	sheet.press(spot)
+	sheet._process(UpgradeTree.HOLD_TIME + 0.01)
+	assert_int(int(SaveManager.save.army.field_associate)).is_equal(1)
+	assert_bool((sheet.get_node("Dismiss") as SoundCue).playing).is_true()
+	assert_str((sheet._columns["field_associate"].get_node("Ready") as Label).text).is_equal("1×")
+
+
+func test_sliding_off_the_trash_circle_mid_hold_dismisses_nobody() -> void:
+	SaveManager.save.army = {field_associate = 1}
+	var sheet := _sheet()
+	var spot := sheet.spot_at(_bin(sheet))
+	sheet.hover(spot)
+	sheet.press(spot)
+	sheet._process(UpgradeTree.HOLD_TIME * 0.5)
+	sheet.hover(&"")
+	sheet._process(UpgradeTree.HOLD_TIME)
+	assert_int(int(SaveManager.save.army.field_associate)).is_equal(1)
+
+
+func test_the_trash_circle_is_faint_and_dismisses_nobody_while_there_is_nobody_to_dismiss() -> void:
+	var sheet := _sheet()
+	var spot := sheet.spot_at(_bin(sheet))
+	assert_float((sheet._columns["field_associate"].get_node("Dismiss") as Control).modulate.a).is_equal_approx(DepotSheet.DISMISS_FAINT, 0.001)
+	assert_str(sheet.hint(spot)).is_equal("Nobody to dismiss.")
+	sheet.press(spot)
+	assert_bool((sheet.get_node("Jam") as SoundCue).playing).is_true()
+	assert_str(sheet._holding).is_empty()
+	SaveManager.save.army = {field_associate = 1}
+	sheet.refresh()
+	assert_float((sheet._columns["field_associate"].get_node("Dismiss") as Control).modulate.a).is_equal(1.0)
+
+
+func test_hovering_a_unit_fades_in_its_personnel_file_and_leaving_fades_it_out() -> void:
+	var sheet := _sheet()
+	var plate := sheet._art_rect(sheet._columns["field_associate"].get_node("Hp")).get_center()
+	assert_str(sheet.spot_at(plate)).is_equal(&"figure:field_associate")  # The column counts, not just the figure.
+	sheet.hover(sheet.spot_at(plate))
+	sheet._note_fade.custom_step(1.0)
+	assert_float(sheet._note.modulate.a).is_equal(1.0)
+	assert_str(sheet._note_paper._title).is_equal("FIELD ASSOCIATE")
+	assert_str(sheet.hint(sheet.spot_at(plate))).is_empty()  # The file, no hint slip.
+	sheet.hover(&"")
+	sheet._note_fade.custom_step(1.0)
+	assert_float(sheet._note.modulate.a).is_equal(0.0)
+
+
+func test_every_personnel_file_has_english_and_german_text_and_never_says_units() -> void:
+	var german := {}
+	var table := FileAccess.open("res://ressources/translations/game.csv", FileAccess.READ)
+	while not table.eof_reached():
+		var row := table.get_csv_line()
+		if row.size() >= 3 and not row[2].is_empty():
+			german[row[0]] = true
+	for unit in Depot.IN_SERVICE:
+		var said: Array = DepotSheet.FILES[unit]
+		for text: String in said + [DepotSheet.NAMES[unit], "PERSONNEL FILE"]:
+			assert_bool(german.has(text)).override_failure_message("%s: no German for %s" % [unit, text]).is_true()
+			assert_bool(text.to_lower().contains("units")).override_failure_message("%s says units" % unit).is_false()
+
+
+func test_a_second_refusal_mid_blink_leaves_no_button_or_note_red() -> void:
+	SaveManager.save.stamped.append("unit_courier")
+	SaveManager.save.army = {field_associate = WarRules.army_cap(SaveManager.save)}
+	var sheet := _sheet()
+	var ink := (sheet._columns["field_associate"].get_node("Note") as Label).get_theme_color(&"font_color")
+	sheet.requisition("field_associate")
+	sheet._blinking.custom_step(0.01)  # On red.
+	assert_that((sheet._columns["field_associate"].get_node("Hire") as Control).modulate).is_not_equal(Color.WHITE)
+	sheet.requisition("field_associate")  # A double click.
+	sheet._blinking.custom_step(0.01)
+	sheet.requisition("courier")  # Then the next column.
+	sheet._blinking.custom_step(10.0)
+	for unit: String in ["field_associate", "courier"]:
+		assert_that((sheet._columns[unit].get_node("Hire") as Control).modulate).is_equal(Color.WHITE)
+		assert_that((sheet._columns[unit].get_node("Note") as Label).get_theme_color(&"font_color")).is_equal(ink)
+
+
+func test_a_depot_put_away_mid_blink_opens_again_with_no_red_button() -> void:
+	SaveManager.save.army = {field_associate = WarRules.army_cap(SaveManager.save)}
+	var sheet := _sheet()
+	sheet.requisition("field_associate")
+	sheet._blinking.custom_step(0.01)
+	sheet.hide()
+	sheet.show()
+	assert_that((sheet._columns["field_associate"].get_node("Hire") as Control).modulate).is_equal(Color.WHITE)

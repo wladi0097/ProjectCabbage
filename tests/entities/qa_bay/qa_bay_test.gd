@@ -623,3 +623,22 @@ func test_golden_cabbages_skip_the_research_light_until_its_projector_node() -> 
 	assert_float(QaBay.boosted(20.0, true, {lab_lamp = 5.0}, _save)).is_equal(20.0)
 	_save.tree_bought.append(QaBay.LAB_GOLD)
 	assert_float(QaBay.boosted(20.0, true, {lab_lamp = 5.0}, _save)).is_equal(100.0)
+
+
+func test_quitting_mid_merge_frees_the_slips_without_the_merge_touching_them_again() -> void:
+	var bay := _bay_in_tree()
+	var tokens: Array[Node3D] = []
+	for i in 5:
+		var slip := _slip(Vector3(0.2 * i, QaBay.DESK_Y + 0.005, 0.5), 1)
+		slip.set_meta(&"cell", Vector2i(i, 0))
+		slip.set_meta(&"thick", 0.01)
+		tokens.append(slip)
+	bay._slips = tokens.duplicate()
+	assert_bool(bay.merge_once(100)).is_true()
+	var merge: Tween = bay._merges[-1]
+	bay._file_pending()  # Quitting: every slip filed and freed.
+	assert_bool(merge.is_valid()).is_false()  # The flight is cut off with them.
+	await await_millis(int((CoinPile.MERGE_SHAKE + CoinPile.MERGE_TIME) * 1000.0) + 100)
+	for slip: Variant in tokens:
+		assert_bool(is_instance_valid(slip)).is_false()
+	assert_int(_save.findings).is_equal(5)

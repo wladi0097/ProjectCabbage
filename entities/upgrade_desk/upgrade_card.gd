@@ -91,6 +91,11 @@ const WIDE_PAD := 0.008
 const WIDE_SIZE := 100
 const WIDE_HEADING_BOX := Vector2(0.33, 0.095)
 const WIDE_HEADING_UP := 0.0075
+## The war line's cards (war_card: WAR_CARD and every card after it) print on the same papers with a
+## muted rust-orange header band instead of the green (tools/make_card_paper_war.py).
+const WAR_CARD := "war_mode"
+const WAR_MATERIAL := preload("res://assets/materials/card_paper_war.tres")
+const WAR_WIDE_MATERIAL := preload("res://assets/materials/card_paper_wide_war.tres")
 
 var id := ""
 var price := 0
@@ -493,11 +498,27 @@ static func paper_tint(card: Dictionary) -> Color:
 	return PRIORITY_TINT if card.get("priority", false) else Color.WHITE
 
 
+## Whether `card` (a CARDS entry) belongs to the war: AUTHORISE HOSTILE ACQUISITIONS (WAR_CARD) and
+## every card that needs it, directly or through another (the war line: units, tactics, world map...).
+## The one rule for the war's orange header (paper_of, PaperNote).
+static func war_card(card: Dictionary) -> bool:
+	if card.get("id", "") == WAR_CARD:
+		return true
+	for need: String in card.get("needs", []):
+		if war_card(UpgradeDesk.card_data(need)):
+			return true
+	return false
+
+
 ## The paper card `card` is printed on: WIDE_MATERIAL for more than two price items (wide), else
-## MATERIAL; dyed PRIORITY_TINT for a priority form (paper_tint).
+## MATERIAL; their WAR_ papers (orange header) for a war card (war_card); a priority form is always
+## the plain stock dyed PRIORITY_TINT (paper_tint), war or not.
 static func paper_of(card: Dictionary) -> StandardMaterial3D:
-	var paper: StandardMaterial3D = WIDE_MATERIAL if wide(UpgradeDesk.costs(card)) else MATERIAL
+	var is_wide := wide(UpgradeDesk.costs(card))
+	var paper: StandardMaterial3D = WIDE_MATERIAL if is_wide else MATERIAL
 	if paper_tint(card) == Color.WHITE:
+		if war_card(card):
+			return WAR_WIDE_MATERIAL if is_wide else WAR_MATERIAL
 		return paper
 	if not _priority_materials.has(paper):
 		var dyed := paper.duplicate() as StandardMaterial3D

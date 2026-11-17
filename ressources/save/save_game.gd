@@ -99,9 +99,10 @@ extends Resource
 ## Old saves' consultant_skill and consultant_markup are retired: loaded, read by nothing.
 @export var consultant_interval := 4.0
 ## Its mandate (the sheet its switch opens): on duty or away, the share of cabbages (percent) it may
-## let the street refuse, and the price floor and ceiling it keeps to (0 ceiling: none).
+## let the street refuse (a float: a price set by hand adopts its exact share), and the price floor
+## and ceiling it keeps to (0 ceiling: none).
 @export var consultant_on := true
-@export var consultant_bounce := 10
+@export var consultant_bounce := 10.0
 @export var consultant_floor := 1
 @export var consultant_ceiling := 0
 # Sales events: golden lamp, catch combo, rotten units + bin, window targets (entities/golden_lamp/,

@@ -66,6 +66,8 @@ var _relay: Tween
 @onready var _lamps: MeshInstance3D = $Model/Lamps
 @onready var _count: Label3D = $Count
 @onready var _handset: Interactable = $Model/Armature/Skeleton3D/ReceiverMount/Handset/Interactable
+## The whole box answers the hand as the handset does: a click anywhere on the phone lifts it.
+@onready var _box: Interactable = $Body/Interactable
 @onready var _rest := position
 @onready var _lift_sound: SoundCue = $Lift
 @onready var _open_sound: SoundCue = $LineOpen
@@ -75,9 +77,10 @@ var _relay: Tween
 
 
 func _ready() -> void:
-	_handset.grabbed.connect(lift)
-	_handset.hovered.connect(_stir.bind(HOVER))
-	_handset.unhovered.connect(_stir.bind(0.0))
+	for grip: Interactable in [_handset, _box]:
+		grip.grabbed.connect(lift)
+		grip.hovered.connect(_stir.bind(HOVER))
+		grip.unhovered.connect(_stir.bind(0.0))
 	_pose()
 	_light(_lit)
 

@@ -300,3 +300,31 @@ func test_a_soldiers_cabbages_fit_the_biggest_store_with_a_full_mat_of_condensed
 		biggest += int(node.get("add", {}).get("storage_cap", 0))
 		condensed += int(node.get("add", {}).get("condense", 0))
 	assert_int(WarRules.unit_cabbage_price("field_associate") + Projector.MAT_MAX * condensed).is_less_equal(biggest)
+
+
+func test_dismissing_takes_a_ready_figure_first_frees_its_place_and_pays_nothing_back() -> void:
+	var save := _save()
+	save.army = {field_associate = 2}
+	assert_bool(WarRules.buy(save, "field_associate")).is_true()
+	var stock := save.stock
+	assert_bool(WarRules.dismiss(save, "field_associate")).is_true()
+	assert_int(int(save.army.field_associate)).is_equal(1)
+	assert_int(save.army_training.size()).is_equal(1)  # The trainee stays.
+	assert_int(save.stock).is_equal(stock)
+	assert_int(WarRules.army_size(save)).is_equal(2)
+
+
+func test_with_none_ready_dismissing_withdraws_the_newest_trainee_of_that_unit() -> void:
+	var save := _save(["war_mode", "unit_courier"], [], 50000)
+	for unit: String in ["field_associate", "courier", "field_associate"]:
+		assert_bool(WarRules.buy(save, unit)).is_true()
+	assert_bool(WarRules.dismiss(save, "field_associate")).is_true()
+	assert_array(save.army_training.map(func(e: Dictionary) -> String: return e.unit)).is_equal(["field_associate", "courier"])
+
+
+func test_with_nobody_of_that_unit_there_is_nothing_to_dismiss() -> void:
+	var save := _save()
+	save.army = {field_associate = 0}
+	assert_bool(WarRules.can_dismiss(save, "field_associate")).is_false()
+	assert_bool(WarRules.dismiss(save, "field_associate")).is_false()
+	assert_bool(WarRules.can_dismiss(save, "courier")).is_false()

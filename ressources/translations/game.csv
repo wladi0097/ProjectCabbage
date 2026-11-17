@@ -51,9 +51,9 @@ Adds the RESEARCH LAB section to the projector: faster analysis, more Findings, 
 Der Projektor erhält die Abteilung FORSCHUNGSLABOR: schnellere Prüfung, mehr Befunde, mehr Prüftische."
 RETAIN A PRICING CONSULTANT,RETAIN A PRICING CONSULTANT,PREISBERATER BEAUFTRAGEN
 "Billed by the hour.
-Every 4 s it moves your price $1 toward the price at which your mandate's share of cabbages is refused (10% to start). Use the arrows yourself and it leaves for 15 s. Its switch by the slate opens the mandate.","Billed by the hour.
-Every 4 s it moves your price $1 toward the price at which your mandate's share of cabbages is refused (10% to start). Use the arrows yourself and it leaves for 15 s. Its switch by the slate opens the mandate.","Wird stundenweise abgerechnet.
-Alle 4 s ändert er Ihren Preis um $1 in Richtung des Preises, zu dem der im Mandat festgelegte Anteil der Kohlköpfe abgelehnt wird (anfangs 10%). Bedienen Sie die Pfeile selbst, geht er für 15 s. Sein Schalter an der Tafel öffnet das Mandat."
+Every 4 s it moves your price $1 toward the price at which your mandate's share of cabbages is refused (10% to start). Change the price yourself and that becomes the mandate: the consultant keeps your refusal rate from then on. Its switch by the slate opens the mandate.","Billed by the hour.
+Every 4 s it moves your price $1 toward the price at which your mandate's share of cabbages is refused (10% to start). Change the price yourself and that becomes the mandate: the consultant keeps your refusal rate from then on. Its switch by the slate opens the mandate.","Wird stundenweise abgerechnet.
+Alle 4 s ändert er Ihren Preis um $1 in Richtung des Preises, zu dem der im Mandat festgelegte Anteil der Kohlköpfe abgelehnt wird (anfangs 10%). Ändern Sie den Preis selbst, wird er zum Mandat: Der Berater hält von da an Ihre Ablehnungsquote. Sein Schalter an der Tafel öffnet das Mandat."
 INTERCEPTION INCENTIVE SCHEME,INTERCEPTION INCENTIVE SCHEME,FANGPRÄMIE
 "Initiative is rewarded.
 Catch a cabbage in mid-air: every sale pays +10%, up to +50% after 5 catches. A cabbage you let land ends the bonus.","Initiative is rewarded.
@@ -590,6 +590,48 @@ FIRMWARE UPDATE III,FIRMWARE UPDATE III,FIRMWARE-UPDATE III
 Coin robots drive 40% faster.","The speed limiter is reclassified as a suggestion.
 Coin robots drive 40% faster.","Der Geschwindigkeitsbegrenzer gilt jetzt als Empfehlung.
 Münzroboter fahren 40% schneller."
+BAG RECLASSIFICATION,BAG RECLASSIFICATION,BEUTEL-NEUEINSTUFUNG
+"The bag is reclassified as a sack.
+Each coin robot carries 100 coins per trip
+before it drives home, not 66.","The bag is reclassified as a sack.
+Each coin robot carries 100 coins per trip
+before it drives home, not 66.","Der Beutel wird als Sack neu eingestuft.
+Jeder Münzroboter trägt 100 Münzen pro Fahrt,
+bevor er heimfährt, nicht 66."
+FOURTH UNIT,FOURTH UNIT,VIERTES GERÄT
+"The department has requested a subcommittee.
+A fourth coin robot docks on the mat:
+4 instead of 3.","The department has requested a subcommittee.
+A fourth coin robot docks on the mat:
+4 instead of 3.","Die Abteilung hat einen Unterausschuss beantragt.
+Ein vierter Münzroboter dockt an der Matte an:
+4 statt 3."
+FIRMWARE UPDATE IV,FIRMWARE UPDATE IV,FIRMWARE-UPDATE IV
+"Braking is now optional and logged.
+Coin robots drive 50% faster.","Braking is now optional and logged.
+Coin robots drive 50% faster.","Bremsen ist jetzt freiwillig und wird protokolliert.
+Münzroboter fahren 50% schneller."
+BAG CONSOLIDATION,BAG CONSOLIDATION,BEUTEL-KONSOLIDIERUNG
+"Two sacks are merged into one larger sack.
+Each coin robot carries 150 coins per trip
+before it drives home, not 100.","Two sacks are merged into one larger sack.
+Each coin robot carries 150 coins per trip
+before it drives home, not 100.","Zwei Säcke werden zu einem größeren zusammengelegt.
+Jeder Münzroboter trägt 150 Münzen pro Fahrt,
+bevor er heimfährt, nicht 100."
+FIFTH UNIT,FIFTH UNIT,FÜNFTES GERÄT
+"The fifth unit reports to the fourth.
+A fifth coin robot docks on the mat:
+5 instead of 4.","The fifth unit reports to the fourth.
+A fifth coin robot docks on the mat:
+5 instead of 4.","Das fünfte Gerät berichtet an das vierte.
+Ein fünfter Münzroboter dockt an der Matte an:
+5 statt 4."
+INDUSTRIAL NOZZLE,INDUSTRIAL NOZZLE,INDUSTRIEDÜSE
+"Borrowed from street cleaning. Not returned.
+Coin robots suck up coins from 50% further away.","Borrowed from street cleaning. Not returned.
+Coin robots suck up coins from 50% further away.","Von der Straßenreinigung geliehen. Nicht zurückgegeben.
+Münzroboter saugen Münzen aus 50% größerer Entfernung an."
 SECOND BENCH,SECOND BENCH,ZWEITER PRÜFTISCH
 "A second bench in the lab.
 The research lab analyses 2 cabbages at once, not 1.","A second bench in the lab.
@@ -646,10 +688,18 @@ Er ändert Ihren Preis alle 2 s statt alle 4 s."
 READS THE ROOM,READS THE ROOM,STIMMUNGSGESPÜR
 YIELD OPTIMISATION,YIELD OPTIMISATION,ERTRAGSOPTIMIERUNG
 RETAINER,RETAINER,PAUSCHALVERTRAG
-"The consultant no longer leaves.
-It taps the slate every 1 s instead of 2 s.","The consultant no longer leaves.
-It changes your price every 1 s, not every 2 s.","Der Berater geht nicht mehr.
+"Paid a year in advance. Refunds are not discussed.
+It taps the slate every 1 s instead of 2 s.","Paid a year in advance. Refunds are not discussed.
+It changes your price every 1 s, not every 2 s.","Ein Jahr im Voraus bezahlt. Über Erstattungen wird nicht gesprochen.
 Er ändert Ihren Preis jede Sekunde statt alle 2 s."
+EXPRESS ENGAGEMENT,EXPRESS ENGAGEMENT,EILMANDAT
+"The consultant is now billed by the minute.
+Its hand crosses the desk twice as fast
+and taps the slate every 0.5 s instead of 1 s.","The consultant is now billed by the minute.
+Its hand crosses the desk twice as fast
+and changes your price every 0.5 s, not every 1 s.","Der Berater wird jetzt minutengenau abgerechnet.
+Seine Hand quert den Tisch doppelt so schnell
+und ändert Ihren Preis alle 0,5 s statt jede Sekunde."
 GOLD STANDARD,GOLD STANDARD,GOLDSTANDARD
 "The Golden Age is revalued upwards.
 During a Golden Age, sales pay 8× instead of 5×.","The Golden Age is revalued upwards.
@@ -1115,6 +1165,7 @@ That will do.,That will do.,Das genügt.
 Noted. Carry on.,Noted. Carry on.,Vermerkt. Weitermachen.
 I see.,I see.,Aha.
 Head office has revised the target.,Head office has revised the target.,Die Zentrale hat die Vorgabe angepasst.
+QUOTA ON HOLD. The war takes precedence.,QUOTA ON HOLD. The war takes precedence.,VORGABE AUSGESETZT. Der Krieg hat Vorrang.
 Disappointing.,Disappointing.,Enttäuschend.
 We'll talk.,We'll talk.,Wir sprechen uns.
 PERFORMANCE CONCERN,PERFORMANCE CONCERN,LEISTUNGSBEDENKEN
@@ -1744,7 +1795,7 @@ UP,UP,HOCH
 DOWN,DOWN,RUNTER
 NO MOVE,NO MOVE,KEINE ÄNDERUNG
 IN %s,IN %s,IN %s
-"The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Touch the slate yourself and it waits 15 s. It is billed either way.","The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Touch the slate yourself and it waits 15 s. It is billed either way.","Der Berater hält den Preis so nah wie möglich an den erlaubten Ablehnungen, innerhalb Ihrer Grenzen, während sich die Straße bewegt. Fassen Sie die Tafel selbst an, wartet er 15 s. Abgerechnet wird so oder so."
+"The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Change the price yourself and that becomes the mandate: it keeps your refusal rate from then on. It is billed either way.","The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Change the price yourself and that becomes the mandate: it keeps your refusal rate from then on. It is billed either way.","Der Berater hält den Preis so nah wie möglich an den erlaubten Ablehnungen, innerhalb Ihrer Grenzen, während sich die Straße bewegt. Ändern Sie den Preis selbst, wird er zum Mandat: Er hält von da an Ihre Ablehnungsquote. Abgerechnet wird so oder so."
 PROGRESS IS REQUIRED,PROGRESS IS REQUIRED,FORTSCHRITT IST ERFORDERLICH
 "Head office notes that a form on your desk could have been approved five minutes ago and was not. Forms are orders. Approving them is how the company advances, and with it your position. The projector is discretionary. Progress is not.","Head office notes that a form on your desk could have been approved five minutes ago and was not. Forms are orders. Approving them is how the company advances, and with it your position. The projector is discretionary. Progress is not.","Die Zentrale stellt fest, dass ein Formular auf Ihrem Schreibtisch seit fünf Minuten genehmigt werden könnte und nicht genehmigt wurde. Formulare sind Anweisungen. Wer sie genehmigt, bringt das Unternehmen voran und mit ihm die eigene Position. Der Projektor ist freiwillig. Fortschritt nicht."
 NOTICE,NOTICE,HINWEIS
@@ -2155,14 +2206,6 @@ A condensed cabbage holds 8 cabbages, not 6:
 it takes 8 from stock and counts as 8.","Schwerer, als er aussieht. Der Papierkram auch.
 Ein verdichteter Kohlkopf fasst 8 statt 6:
 Er nimmt 8 aus dem Lager und zählt als 8."
-CONDENSE VI,CONDENSE VI,VERDICHTEN VI
-"A dozen is now a unit of one.
-A condensed cabbage holds 12 cabbages, not 8:
-it takes 12 from stock and counts as 12.","A dozen is now a unit of one.
-A condensed cabbage holds 12 cabbages, not 8:
-it takes 12 from stock and counts as 12.","Ein Dutzend ist jetzt eine Einheit von eins.
-Ein verdichteter Kohlkopf fasst 12 statt 8:
-Er nimmt 12 aus dem Lager und zählt als 12."
 CONDENSE VII,CONDENSE VII,VERDICHTEN VII
 "The cabbage has been asked not to expand.
 A condensed cabbage holds 16 cabbages, not 12:
@@ -2550,6 +2593,11 @@ ENGAGE EXPRESS COURIERS,ENGAGE EXPRESS COURIERS,EILKURIERE BEAUFTRAGEN
 Express couriers join the personnel depot. They ride fast, hop any fence and leave it standing, and deliver themselves to the nearest defence.","Next-day delivery. Signature not required.
 Express couriers join the personnel depot. They ride fast, hop any fence and leave it standing, and deliver themselves to the nearest defence.","Zustellung am nächsten Tag. Unterschrift nicht erforderlich.
 Eilkuriere kommen ins Personaldepot. Sie fahren schnell, springen über jeden Zaun und lassen ihn stehen, und stellen sich selbst bei der nächsten Verteidigung zu."
+"ANNEXED POWER GRID: COMPACTOR SUPPLY","ANNEXED POWER GRID: COMPACTOR SUPPLY","ANNEKTIERTES NETZ: STROM FÜR DEN VERDICHTER"
+"The annexed countries had a power grid. It now has one customer.
+Their grid feeds the compactor. Every plain cabbage from the chute holds 12 cabbages. CONDENSE VII, VIII and IX open on the projector: 16, 24 and 32 to a cabbage.","The annexed countries had a power grid. It now has one customer.
+Their grid feeds the compactor. Every plain cabbage from the chute holds 12 cabbages. CONDENSE VII, VIII and IX open on the projector: 16, 24 and 32 to a cabbage.","Die annektierten Länder hatten ein Stromnetz. Es hat jetzt einen Abnehmer.
+Ihr Netz speist den Verdichter. Jeder gewöhnliche Kohlkopf aus der Rutsche fasst 12 Kohlköpfe. VERDICHTEN VII, VIII und IX erscheinen am Projektor: 16, 24 und 32 pro Kohlkopf."
 RESTRUCTURING CHARGE,RESTRUCTURING CHARGE,UMSTRUKTURIERUNGSLADUNG
 restructuring charge,restructuring charge,Umstrukturierungsladung
 SENIOR ASSET,SENIOR ASSET,LEITENDER MITARBEITER
@@ -2757,7 +2805,7 @@ Shoots the nearest figure within 6 squares and stays on it until it falls or wal
 "Lobs a crate that hurts every figure where it lands. Reaches 7 squares, but nobody within 2.","Lobs a crate that hurts every figure where it lands. Reaches 7 squares, but nobody within 2.","Wirft eine Kiste, die jede Figur am Einschlagort trifft. Reicht 7 Felder weit, aber niemanden näher als 2."
 "Reaches 8 squares with a stream of small, weak shots. It starts early and does not stop.","Reaches 8 squares with a stream of small, weak shots. It starts early and does not stop.","Reicht 8 Felder weit, mit einem Strom kleiner, schwacher Schüsse. Fängt früh an und hört nicht auf."
 "Reaches only 2.5 squares, but its spray hits the figure and everyone beside it. Spread out.","Reaches only 2.5 squares, but its spray hits the figure and everyone beside it. Spread out.","Reicht nur 2,5 Felder, aber der Sprühstrahl trifft die Figur und jeden neben ihr. Verteilen Sie sich."
-"Reaches 3 squares. The longer it holds one figure, the harder it hits. A new figure starts it over.","Reaches 3 squares. The longer it holds one figure, the harder it hits. A new figure starts it over.","Reicht 3 Felder. Je länger er eine Figur festhält, desto härter trifft er. Eine neue Figur setzt ihn zurück."
+"Chews on one figure within 3 squares. It starts weak and bites harder every half second, up to 18 times as hard. When it switches to another figure it starts weak again: send a tough figure in first, or several at once.","Chews on one figure within 3 squares. It starts weak and bites harder every half second, up to 18 times as hard. When it switches to another figure it starts weak again: send a tough figure in first, or several at once.","Zerkleinert eine Figur in bis zu 3 Feldern. Er beginnt schwach und beißt jede halbe Sekunde fester zu, bis 18-mal so hart. Wechselt er die Figur, beginnt er wieder schwach: Schicken Sie zuerst eine zähe Figur oder mehrere auf einmal."
 Lobs cabbages 4 squares. When it falls it bursts and hurts every figure beside it.,Lobs cabbages 4 squares. When it falls it bursts and hurts every figure beside it.,"Wirft Kohl 4 Felder weit. Fällt es, platzt es und trifft jede Figur daneben."
 Over three times as tough as picket. Staff walk round it if the way round is short.,Over three times as tough as picket. Staff walk round it if the way round is short.,"Über dreimal so stabil wie Lattenzaun. Das Personal geht außen herum, wenn der Umweg kurz ist."
 "Six times as tough as picket. Find the way round, or bring a charge.","Six times as tough as picket. Find the way round, or bring a charge.",Sechsmal so stabil wie Lattenzaun. Finden Sie den Weg außen herum oder bringen Sie eine Umstrukturierungsladung mit.
@@ -2780,6 +2828,20 @@ While you hold a staff figure over a hatched zone, a pencil line on the war shee
 Halten Sie eine Personalfigur über eine schraffierte Zone, zeigt eine Bleistiftlinie auf der Kriegskarte den Weg zu ihrem ersten Ziel."
 IN TRAINING. Available for deployment in %d s.,IN TRAINING. Available for deployment in %d s.,IN AUSBILDUNG. Einsatzbereit in %d s.
 %d more awaiting induction.,%d more awaiting induction.,%d weitere warten auf die Einarbeitung.
+Hold to dismiss one %s. No refund.,Hold to dismiss one %s. No refund.,Halten zum Entlassen: 1 × %s. Keine Erstattung.
+Hold to withdraw the newest %s from training. No refund.,Hold to withdraw the newest %s from training. No refund.,"Halten, um den jüngsten Neuzugang (%s) aus der Ausbildung zu nehmen. Keine Erstattung."
+Nobody to dismiss.,Nobody to dismiss.,Niemand zu entlassen.
+PERSONNEL FILE,PERSONNEL FILE,PERSONALAKTE
+"Keen, interchangeable and covered by the standard waiver.","Keen, interchangeable and covered by the standard waiver.","Motiviert, austauschbar und durch den Standardverzicht abgedeckt."
+"Walks to the nearest defence and hits it until it falls. The cheapest answer to a lone tower, a mailing unit or a single shredder. Send several together so the fire is shared. Fences slow them down: they walk round, or hack through when the way round is long.","Walks to the nearest defence and hits it until it falls. The cheapest answer to a lone tower, a mailing unit or a single shredder. Send several together so the fire is shared. Fences slow them down: they walk round, or hack through when the way round is long.","Geht zur nächsten Verteidigungsanlage und schlägt zu, bis sie fällt. Die günstigste Antwort auf einen einzelnen Turm, eine Massenversandstelle oder einen einzelnen Aktenvernichter. Schicken Sie mehrere zusammen, damit sich das Feuer verteilt. Zäune kosten Zeit: Die Mitarbeiter gehen außen herum oder hacken sich durch, wenn der Umweg lang ist."
+"Delivers one restructuring, in person.","Delivers one restructuring, in person.",Liefert eine Umstrukturierung. Persönlich.
+"Ignores the defences and runs for the first fence on its way, then goes off, hitting fences twenty times harder. Fragile: send it behind associates so they take the fire. Against picket it saves nothing. Against masonry and security grade, bring two.","Ignores the defences and runs for the first fence on its way, then goes off, hitting fences twenty times harder. Fragile: send it behind associates so they take the fire. Against picket it saves nothing. Against masonry and security grade, bring two.","Ignoriert die Verteidigung und läuft zum ersten Zaun auf ihrem Weg, dann geht sie hoch und trifft Zäune zwanzigmal härter. Zerbrechlich: hinter Außendienstmitarbeitern schicken, damit diese das Feuer abbekommen. Gegen Lattenzaun spart sie nichts. Gegen Mauerwerk und Sicherheitsstufe: zwei mitbringen."
+Thirty years with the company. Nobody remembers what for.,Thirty years with the company. Nobody remembers what for.,"Dreißig Jahre im Unternehmen. Niemand weiß mehr, wofür."
+"Very tough, slow, hits lightly and takes two places on the staff. Put it in front: towers lock on to it while the rest do the work. Good against towers, the CCTV mast and the mailing unit. Keep it away from shredders and silos; a silo burst takes most of its health.","Very tough, slow, hits lightly and takes two places on the staff. Put it in front: towers lock on to it while the rest do the work. Good against towers, the CCTV mast and the mailing unit. Keep it away from shredders and silos; a silo burst takes most of its health.","Sehr zäh, langsam, schlägt schwach zu und belegt zwei Plätze im Personal. Nach vorn stellen: Türme schießen sich auf ihn ein, während die anderen arbeiten. Gut gegen Türme, den Überwachungsmast und die Massenversandstelle. Von Aktenvernichtern und Silos fernhalten; ein platzendes Silo kostet ihn den Großteil seiner Gesundheit."
+"Communicates exclusively by cabbage, at range.","Communicates exclusively by cabbage, at range.","Kommuniziert ausschließlich per Kohl, auf Distanz."
+"Lobs cabbages 3.5 squares, hurting everything where they land. It outranges sprinklers and shredders and stands clear when a silo bursts, so it takes all three cheaply. Towers and the CCTV mast reach further, and the mailing unit is out of the question. Keep something in front of it.","Lobs cabbages 3.5 squares, hurting everything where they land. It outranges sprinklers and shredders and stands clear when a silo bursts, so it takes all three cheaply. Towers and the CCTV mast reach further, and the mailing unit is out of the question. Keep something in front of it.","Wirft Kohl 3,5 Felder weit und trifft alles am Einschlagort. Reicht weiter als Sprinkler und Aktenvernichter und steht weit genug weg, wenn ein Silo platzt: Alle drei nimmt er günstig. Türme und der Überwachungsmast reichen weiter, die Massenversandstelle kommt nicht in Frage. Etwas davorstellen."
+Next-day delivery. Fencing is not considered an obstacle.,Next-day delivery. Fencing is not considered an obstacle.,Lieferung am nächsten Tag. Zäune gelten nicht als Hindernis.
+"Nearly twice as fast as anyone else, and hops over fences without breaking them. Goes straight for the nearest defence: the answer to a tower or a mailing unit behind masonry. Fragile, so keep it away from sprinklers and silos.","Nearly twice as fast as anyone else, and hops over fences without breaking them. Goes straight for the nearest defence: the answer to a tower or a mailing unit behind masonry. Fragile, so keep it away from sprinklers and silos.","Fast doppelt so schnell wie alle anderen und springt über Zäune, ohne sie zu beschädigen. Geht direkt zur nächsten Verteidigungsanlage: die Antwort auf einen Turm oder eine Massenversandstelle hinter Mauerwerk. Zerbrechlich, also von Sprinklern und Silos fernhalten."
 NO STAFF ON THE BOOKS.,NO STAFF ON THE BOOKS.,KEIN PERSONAL IM BESTAND.
 Requisition personnel at the depot first.,Requisition personnel at the depot first.,Personal bitte zuerst im Personaldepot anfordern.
 QUARANTINE PROTOCOL,QUARANTINE PROTOCOL,QUARANTÄNEPROTOKOLL

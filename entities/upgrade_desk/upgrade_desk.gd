@@ -47,7 +47,7 @@ const CARDS := [
 	# Manager + pricing consultant: no effect here, entities/manager/ and entities/consultant/ start
 	# once stamped; their small upgrades are projector nodes.
 	{id = "pricing_consultant", price = 15, currency = "findings", title = "RETAIN A PRICING CONSULTANT",
-		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s it moves your price $1 toward the price at which your mandate's share of cabbages is refused (10% to start). Use the arrows yourself and it leaves for 15 s. Its switch by the slate opens the mandate."},
+		needs = ["projector", "street_posters"], body = "Billed by the hour.\nEvery 4 s it moves your price $1 toward the price at which your mandate's share of cabbages is refused (10% to start). Change the price yourself and that becomes the mandate: the consultant keeps your refusal rate from then on. Its switch by the slate opens the mandate."},
 	# Sales events: no effect here, entities/golden_lamp/, catch_combo/ and window_targets/ start
 	# once stamped; their small upgrades are projector nodes. Stamping catch_combo also starts rotten
 	# units and drops the free waste bin (GameEvents "rotten_units", entities/rotten_bin/).
@@ -381,6 +381,19 @@ Express couriers join the personnel depot. They ride fast, hop any fence and lea
 	{id = "stars", price = 10000000, also = {findings = 250000}, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "retreat", "unit_courier"],
 		body = "There is nothing left to buy down here.
 The field line counts the farms. Stamped, the board looks up."},
+	# The annexed grid (Projector.GRID_CARD; decision 2026-11-17): the conquered countries' power
+	# is rerouted to the compactor. The projector's
+	# CONDENSE chain stops at V (8 to a cabbage), and at 20 farms this one takes a plain condensed
+	# cabbage to 12 and opens CONDENSE VII to IX (16, 24, 32). It replaced CONDENSE VI: a save that
+	# bought that node has it filed (Projector.migrate_condense_cap). Optional (GameEvents.DRY_LEFT),
+	# dealt with the courier card, after the chain's end in the queue so it never holds
+	# back a chain card (needs STRATEGIC WITHDRAWAL, not just CONDENSE: a 20-farm card
+	# dealt at the first farm would sit in the tray for two hours). A reward, so cheap in coins: half a
+	# minute of income at 20 farms; its Findings are the courier card's (the war ramp only climbs), about
+	# 2.5 min of research (tools/pace.py `ch3`).
+	{id = "annexed_grid", price = 2000000, also = {findings = 200000}, farms = 20, title = "ANNEXED POWER GRID: COMPACTOR SUPPLY", needs = ["condense", "retreat"],
+		body = "The annexed countries had a power grid. It now has one customer.
+Their grid feeds the compactor. Every plain cabbage from the chute holds 12 cabbages. CONDENSE VII, VIII and IX open on the projector: 16, 24 and 32 to a cabbage."},
 	# Optional (no card needs it; one of GameEvents.DRY_LEFT). No effect here: the map table puts TO
 	# FARM over TO DESK and the farm TV splits its back key into TO DESK / TO MAP
 	# (MapTable.SHORTCUT_CARD). Dealt with NEGOTIATION, when farms are bought with cabbages and the
@@ -838,6 +851,7 @@ static func migrate(save: SaveGame) -> void:
 		drop_retired_units(save)
 	if save.migration < 8:
 		Projector.migrate_round_two(save)  # ARCHIVE moved to the projector, the consultant's steps, one condensing chain per kind.
+	Projector.migrate_condense_cap(save)  # CONDENSE VI bought before the chain stopped at V: its card is filed.
 	if save.migration < 9:
 		migrate_schedule(save)
 		if not save.farms_owned.is_empty() or save.map_sheet != "" or not save.haggles.is_empty():
@@ -945,6 +959,8 @@ static func apply(id: String, save: SaveGame) -> void:
 			save.own_lab += 0.2
 		"condense":  # A plain cabbage off the chute holds 2 from stock (CabbageFeeder.condensed).
 			save.condense = maxi(save.condense, 2)
+		Projector.GRID_CARD:  # A plain condensed cabbage holds 12, past the projector's CONDENSE V.
+			save.condense = maxi(save.condense, 12)
 		"cash_holding":  # The purse holds five times as much (SaveGame.earn).
 			save.coin_limit *= LIMIT_RAISE
 		"archive_capacity":

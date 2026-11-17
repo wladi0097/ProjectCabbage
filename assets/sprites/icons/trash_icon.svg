@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- An office waste bin with its lid, in white ink lines: a modulate inks it to the print around
+       it. The depot's dismiss circle. -->
+  <g fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 16 H54"/>
+    <path d="M25 16 V10 H39 V16"/>
+    <path d="M15 16 L19 56 H45 L49 16"/>
+    <path d="M27 25 V47"/>
+    <path d="M37 25 V47"/>
+  </g>
+</svg>

@@ -242,3 +242,22 @@ func test_a_robot_with_nothing_of_its_kind_on_the_mat_takes_the_other_kind() -> 
 	assert_int(CoinVacuums.trip_goes_on(CoinVacuums.Trip.COINS, 0, 7)).is_equal(CoinVacuums.Trip.SLIPS)
 	assert_int(CoinVacuums.trip_goes_on(CoinVacuums.Trip.SLIPS, 3, 0)).is_equal(CoinVacuums.Trip.COINS)
 	assert_int(CoinVacuums.trip_goes_on(CoinVacuums.Trip.COINS, 2, 7)).is_equal(CoinVacuums.Trip.COINS)
+
+
+func test_before_the_token_card_the_robots_still_see_the_coins_on_the_mat() -> void:
+	var real := SaveManager.save
+	var save := SaveGame.new()
+	save.stamped = PackedStringArray(["coin_collector"])
+	save.vacuums = 1
+	var pile: CoinPile = auto_free(CoinPile.new())
+	var coin := CoinPile.Coin.new()
+	coin.state = CoinPile.State.RESTING
+	pile._stacks[Vector2i(5, 0)] = [coin]
+	var vacuums := _fleet()
+	vacuums.coins = pile
+	vacuums.visible = true
+	SaveManager.save = save
+	vacuums._physics_process(0.01)
+	SaveManager.save = real
+
+	assert_int(vacuums._spots.size()).is_equal(1)

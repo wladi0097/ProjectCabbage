@@ -3,7 +3,8 @@
 #  machine_metal/  tiling greyscale brushed metal (tinted by vertex colour: brass, chrome)
 #  machine_dial/   atlas. Drum digits 0-9 stacked along v (digit d in v [d/10, (d+1)/10], upright
 #                  toward +v) in u [0, DRUM_U]; black drum sides at u [0.15, 0.25]; brass
-#                  "$$$" plate in u [0.5, 1], v [0.8, 1]; Findings plate in u [0.25, 0.5], v [0.9, 1].
+#                  "$$$" plate in u [0.5, 1], v [0.8, 1]; Findings plate in u [0.25, 0.5], v [0.9, 1];
+#                  the chute's cabbage plate in u [0.25, 0.5], v [0.7744, 0.8867] (CAB_BOX).
 import math, numpy as np, sys
 from PIL import Image, ImageDraw, ImageFont
 
@@ -75,6 +76,21 @@ def plate(box, symbol, line, scale):
 
 plate((N // 2, 0, N, int(0.2 * N)), "$$$", "TALLY MODEL 9  ·  DEPT. OF REVENUE", 1.0)
 plate((N // 4, 0, N // 2, int(0.1 * N)), "¶¶¶", "DEPT. OF QUALITY", 0.5)
+# The chute's stock plate: one cabbage head (assets/sprites/icons/cabbage_icon.svg, its veins left in
+# brass) in u [0.25, 0.5], v [CAB_V0, CAB_V1] (2026-11-17).
+CAB_BOX = (N // 4, 116, N // 2, 231)
+plate(CAB_BOX, "", "DEPT. OF SUPPLY", 0.5)
+cx, cy, r = (CAB_BOX[0] + CAB_BOX[2]) / 2, CAB_BOX[1] + (CAB_BOX[3] - CAB_BOX[1]) * 0.42, 36
+k = r / 30
+d.ellipse((cx - r, cy - r + k, cx + r, cy + r + k), fill=(24, 19, 12)); dh.ellipse((cx - r, cy - r + k, cx + r, cy + r + k), fill=50)
+def quad(p0, p1, p2, n=10):   # the svg's Q curves, sampled
+    return [tuple((1 - t) ** 2 * a + 2 * (1 - t) * t * b + t * t * c for a, b, c in zip(p0, p1, p2)) for t in (i / n for i in range(n + 1))]
+
+
+for pts in ([(0, -21), (0, 25)], quad((0, -5), (-12, -7), (-21, -19)), quad((0, -5), (12, -7), (21, -19)),
+            quad((0, 11), (-14, 9), (-25, -1)), quad((0, 11), (14, 9), (25, -1))):
+    line = [(cx + x * k, cy + y * k) for x, y in pts]
+    d.line(line, fill=(150, 124, 78), width=round(5 * k), joint="curve"); dh.line(line, fill=128, width=round(5 * k), joint="curve")
 alb.save(OUT + "machine_dial/machine_dial_albedo.png")
 h = np.array(hgt) / 255.0
 normal_from(h, 4.0).save(OUT + "machine_dial/machine_dial_normal.png")

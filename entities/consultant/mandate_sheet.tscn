@@ -228,7 +228,7 @@ horizontal_alignment = 2
 [node name="Foot" type="Label" parent="Sheet/Paper/Stack" unique_id=2100400039]
 layout_mode = 2
 theme_type_variation = &"MandateSmall"
-text = "The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Touch the slate yourself and it waits 15 s. It is billed either way."
+text = "The consultant keeps the price nearest the refusals allowed, within your limits, as the street moves. Change the price yourself and that becomes the mandate: it keeps your refusal rate from then on. It is billed either way."
 autowrap_mode = 3
 
 [node name="Click" type="AudioStreamPlayer" parent="." unique_id=2100400040]

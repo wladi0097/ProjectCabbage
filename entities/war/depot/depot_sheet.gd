@@ -20,7 +20,13 @@ extends MapSheet
 ##   bar_fill), under that the seconds it has left (seconds_left) and "+N" for the rest of the queue
 ##   (training_of). A new front lands with a drop; finished, it jumps into the big figure.
 ##   A loaded save shows the queue as it stands, without the moments;
-## - a ¶ mark while a research node of its unit can be bought (has_news).
+## - a ¶ mark while a research node of its unit can be bought (has_news);
+## - the small trash circle left of the button (spot "dismiss:<unit>"): held UpgradeTree.HOLD_TIME s
+##   (it fills oxblood), it dismisses one figure (WarRules.dismiss: a ready one, else the newest
+##   trainee; no refund). Faint while there is nobody to dismiss.
+## The mouse on a column (its figure, name or plates: spot "figure:<unit>") fades in its personnel
+## file mid-screen (`Note`, PaperNote like the war sheet's debut card: card()):
+## what the unit does and how best to use it.
 ## Below the columns, the one DEVELOPMENT PROGRAMME, beside the title block of the same height (bottom
 ## right: PERSONNEL DEPOT, the form line, the FILED stamp, STAFF n / cap): the shared upgrade tree
 ## (UpgradeTree, `Tree`, rules DepotResearch: an org chart, the hub on top, a department per hired
@@ -61,6 +67,25 @@ const BUY := "buy:"
 const FIGURE := "figure:"
 const NEWS := "news:"
 const TRAINEE := "trainee:"
+const DISMISS := "dismiss:"
+## The trash circle with nobody to dismiss is printed this faint.
+const DISMISS_FAINT := 0.3
+## The personnel file fades in and out this fast (s), like the war sheet's debut card.
+const NOTE_FADE := 0.15
+## Each unit's personnel file (card): a flavour line, then what it does and how best to use it
+## (WarRules.BASE_STATS, WarFight; the counters of research/war-balance.md).
+const FILES := {
+	field_associate = ["Keen, interchangeable and covered by the standard waiver.",
+		"Walks to the nearest defence and hits it until it falls. The cheapest answer to a lone tower, a mailing unit or a single shredder. Send several together so the fire is shared. Fences slow them down: they walk round, or hack through when the way round is long."],
+	restructuring_charge = ["Delivers one restructuring, in person.",
+		"Ignores the defences and runs for the first fence on its way, then goes off, hitting fences twenty times harder. Fragile: send it behind associates so they take the fire. Against picket it saves nothing. Against masonry and security grade, bring two."],
+	senior_asset = ["Thirty years with the company. Nobody remembers what for.",
+		"Very tough, slow, hits lightly and takes two places on the staff. Put it in front: towers lock on to it while the rest do the work. Good against towers, the CCTV mast and the mailing unit. Keep it away from shredders and silos; a silo burst takes most of its health."],
+	pult_crew = ["Communicates exclusively by cabbage, at range.",
+		"Lobs cabbages 3.5 squares, hurting everything where they land. It outranges sprinklers and shredders and stands clear when a silo bursts, so it takes all three cheaply. Towers and the CCTV mast reach further, and the mailing unit is out of the question. Keep something in front of it."],
+	courier = ["Next-day delivery. Fencing is not considered an obstacle.",
+		"Nearly twice as fast as anyone else, and hops over fences without breaking them. Goes straight for the nearest defence: the answer to a tower or a mailing unit behind masonry. Fragile, so keep it away from sprinklers and silos."],
+}
 ## The grey trainee's figure on the art round its Trainee mark (px): it stands up from its feet.
 const TRAINEE_BOX := Rect2(-45.0, -120.0, 90.0, 125.0)
 ## What the ¶ mark on a column means (its hint slip).
@@ -99,6 +124,14 @@ var _turning: Dictionary[String, Tween] = {}
 var _hot := &""
 var _printed := ""
 var _blinking: Tween
+## The refusal note's own ink (the scene's), what a blink returns it to.
+var _note_ink := Color.BLACK
+## The unit whose trash circle is held ("": none), and for how long (s).
+var _holding := ""
+var _held_for := 0.0
+## The unit whose personnel file is out ("": none).
+var _noting := ""
+var _note_fade: Tween
 ## The research tree when the mouse is in it (null: not).
 var _tree_in: UpgradeTree
 
@@ -111,6 +144,9 @@ var _tree_in: UpgradeTree
 @onready var _jam_sound: SoundCue = $Jam
 @onready var _land_sound: SoundCue = $Land
 @onready var _hop_sound: SoundCue = $Hop
+@onready var _dismiss_sound: SoundCue = $Dismiss
+@onready var _note: Control = $Note/Center
+@onready var _note_paper: PaperNote = $Note/Center/Paper
 
 
 func _ready() -> void:
@@ -124,10 +160,18 @@ func _ready() -> void:
 	refresh()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not visible:
 		return
 	_page.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	if _holding != "":
+		_held_for += delta
+		if _held_for >= UpgradeTree.HOLD_TIME:
+			var unit := _holding
+			_let_go()
+			dismiss(unit)
+		else:
+			(_columns[_holding].get_node("Dismiss/Fill") as Control).scale = Vector2.ONE * _held_for / UpgradeTree.HOLD_TIME
 	for unit in Depot.units(SaveManager.save):
 		_train(unit, true)
 	if _state(SaveManager.save, _out()) != _printed:
@@ -139,6 +183,9 @@ func _notification(what: int) -> void:
 		_printed = ""
 		refresh()
 	elif what == NOTIFICATION_VISIBILITY_CHANGED and is_node_ready():
+		_unblink()  # A blink, a hold or a file cut off by the sheet going away leaves nothing behind.
+		_let_go()
+		_show_note("")
 		if not visible:  # Put away (kept): the page stops printing every frame.
 			_page.render_target_update_mode = SubViewport.UPDATE_DISABLED
 			return
@@ -282,17 +329,42 @@ func requisition(unit: String) -> bool:
 	return true
 
 
+## One figure of `unit` dismissed (WarRules.dismiss: a ready one, else its newest trainee), logged and
+## saved, with a stamp. Whether there was one. What holding the trash circle does in the end.
+func dismiss(unit: String) -> bool:
+	if not WarRules.dismiss(SaveManager.save, unit):
+		return false
+	SaveManager.log_event("staff_dismissed", unit)
+	SaveManager.autosave()
+	_dismiss_sound.cue(global_position)
+	_train(unit, true)
+	refresh()
+	return true
+
+
+## The personnel file of `unit` (PaperNote, like a form's in the tray): its name, its flavour line and
+## how best to use it, translated.
+static func card(unit: String) -> Dictionary:
+	var said: Array = FILES[unit]
+	return {form = "PERSONNEL FILE", title = NAMES[unit],
+			body = TranslationServer.translate(said[0]) + "\n" + TranslationServer.translate(said[1])}
+
+
 func spot_at(pixel: Vector2) -> StringName:
 	for unit in Depot.units(SaveManager.save):
-		var news := _columns[unit].get_node("News") as Control
+		var column := _columns[unit]
+		var news := column.get_node("News") as Control
 		if news.visible and _art_rect(news).grow(6.0).has_point(pixel):
 			return StringName(NEWS + unit)
 		if not training_of(SaveManager.save, unit).is_empty() and _trainee_box(unit).has_point(pixel):
 			return StringName(TRAINEE + unit)
-		var hire := _art_rect(_columns[unit].get_node("Hire"))
+		var bin := _art_rect(column.get_node("Dismiss"))
+		if pixel.distance_to(bin.get_center()) < bin.size.x / 2.0:
+			return StringName(DISMISS + unit)
+		var hire := _art_rect(column.get_node("Hire"))
 		if pixel.distance_to(hire.get_center()) < hire.size.x / 2.0:
 			return StringName(BUY + unit)
-		if pixel.distance_to(_stage(unit)) < FIGURE_HIT:
+		if pixel.distance_to(_stage(unit)) < FIGURE_HIT or Rect2(column.position, column.size).has_point(pixel):
 			return StringName(FIGURE + unit)
 	return &""
 
@@ -306,6 +378,13 @@ func hint(spot: StringName) -> String:
 		var queue := training_of(save, what.trim_prefix(TRAINEE)).size()
 		var soon := tr("IN TRAINING. Available for deployment in %d s.") % ceili(ready_in(save, what.trim_prefix(TRAINEE)))
 		return soon + (" " + tr("%d more awaiting induction.") % (queue - 1) if queue > 1 else "")
+	if what.begins_with(DISMISS):
+		var who := what.trim_prefix(DISMISS)
+		if int(save.army.get(who, 0)) > 0:
+			return tr("Hold to dismiss one %s. No refund.") % tr(CALLED[who])
+		if WarRules.can_dismiss(save, who):
+			return tr("Hold to withdraw the newest %s from training. No refund.") % tr(CALLED[who])
+		return tr("Nobody to dismiss.")
 	if not what.begins_with(BUY):
 		return ""
 	var unit := what.trim_prefix(BUY)
@@ -326,6 +405,8 @@ func spot_box(spot: StringName) -> Rect2:
 	var what := String(spot)
 	if what.begins_with(NEWS):
 		return _art_rect(_columns[what.trim_prefix(NEWS)].get_node("News"))
+	if what.begins_with(DISMISS):
+		return _art_rect(_columns[what.trim_prefix(DISMISS)].get_node("Dismiss"))
 	if what.begins_with(TRAINEE):
 		var bar := _columns[what.trim_prefix(TRAINEE)]
 		var figure := _trainee_box(what.trim_prefix(TRAINEE))
@@ -358,13 +439,50 @@ func hover(spot: StringName) -> void:
 		_turn(was.trim_prefix(FIGURE), false)
 	if String(spot).begins_with(FIGURE):
 		_turn(String(spot).trim_prefix(FIGURE), true)
+	if spot != StringName(DISMISS + _holding):
+		_let_go()  # The mouse slid off the trash circle: the hold is off.
+	_show_note(String(spot).trim_prefix(FIGURE) if String(spot).begins_with(FIGURE) else "")
 	reprint()
 
 
-## A click on a HIRE AND TRAIN button hires one figure of its unit.
+## A click on a HIRE AND TRAIN button hires one figure of its unit; on a trash circle it starts the
+## hold (nobody to dismiss: the jam).
 func press(spot: StringName) -> void:
-	if String(spot).begins_with(BUY):
-		requisition(String(spot).trim_prefix(BUY))
+	var what := String(spot)
+	if what.begins_with(BUY):
+		requisition(what.trim_prefix(BUY))
+	elif what.begins_with(DISMISS):
+		if WarRules.can_dismiss(SaveManager.save, what.trim_prefix(DISMISS)):
+			_let_go()
+			_holding = what.trim_prefix(DISMISS)
+		else:
+			_jam_sound.cue(global_position)
+
+
+## The button came up: a hold on a trash circle that has not filled is off.
+func release(_spot: StringName) -> void:
+	_let_go()
+
+
+## The hold on a trash circle is off, its fill emptied.
+func _let_go() -> void:
+	if _holding != "":
+		(_columns[_holding].get_node("Dismiss/Fill") as Control).scale = Vector2.ZERO
+	_holding = ""
+	_held_for = 0.0
+
+
+## `unit`'s personnel file fades in ("": the one out fades away).
+func _show_note(unit: String) -> void:
+	if unit == _noting:
+		return
+	_noting = unit
+	if unit != "":
+		_note_paper.set_card(card(unit))
+	if _note_fade != null:
+		_note_fade.kill()
+	_note_fade = create_tween()
+	_note_fade.tween_property(_note, "modulate:a", 1.0 if unit != "" else 0.0, NOTE_FADE)
 
 
 ## The map table's mouse at art pixel `pixel`: taken (true) while it is over a research tree (or a
@@ -404,6 +522,7 @@ func _build(unit: String) -> void:
 	column.name = unit
 	$Page/Sheet/Columns.add_child(column)
 	_columns[unit] = column
+	_note_ink = (column.get_node("Note") as Label).get_theme_color(&"font_color")
 	(column.get_node("Name") as Label).text = NAMES[unit]
 	var figure: Node3D = (load(SOLDIER % unit) as PackedScene).instantiate()
 	figure.name = unit
@@ -558,6 +677,7 @@ func _print_column(save: SaveGame, unit: String, column: Control, out: Vector2i)
 	(column.get_node("Price/Amount") as Label).text = Num.text(WarRules.unit_cabbage_price(unit))  # After the cabbage icon.
 	var why := refusal(save, unit, out)
 	(column.get_node("Note") as Label).text = tr(why) if why != "" else ""
+	(column.get_node("Dismiss") as Control).modulate.a = 1.0 if WarRules.can_dismiss(save, unit) else DISMISS_FAINT
 	for label: String in ["Name", "Hire/Word", "Note", "Hp/Text", "Damage/Text", "Speed/Text", "Target/Text"]:
 		fit(column.get_node(label) as Label)
 
@@ -567,17 +687,26 @@ func _art_rect(c: Control) -> Rect2:
 	return Rect2(_sheet_root.get_global_transform().affine_inverse() * c.get_global_transform().origin, c.size)
 
 
-## `label` (why it was refused) and the `button` flash red twice.
+## `label` (why it was refused) and the `button` flash red twice. A blink still running is cut off
+## and put right first: killed on red, it used to leave its button tinted and its note inked red
+## (and the next blink took that red for the note's ink), the "random" red buttons.
 func _refused(label: Label, button: Control) -> void:
-	if _blinking != null:
-		_blinking.kill()
-	var ink := label.get_theme_color(&"font_color")
+	_unblink()
 	_blinking = create_tween()
-	for colour: Color in [DENIED_RED, ink, DENIED_RED, ink]:
+	for colour: Color in [DENIED_RED, _note_ink, DENIED_RED, _note_ink]:
 		_blinking.tween_callback(func() -> void:
 			label.add_theme_color_override(&"font_color", colour)
 			button.modulate = Color.WHITE.lerp(DENIED_RED, 0.5) if colour == DENIED_RED else Color.WHITE)
 		_blinking.tween_interval(BLINK_TIME)
+
+
+## Any blink stopped, every button and refusal note back in its own colours.
+func _unblink() -> void:
+	if _blinking != null:
+		_blinking.kill()
+	for unit: String in _columns:
+		(_columns[unit].get_node("Hire") as Control).modulate = Color.WHITE
+		(_columns[unit].get_node("Note") as Label).add_theme_color_override(&"font_color", _note_ink)
 
 
 ## The stock cabbages out of the chute: they cannot pay (UpgradeDesk.units_out).

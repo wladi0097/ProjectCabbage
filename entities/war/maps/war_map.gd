@@ -26,6 +26,9 @@ const TERRAIN_DIR := "res://entities/war/terrain/"
 ## Footprints that are not 1x1 (cells).
 const SIZES := {mortar = Vector2i(2, 2), silo = Vector2i(2, 2), farmhouse = Vector2i(2, 2)}
 const ARMS := {East = Vector2i(1, 0), North = Vector2i(0, -1), West = Vector2i(-1, 0), South = Vector2i(0, 1)}
+## A wall with no wall neighbour runs north-south across its cell: across the attack, which comes from
+## the zones on the left (or the bottom edge, where it still reads as a wall piece).
+const LONE_ARMS: Array[String] = ["North", "South"]
 ## Terrain kinds whose touching pieces merge into one look (terrain_piece.gd).
 const MERGED: Array[String] = ["pond", "river", "road", "field"]
 const TerrainPiece := preload("res://entities/war/terrain/terrain_piece.gd")
@@ -183,7 +186,8 @@ static func point(p: Vector2) -> Vector3:
 
 
 ## Each wall's arms toward its wall neighbours that stand (`alive`: per buildings() index; empty:
-## all standing).
+## all standing). A wall with none stands as a 1-cell segment across the attack (LONE_ARMS), so it
+## reads as a piece of wall, not a lone post.
 func show_walls(alive: Array = []) -> void:
 	var nodes := buildings()
 	var standing := {}
@@ -192,8 +196,19 @@ func show_walls(alive: Array = []) -> void:
 			standing[cell_of(nodes[i])] = true
 	for i in nodes.size():
 		if kind_of(nodes[i]).begins_with("wall"):
+			var shown := wall_arms(cell_of(nodes[i]), standing)
 			for arm: String in ARMS:
-				(nodes[i].get_node("Arms/" + arm) as Node3D).visible = standing.has(cell_of(nodes[i]) + ARMS[arm])
+				(nodes[i].get_node("Arms/" + arm) as Node3D).visible = arm in shown
+
+
+## The arms a wall on `cell` shows among `standing` wall cells (cell -> true): toward each standing
+## neighbour, or LONE_ARMS with none.
+static func wall_arms(cell: Vector2i, standing: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	for arm: String in ARMS:
+		if standing.has(cell + ARMS[arm]):
+			out.append(arm)
+	return out if not out.is_empty() else LONE_ARMS
 
 
 ## Joins the terrain: each merged kind's pieces are built with every cell of that kind on the map (a

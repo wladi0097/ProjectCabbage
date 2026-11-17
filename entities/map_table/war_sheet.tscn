@@ -46,6 +46,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/war_retreat.wav" id="sfx_war_retreat"]
 [ext_resource type="Script" path="res://entities/map_table/war_ink.gd" id="10_ink"]
 [ext_resource type="PackedScene" path="res://entities/map_table/war_slip.tscn" id="11_slip"]
+[ext_resource type="PackedScene" path="res://entities/map_table/war_debut_slip.tscn" id="11_debut"]
 [ext_resource type="PackedScene" path="res://entities/hand/hand_model.tscn" id="12_glove"]
 [ext_resource type="PackedScene" path="res://ui/elements/paper_note.tscn" id="13_note"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_1.wav" id="sfx_deed_stamp_1"]
@@ -521,8 +522,8 @@ transform = Transform3D(0.92, 0, 0, 0, 0.92, 0, 0, 0, 0.92, -1.86, -0.018, 1.14)
 [node name="Report" parent="." instance=ExtResource("9_report")]
 transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -0.45, 0.34, 0.18)
 
-[node name="Slip" parent="." instance=ExtResource("11_slip")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.93, 0.004, 0.69)
+[node name="Slip" parent="." instance=ExtResource("11_debut")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.87, 0.004, 1.58)
 
 [node name="Final" parent="." instance=ExtResource("11_slip")]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0.3, 0.4)
