@@ -125,6 +125,8 @@ func _process(delta: float) -> void:
 	if _dragging:
 		_angle = move_toward(_angle, _angle_under_mouse(), LEVER_RATE * delta)
 		_pose_lever()
+	if not sends(save):
+		return
 	_thin(delta)
 	if not save.stamped.has("mini_cabbages"):
 		return
@@ -135,6 +137,11 @@ func _process(delta: float) -> void:
 	if minis_out(get_tree().get_nodes_in_group(&"cabbages"), false) >= MAX_MINIS:
 		return
 	_send_one(false)
+
+
+## Whether minis come at all: not once the ending (the gun card) has begun, like the main chute.
+static func sends(save: SaveGame) -> bool:
+	return not Feeder.Events.chapter_5(save)
 
 
 ## One mini down the tube (or onto the mat without it); `thinned`: a FIELD THINNING one.

@@ -43,3 +43,22 @@ func test_the_lead_limit_is_measured_flat_and_keeps_the_mouse_height() -> void:
 	assert_float(Vector2(reined.x, reined.z).length()).is_equal_approx(0.25, 0.0001)
 	assert_vector(HandScript.rein(Vector3(0, 0.2, 0), Vector3(0.05, 3.0, 0), 0.1)).is_equal(Vector3(0.05, 3.0, 0))
 
+
+func test_a_locked_hand_lets_go_and_grabs_nothing_on_a_click() -> void:
+	var box: StaticBody3D = auto_free(StaticBody3D.new())
+	var thing := Interactable.new()
+	box.add_child(thing)
+	add_child(box)
+	var grabs := [0]
+	thing.grabbed.connect(func() -> void: grabs[0] += 1)
+	Hand.locked = true
+	Hand.hovered = thing
+	Hand._physics_process(0.0)
+	assert_object(Hand.hovered).is_null()
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	Hand._unhandled_input(click)
+	assert_int(grabs[0]).is_equal(0)
+	assert_object(Hand.held).is_null()
+	Hand.locked = false

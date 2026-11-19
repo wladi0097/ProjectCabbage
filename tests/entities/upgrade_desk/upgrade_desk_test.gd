@@ -1345,6 +1345,20 @@ func test_the_press_refuses_the_stars_card_one_farm_short_and_stamping_it_takes_
 	assert_int(save.farms_owned.size()).is_equal(UpgradeDesk.Events.FARMS)
 
 
+func test_the_stars_card_costs_the_full_vault_and_the_full_archive_so_it_comes_after_everything_else() -> void:
+	# Chapter 3 ends with everything bought (designer 2026-11-19): only the top TREASURY and ARCHIVE
+	# steps hold the price, and saving the whole vault is the last lap (tools/pace.py ch3).
+	var top := SaveGame.new()
+	UpgradeDesk.apply("cash_holding", top)
+	UpgradeDesk.apply("archive_capacity", top)
+	for node: Dictionary in Projector.NODES:
+		if node.get("add", {}).has("coin_limit") or node.get("add", {}).has("findings_limit"):
+			UpgradeTree.apply_effect(node, top)
+	var card := UpgradeDesk.card_data("stars")
+	assert_int(int(card.price)).is_equal(top.coin_limit)
+	assert_int(int(card.also.findings)).is_equal(top.findings_limit)
+
+
 
 func test_big_minds_is_dealt_with_the_cash_holding_card_and_costs_cabbages() -> void:
 	var save := _all_stamped_but(CHAPTER_3)

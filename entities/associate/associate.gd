@@ -158,7 +158,15 @@ func _ready() -> void:
 	_model.size = SIZE
 
 
+## Whether the hired hands work: not once the ending (the gun card) has begun; they hold still
+## where they are, to be shot.
+static func works(save: SaveGame) -> bool:
+	return not Feeder.Events.chapter_5(save)
+
+
 func _process(delta: float) -> void:
+	if not works(SaveManager.save):
+		return
 	if index == 0 and not research:
 		_staff()
 	if index >= _hired():

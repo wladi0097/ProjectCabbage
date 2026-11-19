@@ -39,3 +39,12 @@ func test_a_bigger_target_size_catches_sales_a_standard_one_misses() -> void:
 
 	assert_bool(Targets.hits(x, Targets.CRATE_X[1], Targets.WIDTH)).is_false()
 	assert_bool(Targets.hits(x, Targets.CRATE_X[1], Targets.WIDTH * 2.0)).is_true()
+
+
+func test_no_target_lights_on_the_window_once_the_gun_is_bought() -> void:
+	var save := SaveGame.new()
+	save.stamped.append(Targets.CARD)
+	assert_bool(Targets.shines(save)).is_true()
+	save.stamped.append(Targets.Events.GUN_CARD)
+	assert_bool(Targets.shines(save)).is_false()
+

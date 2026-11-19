@@ -561,3 +561,10 @@ func test_a_hand_lets_a_cabbage_lie_that_is_struck_while_it_reaches_for_it() -> 
 	assert_bool(Associate.struck(plain, save, false)).is_true()
 	assert_bool(Associate.struck(plain, save, true)).override_failure_message("lab hands were not struck").is_false()
 	assert_bool(Associate.struck(null, save, false)).override_failure_message("a freed target").is_false()
+
+
+func test_the_hired_hands_stop_working_once_the_gun_is_bought() -> void:
+	var save := SaveGame.new()
+	assert_bool(Associate.works(save)).is_true()
+	save.stamped.append(Associate.Feeder.Events.GUN_CARD)
+	assert_bool(Associate.works(save)).is_false()

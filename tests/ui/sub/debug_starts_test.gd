@@ -124,6 +124,35 @@ func test_the_home_country_start_point_opens_in_the_world_phase_with_the_first_l
 	assert_bool(save.stamped.has(world.SEA_CARD)).is_false()
 
 
+func test_the_chapter_4_card_start_point_sorts_just_before_the_gun_with_everything_bought_and_the_stars_card_ready_to_stamp() -> void:
+	var path := DebugStarts.START_DIR.path_join("95_chapter_4_card.tres")
+	assert_str(DebugStarts.entries()[-2]).is_equal(path)
+	assert_str(DebugStarts.entries()[-1]).is_equal(DebugStarts.START_DIR.path_join("96_chapter_5_the_gun.tres"))
+	assert_str(DebugStarts.label_of(path)).is_equal("95  Chapter 4 Card")
+	var save := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as SaveGame
+	# Every farm in the world, each on its own square.
+	assert_int(save.farms_owned.size()).is_equal(UpgradeDesk.Events.FARMS)
+	assert_int(save.farm_squares.size()).is_equal(save.farms_owned.size())
+	# Every chapter 3 card but the last is stamped; every node of every tree is bought.
+	for card: Dictionary in UpgradeDesk.CARDS:
+		assert_bool(save.stamped.has(card.id)).override_failure_message("%s is not stamped" % card.id).is_equal(card.id != "stars")
+	for node: Dictionary in Projector.NODES:
+		if not Projector.is_dept(node.id):
+			assert_bool(Projector.is_bought(node.id, save)).override_failure_message("projector %s" % node.id).is_true()
+	for node: Dictionary in FarmTree.NODES:
+		if not FarmTree.is_dept(node.id):
+			assert_bool(FarmTree.is_bought(node.id, save)).override_failure_message("farm tree %s" % node.id).is_true()
+	for node: Dictionary in DepotResearch.NODES:
+		if not DepotResearch.is_dept(node.id):
+			assert_bool(DepotResearch.is_bought(node.id, save)).override_failure_message("depot %s" % node.id).is_true()
+	# The stars card alone in the tray, paid at once, nothing in the way; chapter 3 not over yet.
+	assert_array(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)).is_equal(["stars"])
+	assert_bool(UpgradeDesk.affords(save, UpgradeDesk.costs(UpgradeDesk.card_data("stars")))).is_true()
+	assert_array(BossReport.due(save)).is_empty()
+	assert_bool(UpgradeDesk.Events.chapter_3_done(save)).is_false()
+	assert_bool(save.alpha_end).is_false()
+
+
 func test_no_start_point_holds_more_than_its_limits_and_each_has_the_limits_its_upgrades_give() -> void:
 	for path in DebugStarts.entries():
 		var save := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as SaveGame
@@ -140,3 +169,10 @@ func test_no_start_point_holds_more_than_its_limits_and_each_has_the_limits_its_
 				UpgradeTree.apply_effect(node, fresh)
 		assert_int(save.coin_limit).override_failure_message(path).is_equal(fresh.coin_limit)
 		assert_int(save.findings_limit).override_failure_message(path).is_equal(fresh.findings_limit)
+
+
+func test_the_chapter_5_start_point_opens_the_ending_with_the_gun_card_stamped() -> void:
+	var save := ResourceLoader.load(DebugStarts.START_DIR.path_join("96_chapter_5_the_gun.tres"), "", ResourceLoader.CACHE_MODE_IGNORE) as SaveGame
+	assert_bool(Ending.due(save)).is_true()
+	assert_bool(save.stamped.has("stars")).is_true()
+	assert_bool(AlphaEnd.due(save)).is_false()  # No alpha popup over the ending.

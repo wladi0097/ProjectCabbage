@@ -89,7 +89,11 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var save := SaveManager.save
-	if not save.stamped.has(CARD):
+	if not visits(save):
+		if phase != Phase.AWAY:  # The ending has begun: he is simply gone, quota and all.
+			phase = Phase.AWAY
+			_shadow.visible = false
+			$Bubble.visible = false
 		return
 	# While a war is on he waits where he is: no clock, no new quota, no verdict, and what is sold in
 	# the meantime doesn't count toward a quota under way (sold_at moves with it).
@@ -141,6 +145,11 @@ func _process(delta: float) -> void:
 				_shadow.visible = false
 				phase = Phase.AWAY
 				_wait = randf_range(VISIT_EVERY.x, VISIT_EVERY.y)
+
+
+## Whether he comes to the window at all: once his card is stamped, until the ending (the gun card).
+static func visits(save: SaveGame) -> bool:
+	return save.stamped.has(CARD) and not Feeder.Events.chapter_5(save)
 
 
 ## Units sold in the last stretch of `samples` (save.sold every SAMPLE_EVERY s, oldest first, the

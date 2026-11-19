@@ -133,6 +133,38 @@ size_flags_horizontal = 3
 theme_type_variation = &"DangerButton"
 text = "settings.resetProgress.button"
 
+[node name="ChapterSelectRow" type="HBoxContainer" parent="Page/Layout/Pages/Gameplay/List"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Page/Layout/Pages/Gameplay/List/ChapterSelectRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+text = "CHAPTER SELECT"
+
+[node name="Chapters" type="VBoxContainer" parent="Page/Layout/Pages/Gameplay/List/ChapterSelectRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Chapter1" parent="Page/Layout/Pages/Gameplay/List/ChapterSelectRow/Chapters" instance=ExtResource("3_back_button")]
+layout_mode = 2
+text = "CHAPTER 1: THE DESK"
+
+[node name="Chapter2" parent="Page/Layout/Pages/Gameplay/List/ChapterSelectRow/Chapters" instance=ExtResource("3_back_button")]
+layout_mode = 2
+text = "CHAPTER 2: THE FARM"
+
+[node name="Chapter3" parent="Page/Layout/Pages/Gameplay/List/ChapterSelectRow/Chapters" instance=ExtResource("3_back_button")]
+layout_mode = 2
+text = "CHAPTER 3: THE MAP"
+
+[node name="Chapter4" parent="Page/Layout/Pages/Gameplay/List/ChapterSelectRow/Chapters" instance=ExtResource("3_back_button")]
+layout_mode = 2
+text = "CHAPTER 4: THE STARS"
+
 [node name="ReportRow" type="HBoxContainer" parent="Page/Layout/Pages/Gameplay/List"]
 layout_mode = 2
 
@@ -587,6 +619,22 @@ layout_mode = 1
 message = "settings.resetProgress.confirm"
 confirm_text = "settings.resetProgress.button"
 
+[node name="ChapterConfirm" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.17, 0.19, 0.15, 0.72)
+
+[node name="Panel" parent="ChapterConfirm" instance=ExtResource("14_confirm")]
+layout_mode = 1
+message = "Loading a chapter overwrites the current save. Its cabbages, coins and progress will be discontinued. Filed memos remain on record. Proceed?"
+confirm_text = "OVERWRITE SAVE"
+
 [connection signal="clicked" from="Page/Layout/Header/Left/BackButton" to="." method="_on_back_button_clicked"]
 [connection signal="tab_changed" from="Page/Layout/Tabs/TabBar" to="." method="_on_tab_bar_tab_changed"]
 [connection signal="tab_clicked" from="Page/Layout/Tabs/TabBar" to="." method="_on_tab_bar_tab_clicked"]
@@ -617,3 +665,9 @@ confirm_text = "settings.resetProgress.button"
 [connection signal="cancelled" from="ResetConfirm/Panel" to="ResetConfirm" method="hide"]
 [connection signal="confirmed" from="ResetConfirm/Panel" to="." method="_on_reset_confirmed"]
 [connection signal="toggled" from="Page/Layout/Pages/Audio/List/RadioFilterRow/RadioFilter" to="." method="_on_radio_filter_toggled"]
+[connection signal="clicked" from="Page/Layout/Pages/Gameplay/List/ChapterSelectRow/Chapters/Chapter1" to="." method="_on_chapter_clicked" binds= [0]]
+[connection signal="clicked" from="Page/Layout/Pages/Gameplay/List/ChapterSelectRow/Chapters/Chapter2" to="." method="_on_chapter_clicked" binds= [1]]
+[connection signal="clicked" from="Page/Layout/Pages/Gameplay/List/ChapterSelectRow/Chapters/Chapter3" to="." method="_on_chapter_clicked" binds= [2]]
+[connection signal="clicked" from="Page/Layout/Pages/Gameplay/List/ChapterSelectRow/Chapters/Chapter4" to="." method="_on_chapter_clicked" binds= [3]]
+[connection signal="cancelled" from="ChapterConfirm/Panel" to="ChapterConfirm" method="hide"]
+[connection signal="confirmed" from="ChapterConfirm/Panel" to="." method="_on_chapter_confirmed"]

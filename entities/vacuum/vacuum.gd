@@ -511,6 +511,9 @@ func _add_unit() -> void:
 	var dock: Node3D = $Dock
 	if not _units.is_empty():
 		dock = $Dock.duplicate()
+		var copied_hit := dock.get_node_or_null("ConvertibleHit")  # The first dock's gun target: its Convertible builds its own.
+		if copied_hit != null:
+			copied_hit.free()
 		dock.position += Vector3.RIGHT * ROW_STEP * _units.size()
 		add_child(dock)
 	var lamp: MeshInstance3D = dock.get_node("Model/Lamp")
@@ -519,7 +522,15 @@ func _add_unit() -> void:
 	var park: Node3D = dock.get_node("Park")
 	unit.home = Transform3D(park.transform.basis, dock.position + park.position)
 	unit.body.global_transform = global_transform * unit.home
+	pair_targets(model.get_node("Convertible"), dock.get_node("Convertible"))
 	_units.append(unit)
+
+
+## A robot and its dock are one thing to the ending's gun (entities/ending/): shooting either converts
+## both, and only the robot counts.
+static func pair_targets(robot: Node, dock: Node) -> void:
+	robot.set_meta(&"partners", [dock])
+	dock.set_meta(&"partners", [robot])
 
 
 ## Drops onto the mat's edge once the card is stamped.

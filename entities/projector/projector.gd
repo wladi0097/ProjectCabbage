@@ -1132,11 +1132,17 @@ func _process(delta: float) -> void:
 	_sheet_drawn = _drop > 0.0
 
 
+## Whether the pull tab hangs there: the screen not fully down (or the tab in hand), the camera not
+## at the farm TV, and the ending (the gun card) not begun: from then on it is gone.
+static func pull_shown(reachable: bool, away: bool, save: SaveGame) -> bool:
+	return reachable and not away and not Events.chapter_5(save)
+
+
 ## The pull: while dragged it sits under the mouse; otherwise it swings on its cord, in fixed STEPs.
 ## Shown only while the screen is not fully down (open, the overlay, X and Esc close it), and not
 ## while the camera is at the farm TV.
 func _move_pull(delta: float) -> void:
-	var shown := (_drop < 1.0 or _dragging) and not FarmTv.away
+	var shown := pull_shown(_drop < 1.0 or _dragging, FarmTv.away, SaveManager.save)
 	_grip.visible = shown
 	_cord.visible = shown
 	_handle.enabled = shown

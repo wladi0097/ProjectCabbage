@@ -20,6 +20,7 @@ const Slate := preload("res://entities/price_slate/price_slate.gd")
 const Console := preload("res://entities/supply_console/supply_console.gd")
 const SLEEVE := preload("res://assets/materials/associate_hand.tres")
 const CARD := "pricing_consultant"
+const Events := preload("res://globalScripts/game_events.gd")
 ## Off screen past the left edge, at the slate's depth.
 const ENTRY := Vector3(-2.6, 1.25, -0.3)
 const SIZE := 0.9
@@ -93,14 +94,14 @@ func _process(delta: float) -> void:
 		_show_switch()
 	if not save.stamped.has(CARD) or not save.slate_unlocked or not slate.visible:
 		return
-	if not save.consultant_on and _phase not in [Phase.AWAY, Phase.WITHDRAW]:
+	if not works(save) and _phase not in [Phase.AWAY, Phase.WITHDRAW]:
 		_step = 0
 		_phase = Phase.WITHDRAW
 	_time += delta
 	_wait -= delta
 	match _phase:
 		Phase.AWAY, Phase.HOVER:
-			if _wait <= 0.0 and save.consultant_on:
+			if _wait <= 0.0 and works(save):
 				_decide(save)
 		Phase.REACH:
 			if _move(slate.arrow_at(_step) + FACE * HOVER, delta):
@@ -129,6 +130,12 @@ func _process(delta: float) -> void:
 	var anchor: Vector3 = _model.basis * HandModel.ANCHORS[_model.pose]
 	var tip := _tip + (wobble if _phase in [Phase.HOVER, Phase.REACH] else Vector3.ZERO)
 	_model.move_to(tip + anchor - global_basis * anchor, delta)
+
+
+## Whether he sets prices: switched on, and not once the ending (the gun card) has begun; then he
+## withdraws and stays away.
+static func works(save: SaveGame) -> bool:
+	return save.consultant_on and not Events.chapter_5(save)
 
 
 ## The price the consultant holds: the whole-dollar price whose refusals at the street's current

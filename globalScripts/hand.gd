@@ -40,6 +40,11 @@ var held: Interactable
 ## cursor stays hidden even where this hand is not shown (while the window has focus; the sheet
 ## lets go of the figure when an overlay takes the mouse).
 var stand_in := false
+## The ending (entities/ending/) has the mouse: nothing is hovered or grabbed, the 3D hand is gone,
+## and the cursor is left to the cabbage gun's crosshair.
+var locked := false
+## The OS cursor while locked: shown (the gun's crosshair), or hidden (the gun turned on the player).
+var locked_cursor := Input.MOUSE_MODE_VISIBLE
 
 var _model: HandModel
 ## Where the mouse ray last hit the hovered thing; frozen while it is held.
@@ -76,6 +81,11 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if locked:
+		if held != null:
+			_release()
+		_set_hovered(null)
+		return
 	if held != null and (not is_instance_valid(held) or not held.enabled
 			or not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)):
 		_release()
@@ -88,6 +98,12 @@ func _physics_process(_delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	if locked:
+		_model.visible = false
+		_show_tooltip("", delta)
+		if Input.mouse_mode != locked_cursor:
+			Input.mouse_mode = locked_cursor
+		return
 	var in_game := get_window().has_focus() and get_viewport().get_camera_3d() != null \
 			and get_viewport().gui_get_hovered_control() == null and not get_tree().get_nodes_in_group(&"blocks_hand").any(func(n: Node) -> bool:
 				return n is CanvasItem and (n as CanvasItem).is_visible_in_tree())
@@ -208,7 +224,7 @@ func _pick() -> Interactable:
 	var mouse := get_viewport().get_mouse_position()
 	var from := camera.project_ray_origin(mouse)
 	var query := PhysicsRayQueryParameters3D.create(from,
-			from + camera.project_ray_normal(mouse) * RAY_LENGTH, ~PLAY_AREA_LAYER)
+			from + camera.project_ray_normal(mouse) * RAY_LENGTH, ~(PLAY_AREA_LAYER | Convertible.LAYER))
 	var hit := camera.get_world_3d().direct_space_state.intersect_ray(query)
 	_point = hit.get("position", _point)
 	return Interactable.of(hit.get("collider"))

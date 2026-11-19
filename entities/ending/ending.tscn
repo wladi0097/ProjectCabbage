@@ -1,0 +1,44 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/ending/ending.gd" id="1_ending"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="2_font"]
+
+[sub_resource type="Theme" id="NoticeTheme"]
+Label/colors/font_color = Color(0.9, 0.89, 0.84, 1)
+Label/colors/font_outline_color = Color(0.06, 0.07, 0.065, 1)
+Label/constants/outline_size = 6
+Label/font_sizes/font_size = 30
+Label/fonts/font = ExtResource("2_font")
+
+[node name="Ending" type="Node"]
+script = ExtResource("1_ending")
+
+[node name="Cut" type="CanvasLayer" parent="."]
+layer = 29
+visible = false
+
+[node name="Black" type="ColorRect" parent="Cut"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Notice" type="CanvasLayer" parent="."]
+layer = 12
+visible = false
+
+[node name="Line" type="Label" parent="Notice"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_top = 130.0
+offset_right = 600.0
+offset_bottom = 180.0
+grow_horizontal = 2
+mouse_filter = 2
+theme = SubResource("NoticeTheme")
+horizontal_alignment = 1

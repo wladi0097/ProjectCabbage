@@ -67,6 +67,10 @@ fullscreen={
 
 locale/translations=PackedStringArray("res://ressources/translations/translations.en.translation", "res://ressources/translations/translations.de.translation", "res://ressources/translations/translations.ru.translation", "res://ressources/translations/translations.zh.translation", "res://ressources/translations/translations.es.translation", "res://ressources/translations/translations.ja.translation", "res://ressources/translations/translations.pt.translation", "res://ressources/translations/translations.pl.translation", "res://ressources/translations/translations.fr.translation", "res://ressources/translations/translations.ko.translation", "res://ressources/translations/translations.tr.translation", "res://ressources/translations/translations.it.translation", "res://ressources/translations/translations.cs.translation", "res://ressources/translations/translations.uk.translation", "res://ressources/translations/game.en.translation", "res://ressources/translations/game.de.translation")
 
+[layer_names]
+
+3d_physics/layer_21="ending_target"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

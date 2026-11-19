@@ -7,6 +7,7 @@ extends Node3D
 ## out. The span is WIDTH × save.target_size wide, centred on the lit crate.
 
 const CARD := "window_targets"
+const Events := preload("res://globalScripts/game_events.gd")
 ## The street crates' centres (x) and width: the CRATES in room_geo.py (0.6 m × CS 0.8), all in the
 ## sell span right of the QA bay.
 const CRATE_X: Array[float] = [0.60, 1.11, 1.62]
@@ -45,7 +46,9 @@ func _hook_window() -> void:
 
 func _process(delta: float) -> void:
 	var save := SaveManager.save
-	if not save.stamped.has(CARD) or _window == null:
+	if not shines(save) or _window == null:
+		if lit:
+			_go_out(save)  # The ending has begun: the target goes dark mid-glow.
 		return
 	if not lit:
 		_wait -= delta
@@ -63,6 +66,11 @@ func _process(delta: float) -> void:
 	$Glow/Spill.light_energy = SPILL_ENERGY * pulse if blink else SPILL_ENERGY * 0.25
 	$Glow/Face.visible = blink
 	$Glow/Edge.visible = blink
+
+
+## Whether targets light up on the window: once the card is stamped, until the ending (the gun card).
+static func shines(save: SaveGame) -> bool:
+	return save.stamped.has(CARD) and not Events.chapter_5(save)
 
 
 ## Seconds to the next target: `every` spread over 0.6..1.4 of it by `roll` (0..1).

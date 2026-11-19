@@ -315,3 +315,13 @@ func test_the_chute_model_has_a_number_drum_for_every_digit() -> void:
 	for k in Feeder.DRUMS:
 		assert_int(skeleton.find_bone("Drum%d" % k)).is_not_equal(-1)
 	assert_int(skeleton.find_bone("Drum%d" % Feeder.DRUMS)).is_equal(-1)
+
+
+func test_no_cabbage_comes_down_the_chute_once_the_gun_is_bought_even_after_a_reload() -> void:
+	var save := SaveGame.new()
+	assert_bool(Feeder.chute_shut(save)).is_false()
+	save.stamped.append(Feeder.Events.GUN_CARD)
+	assert_bool(Feeder.chute_shut(save)).is_true()
+	# A reload mid-ending reads the same stamp: still shut.
+	var reloaded := save.duplicate(true) as SaveGame
+	assert_bool(Feeder.chute_shut(reloaded)).is_true()

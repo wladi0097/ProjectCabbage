@@ -1,0 +1,71 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/cabbage_gun/leaf_burst.gd" id="1_script"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_hit_1.wav" id="2_hit1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_hit_2.wav" id="3_hit2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_hit_3.wav" id="4_hit3"]
+
+[sub_resource type="StandardMaterial3D" id="Leaf"]
+transparency = 1
+vertex_color_use_as_albedo = true
+roughness = 0.6
+cull_mode = 2
+
+[sub_resource type="SphereMesh" id="Curl"]
+material = SubResource("Leaf")
+radius = 0.028
+height = 0.014
+radial_segments = 6
+rings = 2
+is_hemisphere = true
+
+[sub_resource type="Curve" id="Shrink"]
+_data = [Vector2(0, 0.5), 0.0, 0.0, 0, 0, Vector2(0.12, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Gradient" id="Fade"]
+offsets = PackedFloat32Array(0, 0.6, 1)
+colors = PackedColorArray(0.6, 0.86, 0.36, 1, 0.36, 0.66, 0.2, 0.9, 0.22, 0.45, 0.12, 0)
+
+[sub_resource type="Gradient" id="Greens"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.7, 0.8, 0.65, 1)
+
+[sub_resource type="AudioStreamRandomizer" id="Pops"]
+random_pitch = 1.15
+streams_count = 3
+stream_0/stream = ExtResource("2_hit1")
+stream_1/stream = ExtResource("3_hit2")
+stream_2/stream = ExtResource("4_hit3")
+
+[node name="LeafBurst" type="CPUParticles3D"]
+process_mode = 3
+emitting = false
+amount = 40
+lifetime = 0.9
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("Curl")
+emission_shape = 1
+emission_sphere_radius = 0.08
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -4, 0)
+initial_velocity_min = 1.0
+initial_velocity_max = 2.4
+angular_velocity_min = -540.0
+angular_velocity_max = 540.0
+damping_min = 1.5
+damping_max = 3.0
+scale_amount_min = 0.7
+scale_amount_max = 1.4
+scale_amount_curve = SubResource("Shrink")
+color_ramp = SubResource("Fade")
+color_initial_ramp = SubResource("Greens")
+particle_flag_rotate_y = true
+script = ExtResource("1_script")
+
+[node name="Pop" type="AudioStreamPlayer3D" parent="."]
+stream = SubResource("Pops")
+pitch_scale = 1.3
+bus = &"SFX"

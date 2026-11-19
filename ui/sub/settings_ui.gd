@@ -21,6 +21,8 @@ const LANGUAGES := {
 
 var _initializing := true
 var _ui_scale_dragged := false
+## The chapter picked in the CHAPTER SELECT, waiting for its confirmation (ChapterSelect.STARTS).
+var _chapter := 0
 
 @onready var settings: SettingsResource = SaveManager.settings
 @onready var hover_sound: AudioStreamPlayer = $HoverSound
@@ -77,12 +79,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func enable() -> void:
 	%ScreenMode.selected = settings.screen_mode
 	%ResolutionRow.visible = settings.screen_mode == SettingsResource.ScreenMode.WINDOWED
+	%ChapterSelectRow.visible = ChapterSelect.is_unlocked()
 	_on_tab_bar_tab_changed(tab_bar.current_tab)
 	show()
 
 
 func disable() -> void:
 	%ResetConfirm.hide()
+	%ChapterConfirm.hide()
 	hide()
 	exited.emit()
 
@@ -147,6 +151,15 @@ func _on_back_button_clicked() -> void:
 
 func _on_reset_confirmed() -> void:
 	SaveManager.reset_save()
+
+
+func _on_chapter_clicked(index: int) -> void:
+	_chapter = index
+	%ChapterConfirm.show()
+
+
+func _on_chapter_confirmed() -> void:
+	ChapterSelect.start(_chapter)
 
 
 func _on_file_report_clicked() -> void:

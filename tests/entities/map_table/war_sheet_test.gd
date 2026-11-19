@@ -407,6 +407,7 @@ func test_survivors_of_a_won_war_go_back_into_the_army_and_the_farm_is_ours() ->
 	assert_dict(SaveManager.save.war_pending).is_empty()
 	assert_bool(SaveManager.save.farms_owned.has("K-6")).is_true()
 	assert_bool((sheet.get_node("Page/Sheet/Imprint") as Label).visible).is_false()  # No victory stamp on the paper.
+	assert_int(SaveManager.save.wars_won).is_equal(1)  # Counted for the memos.
 	assert_bool(FarmRegister.lamp_held).is_true()  # The Field Line waits for the farm's moment.
 	assert_array(wanted).is_empty()
 	var report := _report_in(sheet, WarSheet.LEAVE_AFTER)
@@ -462,6 +463,8 @@ func test_a_retreat_brings_its_share_of_the_figures_placed_home() -> void:
 	assert_int(SaveManager.save.army[FA]).is_equal(1 + 1)  # floor(4 * 30%), and the one never placed.
 	assert_str(_text(sheet, "Imprint")).is_equal("WITHDRAWN")
 	assert_str(SaveManager.save.war_grades[&"K-8"]).is_equal(WarReport.REGRETTABLE)
+	assert_int(SaveManager.save.wars_lost).is_equal(1)
+	assert_int(SaveManager.save.quick_retreats).is_equal(1)  # Half a second in: a quick one.
 	var report := _report_in(sheet, WarSheet.LOST_AFTER)
 	assert_str((report.get_node("Page/Form/Staff/field_associate/Lost") as Label).text).is_equal("3")  # 4 placed, 1 home.
 	assert_bool(SaveManager.save.farms_owned.has("K-8")).is_false()
@@ -999,3 +1002,67 @@ func test_the_new_structure_slip_is_a_small_card_lying_clear_of_the_control_box_
 		var spot := WarSheet._local(WarSheet.desk_pixel(k))
 		assert_bool(card.grow(0.04).has_point(Vector2(spot.x, spot.z))).override_failure_message(str(k)).is_false()
 	assert_float(card.end.x).is_less(-WarSheet.SIZE.x / 2.0)  # On the desk, off the paper.
+
+
+## An ended war as WarReport.summary gives it: won or not, `deployed` (unit -> figures), defences
+## destroyed of 3, a retreat, seconds fought.
+func _ended(won: bool, deployed: Dictionary, destroyed := 1, retreat := false, seconds := 30.0) -> Dictionary:
+	return {won = won, deployed = deployed, defences = Vector2i(destroyed, 3), retreat = retreat, seconds = seconds,
+			grade = WarReport.ACCEPTABLE if won else WarReport.REGRETTABLE}
+
+
+func test_winning_a_war_with_a_single_figure_counts_as_a_skeleton_crew_win() -> void:
+	var save := SaveGame.new()
+	WarSheet.tally(save, &"K-6", _ended(true, {field_associate = 1}))
+	WarSheet.tally(save, &"K-7", _ended(true, {field_associate = 2}))
+	assert_int(save.wars_won).is_equal(2)
+	assert_int(save.solo_wins).is_equal(1)
+
+
+func test_winning_a_war_with_only_field_associates_counts_once_pult_crews_are_hired() -> void:
+	var save := SaveGame.new()
+	WarSheet.tally(save, &"K-6", _ended(true, {field_associate = 3}))
+	assert_int(save.associate_wins).is_equal(0)  # Nothing else to send yet.
+	save.stamped.append(WarRules.UNIT_CARD.pult_crew)
+	WarSheet.tally(save, &"K-7", _ended(true, {field_associate = 3, pult_crew = 1}))
+	assert_int(save.associate_wins).is_equal(0)
+	WarSheet.tally(save, &"K-8", _ended(true, {field_associate = 3}))
+	assert_int(save.associate_wins).is_equal(1)
+
+
+func test_only_a_retreat_within_three_seconds_of_start_is_a_quick_retreat() -> void:
+	var save := SaveGame.new()
+	WarSheet.tally(save, &"K-6", _ended(false, {field_associate = 2}, 0, true, WarSheet.QUICK_RETREAT))
+	WarSheet.tally(save, &"K-6", _ended(false, {field_associate = 2}, 0, true, WarSheet.QUICK_RETREAT + 1.0))
+	assert_int(save.wars_lost).is_equal(2)
+	assert_int(save.quick_retreats).is_equal(1)
+	assert_int(save.untouched_losses).is_equal(0)  # A retreat is no loss without a fight.
+
+
+func test_losing_a_war_without_destroying_a_defence_is_counted_and_one_that_broke_something_is_not() -> void:
+	var save := SaveGame.new()
+	WarSheet.tally(save, &"K-6", _ended(false, {field_associate = 2}, 0))
+	WarSheet.tally(save, &"K-6", _ended(false, {field_associate = 2}, 1))
+	assert_int(save.untouched_losses).is_equal(1)
+
+
+func test_the_win_that_takes_a_countrys_last_farm_abroad_annexes_it_and_home_never_counts() -> void:
+	var save := SaveGame.new()
+	WorldRegister.annex(save, WorldRegister.HOME)
+	WarSheet.tally(save, &"K-8", _ended(true, {field_associate = 2}))
+	assert_int(save.countries_annexed).is_equal(0)
+	save.farms_owned.append("veldmark-1")
+	WarSheet.tally(save, &"veldmark-1", _ended(true, {field_associate = 2}))
+	assert_int(save.countries_annexed).is_equal(0)  # One of its two.
+	save.farms_owned.append("veldmark-2")
+	WarSheet.tally(save, &"veldmark-2", _ended(true, {field_associate = 2}))
+	assert_int(save.countries_annexed).is_equal(1)
+
+
+func test_an_exemplary_win_is_counted() -> void:
+	var save := SaveGame.new()
+	var report := _ended(true, {field_associate = 2})
+	WarSheet.tally(save, &"K-6", report)
+	report.grade = WarReport.EXEMPLARY
+	WarSheet.tally(save, &"K-7", report)
+	assert_int(save.wars_exemplary).is_equal(1)

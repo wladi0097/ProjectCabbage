@@ -377,8 +377,14 @@ Express couriers join the personnel depot. They ride fast, hop any fence and lea
 	# company must own that many farms (save.farms_owned; all GameEvents.FARMS of them), none is spent
 	# (costs, spendable, pay). Stamped, the alpha's end popup comes (ui/sub/alpha_end); chapter 4 later.
 	# The farms are the wall (the last one is the final island); the coins and Findings on top are a
-	# last lap. PROVISIONAL price (tools/pace.py ch3).
-	{id = "stars", price = 10000000, also = {findings = 250000}, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "retreat", "unit_courier"],
+	# last lap. Chapter 4 starts with everything bought (designer 2026-11-19): every chapter 3 card,
+	# projector, depot and farm tree node first. So it costs the whole vault and the whole archive (the
+	# top TREASURY and ARCHIVE steps, $16M and ¶900K): out of reach before CENTRAL RESERVE, and the
+	# purse is emptied by the last big nodes until those are bought. tools/pace.py ch3: the final island
+	# at 168:16, the grid card 169:25, then condense_8, stock_999999, condense_9 (the last, 174:14,
+	# ~$9.3M/min) and stars at 175:56, 1.7 min later (the archive is already full by then). Without
+	# the sim holding it back it still comes last (176:36).
+	{id = "stars", price = 16000000, also = {findings = 900000}, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "retreat", "unit_courier"],
 		body = "There is nothing left to buy down here.
 The field line counts the farms. Stamped, the board looks up."},
 	# The annexed grid (Projector.GRID_CARD; decision 2026-11-17): the conquered countries' power

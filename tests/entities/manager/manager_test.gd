@@ -450,3 +450,23 @@ func test_a_visit_after_a_single_miss_is_not_revised() -> void:
 	_asking(manager)
 
 	assert_bool(manager.revised).is_false()
+
+
+func test_the_manager_never_comes_again_once_the_gun_is_bought() -> void:
+	var save := SaveGame.new()
+	save.stamped.append(Manager.CARD)
+	assert_bool(Manager.visits(save)).is_true()
+	save.stamped.append(Manager.Feeder.Events.GUN_CARD)
+	assert_bool(Manager.visits(save)).is_false()
+
+
+func test_a_manager_at_the_window_when_the_ending_starts_is_gone_at_once() -> void:
+	var manager := _manager()
+	_asking(manager)
+	assert_int(manager.phase).is_equal(Manager.Phase.QUOTA)
+	SaveManager.save.stamped.append(Manager.Feeder.Events.GUN_CARD)
+	_run(manager, STEP)
+	assert_int(manager.phase).is_equal(Manager.Phase.AWAY)
+	assert_bool(manager._shadow.visible).is_false()
+	_run(manager, 600.0)
+	assert_int(manager.phase).is_equal(Manager.Phase.AWAY)  # And he never comes back.

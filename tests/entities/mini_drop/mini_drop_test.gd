@@ -299,3 +299,11 @@ func test_the_tube_lever_labels_never_touch_each_other_or_the_knob_at_any_positi
 			var closest := Vector2(clampf(0.0, boxes[i].position.x, boxes[i].end.x), clampf(0.0, boxes[i].position.y, boxes[i].end.y))
 			assert_float(closest.length()).override_failure_message("%s: label %d in the knob's sweep" % [lang, i]).is_greater(MiniDrop.KNOB.length() + KNOB_BALL)
 	TranslationServer.set_locale(was)
+
+
+func test_no_mini_comes_down_the_tube_once_the_gun_is_bought() -> void:
+	var save := SaveGame.new()
+	save.stamped.append("mini_cabbages")
+	assert_bool(MiniDrop.sends(save)).is_true()
+	save.stamped.append(MiniDrop.Feeder.Events.GUN_CARD)
+	assert_bool(MiniDrop.sends(save)).is_false()

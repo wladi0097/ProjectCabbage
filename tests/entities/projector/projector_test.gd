@@ -1862,3 +1862,12 @@ func test_golden_cabbages_join_the_research_light_with_its_last_node() -> void:
 	var node := Projector.node_data(QaBay.LAB_GOLD)
 	assert_str(node.parent).is_equal("lab_lamp_mult")
 	assert_bool(node.has("mul") or node.has("add")).is_false()  # The lab reads tree_bought.
+
+
+func test_the_pull_tab_is_gone_once_the_gun_is_bought() -> void:
+	var save := SaveGame.new()
+	assert_bool(Projector.pull_shown(true, false, save)).is_true()
+	assert_bool(Projector.pull_shown(true, true, save)).is_false()  # At the farm TV.
+	save.stamped.append(Projector.Events.GUN_CARD)
+	assert_bool(Projector.pull_shown(true, false, save)).is_false()
+

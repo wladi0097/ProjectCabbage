@@ -1986,3 +1986,24 @@ func test_every_box_on_the_deed_and_the_record_takes_a_click_right_into_its_corn
 					var hit: Variant = Plane(Vector3.UP, sheet.global_position.y).intersects_ray(camera.project_ray_origin(screen), camera.project_ray_normal(screen))
 					assert_str(sheet.spot_at(sheet.pixel_at(hit))).override_failure_message("%s %s at %s" % [site, spot, at]).is_equal(spot)
 		sheet.press(&"")
+
+
+func test_an_offer_that_insults_the_owner_is_counted_and_one_that_lands_is_not() -> void:
+	var save := _haggling()
+	FarmRegister.offer(save, &"K-2", 1)
+	assert_int(save.owners_insulted).is_equal(1)
+	FarmRegister.offer(save, &"K-2", FarmRegister.wanted(save, 0, &"K-2"))
+	assert_int(save.owners_insulted).is_equal(1)
+
+
+func test_a_farm_bought_at_its_floor_price_is_counted_and_one_above_it_is_not() -> void:
+	var dear := _haggling()
+	assert_bool(FarmRegister.buy(dear, &"K-2")).is_true()
+	assert_int(dear.floor_buys).is_equal(0)
+	var save := _haggling()
+	while FarmRegister.offers_left(save, &"K-2") > 0:
+		FarmRegister.offer(save, &"K-2", 2000)
+	assert_int(FarmRegister.price(save, &"K-2").coins).is_equal(FarmRegister.floor_price(save, &"K-2"))
+	assert_bool(FarmRegister.buy(save, &"K-2")).is_true()
+	assert_int(save.floor_buys).is_equal(1)
+

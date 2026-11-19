@@ -126,6 +126,7 @@ const SPRITE_FILL := 0.8
 ## The seed box: a pixel crate (32x12) with a pile of seeds on it (32x8, three sizes), drawn at
 ## SEED_SCALE screen px per pixel (the squares' 7), the count on its label in CRATE_INK. The pile
 ## is small under PILE_SOME seeds and full from PILE_LOTS.
+const Events := preload("res://globalScripts/game_events.gd")
 const SEED_CRATE: Texture2D = preload("res://assets/sprites/farm/seed_crate.svg")
 const SEED_PILES: Array[Texture2D] = [preload("res://assets/sprites/farm/seed_pile_1.svg"),
 		preload("res://assets/sprites/farm/seed_pile_2.svg"), preload("res://assets/sprites/farm/seed_pile_3.svg")]
@@ -299,9 +300,15 @@ func _ready() -> void:
 	_auto.toggled.connect(_switch_auto_seed)
 
 
+## Whether the farm runs (grows, its workers work): bought, and not once the ending (the gun card)
+## has begun; from then on it stands still.
+static func runs(save: SaveGame) -> bool:
+	return save.stamped.has("family_farm") and not Events.chapter_5(save)
+
+
 func _process(delta: float) -> void:
 	var save := SaveManager.save
-	if not save.stamped.has("family_farm"):
+	if not runs(save):
 		return
 	ensure(save)
 	save.farm_seconds += delta

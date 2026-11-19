@@ -12,8 +12,27 @@ Wladislaw Koschemako
 Johannes Neumann
 Wladislaw Koschemako
 
+# ---- Voice of the Boss
+Wladislaw Koschemako
+
 # ---- 2D Artist and Capsule Designer
 Viktoria Zimmermann
+
+# ---- QA
+Michael L.
+Vlad G.
+Johannes N.
+Justin S.
+Viktoria Z.
+Eduard Z.
+Vadim G.
+Dominik B.
+DaPodato
+Sl1me_y
+Davide S.
+Julia J.
+Leon N.
+Robert G.
 
 # ---- Textures
 ambientCG

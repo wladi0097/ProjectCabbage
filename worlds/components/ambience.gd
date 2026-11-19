@@ -11,6 +11,8 @@ const QUIET := 0.0001
 @export var level_db := -8.0
 
 var _level := 0.0
+## The radio was shot in the ending (entities/ending/): no more music, the room tone plays for good.
+var radio_gone := false
 
 
 func _ready() -> void:
@@ -26,7 +28,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if stream == null:
 		return
-	_level = move_toward(_level, 1.0 if plays(SaveManager.save) else 0.0, delta / FADE)
+	_level = move_toward(_level, 1.0 if radio_gone or plays(SaveManager.save) else 0.0, delta / FADE)
 	volume_db = linear_to_db(maxf(_level, QUIET)) + level_db
 	stream_paused = _level <= 0.0
 

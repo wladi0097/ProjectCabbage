@@ -17,6 +17,7 @@ extends Node3D
 ## golden ones their own numbers after their projector chains (condensed); the last one in stock comes down single.
 
 const CABBAGE := preload("res://entities/cabbage/cabbage.tscn")
+const Events := preload("res://globalScripts/game_events.gd")
 const PLAY_AREA_LAYER := 2
 const ROLL_TIME := 0.4
 const FLIGHT_TIME := 0.8
@@ -103,10 +104,16 @@ func _physics_process(delta: float) -> void:
 	# A research unit owed comes down even onto a full mat (one over desk_capacity).
 	var capacity := mat_room(save) + (1 if _research_due else 0)
 	clock(save, delta, _on_desk.size() - _rotten_on_desk >= mat_room(save))
-	if _cooldown > 0.0 or not should_dispense(_on_desk.size() - _rotten_on_desk, _units_on_desk, capacity, save.stock, save.chute_blocked):
+	if _cooldown > 0.0 or not should_dispense(_on_desk.size() - _rotten_on_desk, _units_on_desk, capacity, save.stock, chute_shut(save)):
 		return
 	_cooldown = save.dispense_interval
 	_roll()
+
+
+## Whether nothing comes down the chute: the lever's blocker is on, or the ending (the gun card
+## stamped, GameEvents.chapter_5) has begun, for good: a reload mid-ending keeps it shut.
+static func chute_shut(save: SaveGame) -> bool:
+	return save.chute_blocked or Events.chapter_5(save)
 
 
 ## How many fresh cabbages the chute keeps on the mat: save.desk_capacity, never more than Projector.MAT_MAX.

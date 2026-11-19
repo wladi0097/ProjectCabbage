@@ -13,6 +13,10 @@ const Memo := preload("res://entities/milestone/milestone_memo.gd")
 
 const WELCOME := {re = "WELCOME TO DESK 4",
 	body = "You have been given a desk, a window and a supply of cabbages. Throw cabbages out of the window to sell them. The street pays in coins. Move your hand over the coins on the mat to collect them. Forms will arrive on your desk. They are orders. Approving them is how the company grows: approve every one you can afford. Sign below to confirm you have understood."}
+## The first paper of the new game the ending's credits start (save.closing_paper), before the
+## welcome: the welcome still follows, it is the only place the desk's basics are explained.
+const CLOSING := {re = "YOUR JOURNEY IS COMPLETE",
+	body = "Head office confirms that your journey is complete. Your achievements are not. Steam keeps the list, and the list has gaps. As a courtesy, the CHAPTER SELECT is now unlocked in the settings. Loading a chapter overwrites your current save. Desk 4 has been reassigned to you, effective immediately. Sign below to start again."}
 ## The demo's last report, Demo.END_AFTER seconds of farming after the family farm (save.farm_seconds).
 ## No signature (`buttons`): WISHLIST opens the store page (STORE_URL), DONE files it.
 const DEMO_END := {re = "END OF THE TRIAL PERIOD", buttons = true,
@@ -140,9 +144,12 @@ func _process(delta: float) -> void:
 		$Rustle.play()
 
 
-## The reports due in `save` and not shown yet: the welcome first, then started events in EVENTS order.
+## The reports due in `save` and not shown yet: the closing paper (a new game after the ending), the
+## welcome, then started events in EVENTS order.
 static func due(save: SaveGame) -> Array[String]:
 	var out: Array[String] = []
+	if save.closing_paper and not save.reports.has("closing"):
+		out.append("closing")
 	if not save.reports.has("welcome"):
 		out.append("welcome")
 	for id: String in Events.EVENTS:
@@ -157,6 +164,8 @@ static func due(save: SaveGame) -> Array[String]:
 static func report(id: String) -> Dictionary:
 	if id == "welcome":
 		return WELCOME
+	if id == "closing":
+		return CLOSING
 	return DEMO_END if id == "demo_end" else Events.EVENTS[id].report
 
 

@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://entities/associate/associate.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://entities/hand/hand_model.tscn" id="2_hand"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="3_cue"]
+[ext_resource type="Script" path="res://entities/components/convertible.gd" id="4_conv"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_grab_1.wav" id="sfx_grab_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_grab_2.wav" id="sfx_grab_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_grab_3.wav" id="sfx_grab_3"]
@@ -19,6 +20,9 @@ stream_2/stream = ExtResource("sfx_grab_3")
 script = ExtResource("1_script")
 
 [node name="Hand" parent="." instance=ExtResource("2_hand")]
+
+[node name="Convertible" type="Node" parent="Hand" groups=["ending_hands"]]
+script = ExtResource("4_conv")
 
 [node name="Grab" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_grab")

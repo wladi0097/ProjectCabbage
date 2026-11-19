@@ -81,7 +81,8 @@ extends Resource
 @export var projector_opened := false
 ## Projector nodes the player has seen reachable (rolled the screen up after); newly reachable ones show as NEW.
 @export var tree_seen := PackedStringArray()
-## Memos filed (ids from MilestoneMemo's MEMOS, also the Steam achievements), each reward applied once.
+## Memos earned in this run (ids from MilestoneMemo's MEMOS), each reward applied once. The record
+## of memos ever filed (the FILES folder, Steam) is the Profile's (globalScripts/profile.gd).
 @export var milestones := PackedStringArray()
 ## Tooltips already shown once (their text): from then on they wait a second of hovering (Hand).
 @export var tooltips_seen := PackedStringArray()
@@ -321,6 +322,21 @@ extends Resource
 ## The grade of the last war on each farm (WarReport: "EXEMPLARY", "ACCEPTABLE", "REGRETTABLE"), set as
 ## its after-action report is written: farm id -> grade.
 @export var war_grades := {}
+## Chapter 3 memo counters (MilestoneMemo; counted by WarSheet.tally and FarmRegister): wars won,
+## wars lost (a retreat too), countries abroad wholly taken by a win, wars graded EXEMPLARY, wars won
+## with one figure, wars won with field associates only once pult crews are hired, retreats within
+## WarSheet.QUICK_RETREAT s of START, wars lost (not retreated) without a defence destroyed, offers
+## that insulted an owner, farms bought at their owner's floor price.
+@export var wars_won := 0
+@export var wars_lost := 0
+@export var countries_annexed := 0
+@export var wars_exemplary := 0
+@export var solo_wins := 0
+@export var associate_wins := 0
+@export var quick_retreats := 0
+@export var untouched_losses := 0
+@export var owners_insulted := 0
+@export var floor_buys := 0
 ## The CH1 squares made farm squares, one per farm owned, picked by the player (FarmScreen.place_farm),
 ## and how many times a plain square's cabbages each farm square harvests (CH2's FARM OUTPUT raises it).
 @export var farm_squares := PackedInt32Array()
@@ -343,6 +359,9 @@ extends Resource
 @export var reports := PackedStringArray()
 ## The alpha's end popup (ui/sub/alpha_end/, chapter 3's last card stamped) has been closed: it never comes again.
 @export var alpha_end := false
+## A new game started by the ending's credits (entities/ending/): its first boss paper is the
+## closing one (BossReport.CLOSING, filed as "closing" once signed), then the welcome.
+@export var closing_paper := false
 # Playtest counters: running totals for tools/pace.py's calibration (research/numbers.md). Each is
 # counted where its event already happens; the *_seconds ones add up frame time.
 ## Seconds with the camera at (or panning to) the farm TV (FarmTv._process).

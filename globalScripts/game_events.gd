@@ -89,6 +89,8 @@ const BIGGER_ARMIES := 10
 ## their ids start with ("K-1".."K-8"; a farm abroad has another prefix).
 const HOME_SITES := 8
 const HOME_PREFIX := "K-"
+## Chapter 4's last card: it hands the player the cabbage gun, and chapter 5 (the ending) starts.
+const GUN_CARD := "cabbage_gun"
 ## Farm seconds after the golden_cabbage card until the overripe event starts.
 const OVERRIPE_AFTER := 60.0
 ## Play seconds after the promotion report is signed until the street turns volatile.
@@ -137,6 +139,12 @@ static func chapter_3(save: SaveGame) -> bool:
 ## Whether chapter 3 is over: its last card (UpgradeDesk "stars", needs every farm) is stamped.
 static func chapter_3_done(save: SaveGame) -> bool:
 	return save.stamped.has("stars")
+
+
+## Whether chapter 5, the ending, has begun: chapter 4's last card, the cabbage gun, is stamped
+## (entities/ending/).
+static func chapter_5(save: SaveGame) -> bool:
+	return save.stamped.has(GUN_CARD)
 
 
 ## Whether the tray has nothing left to deal but DRY_LEFT cards (event cards aside).

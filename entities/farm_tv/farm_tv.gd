@@ -180,9 +180,7 @@ func _process(delta: float) -> void:
 	if not _remote.visible and bought(SaveManager.save):
 		_drop()
 	_cursor.visible = _view > 0.0
-	for i in _lamps.size():
-		_lamps[i].light_energy = _lamp_energy[i] * smoothstep(0.0, 0.5, _view)  # Up early: the corner reads mid-pan.
-		_lamps[i].visible = _view > 0.0
+	_light_corner()
 	_hint.visible = hint_shown(_back_hover or _map_hover, BossReport.up)
 	if _hint.visible:
 		var key := map_frame() if _map_hover else back_frame()
@@ -503,6 +501,20 @@ func _pan(to_tv: bool) -> void:
 		_hover_map(false)
 		_hover_channel(0)
 		_set_cursor()
+
+
+## The corner lit and the set on as `t` of the way (0 desk, 1 here) along the glide here; the ending's
+## camera (entities/ending/) lights it this way too.
+func light_up(t: float) -> void:
+	_view = t
+	_set_power(t)
+	_light_corner()
+
+
+func _light_corner() -> void:
+	for i in _lamps.size():
+		_lamps[i].light_energy = _lamp_energy[i] * smoothstep(0.0, 0.5, _view)  # Up early: the corner reads mid-pan.
+		_lamps[i].visible = _view > 0.0
 
 
 func _set_view(t: float) -> void:

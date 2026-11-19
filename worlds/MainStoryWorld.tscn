@@ -75,6 +75,12 @@
 [ext_resource type="PackedScene" path="res://worlds/components/shader_warmup.tscn" id="shader_warmup_1"]
 [ext_resource type="PackedScene" path="res://entities/vacuum/vacuum.tscn" id="supply_vacuums"]
 
+[ext_resource type="PackedScene" path="res://entities/ending/ending.tscn" id="ending_1"]
+[ext_resource type="PackedScene" path="res://entities/cabbage_gun/cabbage_gun.tscn" id="ending_gun"]
+[ext_resource type="PackedScene" path="res://entities/cabbage_gun/greening.tscn" id="ending_green"]
+[ext_resource type="PackedScene" path="res://ui/elements/boss_card/boss_card.tscn" id="ending_cards"]
+[ext_resource type="PackedScene" path="res://ui/sub/end_card.tscn" id="ending_end"]
+[ext_resource type="Script" path="res://entities/components/convertible.gd" id="ending_conv"]
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.45, 0.58, 0.75, 1)
 sky_horizon_color = Color(0.75, 0.72, 0.68, 1)
@@ -547,6 +553,158 @@ layer = 10
 
 [node name="DebugKeys" type="Node" parent="." unique_id=1045444223]
 script = ExtResource("18_debug")
+
+[node name="Convertible" type="Node" parent="FarmTv/Corner/Tv" groups=["ending_tv"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Tally" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="TallyMachine" groups=["ending_counters"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="FindingsCounter" groups=["ending_counters"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="PriceSlate" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="SupplyConsole" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="QaBay" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="UpgradeDesk/Press" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="UpgradeDesk/Tray" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="Ledger/Binder" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MilestoneMemo/Folder" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="GoldenLamp" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="ResearchLight" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="RottenBin" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="FieldLine" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="ChuteLever/Frame" groups=["ending_chute"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="ChuteLever/Flap" groups=["ending_chute"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="ChuteLever/Arm" groups=["ending_chute"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="CatchCombo" groups=["ending_chute"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="HandSchedule/Switch" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MiniDrop/TubeDesk" groups=["ending_table"]]
+script = ExtResource("ending_conv")
+mode = 1
+
+[node name="Convertible" type="Node" parent="Radio" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="FarmTv/Remote" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="CabbageFeeder/Model" groups=["ending_chute"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Sheets/World" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Sheets/War" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Sheets/Depot" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Holder" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Depot" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Weights/TopLeft" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Weights/TopRight" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Weights/BottomLeft" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MapTable/Weights/BottomRight" groups=["ending_map"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="MiniDrop/Tube" groups=["ending_desk"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="UpgradeDesk/Spike" groups=["ending_cards"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="PriorVentures/Frame1" groups=["ending_walls"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="PriorVentures/Frame2" groups=["ending_walls"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="PriorVentures/Frame3" groups=["ending_walls"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="Coins" groups=["ending_table"]]
+script = ExtResource("ending_conv")
+
+[node name="Convertible" type="Node" parent="Room/room_wall" groups=["ending_walls"]]
+script = ExtResource("ending_conv")
+mode = 1
+
+[node name="Convertible" type="Node" parent="Room/window" groups=["ending_walls"]]
+script = ExtResource("ending_conv")
+mode = 1
+
+[node name="Convertible" type="Node" parent="Room/blinds" groups=["ending_walls"]]
+script = ExtResource("ending_conv")
+mode = 1
+
+[node name="Convertible" type="Node" parent="Table" groups=["ending_table"]]
+script = ExtResource("ending_conv")
+mode = 1
+
+[node name="CabbageGun" parent="Camera3D" instance=ExtResource("ending_gun")]
+
+[node name="Greening" parent="." instance=ExtResource("ending_green")]
+
+[node name="BossCard" parent="." instance=ExtResource("ending_cards")]
+
+[node name="EndCard" parent="." instance=ExtResource("ending_end")]
+
+[node name="Ending" parent="." node_paths=PackedStringArray("gun", "cards", "end_card", "greening", "farm_tv", "map_table", "radio", "ambience") instance=ExtResource("ending_1")]
+gun = NodePath("../Camera3D/CabbageGun")
+cards = NodePath("../BossCard")
+end_card = NodePath("../EndCard")
+greening = NodePath("../Greening")
+farm_tv = NodePath("../FarmTv")
+map_table = NodePath("../MapTable")
+radio = NodePath("../Radio")
+ambience = NodePath("../Ambience")
 
 [connection signal="thrown_back" from="SaleWindow" to="PriceSlate" method="wiggle" unbinds=1]
 [connection signal="bounced" from="Coins" to="Coins/Bounce" method="cue"]

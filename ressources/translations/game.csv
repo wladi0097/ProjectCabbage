@@ -3194,3 +3194,132 @@ REFLECTIVE VEST,REFLECTIVE VEST,WARNWESTE
 Express couriers take 14% more damage before they fall.","Seen from a distance. Avoided at the same distance.
 Express couriers take 14% more damage before they fall.","Von Weitem zu sehen. Aus derselben Entfernung gemieden.
 Eilkuriere halten 14 % mehr Schaden aus, bevor sie fallen."
+YOUR JOURNEY IS COMPLETE,YOUR JOURNEY IS COMPLETE,IHRE REISE IST ABGESCHLOSSEN
+"Head office confirms that your journey is complete. Your achievements are not. Steam keeps the list, and the list has gaps. As a courtesy, the CHAPTER SELECT is now unlocked in the settings. Loading a chapter overwrites your current save. Desk 4 has been reassigned to you, effective immediately. Sign below to start again.","Head office confirms that your journey is complete. Your achievements are not. Steam keeps the list, and the list has gaps. As a courtesy, the CHAPTER SELECT is now unlocked in the settings. Loading a chapter overwrites your current save. Desk 4 has been reassigned to you, effective immediately. Sign below to start again.","Die Zentrale bestätigt, dass Ihre Reise abgeschlossen ist. Ihre Erfolge sind es nicht. Steam führt die Liste, und die Liste hat Lücken. Aus Kulanz ist die KAPITELAUSWAHL ab sofort in den Einstellungen freigeschaltet. Wer ein Kapitel lädt, überschreibt seinen aktuellen Spielstand. Tisch 4 wurde Ihnen mit sofortiger Wirkung erneut zugewiesen. Unterschreiben Sie unten, um von vorn zu beginnen."
+CHAPTER SELECT,CHAPTER SELECT,KAPITELAUSWAHL
+CHAPTER 1: THE DESK,CHAPTER 1: THE DESK,KAPITEL 1: DER SCHREIBTISCH
+CHAPTER 2: THE FARM,CHAPTER 2: THE FARM,KAPITEL 2: DER HOF
+CHAPTER 3: THE MAP,CHAPTER 3: THE MAP,KAPITEL 3: DIE KARTE
+CHAPTER 4: THE STARS,CHAPTER 4: THE STARS,KAPITEL 4: DIE STERNE
+"Loading a chapter overwrites the current save. Its cabbages, coins and progress will be discontinued. Filed memos remain on record. Proceed?","Loading a chapter overwrites the current save. Its cabbages, coins and progress will be discontinued. Filed memos remain on record. Proceed?","Das Laden eines Kapitels überschreibt den aktuellen Spielstand. Seine Kohlköpfe, Münzen und Fortschritte werden eingestellt. Abgelegte Memos bleiben in der Akte. Fortfahren?"
+OVERWRITE SAVE,OVERWRITE SAVE,SPIELSTAND ÜBERSCHREIBEN
+UNIVERSE CONVERTED TO CABBAGE,UNIVERSE CONVERTED TO CABBAGE,UNIVERSUM IN KOHLKÖPFE UMGEWANDELT
+NON-CABBAGE ITEMS REMAINING: %d,NON-CABBAGE ITEMS REMAINING: %d,VERBLEIBENDE NICHT-KOHLKOPF-GEGENSTÄNDE: %d
+AUTHORISED SIGNATORY: THE DIRECTOR,AUTHORISED SIGNATORY: THE DIRECTOR,ZEICHNUNGSBERECHTIGT: DER DIREKTOR
+PRESS LEFT MOUSE BUTTON TO CONVERT TO CABBAGE,PRESS LEFT MOUSE BUTTON TO CONVERT TO CABBAGE,LINKE MAUSTASTE DRÜCKEN: IN KOHLKOPF UMWANDELN
+THANK YOU FOR YOUR COOPERATION.,THANK YOU FOR YOUR COOPERATION.,VIELEN DANK FÜR IHRE KOOPERATION.
+THE DESK AND THE WALLS ARE NOT CABBAGE.,THE DESK AND THE WALLS ARE NOT CABBAGE.,DER TISCH UND DIE WÄNDE SIND KEIN KOHL.
+FIRST HARVEST,FIRST HARVEST,ERSTE ERNTE
+Harvest a square on the farm.,Harvest a square on the farm.,Ein Feld auf dem Hof ernten.
+The soil has delivered. It will be asked to do so again.,The soil has delivered. It will be asked to do so again.,Der Boden hat geliefert. Er wird erneut darum gebeten.
+500 HARVESTS,500 HARVESTS,500 ERNTEN
+Harvest 500 squares on the farm.,Harvest 500 squares on the farm.,500 Felder auf dem Hof ernten.
+The farm is now a process. It does not get weekends.,The farm is now a process. It does not get weekends.,Der Hof ist jetzt ein Prozess. Prozesse haben kein Wochenende.
+FULL ACREAGE,FULL ACREAGE,VOLLE ANBAUFLÄCHE
+Open all 24 squares on the farm.,Open all 24 squares on the farm.,Alle 24 Felder auf dem Hof erschließen.
+There is no more land. Head office is looking into that.,There is no more land. Head office is looking into that.,Es gibt kein Land mehr. Die Zentrale prüft das.
+MANUAL LABOUR,MANUAL LABOUR,HANDARBEIT
+Pull 500 cabbages off the farm by hand.,Pull 500 cabbages off the farm by hand.,500 Kohlköpfe von Hand vom Hof ziehen.
+Your hands have been reclassified as farm equipment.,Your hands have been reclassified as farm equipment.,Ihre Hände wurden als landwirtschaftliches Gerät neu eingestuft.
+SEED CAPITAL,SEED CAPITAL,SAATKAPITAL
+Hold 500 seeds in the crate at once.,Hold 500 seeds in the crate at once.,500 Samen gleichzeitig in der Kiste haben.
+Seeds are assets. Please plant them instead of counting them.,Seeds are assets. Please plant them instead of counting them.,Samen sind Vermögenswerte. Bitte pflanzen statt zählen.
+PREMIUM PRODUCE,PREMIUM PRODUCE,PREMIUMWARE
+Sell a golden cabbage.,Sell a golden cabbage.,Einen goldenen Kohlkopf verkaufen.
+It was a cabbage. Accounts invoiced it as jewellery.,It was a cabbage. Accounts invoiced it as jewellery.,Es war ein Kohlkopf. Die Buchhaltung hat ihn als Schmuck abgerechnet.
+BULLION ANALYSED,BULLION ANALYSED,BARREN ANALYSIERT
+Have the research lab analyse 10 golden cabbages.,Have the research lab analyse 10 golden cabbages.,Das Forschungslabor 10 goldene Kohlköpfe analysieren lassen.
+The lab confirms they are cabbages. Expensive ones.,The lab confirms they are cabbages. Expensive ones.,Das Labor bestätigt: Es sind Kohlköpfe. Teure.
+COMPOST,COMPOST,KOMPOST
+Let a ripe square rot on the farm.,Let a ripe square rot on the farm.,Ein reifes Feld auf dem Hof verfaulen lassen.
+Compost is not a product category. This has been explained to you.,Compost is not a product category. This has been explained to you.,Kompost ist keine Produktkategorie. Das wurde Ihnen erklärt.
+MIDDLE MANAGEMENT,MIDDLE MANAGEMENT,MITTLERES MANAGEMENT
+Put a tractor on the farm.,Put a tractor on the farm.,Einen Traktor auf den Hof stellen.
+Your title has changed. Your chair has not.,Your title has changed. Your chair has not.,Ihr Titel hat sich geändert. Ihr Stuhl nicht.
+MOTOR POOL,MOTOR POOL,FUHRPARK
+Run 3 tractors on the farm.,Run 3 tractors on the farm.,3 Traktoren auf dem Hof fahren lassen.
+Three tractors share one parking space. Sort it out among yourselves.,Three tractors share one parking space. Sort it out among yourselves.,Drei Traktoren teilen sich einen Parkplatz. Regeln Sie das unter sich.
+PRIME TIME,PRIME TIME,HAUPTSENDEZEIT
+Watch the farm on the TV for 30 minutes in total.,Watch the farm on the TV for 30 minutes in total.,Den Hof insgesamt 30 Minuten im Fernseher ansehen.
+Watching cabbage grow has been logged as overtime. It will not be paid as such.,Watching cabbage grow has been logged as overtime. It will not be paid as such.,Kohl beim Wachsen zuzusehen wurde als Überstunden erfasst. Bezahlt wird es nicht.
+SUPPLY INTERRUPTED,SUPPLY INTERRUPTED,NACHSCHUB UNTERBROCHEN
+Keep the chute shut for 10 minutes in total.,Keep the chute shut for 10 minutes in total.,Die Rutsche insgesamt 10 Minuten gesperrt lassen.
+The chute has asked whether it did something wrong.,The chute has asked whether it did something wrong.,"Die Rutsche hat gefragt, ob sie etwas falsch gemacht hat."
+FAMILY BUSINESS,FAMILY BUSINESS,FAMILIENBETRIEB
+Buy the family farm.,Buy the family farm.,Den Familienhof kaufen.
+Welcome to agriculture. Nepotism has been noted and approved.,Welcome to agriculture. Nepotism has been noted and approved.,Willkommen in der Landwirtschaft. Vetternwirtschaft wurde vermerkt und genehmigt.
+HEAD OF ACQUISITIONS,HEAD OF ACQUISITIONS,LEITUNG AKQUISITIONEN
+Stamp the consolidated growth requisition.,Stamp the consolidated growth requisition.,Die konsolidierte Wachstumsanforderung abstempeln.
+Growth will now be bought. Receipts to accounts.,Growth will now be bought. Receipts to accounts.,Wachstum wird ab jetzt gekauft. Belege an die Buchhaltung.
+"THE WORLD, OWNED","THE WORLD, OWNED","DIE WELT, IN BESITZ"
+Own every farm in the world.,Own every farm in the world.,Jeden Hof der Welt besitzen.
+The world is now an asset. Its depreciation is under review.,The world is now an asset. Its depreciation is under review.,Die Welt ist jetzt ein Vermögenswert. Ihre Abschreibung wird geprüft.
+FINAL REQUISITION,FINAL REQUISITION,LETZTE ANFORDERUNG
+Stamp the last form.,Stamp the last form.,Das letzte Formular abstempeln.
+There are no more forms. There is only cabbage.,There are no more forms. There is only cabbage.,Es gibt keine Formulare mehr. Es gibt nur noch Kohl.
+EVERYTHING IS CABBAGE,EVERYTHING IS CABBAGE,ALLES IST KOHL
+Finish the game.,Finish the game.,Das Spiel beenden.
+The office has been converted. The file is closed. Thank you for your service.,The office has been converted. The file is closed. Thank you for your service.,Das Büro wurde umgewandelt. Die Akte ist geschlossen. Danke für Ihre Dienste.
+THE MUSIC STOPS,THE MUSIC STOPS,DIE MUSIK VERSTUMMT
+"In the end, shoot the radio before anything else on the desk.","In the end, shoot the radio before anything else on the desk.",Am Ende das Radio vor allem anderen auf dem Tisch abschießen.
+The radio went first. Someone had to set priorities.,The radio went first. Someone had to set priorities.,Das Radio war zuerst dran. Irgendwer musste Prioritäten setzen.
+COLLATERAL,COLLATERAL,KOLLATERALSCHADEN
+Miss 25 shots in the end.,Miss 25 shots in the end.,Am Ende 25 Schüsse danebensetzen.
+The walls were not the target. Facilities will invoice you for them anyway.,The walls were not the target. Facilities will invoice you for them anyway.,Die Wände waren nicht das Ziel. Die Haustechnik stellt sie Ihnen trotzdem in Rechnung.
+ZERO WASTAGE,ZERO WASTAGE,NULL VERSCHWENDUNG
+Finish the end without missing a single shot.,Finish the end without missing a single shot.,Das Ende ohne einen einzigen Fehlschuss durchspielen.
+Every round was accounted for. Accounts would like to shake your hand.,Every round was accounted for. Accounts would like to shake your hand.,Jeder Schuss ist verbucht. Die Buchhaltung möchte Ihnen die Hand schütteln.
+SECOND THOUGHTS,SECOND THOUGHTS,ZWEIFEL
+Wait a full minute before the last click.,Wait a full minute before the last click.,Vor dem letzten Klick eine volle Minute warten.
+Your hesitation was noted in your file. The file is now cabbage.,Your hesitation was noted in your file. The file is now cabbage.,Ihr Zögern wurde in Ihrer Akte vermerkt. Die Akte ist jetzt Kohl.
+FIRST ACQUISITION,FIRST ACQUISITION,ERSTE ÜBERNAHME
+Buy a farm at the map table.,Buy a farm at the map table.,Am Kartentisch einen Hof kaufen.
+The farm has been informed that it is now a subsidiary.,The farm has been informed that it is now a subsidiary.,"Der Hof wurde informiert, dass er nun eine Tochtergesellschaft ist."
+12 FARMS OWNED,12 FARMS OWNED,12 HÖFE IM BESITZ
+Own 12 farms.,Own 12 farms.,12 Höfe besitzen.
+Half the farms on the map now report to Desk 4.,Half the farms on the map now report to Desk 4.,Die Hälfte der Höfe auf der Karte berichtet nun an Schreibtisch 4.
+BOTTOM OF THE MARKET,BOTTOM OF THE MARKET,MARKTTIEF
+"Haggle a farm down to its lowest price, then buy it.","Haggle a farm down to its lowest price, then buy it.",Einen Hof auf seinen niedrigsten Preis herunterhandeln und dann kaufen.
+The owner signed with dignity. The dignity was not itemised.,The owner signed with dignity. The dignity was not itemised.,Der Eigentümer unterschrieb mit Würde. Die Würde wurde nicht einzeln ausgewiesen.
+FIRM OPENING POSITION,FIRM OPENING POSITION,FESTE VERHANDLUNGSPOSITION
+Insult farm owners with 5 offers.,Insult farm owners with 5 offers.,Hofbesitzer mit 5 Angeboten beleidigen.
+Five owners have been offended on the company's behalf.,Five owners have been offended on the company's behalf.,Fünf Eigentümer wurden im Namen der Firma beleidigt.
+LEGISLATIVE ALIGNMENT,LEGISLATIVE ALIGNMENT,GESETZLICHE ANGLEICHUNG
+Approve NO MORE TAXES ON CABBAGES.,Approve NO MORE TAXES ON CABBAGES.,KEINE STEUERN MEHR AUF KOHLKÖPFE genehmigen.
+The law has been amended to reflect our position.,The law has been amended to reflect our position.,Das Gesetz wurde an unsere Position angepasst.
+FIRST HOSTILE ACQUISITION,FIRST HOSTILE ACQUISITION,ERSTE FEINDLICHE ÜBERNAHME
+Win a war.,Win a war.,Einen Krieg gewinnen.
+The farm accepted our offer. It was not offered an alternative.,The farm accepted our offer. It was not offered an alternative.,Der Hof hat unser Angebot angenommen. Eine Alternative wurde ihm nicht angeboten.
+10 HOSTILE ACQUISITIONS,10 HOSTILE ACQUISITIONS,10 FEINDLICHE ÜBERNAHMEN
+Win 10 wars.,Win 10 wars.,10 Kriege gewinnen.
+Legal has stopped asking which country.,Legal has stopped asking which country.,"Die Rechtsabteilung fragt nicht mehr, welches Land."
+ACQUISITION DEFERRED,ACQUISITION DEFERRED,ÜBERNAHME VERSCHOBEN
+Lose a war.,Lose a war.,Einen Krieg verlieren.
+The farm remains independent for now. This is being looked into.,The farm remains independent for now. This is being looked into.,Der Hof bleibt vorerst unabhängig. Die Sache wird geprüft.
+EXEMPLARY CONDUCT,EXEMPLARY CONDUCT,VORBILDLICHES VERHALTEN
+Win a war graded EXEMPLARY.,Win a war graded EXEMPLARY.,Einen Krieg mit der Note VORBILDLICH gewinnen.
+Your engagement will be used in training material.,Your engagement will be used in training material.,Ihr Einsatz wird in Schulungsunterlagen verwendet.
+FIRST ANNEXATION,FIRST ANNEXATION,ERSTE ANNEXION
+Take every farm of a country abroad.,Take every farm of a country abroad.,Alle Höfe eines Landes im Ausland einnehmen.
+A border has been reclassified as an internal wall.,A border has been reclassified as an internal wall.,Eine Grenze wurde als Innenwand neu eingestuft.
+REGIONAL OFFICE,REGIONAL OFFICE,REGIONALBÜRO
+Take every farm of 4 countries abroad.,Take every farm of 4 countries abroad.,Alle Höfe von 4 Ländern im Ausland einnehmen.
+Four governments now route their mail through Desk 4.,Four governments now route their mail through Desk 4.,Vier Regierungen leiten ihre Post jetzt über Schreibtisch 4.
+SKELETON CREW,SKELETON CREW,RUMPFBESETZUNG
+Win a war with a single figure.,Win a war with a single figure.,Einen Krieg mit einer einzigen Figur gewinnen.
+Headcount was reduced to one. Results were not.,Headcount was reduced to one. Results were not.,Der Personalstand wurde auf eins reduziert. Die Ergebnisse nicht.
+BACK TO BASICS,BACK TO BASICS,ZURÜCK ZU DEN GRUNDLAGEN
+"Win a war with field associates only, after hiring cabbage-pult crews.","Win a war with field associates only, after hiring cabbage-pult crews.","Einen Krieg nur mit Außendienstmitarbeitern gewinnen, wenn es schon Kohlschleuder-Trupps gibt."
+Senior staff were available. They were not consulted.,Senior staff were available. They were not consulted.,Führungskräfte waren verfügbar. Sie wurden nicht gefragt.
+STRATEGIC REALIGNMENT,STRATEGIC REALIGNMENT,STRATEGISCHE NEUAUSRICHTUNG
+Retreat within 3 seconds of START.,Retreat within 3 seconds of START.,Innerhalb von 3 Sekunden nach EINSATZBEGINN den Rückzug antreten.
+The engagement was reviewed and found premature.,The engagement was reviewed and found premature.,Der Einsatz wurde geprüft und für verfrüht befunden.
+NON-AGGRESSION PACT,NON-AGGRESSION PACT,NICHTANGRIFFSPAKT
+Lose a war without destroying a single defence.,Lose a war without destroying a single defence.,"Einen Krieg verlieren, ohne eine einzige Verteidigung zu zerstören."
+The defences were left exactly as we found them.,The defences were left exactly as we found them.,"Die Verteidigungsanlagen wurden genau so hinterlassen, wie wir sie vorfanden."
+MAXIMUM DENSITY,MAXIMUM DENSITY,MAXIMALE DICHTE
+Condense 32 cabbages into one.,Condense 32 cabbages into one.,32 Kohlköpfe zu einem verdichten.
+It is the size of one cabbage. Physics has been asked for comment.,It is the size of one cabbage. Physics has been asked for comment.,Er ist so groß wie ein Kohlkopf. Die Physik wurde um Stellungnahme gebeten.
+"LEGAL TENDER, CONSOLIDATED","LEGAL TENDER, CONSOLIDATED","GESETZLICHES ZAHLUNGSMITTEL, KONSOLIDIERT"
+Have the coins on the desk merge up to $10K.,Have the coins on the desk merge up to $10K.,Die Münzen auf dem Tisch bis zu $10K verschmelzen lassen.
+Accounts has requested a larger wallet.,Accounts has requested a larger wallet.,Die Buchhaltung hat eine größere Geldbörse beantragt.

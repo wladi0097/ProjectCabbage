@@ -1,0 +1,181 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/cabbage_gun/cabbage_gun.gd" id="1_script"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_gun.res" id="2_gun"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_gun_glass.res" id="3_glass"]
+[ext_resource type="Material" path="res://assets/materials/machine_paint_matte.tres" id="4_paint"]
+[ext_resource type="Material" path="res://assets/materials/machine_metal.tres" id="5_metal"]
+[ext_resource type="Material" path="res://assets/materials/tube_pipe_glass.tres" id="6_glass"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_a.res" id="7_cabbage"]
+[ext_resource type="Material" path="res://assets/materials/cabbage.tres" id="8_cabbage_mat"]
+[ext_resource type="PackedScene" path="res://entities/hand/hand_model.tscn" id="9_hand"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/cabbage_gun_glow.res" id="13_glow"]
+[ext_resource type="Shader" path="res://assets/shaders/liquid_wobble.gdshader" id="14_liquid"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_cannon_1.wav" id="10_shot1"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_cannon_2.wav" id="11_shot2"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/war_cannon_3.wav" id="12_shot3"]
+
+[sub_resource type="Gradient" id="FlashFade"]
+offsets = PackedFloat32Array(0, 0.35, 1)
+colors = PackedColorArray(1, 1, 0.95, 1, 0.7, 1, 0.55, 0.8, 0.3, 0.6, 0.2, 0)
+
+[sub_resource type="GradientTexture2D" id="FlashTex"]
+gradient = SubResource("FlashFade")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="FlashMat"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+no_depth_test = true
+albedo_texture = SubResource("FlashTex")
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="FlashQuad"]
+material = SubResource("FlashMat")
+size = Vector2(0.24, 0.24)
+
+[sub_resource type="StandardMaterial3D" id="GlowMat"]
+shading_mode = 0
+vertex_color_use_as_albedo = true
+
+[sub_resource type="ShaderMaterial" id="LiquidMat"]
+render_priority = -1
+shader = ExtResource("14_liquid")
+
+[sub_resource type="Gradient" id="TrailFade"]
+colors = PackedColorArray(0.45, 1, 0.3, 0.75, 1, 1, 0.92, 1)
+
+[sub_resource type="GradientTexture2D" id="TrailTex"]
+gradient = SubResource("TrailFade")
+width = 4
+height = 64
+fill_from = Vector2(0, 0)
+fill_to = Vector2(0, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="TrailMat"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = SubResource("TrailTex")
+
+[sub_resource type="CylinderMesh" id="TrailBeam"]
+material = SubResource("TrailMat")
+top_radius = 0.009
+bottom_radius = 0.003
+height = 1.0
+radial_segments = 8
+rings = 1
+cap_top = false
+cap_bottom = false
+
+[sub_resource type="AudioStreamRandomizer" id="Shots"]
+random_pitch = 1.08
+streams_count = 3
+stream_0/stream = ExtResource("10_shot1")
+stream_1/stream = ExtResource("11_shot2")
+stream_2/stream = ExtResource("12_shot3")
+
+[node name="CabbageGun" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Rig" type="Node3D" parent="."]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0, 0)
+
+[node name="Pivot" type="Node3D" parent="Rig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.34, -0.27, -0.95)
+
+[node name="Kick" type="Node3D" parent="Rig/Pivot"]
+
+[node name="Model" type="MeshInstance3D" parent="Rig/Pivot/Kick"]
+gi_mode = 0
+cast_shadow = 0
+mesh = ExtResource("2_gun")
+surface_material_override/0 = ExtResource("4_paint")
+surface_material_override/1 = ExtResource("5_metal")
+
+[node name="Cabbage" type="MeshInstance3D" parent="Rig/Pivot/Kick"]
+transform = Transform3D(0.55, 0, 0, 0, 0.55, 0, 0, 0, 0.55, 0, 0.155, -0.035)
+gi_mode = 0
+cast_shadow = 0
+mesh = ExtResource("7_cabbage")
+surface_material_override/0 = ExtResource("8_cabbage_mat")
+
+[node name="Liquid" type="MeshInstance3D" parent="Rig/Pivot/Kick"]
+transform = Transform3D(0.93, 0, 0, 0, 0.93, 0, 0, 0, 0.93, 0, 0.01155, -0.00245)
+gi_mode = 0
+cast_shadow = 0
+mesh = ExtResource("3_glass")
+surface_material_override/0 = SubResource("LiquidMat")
+
+[node name="Glass" type="MeshInstance3D" parent="Rig/Pivot/Kick"]
+gi_mode = 0
+cast_shadow = 0
+mesh = ExtResource("3_glass")
+surface_material_override/0 = ExtResource("6_glass")
+
+[node name="Glow" type="MeshInstance3D" parent="Rig/Pivot/Kick"]
+gi_mode = 0
+cast_shadow = 0
+mesh = ExtResource("13_glow")
+surface_material_override/0 = SubResource("GlowMat")
+
+[node name="Hand" parent="Rig/Pivot/Kick" instance=ExtResource("9_hand")]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0.056, -0.055, 0.156)
+
+[node name="Muzzle" type="Node3D" parent="Rig/Pivot/Kick"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.38)
+
+[node name="Flash" type="MeshInstance3D" parent="Rig/Pivot/Kick/Muzzle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.04)
+gi_mode = 0
+cast_shadow = 0
+mesh = SubResource("FlashQuad")
+
+[node name="FlashLight" type="OmniLight3D" parent="Rig/Pivot/Kick/Muzzle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.08)
+light_color = Color(0.75, 1, 0.6, 1)
+light_energy = 3.0
+light_bake_mode = 0
+omni_range = 2.5
+
+[node name="Trail" type="Node3D" parent="."]
+top_level = true
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.01, 0, 0, 0)
+
+[node name="Beam" type="MeshInstance3D" parent="Trail"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.5)
+gi_mode = 0
+cast_shadow = 0
+mesh = SubResource("TrailBeam")
+
+[node name="Crosshair" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="Blocker" type="Control" parent="Crosshair" groups=["blocks_hand"]]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Shot" type="AudioStreamPlayer" parent="."]
+stream = SubResource("Shots")
+pitch_scale = 1.25
+bus = &"SFX"
+
+[node name="GunLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0125, 0.0375, -0.075)
+light_color = Color(0.8, 0.88, 0.9, 1)
+light_energy = 0.45
+light_bake_mode = 0
+omni_range = 0.4

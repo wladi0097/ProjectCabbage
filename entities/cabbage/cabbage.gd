@@ -288,13 +288,18 @@ func grow() -> void:
 		return
 	mini = false
 	grown = true
-	var up := 1.0 / MINI_SCALE
-	_look = Basis.from_scale(Vector3.ONE * up) * _look
+	resize(1.0 / MINI_SCALE)
+
+
+## Grows (or shrinks) it `factor` times: mesh, collider, and the mass with its cube. The cabbage gun
+## drops one sized to the object it converted (Convertible).
+func resize(factor: float) -> void:
+	_look = Basis.from_scale(Vector3.ONE * factor) * _look
 	$Mesh.basis = _look
 	var ball := $Shape.shape.duplicate() as SphereShape3D
-	ball.radius *= up
+	ball.radius *= factor
 	$Shape.shape = ball
-	mass *= up * up * up
+	mass *= factor * factor * factor
 
 
 ## A flight ends when it lands (lands_on, or settles off the desk): a miss unless it is a mini.

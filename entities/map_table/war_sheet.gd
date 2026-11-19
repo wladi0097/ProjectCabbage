@@ -61,6 +61,8 @@ const TITLE_CELLS := Rect2i(19, 8, 1, 3)
 ## The box's parts (WarControl.part_at) as spots for the hint slip.
 const START := &"start"
 const ABORT := &"abort"
+## A retreat called within this many seconds of START counts as quick (save.quick_retreats, a memo).
+const QUICK_RETREAT := 3.0
 ## Where the figures taken stand on the desk left of the sheet (art px, off the paper), above the
 ## control box: FIGURE_AT the first, then FIGURES_PER_ROW to a row, FIGURE_STEP apart (11, the
 ## largest army, fill four rows). A figure set down off the paper stays inside DESK.
@@ -282,6 +284,25 @@ static func win(save: SaveGame, farm_id: StringName) -> bool:
 		return false
 	save.farms_owned.append(farm_id)
 	return true
+
+
+## Counts the war on `site` that ended as `report` (WarReport.summary; a win's farm already ours)
+## in `save`'s memo counters (wars_won...).
+static func tally(save: SaveGame, site: StringName, report: Dictionary) -> void:
+	if report.won:
+		save.wars_won += 1
+		var country := World.country_of(site)
+		save.countries_annexed += int(country != World.HOME and World.owns_all(save, country))
+		save.wars_exemplary += int(report.grade == WarReport.EXEMPLARY)
+		var sent: Dictionary = report.deployed
+		save.solo_wins += int(sent.values().reduce(func(a: int, b: int) -> int: return a + b, 0) == 1)
+		save.associate_wins += int(sent.size() == 1 and sent.has("field_associate") and save.stamped.has(WarRules.UNIT_CARD.pult_crew))
+		return
+	save.wars_lost += 1
+	if report.retreat:
+		save.quick_retreats += int(report.seconds <= QUICK_RETREAT)
+	else:
+		save.untouched_losses += int(report.defences.x == 0)
 
 
 ## The war on `farm_id` begins with `chosen` (unit id -> figures taken, already out of save.army;
@@ -912,6 +933,7 @@ func _end() -> void:
 		FarmRegister.lamp_held = true  # The Field Line's lamp waits for the farm's moment on its country's sheet.
 	else:
 		SaveManager.log_event("war_lost", farm)
+	tally(save, farm, report)
 	SaveManager.autosave()
 	(_won_sound if won else _lost_sound).cue(global_position)
 	_fade_music()

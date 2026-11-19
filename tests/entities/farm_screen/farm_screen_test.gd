@@ -2053,3 +2053,11 @@ func test_with_an_empty_crate_the_last_hand_pull_from_a_farm_square_replants_not
 	FarmScreen.harvest(save, 0, true)
 	assert_int(FarmScreen.seeds_in(save, 0)).is_equal(0)
 	assert_int(save.hand_planted).is_equal(0)
+
+
+func test_the_farm_and_its_workers_stand_still_once_the_gun_is_bought() -> void:
+	var save := SaveGame.new()
+	save.stamped.append("family_farm")
+	assert_bool(FarmScreen.runs(save)).is_true()
+	save.stamped.append(FarmScreen.Events.GUN_CARD)
+	assert_bool(FarmScreen.runs(save)).is_false()

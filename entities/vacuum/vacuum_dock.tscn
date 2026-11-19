@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="PackedScene" path="res://assets/meshes/Machines/vacuum_dock.blend" id="1_model"]
+[ext_resource type="Script" path="res://entities/components/convertible.gd" id="2_conv"]
 
 [sub_resource type="StandardMaterial3D" id="Lamp_mat"]
 resource_local_to_scene = true
@@ -21,3 +22,6 @@ material_override = SubResource("Lamp_mat")
 
 [node name="Park" type="Marker3D" parent="."]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.063)
+
+[node name="Convertible" type="Node" parent="."]
+script = ExtResource("2_conv")

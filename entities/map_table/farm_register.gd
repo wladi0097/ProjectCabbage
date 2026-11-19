@@ -505,6 +505,7 @@ static func offer(save: SaveGame, site: StringName, amount: int, out := Vector2i
 		return -1
 	var mood := mood_of(amount, wanted(save, moods(save, site).filter(landed).size(), site))
 	UpgradeDesk.pay(save, paid_in, amount, out)
+	save.owners_insulted += int(mood == Mood.INSULTED)
 	if not landed(mood) and save.stamped.has(RECOVER):
 		save.set(paid_in, save.get(paid_in) + int(amount * RECOVERED))
 	var made := offers(save, site)
@@ -657,6 +658,7 @@ static func buy(save: SaveGame, site: StringName, out := Vector2i.ZERO) -> bool:
 	var bill := price(save, site)
 	if not for_sale(save, site) or not UpgradeDesk.affords(save, bill, out):
 		return false
+	save.floor_buys += int(tender(save, site) != "" and bill.get("coins", 0) <= floor_price(save, site))
 	for paid_in: String in bill:
 		UpgradeDesk.pay(save, paid_in, bill[paid_in], out)
 	save.farms_owned.append(site)

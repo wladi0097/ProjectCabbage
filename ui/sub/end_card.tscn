@@ -1,0 +1,82 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/sub/end_card.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/game_logo.png" id="2_logo"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="3_oswald"]
+[ext_resource type="FontFile" path="res://assets/fonts/NunitoSans.ttf" id="4_nunito"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/cabbage_bump_1.wav" id="5_thud"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/projector_widen.wav" id="6_swell"]
+
+[sub_resource type="Theme" id="CreditsTheme"]
+Label/colors/font_color = Color(1, 1, 1, 1)
+Label/font_sizes/font_size = 24
+Label/fonts/font = ExtResource("4_nunito")
+CreditHeading/base_type = &"Label"
+CreditHeading/colors/font_color = Color(1, 1, 1, 0.55)
+CreditHeading/font_sizes/font_size = 20
+CreditHeading/fonts/font = ExtResource("3_oswald")
+CreditFine/base_type = &"Label"
+CreditFine/colors/font_color = Color(1, 1, 1, 0.45)
+CreditFine/font_sizes/font_size = 16
+Closing/base_type = &"Label"
+Closing/font_sizes/font_size = 30
+Closing/fonts/font = ExtResource("3_oswald")
+
+[node name="EndCard" type="CanvasLayer"]
+layer = 30
+visible = false
+script = ExtResource("1_script")
+
+[node name="Black" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Roll" type="VBoxContainer" parent="."]
+offset_right = 1920.0
+offset_bottom = 1200.0
+mouse_filter = 2
+theme = SubResource("CreditsTheme")
+theme_override_constants/separation = 6
+
+[node name="Logo" type="TextureRect" parent="Roll"]
+custom_minimum_size = Vector2(0, 540)
+layout_mode = 2
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Gap" type="Control" parent="Roll"]
+custom_minimum_size = Vector2(0, 420)
+layout_mode = 2
+
+[node name="Credits" type="VBoxContainer" parent="Roll"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ClosingGap" type="Control" parent="Roll/Credits"]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+
+[node name="Closing" type="Label" parent="Roll/Credits"]
+layout_mode = 2
+theme_type_variation = &"Closing"
+text = "THANK YOU FOR YOUR COOPERATION."
+horizontal_alignment = 1
+
+[node name="Thud" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_thud")
+volume_db = -4.0
+bus = &"SFX"
+
+[node name="LogoSwell" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_swell")
+volume_db = -8.0
+pitch_scale = 0.8
+bus = &"SFX"
+
+[node name="Song" type="AudioStreamPlayer" parent="."]
+bus = &"Music"

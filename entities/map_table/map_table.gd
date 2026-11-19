@@ -824,14 +824,20 @@ func _pan(to_map: bool) -> void:
 		_hover(&"")
 
 
-func _set_view(t: float) -> void:
-	_view = t
+## The table lit as `t` of the way (0 desk, 1 here) along the glide here: its lamps, the tally's
+## windows. The ending's camera (entities/ending/) lights it this way too.
+func light_up(t: float) -> void:
 	_tally.live = t > 0.0  # Its windows flick and tick only where they are seen.
-	if _at_map or t > 0.0 or _pan_tween != null:
-		FarmTv.away = FarmTv.away_at(_at_map, t)
 	for i in _lamps.size():
 		_lamps[i].light_energy = _lamp_energy[i] * smoothstep(0.0, LIGHT_FULL, t)
 		_lamps[i].visible = t > 0.0
+
+
+func _set_view(t: float) -> void:
+	_view = t
+	if _at_map or t > 0.0 or _pan_tween != null:
+		FarmTv.away = FarmTv.away_at(_at_map, t)
+	light_up(t)
 	if _camera != null and (t > 0.0 or _pan_tween != null):
 		_camera.transform = _zoomed(FarmTv.view_at(_desk_view, _map_view.global_transform, t))
 

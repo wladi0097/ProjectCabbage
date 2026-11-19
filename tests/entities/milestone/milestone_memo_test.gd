@@ -102,7 +102,7 @@ func test_the_files_list_the_filed_memos_newest_first_then_the_rest_in_order() -
 	var save := SaveGame.new()
 	save.sold = 120
 	_file_all(save)
-	var ids := Memo.files_order(save).map(func(m: Dictionary) -> String: return m.id)
+	var ids := Memo.files_order(save.milestones).map(func(m: Dictionary) -> String: return m.id)
 
 	assert_int(ids.size()).is_equal(Memo.MEMOS.size())
 	assert_array(ids.slice(0, 4)).is_equal(["units_100", "units_25", "units_10", "units_250"])
@@ -113,8 +113,8 @@ func test_a_retired_memo_id_in_an_old_save_is_left_out_of_the_files() -> void:
 	save.milestones = PackedStringArray(["retired_memo", "units_10"])
 
 	assert_dict(Memo.memo("retired_memo")).is_empty()
-	assert_int(Memo.files_order(save).size()).is_equal(Memo.MEMOS.size())
-	assert_str(Memo.files_order(save)[0].id).is_equal("units_10")
+	assert_int(Memo.files_order(save.milestones).size()).is_equal(Memo.MEMOS.size())
+	assert_str(Memo.files_order(save.milestones)[0].id).is_equal("units_10")
 
 
 func test_every_memo_has_its_own_id_one_condition_on_the_save_a_felt_bonus_and_all_its_texts() -> void:
@@ -123,7 +123,7 @@ func test_every_memo_has_its_own_id_one_condition_on_the_save_a_felt_bonus_and_a
 	for m: Dictionary in Memo.MEMOS:
 		var why := "memo %s" % m.id
 		assert_int(ids.count(m.id)).override_failure_message(why).is_equal(1)
-		assert_int(int(m.has("stat")) + int(m.has("card")) + int(m.has("node"))).override_failure_message(why).is_equal(1)
+		assert_int(int(m.has("stat")) + int(m.has("card")) + int(m.has("node")) + int(m.has("hook"))).override_failure_message(why).is_equal(1)
 		if m.has("stat"):
 			assert_bool(m.stat in save).override_failure_message(why).is_true()
 		if m.has("key"):
@@ -155,7 +155,7 @@ func test_a_memo_unlocks_the_steam_achievement_named_after_its_id_upper_cased() 
 
 
 func test_filing_a_memo_without_steam_running_is_safe() -> void:
-	assert_bool(Engine.has_singleton("Steam")).is_false()
+	assert_object(SteamAchievements.steam).is_null()
 	SteamAchievements.unlock("units_25")
 
 
@@ -209,3 +209,235 @@ func test_the_files_open_on_the_memos_and_the_boss_notes_tab_shows_only_the_boss
 	memo._boss_tab.button_pressed = true
 	assert_bool(memo._reports.visible).is_true()
 	assert_bool(memo._grid.visible).is_false()
+
+
+func test_filed_memos_stay_filed_after_a_new_game() -> void:
+	Profile.clear()
+	var save := SaveGame.new()
+	save.sold = 30
+	while not Memo.due(save).is_empty():
+		var m := Memo.due(save)
+		Memo.apply(save, m)
+		Profile.file(PackedStringArray([m.id]))
+	var fresh := SaveGame.new()  # A new game, or a chapter loaded.
+	assert_array(Array(fresh.milestones)).is_empty()
+	assert_array(Array(Profile.filed())).is_equal(["units_10", "units_25"])
+	assert_str(Memo.files_order(Profile.filed())[0].id).is_equal("units_25")
+	# Read back from disk, as on the next start.
+	Profile._config = null
+	assert_array(Array(Profile.filed())).is_equal(["units_10", "units_25"])
+	Profile.clear()
+
+
+func test_a_new_game_with_filed_memos_starts_with_the_folder_on_the_desk() -> void:
+	Profile.clear()
+	var kept := SaveManager.save
+	SaveManager.save = SaveGame.new()
+	Profile.file(PackedStringArray(["units_10"]))
+	var memo: CanvasLayer = auto_free(load("res://entities/milestone/milestone_memo.tscn").instantiate())
+	add_child(memo)
+	await await_idle_frame()
+	assert_bool(memo._folder.visible).is_true()
+	# The folder's introduction, the first memo's paper, never comes again: nothing is queued.
+	assert_array(memo._queue).is_empty()
+	SaveManager.save = kept
+	Profile.clear()
+
+
+func test_a_new_game_with_no_memo_ever_filed_has_no_folder_yet() -> void:
+	Profile.clear()
+	var kept := SaveManager.save
+	SaveManager.save = SaveGame.new()
+	var memo: CanvasLayer = auto_free(load("res://entities/milestone/milestone_memo.tscn").instantiate())
+	add_child(memo)
+	await await_idle_frame()
+	assert_bool(memo._folder.visible).is_false()
+	SaveManager.save = kept
+	Profile.clear()
+
+
+func test_a_memo_bonus_still_waits_for_the_new_run_to_earn_it() -> void:
+	Profile.clear()
+	Profile.file(PackedStringArray(["units_10", "units_25"]))
+	var save := SaveGame.new()
+	save.sold = 24
+	assert_dict(Memo.due(save)).is_not_empty()  # units_10: filed already, earned again quietly.
+	Memo.apply(save, Memo.due(save))
+	assert_dict(Memo.due(save)).is_empty()
+	assert_float(save.marketing).is_equal_approx(1.0, 0.0001)
+	save.sold = 25
+	Memo.apply(save, Memo.due(save))
+	assert_float(save.marketing).is_equal_approx(1.25, 0.0001)
+	Profile.clear()
+
+
+func test_a_replayed_memo_comes_quietly_and_only_a_bonus_gets_a_short_paper() -> void:
+	Profile.clear()
+	Profile.file(PackedStringArray(["units_10", "units_25"]))
+	Profile.write("files", "migrated", true)
+	var kept := SaveManager.save
+	SaveManager.save = SaveGame.new()
+	var memo: CanvasLayer = auto_free(load("res://entities/milestone/milestone_memo.tscn").instantiate())
+	add_child(memo)
+	SaveManager.save.sold = 25
+	memo._file_due(true)
+	assert_int(memo._queue.size()).is_equal(1)
+	assert_str(memo._queue[0].id).is_equal("units_25")
+	assert_float(memo._queue[0].hold).is_equal(Memo.SHORT_HOLD)
+	assert_float(SaveManager.save.marketing).is_equal_approx(1.25, 0.0001)
+	SaveManager.save = kept
+	Profile.clear()
+
+
+func test_an_old_saves_filed_memos_move_into_the_profile_once() -> void:
+	Profile.clear()
+	Profile.migrate(PackedStringArray(["units_10", "catches_1"]))
+	assert_array(Array(Profile.filed())).is_equal(["units_10", "catches_1"])
+	# Later saves (a chapter loaded) bring their own list: it is the run's, not the record's.
+	Profile.migrate(PackedStringArray(["units_100"]))
+	assert_array(Array(Profile.filed())).is_equal(["units_10", "catches_1"])
+	Profile.clear()
+
+
+func test_an_already_unlocked_memo_still_gives_its_bonus_in_a_new_run() -> void:
+	Profile.clear()
+	Profile.file(PackedStringArray(["units_10", "units_25", "units_100"]))  # All unlocked before.
+	var save := SaveGame.new()  # The new run.
+	save.sold = 100
+	_file_all(save)
+	assert_float(save.marketing).is_equal_approx(1.25, 0.0001)
+	assert_int(save.findings_per_cabbage).is_equal(2)
+	assert_array(Array(Profile.filed())).is_equal(["units_10", "units_25", "units_100"])
+	Profile.clear()
+
+
+func test_the_memos_tab_counts_the_achievements_filed_of_all_of_them() -> void:
+	var filed := PackedStringArray(["units_10", "retired_memo", "closing", "units_25"])
+	assert_int(Memo.filed_count(filed)).is_equal(2)  # Retired ids and posted papers never count.
+	assert_str(Memo.memos_tab_text("AKTENNOTIZEN", filed)).is_equal("AKTENNOTIZEN  2 / %d" % Memo.MEMOS.size())
+
+
+func test_opening_the_files_shows_the_profiles_count_on_the_memos_tab() -> void:
+	Profile.clear()
+	Profile.file(PackedStringArray(["units_10", "catches_1", "coins_1000"]))
+	var memo: CanvasLayer = auto_free(load("res://entities/milestone/milestone_memo.tscn").instantiate())
+	add_child(memo)
+	memo._open_files()
+	assert_str(memo._memos_tab.text).ends_with("  3 / %d" % Memo.MEMOS.size())
+	Profile.clear()
+
+
+func test_a_chapter_3_memo_shows_as_a_question_mark_until_chapter_3_is_reached() -> void:
+	var m := {id = "some_chapter_3_memo", chapter = 3}
+	assert_bool(Memo.hidden(m, PackedStringArray(), 2)).is_true()
+	assert_bool(Memo.hidden(m, PackedStringArray(), 3)).is_false()
+	assert_bool(Memo.hidden(m, PackedStringArray(["some_chapter_3_memo"]), 1)).is_false()  # Filed: never hidden.
+	assert_bool(Memo.hidden({id = "plain"}, PackedStringArray(), 1)).is_false()  # No chapter: chapter 1.
+
+
+func test_every_chapter_2_farm_memo_is_hidden_at_the_start() -> void:
+	for id in ["harvest_1", "golden_1", "promotion", "chapter_2"]:
+		assert_bool(Memo.hidden(Memo.memo(id), PackedStringArray(), 1)).override_failure_message(id).is_true()
+
+
+func test_the_chapter_is_reached_at_the_farm_the_consolidation_the_stars_and_the_gun() -> void:
+	var save := SaveGame.new()
+	assert_int(Memo.chapter_of(save)).is_equal(1)
+	for step: Array in [["family_farm", 2], ["consolidation", 3], ["stars", 4], [Memo.Events.GUN_CARD, 5]]:
+		save.stamped.append(step[0])
+		assert_int(Memo.chapter_of(save)).override_failure_message(step[0]).is_equal(step[1])
+
+
+func test_reaching_a_chapter_is_kept_across_a_new_game() -> void:
+	Profile.clear()
+	assert_int(Profile.reached()).is_equal(1)
+	Profile.reach(3)
+	Profile.reach(2)  # Never back down: a new game starts in chapter 1 again.
+	SaveGame.new()
+	Profile._config = null  # Read back from disk, as on the next start.
+	assert_int(Profile.reached()).is_equal(3)
+	Profile.clear()
+
+
+func test_a_profile_with_the_chapter_select_unlocked_has_seen_every_chapter() -> void:
+	Profile.clear()
+	Profile.write("chapter_select", "unlocked", true)
+	assert_int(Profile.reached()).is_equal(5)
+	Profile.clear()
+
+
+func test_each_chapter_entered_files_its_memo() -> void:
+	var save := SaveGame.new()
+	for step: Array in [["family_farm", "chapter_2"], ["consolidation", "chapter_3"], ["stars", "chapter_4"], [Memo.Events.GUN_CARD, "chapter_5"]]:
+		assert_bool(Memo.met(save, Memo.memo(step[1]))).override_failure_message(step[1]).is_false()
+		save.stamped.append(step[0])
+		assert_bool(Memo.met(save, Memo.memo(step[1]))).override_failure_message(step[1]).is_true()
+
+
+func test_a_hook_memo_is_never_due_from_the_save() -> void:
+	var save := SaveGame.new()
+	save.stamped.append(Memo.Events.GUN_CARD)
+	for m: Dictionary in Memo.MEMOS:
+		if m.has("hook"):
+			assert_bool(Memo.met(save, m)).override_failure_message(m.id).is_false()
+
+
+func test_finishing_the_game_files_its_memo() -> void:
+	Profile.clear()
+	Memo.file_ending(3, 5.0)
+	assert_array(Array(Profile.filed())).is_equal(["game_end"])
+	Profile.clear()
+
+
+func test_the_ending_files_its_misses_its_clean_run_and_a_long_wait() -> void:
+	assert_array(Array(Memo.ending_memos(Memo.END_MISSES, 1.0))).is_equal(["game_end", "end_misses"])
+	assert_array(Array(Memo.ending_memos(0, Memo.END_HOLD))).is_equal(["game_end", "end_marksman", "end_hold"])
+	assert_array(Array(Memo.ending_memos(1, Memo.END_HOLD - 1.0))).is_equal(["game_end"])
+
+
+func test_notifying_a_memo_twice_files_it_once() -> void:
+	Profile.clear()
+	Memo.notify("end_radio_first")
+	Memo.notify("end_radio_first")
+	assert_array(Array(Profile.filed())).is_equal(["end_radio_first"])
+	Profile.clear()
+
+
+## The memos of chapter 3 (the map table, the farms, the war), in MEMOS order.
+const CHAPTER_3 := ["farms_1", "farms_12", "floor_price", "insults_5", "no_taxes", "wars_won_1", "wars_won_10",
+		"wars_lost_1", "war_exemplary", "annexed_1", "annexed_4", "war_skeleton_crew", "war_associates_only",
+		"war_quick_retreat", "war_lost_untouched", "condense_32", "merge_10k"]
+
+
+func test_the_first_and_the_twelfth_farm_owned_each_file_a_memo() -> void:
+	var save := SaveGame.new()
+	save.farms_owned = PackedStringArray(["K-1"])
+	assert_bool(Memo.met(save, Memo.memo("farms_1"))).is_true()
+	assert_bool(Memo.met(save, Memo.memo("farms_12"))).is_false()
+	for n in 11:
+		save.farms_owned.append("x-%d" % n)
+	assert_bool(Memo.met(save, Memo.memo("farms_12"))).is_true()
+
+
+func test_winning_a_war_with_a_single_figure_files_its_memo() -> void:
+	var save := SaveGame.new()
+	save.solo_wins = 1
+	save.wars_won = 1
+	assert_array(Array(_file_all(save))).contains(["wars_won_1", "war_skeleton_crew"])
+
+
+func test_every_chapter_3_memo_is_hidden_until_chapter_3_and_gives_no_bonus() -> void:
+	for id: String in CHAPTER_3:
+		var m := Memo.memo(id)
+		assert_int(int(m.get("chapter", 0))).override_failure_message(id).is_equal(3)
+		assert_bool(m.has("key")).override_failure_message(id).is_false()
+
+
+
+func test_every_memo_can_be_checked_on_a_fresh_save_whatever_its_condition() -> void:
+	var save := SaveGame.new()
+	for m: Dictionary in Memo.MEMOS:  # A hook memo or any new condition kind must not read a missing key.
+		assert_bool(Memo.met(save, m)).override_failure_message(m.id).is_false()
+	assert_dict(Memo.due(save)).is_empty()
+	for m: Dictionary in Memo.MEMOS:
+		assert_bool(Memo.hidden(m, PackedStringArray(), 1)).override_failure_message(m.id).is_equal(m.get("chapter", 1) > 1)

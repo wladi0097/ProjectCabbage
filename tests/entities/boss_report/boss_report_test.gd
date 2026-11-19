@@ -84,7 +84,7 @@ func test_the_ok_and_wishlist_buttons_lie_clear_of_the_signature_field_and_each_
 
 
 func test_every_report_text_fits_its_paper_in_english_and_german() -> void:
-	var ids: Array = ["welcome", "demo_end"] + Events.EVENTS.keys()
+	var ids: Array = ["closing", "welcome", "demo_end"] + Events.EVENTS.keys()
 	for lang in ["en", "de"]:
 		TranslationServer.set_locale(lang)
 		for id: String in ids:
@@ -115,3 +115,21 @@ func test_a_report_held_back_comes_up_only_when_the_hold_has_run_out() -> void:
 	assert_bool(Report.up).is_true()
 	SaveManager.save = real
 	Report.up = false
+
+
+func test_the_new_game_after_the_ending_opens_with_the_closing_paper_then_the_welcome() -> void:
+	var save := SaveGame.new()
+	save.closing_paper = true
+	assert_array(Report.due(save)).is_equal(["closing", "welcome"])
+	assert_str(Report.report("closing").re).is_equal(Report.CLOSING.re)
+
+
+func test_the_closing_paper_shows_once() -> void:
+	var save := SaveGame.new()
+	save.closing_paper = true
+	save.reports.append("closing")
+	assert_array(Report.due(save)).is_equal(["welcome"])
+
+
+func test_a_game_not_started_by_the_ending_never_gets_the_closing_paper() -> void:
+	assert_bool(Report.due(SaveGame.new()).has("closing")).is_false()

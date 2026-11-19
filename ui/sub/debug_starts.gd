@@ -83,9 +83,15 @@ func _fill() -> void:
 
 
 func _start(path: String) -> void:
+	start(path)
+
+
+## Loads the prepared save at `path` over the real one and reloads the world (also the chapter
+## select's, ui/sub/chapter_select); nothing happens if it does not load.
+static func start(path: String) -> void:
 	var save := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as SaveGame
 	if save == null:
-		push_error("debug start point %s did not load" % path)
+		push_error("start point %s did not load" % path)
 		return
 	SaveManager.replace_save(prepared(save))
 

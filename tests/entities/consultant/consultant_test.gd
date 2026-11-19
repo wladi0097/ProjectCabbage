@@ -403,3 +403,15 @@ func test_the_consultant_taps_the_biggest_step_bought_that_does_not_overshoot() 
 	assert_int(Consultant.tap(save, 40)).is_equal(2)
 	save.tree_bought.append(Consultant.SMART)
 	assert_int(Consultant.tap(save, 40)).is_equal(30)
+
+
+func test_the_consultant_withdraws_for_good_once_the_gun_is_bought() -> void:
+	var consultant := _desk()
+	SaveManager.save.consultant_on = true
+	_run(consultant, 3.0)  # At work on the $2 -> $5 move.
+	SaveManager.save.stamped.append(Consultant.Events.GUN_CARD)
+	assert_bool(Consultant.works(SaveManager.save)).is_false()
+	_run(consultant, 20.0)
+	assert_int(consultant._phase).is_equal(Consultant.Phase.AWAY)
+	_run(consultant, 120.0)
+	assert_int(consultant._phase).is_equal(Consultant.Phase.AWAY)
