@@ -116,7 +116,7 @@ func _pop() -> void:
 	world.add_child(burst)
 	burst.global_position = centre
 	if replace_static:
-		_stand_in(world, centre, box.size * parent.global_basis.get_scale())
+		_stand_in(world, parent.global_transform * box)
 		parent.visible = false
 		_set_shapes_disabled(parent, true)
 		return
@@ -131,18 +131,22 @@ func _pop() -> void:
 	_set_shapes_disabled(parent, true)
 
 
-## The still cabbage in an object's place (replace_static): the cabbage's own mesh, at `centre`,
-## replace_size of the object's biggest side (`size`) wide.
-func _stand_in(world: Node, centre: Vector3, size: Vector3) -> MeshInstance3D:
+## The still cabbage in an object's place (replace_static): the cabbage's own mesh, replace_size of
+## the object's biggest side wide, centred where it stood and resting on what it stood on (its
+## lowest point on the bottom of the object's box `spot`, in world space).
+func _stand_in(world: Node, spot: AABB) -> MeshInstance3D:
 	var source := CABBAGE.instantiate()
 	var mesh := (source.get_node(^"Mesh") as MeshInstance3D).duplicate() as MeshInstance3D
 	mesh.mesh = Cabbage.MESHES[randi() % Cabbage.MESHES.size()]  # The cabbage picks its own in _ready.
 	source.free()
 	mesh.name = &"StandInCabbage"
-	var side := maxf(size.x, maxf(size.y, size.z))
+	var side := maxf(spot.size.x, maxf(spot.size.y, spot.size.z))
 	var factor := side * replace_size / CABBAGE_WIDTH
 	world.add_child(mesh)
-	mesh.global_transform = Transform3D(mesh.transform.basis.scaled(Vector3.ONE * factor), centre)
+	mesh.global_transform = Transform3D(mesh.transform.basis.scaled(Vector3.ONE * factor), spot.get_center())
+	var looks := mesh.global_transform * mesh.get_aabb()
+	var middle := spot.get_center()
+	mesh.global_position += Vector3(middle.x - looks.get_center().x, spot.position.y - looks.position.y, middle.z - looks.get_center().z)
 	return mesh
 
 
