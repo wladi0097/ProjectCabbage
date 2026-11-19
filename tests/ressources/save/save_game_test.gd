@@ -289,7 +289,8 @@ func test_every_limit_step_costs_no_more_than_the_limit_before_it_and_at_least_d
 		_climb(limit, func(step: Array, was: int, now: int) -> void:
 			assert_int(step[1]).override_failure_message("%s costs more than the limit before it" % step[0]).is_less_equal(was)
 			# Chapter 4's DECAY ARCHIVE climbs from ¶900K to ¶10M in five steps: half as much again or more.
-			var least := 1.5 if step[0] in ["archive_4", "archive_5"] or step[0].begins_with("decay_archive_") else 2.0
+			# Chapter 4's CAPITAL and DECAY ARCHIVE come in small steps (user 2026-11-19).
+			var least := 1.5 if step[0] in ["archive_4", "archive_5"] else 1.2 if step[0].begins_with("decay_archive_") else 1.3 if step[0].begins_with("capital_") else 2.0
 			assert_float(float(now)).override_failure_message("%s does not raise the limit %s times" % [step[0], least]).is_greater_equal(was * least))
 		# Paid in the currency it raises, each tree step hanging under the one before.
 		assert_array(UpgradeDesk.costs(steps[0][2]).keys()).is_equal([currency])

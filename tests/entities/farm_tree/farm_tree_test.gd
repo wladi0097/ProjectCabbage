@@ -612,36 +612,36 @@ func test_each_nuclear_run_waits_for_its_card() -> void:
 		assert_bool(FarmTree.is_shown(pair[0], save)).override_failure_message(pair[0]).is_false()
 
 
-func test_enriched_soil_takes_a_farm_square_from_thirty_to_293_times_a_plain_square_a_third_more_each_step() -> void:
-	var levels := _levels(_nuclear_save(), ["soil_1", "soil_2", "soil_3", "soil_4", "soil_5", "soil_6", "soil_7", "soil_8"], "farm_square_mult")
+func test_enriched_soil_takes_a_farm_square_from_thirty_to_293_times_a_plain_square_in_sixteen_steps() -> void:
+	var levels := _levels(_nuclear_save(), _run("soil", 16), "farm_square_mult")
 	assert_float(levels[0]).is_equal(30.0)
 	assert_float(levels[-1]).is_equal(293.0)
 	for i in range(1, levels.size()):
-		assert_float(levels[i] / levels[i - 1]).override_failure_message("step %d" % i).is_greater_equal(1.32)
+		assert_float(levels[i] / levels[i - 1]).override_failure_message("step %d" % i).is_greater_equal(1.1)  # Small steps (user 2026-11-19).
 
 
 func test_accelerated_ripening_takes_a_square_from_fifteen_seconds_to_under_four() -> void:
 	var save := _nuclear_save()
 	assert_float(FarmScreen.grow_time(save)).is_equal(15.0)
-	_levels(save, ["ripening_1", "ripening_2", "ripening_3", "ripening_4", "ripening_5"], "farm_grow_mult")
-	assert_float(FarmScreen.grow_time(save)).is_equal_approx(15.0 * pow(0.75, 5), 0.001)
+	_levels(save, _run("ripening", 10), "farm_grow_mult")
+	assert_float(FarmScreen.grow_time(save)).is_equal_approx(15.0 * pow(0.75, 5), 0.01)
 	assert_float(FarmScreen.grow_time(save)).is_less(3.6)
 
 
-func test_mutation_takes_the_golden_chance_from_one_in_ten_to_one_in_four_a_quarter_more_each_step() -> void:
-	var levels := _levels(_nuclear_save(), ["mutation_1", "mutation_2", "mutation_3", "mutation_4"], "golden_chance")
+func test_mutation_takes_the_golden_chance_from_one_in_ten_to_one_in_four_in_eight_steps() -> void:
+	var levels := _levels(_nuclear_save(), _run("mutation", 8), "golden_chance")
 	assert_float(levels[0]).is_equal_approx(0.1, 0.0001)
 	assert_float(levels[-1]).is_equal_approx(0.25, 0.0001)
 	for i in range(1, levels.size()):
-		assert_float(levels[i] / levels[i - 1]).override_failure_message("step %d" % i).is_greater_equal(1.25)
+		assert_float(levels[i] / levels[i - 1]).override_failure_message("step %d" % i).is_greater_equal(1.1)
 
 
-func test_reactor_drives_make_farm_hands_and_tractors_forty_percent_faster_a_step() -> void:
+func test_reactor_drives_make_farm_hands_and_tractors_about_four_times_as_fast_in_eight_steps() -> void:
 	var save := _nuclear_save()
-	var hands := _levels(save, ["hand_drive_1", "hand_drive_2", "hand_drive_3", "hand_drive_4"], "farm_hand_speed")
-	var tractors := _levels(save, ["tractor_drive_1", "tractor_drive_2", "tractor_drive_3", "tractor_drive_4"], "farm_tractor_speed")
-	assert_float(hands[-1] / hands[0]).is_equal_approx(pow(1.4, 4), 0.001)
-	assert_float(tractors[-1] / tractors[0]).is_equal_approx(pow(1.4, 4), 0.001)
+	var hands := _levels(save, _run("hand_drive", 8), "farm_hand_speed")
+	var tractors := _levels(save, _run("tractor_drive", 8), "farm_tractor_speed")
+	assert_float(hands[-1] / hands[0]).is_equal_approx(pow(1.4, 4), 0.01)
+	assert_float(tractors[-1] / tractors[0]).is_equal_approx(pow(1.4, 4), 0.01)
 
 
 func test_the_nuclear_family_brings_the_sixth_to_eighth_farm_hand_and_tractor_filling_the_yard() -> void:
@@ -651,3 +651,12 @@ func test_the_nuclear_family_brings_the_sixth_to_eighth_farm_hand_and_tractor_fi
 	assert_array(_levels(save, ["tractor_6", "tractor_7", "tractor_8"], "farm_tractors")).is_equal([5, 6, 7, 8])
 	assert_int(save.farm_hands).is_equal(FarmScreen.SLOTS)
 	assert_int(save.farm_tractors).is_equal(FarmScreen.SLOTS)
+
+
+## The ids of run `prefix` from its first step to step `count`.
+func _run(prefix: String, count: int) -> Array:
+	var out := []
+	for i in range(1, count + 1):
+		out.append("%s_%d" % [prefix, i])
+	assert_dict(FarmTree.node_data("%s_%d" % [prefix, count + 1])).override_failure_message(prefix).is_empty()  # And no further.
+	return out

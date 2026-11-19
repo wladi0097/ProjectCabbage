@@ -409,7 +409,7 @@ CHAIN REACTION (research cabbages), the DECAY ARCHIVE (Findings limit) and DECAY
 Seven larger coins are minted, $50K to $1B: payouts come in fewer, heavier coins. Merges past the $10K coin open on the projector."},
 	{id = "isotope_seed", price = 190000000, also = {findings = 3700000, stock = 150000}, title = "ISOTOPE-ENRICHED SEED", needs = ["critical_mass"],
 		body = "The seed has been improved at the atomic level. The packet has not.
-ACCELERATED RIPENING (squares ripen sooner) and MUTATION (more golden squares) open on the farm tree."},
+FORCED RIPENING (squares ripen sooner) and MUTATION (more golden squares) open on the farm tree."},
 	{id = "lead_storage", price = 250000000, also = {findings = 4400000, stock = 300000}, title = "LEAD-LINED STORAGE", needs = ["isotope_seed"],
 		body = "The warehouses glow faintly. Stock levels are unaffected.
 LEAD LINING takes storage past 999.999 cabbages, and DECAY PREMIUM: SALE raises what golden cabbages sell for. Both on the projector."},
@@ -432,7 +432,7 @@ A sixth, seventh and eighth farm hand and tractor open on the farm tree, with a 
 CONDENSE XVI opens on the projector (384 to a cabbage), and ISOMER PREMIUM for golden cabbages."},
 	# The nuclear hour's end (`priority`, like the end of every chapter). The flagship build follows
 	# (not built yet): until then the alpha's end popup comes (ui/sub/alpha_end) once it is stamped.
-	{id = "star_programme", price = 3200000000, also = {findings = 9000000, stock = 1500000}, priority = true, title = "CABBAGE STAR PROGRAMME", needs = ["degenerate_matter"],
+	{id = "star_programme", price = 7500000000, also = {findings = 5000000, stock = 1500000}, priority = true, title = "CABBAGE STAR PROGRAMME", needs = ["degenerate_matter"],
 		body = "The planet is fully booked. The board has looked up.
 Stamped, the programme begins. Its first vessel is still on the drawing board."},
 	# The annexed grid (Projector.GRID_CARD; decision 2026-11-17): the conquered countries' power

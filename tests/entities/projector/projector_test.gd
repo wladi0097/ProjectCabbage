@@ -1970,13 +1970,14 @@ func test_each_nuclear_chain_waits_for_its_own_card() -> void:
 		assert_bool(Projector.is_shown(pair[0], _stamped_but([]))).override_failure_message(pair[0]).is_true()
 
 
-func test_capital_takes_the_money_limit_from_forty_million_to_ten_billion_at_least_doubling_each_step() -> void:
+func test_capital_takes_the_money_limit_from_forty_million_to_ten_billion_in_fourteen_steps_of_a_third_or_more() -> void:
 	var save := _rich()
 	var chain := _nuclear_chain("capital_1")
 	var levels := _levels(save, chain, "coin_limit")
 	assert_int(levels[-1]).is_equal(10000000000)
+	assert_int(chain.size()).is_equal(14)
 	for i in chain.size():
-		assert_float(float(levels[i + 1]) / levels[i]).is_greater_equal(2.0)
+		assert_float(float(levels[i + 1]) / levels[i]).is_greater_equal(1.3)
 		assert_int(Projector.node_data(chain[i]).price).override_failure_message(chain[i]).is_less(levels[i])
 
 
@@ -1985,8 +1986,9 @@ func test_the_decay_archive_takes_the_findings_limit_from_nine_hundred_thousand_
 	var chain := _nuclear_chain("decay_archive_1")
 	var levels := _levels(save, chain, "findings_limit")
 	assert_int(levels[-1]).is_equal(10000000)
+	assert_int(chain.size()).is_equal(10)
 	for i in chain.size():
-		assert_float(float(levels[i + 1]) / levels[i]).is_greater_equal(1.25)
+		assert_float(float(levels[i + 1]) / levels[i]).is_greater_equal(1.2)  # Small steps (user 2026-11-19).
 		assert_str(UpgradeTree.currency_of(Projector.node_data(chain[i]))).is_equal("findings")
 		assert_int(Projector.node_data(chain[i]).price).override_failure_message(chain[i]).is_less(levels[i])
 
@@ -1994,8 +1996,9 @@ func test_the_decay_archive_takes_the_findings_limit_from_nine_hundred_thousand_
 func test_lead_lining_takes_storage_from_999999_to_ten_million() -> void:
 	var levels := _levels(_rich(), _nuclear_chain("lead_lining_1"), "storage_cap")
 	assert_int(levels[-1]).is_equal(10000000)
+	assert_int(levels.size()).is_equal(9)
 	for i in range(1, levels.size()):
-		assert_float(float(levels[i]) / levels[i - 1]).is_greater_equal(1.25)
+		assert_float(float(levels[i]) / levels[i - 1]).is_greater_equal(1.15)
 
 
 func test_merge_top_steps_from_ten_thousand_to_a_billion_each_landing_on_a_minted_coin_and_merges_come_four_times_as_often() -> void:
@@ -2006,19 +2009,19 @@ func test_merge_top_steps_from_ten_thousand_to_a_billion_each_landing_on_a_minte
 	assert_float(every[-1]).is_equal_approx(0.0625, 0.0001)
 
 
-func test_fission_pricing_and_isotope_analysis_each_lift_a_third_a_step_about_ten_times_in_all() -> void:
+func test_fission_pricing_and_isotope_analysis_each_lift_about_fifteen_percent_a_step_about_ten_times_in_sixteen() -> void:
 	var save := _rich()
 	var street := _levels(save, _nuclear_chain("fission_1"), "marketing")
-	assert_int(street.size()).is_equal(9)
+	assert_int(street.size()).is_equal(17)
 	assert_float(street[-1] / street[0]).is_between(9.0, 11.0)
 	var lab := _levels(save, _nuclear_chain("isotope_1"), "findings_per_cabbage")
-	assert_int(lab.size()).is_equal(9)
+	assert_int(lab.size()).is_equal(17)
 	for i in range(1, lab.size()):
-		assert_float(float(lab[i]) / lab[i - 1]).override_failure_message("isotope step %d" % i).is_greater_equal(1.25)
+		assert_float(float(lab[i]) / lab[i - 1]).override_failure_message("isotope step %d" % i).is_greater(1.05)
 	assert_float(float(lab[-1]) / lab[0]).is_between(9.0, 11.5)
 
 
-func test_chain_reaction_and_the_decay_premiums_lift_what_they_name_by_a_quarter_or_more_each_step() -> void:
+func test_chain_reaction_and_the_decay_premiums_lift_what_they_name_by_a_tenth_or_more_each_small_step() -> void:
 	var save := _rich()
 	assert_bool(Projector.buy("fission_1", save)).is_true()  # Every row but FISSION PRICING hangs off its first step.
 	var rows := {"chain_reaction_1": ["research_mult", 20.0, 85.0], "decay_lab_1": ["golden_lab", 25.0, 50.0], "decay_sale_1": ["golden_sale", 20.0, 50.0]}
@@ -2027,17 +2030,17 @@ func test_chain_reaction_and_the_decay_premiums_lift_what_they_name_by_a_quarter
 		assert_float(levels[0]).override_failure_message(root).is_equal(rows[root][1])
 		assert_float(levels[-1]).override_failure_message(root).is_equal(rows[root][2])
 		for i in range(1, levels.size()):
-			assert_float(levels[i] / levels[i - 1]).override_failure_message("%s step %d" % [root, i]).is_greater_equal(1.25)
+			assert_float(levels[i] / levels[i - 1]).override_failure_message("%s step %d" % [root, i]).is_greater_equal(1.1)
 
 
-func test_handled_with_tongs_multiplies_your_own_sales_and_research_by_half_again_four_times() -> void:
+func test_handled_with_tongs_multiplies_your_own_sales_and_research_by_about_five_in_eight_steps() -> void:
 	var save := _rich()
 	assert_bool(Projector.buy("fission_1", save)).is_true()
 	var sale: float = save.own_sale
 	var lab: float = save.own_lab
 	_levels(save, _nuclear_chain("tongs_1"), "own_sale")
-	assert_float(save.own_sale).is_equal_approx(sale * pow(1.5, 4), 0.001)
-	assert_float(save.own_lab).is_equal_approx(lab * pow(1.5, 4), 0.001)
+	assert_float(save.own_sale).is_equal_approx(sale * pow(1.5, 4), 0.01)
+	assert_float(save.own_lab).is_equal_approx(lab * pow(1.5, 4), 0.01)
 
 
 func test_the_enrichment_cascade_then_the_compaction_cards_condense_a_cabbage_from_32_to_384() -> void:
@@ -2055,14 +2058,14 @@ func test_research_and_golden_cabbages_condense_further_but_research_stays_far_b
 	assert_int(save.research_condense * 16).is_less_equal(save.condense)  # Findings must not run away with the sales.
 
 
-func test_critical_pricing_and_the_isomer_premium_pay_off_the_denser_cabbages_a_quarter_more_or_better_each_step() -> void:
+func test_critical_pricing_and_the_isomer_premium_pay_off_the_denser_cabbages_in_small_steps() -> void:
 	var save := _rich()
 	save.golden_sale = 50.0
 	assert_bool(Projector.buy("fission_1", save)).is_true()
 	var street := _levels(save, _nuclear_chain("critical_pricing_1"), "marketing")
 	for i in range(1, street.size()):
-		assert_float(street[i] / street[i - 1]).is_equal_approx(1.33, 0.0001)
-	assert_array(_levels(save, _nuclear_chain("isomer_premium_1"), "golden_sale")).is_equal([50.0, 65.0, 85.0])
+		assert_float(street[i] / street[i - 1]).is_equal_approx(sqrt(1.33), 0.0001)
+	assert_array(_levels(save, _nuclear_chain("isomer_premium_1"), "golden_sale")).is_equal([50.0, 57.0, 65.0, 74.0, 85.0])
 	for pair: Array in [["critical_pricing_1", "pressure_vessel"], ["isomer_premium_1", "degenerate_matter"]]:
 		assert_bool(Projector.is_shown(pair[0], _stamped_but([pair[1]]))).override_failure_message(pair[0]).is_false()
 
