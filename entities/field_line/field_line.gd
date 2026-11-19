@@ -41,18 +41,6 @@ const RING_RATTLE := 18.0
 const RING_RISE := 0.25
 const RING_SWING := 0.5
 
-## The count window (its number and farm sign) prints in the desk readouts' green
-## (DigitalReadout.INK) instead of its amber: the game's say (PRINT LARGER NUMBERS is stamped). The
-## number then shows on a fourteen-segment readout ($Readout, DigitalReadout) instead of its label.
-var digital := false:
-	set(value):
-		digital = value
-		if _count:
-			_count.modulate = DigitalReadout.INK if value else _amber
-			_sign.modulate = _count.modulate
-			_count.visible = not value
-			if value:
-				_readout.show_text(_count.text)
 ## The handset rattles for attention (ring_offset); a lift stops it.
 var ringing := false
 var _ring_time := 0.0
@@ -77,9 +65,6 @@ var _relay: Tween
 @onready var _receiver := _skeleton.find_bone("Receiver")
 @onready var _lamps: MeshInstance3D = $Model/Lamps
 @onready var _count: Label3D = $Count
-@onready var _amber := _count.modulate
-@onready var _sign: Sprite3D = $FarmSign
-@onready var _readout: DigitalReadout = $Readout
 @onready var _handset: Interactable = $Model/Armature/Skeleton3D/ReceiverMount/Handset/Interactable
 ## The whole box answers the hand as the handset does: a click anywhere on the phone lifts it.
 @onready var _box: Interactable = $Body/Interactable
@@ -130,8 +115,6 @@ static func handset_offset(rise: float, swing: float) -> Transform3D:
 ## A rising count lights its new lamps one after the other; a loaded save passes `animate` false.
 func show_farms(owned: int, total: int, animate := true) -> void:
 	_count.text = count_text(owned, total)
-	if digital:
-		_readout.show_text(_count.text)
 	var target := lamps_lit(owned)
 	if _relay != null:
 		_relay.kill()

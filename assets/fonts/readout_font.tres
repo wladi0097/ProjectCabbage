@@ -1,0 +1,8 @@
+[gd_resource type="FontVariation" format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/DSEG14Classic-Bold.ttf" id="1_dseg"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="2_oswald"]
+
+[resource]
+base_font = ExtResource("1_dseg")
+fallbacks = [ExtResource("2_oswald")]

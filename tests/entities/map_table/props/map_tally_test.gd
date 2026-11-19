@@ -178,22 +178,3 @@ func test_only_coins_and_research_have_a_limit_on_the_tally() -> void:
 	assert_bool((tally.get_node("Windows/Findings") as Label3D).modulate.is_equal_approx(MapTally.FULL_INK)).is_true()
 	var cabbages := (tally.get_node("Windows/Cabbages") as Label3D).modulate
 	assert_float(cabbages.g).is_greater(cabbages.r + 0.3)  # The cabbage window stays green.
-
-
-func test_after_print_larger_numbers_every_window_prints_in_the_readouts_green_and_full_stays_red() -> void:
-	var save := SaveManager.save
-	save.stamped.append(DigitalReadout.CARD)
-	save.coins = save.coin_limit
-	var tally := _tally()
-	assert_bool((tally.get_node("Windows/Coins") as Label3D).modulate.is_equal_approx(MapTally.FULL_INK)).is_true()
-	for window: String in ["Cabbages", "Findings", "Farms"]:
-		assert_bool((tally.get_node("Windows/" + window) as Label3D).modulate.is_equal_approx(DigitalReadout.INK)).is_true()
-	# The flaps sit under segment readouts that print the same text in the same ink.
-	var texts := MapTally.readout(save)
-	for i in 4:
-		var window: String = ["Coins", "Cabbages", "Findings", "Farms"][i]
-		var readout := tally.get_node("Readouts/" + window) as DigitalReadout
-		assert_bool((tally.get_node("Windows/" + window) as Label3D).visible).is_false()
-		assert_bool(readout.visible).is_true()
-		assert_str(readout.text).is_equal(texts[i])
-		assert_bool(readout.ink.is_equal_approx((tally.get_node("Windows/" + window) as Label3D).modulate)).is_true()

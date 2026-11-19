@@ -15,10 +15,6 @@ extends Node3D
 ## A window whose number is at its limit (coins and Findings: SaveGame.room is 0, nothing more comes
 ## in) prints it in FULL_INK, the desk counters' FULL red, and flicks over as it turns; under the
 ## limit again it flicks back to its own colour.
-## Once PRINT LARGER NUMBERS is stamped every window prints in the desk readouts' green
-## (DigitalReadout.INK) instead of its own colour; FULL_INK still wins. The flaps then sit under a
-## fourteen-segment readout each ($Readouts, DigitalReadout) that prints the same text and ink, and
-## nothing flicks over any more (no flaps to turn).
 
 const Events := preload("res://globalScripts/game_events.gd")
 
@@ -43,11 +39,8 @@ var _flicks: Array[Tween] = [null, null, null, null]
 var _flicked_at: Array[float] = [-REST, -REST, -REST, -REST]
 ## Which windows print in FULL_INK right now.
 var _full: Array[bool] = [false, false, false, false]
-## The windows print in DigitalReadout.INK (the card is stamped).
-var _digital := false
 
 @onready var _windows: Array[Label3D] = [$Windows/Coins, $Windows/Cabbages, $Windows/Findings, $Windows/Farms]
-@onready var _readouts: Array[DigitalReadout] = [$Readouts/Coins, $Readouts/Cabbages, $Readouts/Findings, $Readouts/Farms]
 @onready var _tick: SoundCue = $Tick
 
 
@@ -83,21 +76,15 @@ static func at_limit(save: SaveGame) -> Array[bool]:
 func show_save(save: SaveGame, animate := true) -> void:
 	var texts := readout(save)
 	var full := at_limit(save)
-	var retint := DigitalReadout.on(save) != _digital
-	_digital = DigitalReadout.on(save)
 	for i in _windows.size():
-		var turned := full[i] != _full[i] or retint
+		var turned := full[i] != _full[i]
 		_full[i] = full[i]
 		if turned:
 			_windows[i].modulate = _ink(i)
 		if _windows[i].text != texts[i] or turned:
 			_windows[i].text = texts[i]
-			if animate and not _digital and (turned or rested(_now() - _flicked_at[i])):
+			if animate and (turned or rested(_now() - _flicked_at[i])):
 				_flick(i)
-		_windows[i].visible = not _digital
-		if _digital:
-			_readouts[i].show_text(texts[i])
-			_readouts[i].ink = _ink(i)
 
 
 ## Whether a window that last flicked `since` seconds ago may flick again.
@@ -112,9 +99,7 @@ func flicking(i: int) -> bool:
 
 ## Window `i`'s ink right now: its own, or FULL_INK at its limit.
 func _ink(i: int) -> Color:
-	if _full[i]:
-		return FULL_INK
-	return DigitalReadout.INK if _digital else _inks[i]
+	return FULL_INK if _full[i] else _inks[i]
 
 
 func _now() -> float:

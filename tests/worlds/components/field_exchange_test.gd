@@ -165,12 +165,3 @@ func test_the_world_scene_wires_the_field_line_and_the_map_table_to_the_exchange
 	assert_that((at["FieldLine"] as Transform3D).origin).is_equal((at["SupplyConsole"] as Transform3D).origin)
 	assert_that(wired.get("line")).is_equal(NodePath("../FieldLine"))
 	assert_that(wired.get("map")).is_equal(NodePath("../MapTable"))
-
-
-func test_the_field_line_count_turns_the_readouts_green_once_print_larger_numbers_is_stamped() -> void:
-	_desk(["market_intelligence"])
-	_exchange._process(0.0)
-	assert_bool(_line.digital).is_false()
-	SaveManager.save.stamped.append(DigitalReadout.CARD)
-	_exchange._process(0.0)
-	assert_bool(_line.digital).is_true()

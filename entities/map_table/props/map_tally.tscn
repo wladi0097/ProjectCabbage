@@ -8,7 +8,6 @@
 [ext_resource type="ArrayMesh" path="res://assets/meshes/Props/map_farm_token_for_sale.res" id="6_token_look"]
 [ext_resource type="PackedScene" path="res://entities/map_table/props/desk_button.tscn" id="7_button"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
-[ext_resource type="PackedScene" path="res://entities/components/digital_readout.tscn" id="8_readout"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/map_tally_flap_1.wav" id="sfx_map_tally_flap_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/map_tally_flap_2.wav" id="sfx_map_tally_flap_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/map_tally_flap_3.wav" id="sfx_map_tally_flap_3"]
@@ -74,36 +73,6 @@ font = ExtResource("3_font")
 font_size = 128
 outline_size = 0
 
-[node name="Readouts" type="Node3D" parent="."]
-
-[node name="Coins" parent="Readouts" instance=ExtResource("8_readout")]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.0475, 0.0595, -0.36)
-min_cells = 6
-
-[node name="Glass" parent="Readouts/Coins" index="0"]
-transform = Transform3D(0.215, 0, 0, 0, 0.15, 0, 0, 0, 0.01, 0, 0, -0.005)
-
-[node name="Cabbages" parent="Readouts" instance=ExtResource("8_readout")]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.0475, 0.0595, -0.12)
-min_cells = 6
-
-[node name="Glass" parent="Readouts/Cabbages" index="0"]
-transform = Transform3D(0.215, 0, 0, 0, 0.15, 0, 0, 0, 0.01, 0, 0, -0.005)
-
-[node name="Findings" parent="Readouts" instance=ExtResource("8_readout")]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.0475, 0.0595, 0.12)
-min_cells = 6
-
-[node name="Glass" parent="Readouts/Findings" index="0"]
-transform = Transform3D(0.215, 0, 0, 0, 0.15, 0, 0, 0, 0.01, 0, 0, -0.005)
-
-[node name="Farms" parent="Readouts" instance=ExtResource("8_readout")]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.0475, 0.0595, 0.36)
-min_cells = 6
-
-[node name="Glass" parent="Readouts/Farms" index="0"]
-transform = Transform3D(0.215, 0, 0, 0, 0.15, 0, 0, 0, 0.01, 0, 0, -0.005)
-
 [node name="Signs" type="Node3D" parent="."]
 
 [node name="Coins" type="Label3D" parent="Signs"]
@@ -166,11 +135,3 @@ max_polyphony = 2
 bus = &"SFX"
 script = ExtResource("sfx_cue")
 min_interval = 0.1
-
-[editable path="Readouts/Coins"]
-
-[editable path="Readouts/Cabbages"]
-
-[editable path="Readouts/Findings"]
-
-[editable path="Readouts/Farms"]

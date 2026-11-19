@@ -356,9 +356,13 @@ min_interval = 0.03
 
 [node name="Readout" parent="CabbageFeeder" instance=ExtResource("digital_readout_1")]
 transform = Transform3D(0.9062, -0.3367, -0.2558, 0.4122, 0.8383, 0.3568, 0.0943, -0.4287, 0.8985, 0.1978, -0.1169, 0.3275)
+cells = 8
 
 [node name="Glass" parent="CabbageFeeder/Readout" index="0"]
-transform = Transform3D(0.285, 0, 0, 0, 0.0451, 0.0137, 0, -0.0164, 0.0376, 0, -0.002, -0.009)
+transform = Transform3D(0.27, 0, 0, 0, 0.047, 0.0137, 0, -0.0171, 0.0376, 0.004, -0.004, -0.008)
+
+[node name="Figures" parent="CabbageFeeder/Readout" index="1"]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0.1165, 0.003, 0.0113)
 
 [node name="SupplyConsole" parent="." unique_id=895053093 node_paths=PackedStringArray("coins") instance=ExtResource("14_console")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.772, 1)

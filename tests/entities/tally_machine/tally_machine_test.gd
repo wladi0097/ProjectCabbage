@@ -235,7 +235,7 @@ func test_the_coin_readout_prints_past_what_nine_drums_hold() -> void:
 	SaveManager.save.coins = 4500000000
 	machine._shown = 4500000000.0
 	machine._process(0.0)
-	assert_str((machine.get_node("Readout") as DigitalReadout).text).is_equal("$4.5B")
+	assert_str((machine.get_node("Readout/Figures/Ink") as Label3D).text).is_equal("$4.5B")
 
 
 func test_a_full_purse_still_reads_full_in_red_beside_the_digital_readout() -> void:

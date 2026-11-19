@@ -36,8 +36,6 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	var save := SaveManager.save
-	if line.digital != DigitalReadout.on(save):
-		line.digital = DigitalReadout.on(save)
 	if not _installed and SupplyConsole.retired(save):
 		_installed = true
 		get_tree().create_timer(SupplyConsole.LIFT_TIME).timeout.connect(_install)

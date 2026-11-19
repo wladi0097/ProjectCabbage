@@ -245,17 +245,3 @@ func test_lifting_the_handset_stops_the_ringing() -> void:
 	machine.ringing = true
 	machine.lift()
 	assert_bool(machine.ringing).is_false()
-
-
-func test_the_count_window_turns_the_readouts_green_once_digital_and_back_to_amber() -> void:
-	var machine := _machine()
-	var count := machine.get_node("Count") as Label3D
-	var amber := count.modulate
-	machine.digital = true
-	assert_bool(count.modulate.is_equal_approx(DigitalReadout.INK)).is_true()
-	assert_bool((machine.get_node("FarmSign") as Sprite3D).modulate.is_equal_approx(DigitalReadout.INK)).is_true()
-	# The number moves to the segment readout over the window.
-	assert_bool(count.visible).is_false()
-	assert_str((machine.get_node("Readout") as DigitalReadout).text).is_equal(count.text)
-	machine.digital = false
-	assert_bool(count.modulate.is_equal_approx(amber)).is_true()
