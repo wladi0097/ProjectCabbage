@@ -132,3 +132,32 @@ func test_qa_names_and_music_titles_lie_in_rows_of_three_and_the_rest_one_per_li
 	for grid: GridContainer in grids:
 		assert_int(grid.columns).is_equal(3)
 
+
+func test_the_studio_logo_stands_in_the_made_by_section_of_the_roll() -> void:
+	var card: EndCard = auto_free(load(SCENE).instantiate())
+	add_child(card)
+	var credits := card.get_node("Roll/Credits")
+	var logos := credits.get_children().filter(func(n: Node) -> bool: return n is TextureRect)
+	assert_int(logos.size()).is_equal(1)
+	var logo := logos[0] as TextureRect
+	assert_str(logo.texture.resource_path).is_equal("res://assets/sprites/ui/no_more_sleep_logo.png")
+	var heading := credits.get_children().filter(func(n: Node) -> bool: return n is Label and n.text == "MADE BY")[0] as Node
+	assert_int(logo.get_index()).is_equal(heading.get_index() + 1)  # Right under MADE BY.
+
+
+func test_the_credits_start_right_under_the_logo_dark_and_fade_in_as_the_roll_starts() -> void:
+	var card: EndCard = auto_free(load(SCENE).instantiate())
+	add_child(card)
+	assert_float((card.get_node("Roll/Gap") as Control).custom_minimum_size.y).is_less(100.0)  # Not a screen away.
+	var credits := card.get_node("Roll/Credits") as Control
+	var at := EndCard.timeline()
+	Engine.time_scale = 10.0
+	card.play()
+	await get_tree().create_timer(at.scroll - EndCard.CREDITS_LEAD - 0.3).timeout
+	var during_hold := credits.modulate.a
+	await get_tree().create_timer(EndCard.CREDITS_LEAD + EndCard.CREDITS_IN + 0.3).timeout
+	Engine.time_scale = 1.0
+	assert_float(during_hold).is_equal(0.0)  # Dark through the logo's hold.
+	assert_float(credits.modulate.a).is_equal_approx(1.0, 0.01)  # In just after the roll starts.
+	assert_float(EndCard.CREDITS_IN).is_between(0.3, 1.0)  # A short fade, not a pop.
+	card.scrolling = false

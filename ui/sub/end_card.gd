@@ -17,6 +17,11 @@ const Credits := preload("res://ui/sub/credits_ui.gd")
 const COLUMN_SECTIONS: PackedStringArray = ["QA", "Music"]
 const COLUMNS := 3
 const COLUMN_GAP := 48
+## The studio logo's height in the roll (px). The credits under the game logo stay dark through its
+## hold and fade in over CREDITS_IN s, starting CREDITS_LEAD s before the roll.
+const STUDIO_LOGO := 150.0
+const CREDITS_IN := 0.6
+const CREDITS_LEAD := 0.2
 ## Seconds the audio takes to follow the scroll speed up or back down (no click).
 const RATE_EASE := 0.15
 ## The song's level under the credits, and what it fades to over the closing hold (dB).
@@ -60,6 +65,15 @@ func _ready() -> void:
 		for entry: PackedStringArray in section.entries:
 			var grid: GridContainer = null
 			for line in entry:
+				if not Credits.image_of(line).is_empty():
+					grid = null
+					var logo := TextureRect.new()
+					logo.texture = load(Credits.image_of(line))
+					logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					logo.custom_minimum_size = Vector2(0.0, STUDIO_LOGO)
+					_credits.add_child(logo)
+					continue
 				var label := Label.new()
 				label.text = line
 				label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -148,6 +162,7 @@ func play() -> void:
 	var view := get_viewport().get_visible_rect().size
 	_roll.size.x = view.x
 	_logo.modulate.a = 0.0
+	_credits.modulate.a = 0.0
 	# The logo centred on screen to start with.
 	_roll.position = Vector2(0, (view.y - _logo.custom_minimum_size.y) * 0.5)
 	var at := timeline()
@@ -156,6 +171,8 @@ func play() -> void:
 	await get_tree().create_timer(at.logo_in - at.thud).timeout
 	create_tween().tween_property(_logo, "modulate:a", 1.0, FADE)
 	$LogoSwell.play()
+	# The credits lie just under the logo, dark while it holds; they fade in as the roll starts.
+	create_tween().tween_property(_credits, "modulate:a", 1.0, CREDITS_IN).set_delay(at.scroll - at.logo_in - CREDITS_LEAD)
 	await get_tree().create_timer(at.scroll - at.logo_in).timeout
 	scrolling = true
 	scroll_started.emit()

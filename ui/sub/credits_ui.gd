@@ -3,9 +3,14 @@ extends Control
 signal exited
 
 # credits.txt is the single source: "#" lines open a section, blank lines split
-# entries, the line before the first section is the game title.
+# entries, the line before the first section is the game title. A "[logo] <path>" line is an image
+# (the studio's logo), shown by both credit screens.
 const CREDITS_PATH := "res://credits.txt"
 const COLUMN_WIDTH := 430.0
+const LOGO_MARK := "[logo]"
+## The logo on this page: its height (px) and its colour (the logo is white: in ink on the paper).
+const LOGO_HEIGHT := 96.0
+const LOGO_INK := Color(0.13, 0.15, 0.14)
 
 @onready var sections_box: Container = %Sections
 
@@ -30,6 +35,11 @@ static func parse(text: String) -> Dictionary:
 	for section in sections:
 		section.entries = section.entries.filter(func(entry): return !entry.is_empty())
 	return {"title": title, "sections": sections}
+
+
+## The image a "[logo] <path>" line shows, or "" for a text line.
+static func image_of(line: String) -> String:
+	return line.trim_prefix(LOGO_MARK).strip_edges() if line.begins_with(LOGO_MARK) else ""
 
 
 static func is_fine_print(line: String) -> bool:
@@ -77,7 +87,16 @@ func _section(number: int, section: Dictionary) -> Control:
 	return box
 
 
-func _line(text: String) -> Label:
+func _line(text: String) -> Control:
+	if not image_of(text).is_empty():
+		var logo := TextureRect.new()
+		logo.texture = load(image_of(text))
+		logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
+		logo.custom_minimum_size = Vector2(LOGO_HEIGHT, LOGO_HEIGHT)
+		logo.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		logo.self_modulate = LOGO_INK
+		return logo
 	var label := Label.new()
 	label.text = text
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

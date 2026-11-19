@@ -31,3 +31,14 @@ func test_the_shipped_credits_have_no_todo_and_every_section_credits_someone() -
 	for section in CreditsUi.parse(text).sections:
 		assert_bool(section.entries.is_empty()).override_failure_message(section.name).is_false()
 
+
+func test_a_logo_line_is_an_image_and_the_settings_credits_show_it_in_ink() -> void:
+	assert_str(CreditsUi.image_of("[logo] res://assets/sprites/ui/no_more_sleep_logo.png")).is_equal("res://assets/sprites/ui/no_more_sleep_logo.png")
+	assert_str(CreditsUi.image_of("No more Sleep")).is_empty()
+	var page: Control = auto_free((load("res://ui/sub/credits_ui.tscn") as PackedScene).instantiate())
+	add_child(page)
+	var logos := page.find_children("*", "TextureRect", true, false).filter(func(n: Node) -> bool:
+		return (n as TextureRect).texture != null and (n as TextureRect).texture.resource_path.ends_with("no_more_sleep_logo.png"))
+	assert_int(logos.size()).is_equal(1)
+	assert_float((logos[0] as TextureRect).self_modulate.get_luminance()).is_less(0.3)  # Dark on the paper.
+

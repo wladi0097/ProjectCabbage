@@ -1,6 +1,7 @@
 Project Cabbage
 
 # ---- Made by
+[logo] res://assets/sprites/ui/no_more_sleep_logo.png
 No more Sleep
 
 hey@no-more-sleep.com

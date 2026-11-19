@@ -50,7 +50,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Gap" type="Control" parent="Roll"]
-custom_minimum_size = Vector2(0, 420)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="Credits" type="VBoxContainer" parent="Roll"]
