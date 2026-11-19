@@ -11,6 +11,8 @@ extends Node3D
 ## the view, not to the room: the camera looks steeply down at the desk, and a truly level liquid
 ## pooled in the canister's front corner. A damped spring here tips the plane after the canister's
 ## motion, so aiming and every shot slosh it.
+## The gauge on the rear cap reads the canister's pressure: every shot drops its needle toward the
+## red tick, and a damped spring brings it wobbling back.
 ## The whole gun is built at a quarter size (Rig) a quarter as far away: it looks the same, but the
 ## camera comes close to the TV and the map, and a gun at full size went behind the TV's front.
 
@@ -52,6 +54,16 @@ const SLOSH_MAX := 0.7
 ## the gun counts as much as moving it; and how far the cabbage drifts in the liquid (m per slope).
 const SLOSH_POINT := Vector3(0.0, 0.6, -0.035)
 const BOB := 0.012
+## The gauge's needle (rad, about the gauge's normal; more is toward the red tick on the left):
+## where it rests, how far a shot drops it, the most that quick shots stack up to, how hard it
+## springs back (1/s^2) and how fast it calms (1/s): back at rest in about 0.7 s.
+const NEEDLE_REST := -0.436
+const NEEDLE_KICK := 1.0
+const NEEDLE_MAX := 1.66
+const NEEDLE_SPRING := 180.0
+const NEEDLE_DAMPING := 11.0
+## How far the needle shivers while the gun turns on the player (rad).
+const NEEDLE_SHIVER := 0.05
 const CROSSHAIR := preload("res://entities/cabbage_gun/crosshair.res")
 const CROSSHAIR_HOTSPOT := Vector2(24, 24)
 
@@ -71,6 +83,8 @@ var _crosshair := false
 ## The liquid's surface: its slope along the view's x and z (x, y) and how fast that changes (z, w).
 var _slosh := Vector4.ZERO
 var _slosh_point := Vector3.ZERO
+## The needle: how far it is off its rest (x, rad) and how fast that changes (y).
+var _needle_dip := Vector2.ZERO
 ## Where the last ray met its target, or ended (RANGE away) on a miss.
 var _last_point := Vector3.ZERO
 var _trail_fade: Tween
@@ -83,6 +97,7 @@ var _trail_fade: Tween
 @onready var _trail: Node3D = $Trail
 @onready var _beam: MeshInstance3D = $Trail/Beam
 @onready var _hand: HandModel = $Rig/Pivot/Kick/Hand
+@onready var _needle: Node3D = $Rig/Pivot/Kick/Needle
 @onready var _liquid: MeshInstance3D = $Rig/Pivot/Kick/Liquid
 @onready var _cabbage: Node3D = $Rig/Pivot/Kick/Cabbage
 @onready var _cabbage_rest := ($Rig/Pivot/Kick/Cabbage as Node3D).position
@@ -173,6 +188,7 @@ func fire(screen: Vector2) -> void:
 	_shot.play()
 	_shake = shake_strength
 	_kick_back()
+	_needle_dip = needle_kick(_needle_dip)
 	var hit := _target(screen)
 	if _camera() != null:
 		_show_trail(_last_point)
@@ -233,6 +249,20 @@ func _kick_back() -> void:
 		_flash_light.visible = false)
 
 
+## The needle right after a shot: dropped by NEEDLE_KICK from where it was (the pressure let go at
+## once, so it starts from a standstill), never past NEEDLE_MAX however fast the shots come.
+static func needle_kick(state: Vector2) -> Vector2:
+	return Vector2(minf(maxf(state.x, 0.0) + NEEDLE_KICK, NEEDLE_MAX), 0.0)
+
+
+## The needle `delta` seconds on: `state` is how far it is off its rest (x) and how fast that
+## changes (y); a damped spring swings it back, a little past rest and back again.
+static func needle_step(state: Vector2, delta: float) -> Vector2:
+	var step := minf(delta, 0.05)
+	var speed := state.y - (state.x * NEEDLE_SPRING + state.y * NEEDLE_DAMPING) * step
+	return Vector2(minf(state.x + speed * step, NEEDLE_MAX), speed)
+
+
 ## The liquid `delta` seconds on: `state` is its surface's slope along the view's x and z (x, y) and the
 ## slope's speed (z, w); `push` shoves it (slope/s^2). A damped spring pulls it back level.
 static func slosh_step(state: Vector4, push: Vector2, delta: float) -> Vector4:
@@ -262,6 +292,9 @@ func _process(delta: float) -> void:
 		_pivot.transform = turn_pose(_turn_from, _turn, _tremble_time)
 	if visible and delta > 0.0:
 		_slosh_liquid(delta)
+		_needle_dip = needle_step(_needle_dip, delta)
+		var shiver := sin(_tremble_time * 31.0) * NEEDLE_SHIVER * _turn if _turned else 0.0
+		_needle.rotation.z = NEEDLE_REST + _needle_dip.x + shiver
 	var camera := _camera()
 	if camera == null:
 		return

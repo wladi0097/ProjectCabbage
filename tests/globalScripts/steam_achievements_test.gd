@@ -37,6 +37,11 @@ func after_test() -> void:
 	Profile.clear()
 
 
+func test_the_full_game_starts_steam_as_its_own_app_and_the_demo_leaves_it_to_steam() -> void:
+	assert_int(Achievements.app_id(false)).is_equal(5613070)
+	assert_int(Achievements.app_id(true)).is_equal(0)
+
+
 func test_the_game_runs_without_steam() -> void:
 	# Tests run headless, so the autoload never starts Steam, whether or not the extension is loaded.
 	assert_object(SteamAchievements.steam).is_null()

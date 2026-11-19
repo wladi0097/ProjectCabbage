@@ -31,7 +31,9 @@ spin(gun, [(0, 0), (0.033, 0), (0.033, 0.003), (0, 0.003)], P, at(0, -0.145, AXI
 for k in range(5):                                                               # ticks, the last one red
     turn = at(0, 0, AXIS) @ Matrix.Rotation(math.radians(-70 + 35 * k), 4, "Y")
     part_box(gun, (-0.0025, -0.1495, 0.022), (0.0025, -0.1475, 0.03), 0.0, R if k == 0 else K, turn)
-part_box(gun, (-0.0018, -0.1505, -0.006), (0.0018, -0.148, 0.021), 0.0, K, at(0, 0, AXIS) @ Matrix.Rotation(math.radians(25), 4, "Y"))   # needle
+# The needle is not in the mesh: it is the scene's Needle node (a BoxMesh 3.6 x 27 x 2.5 mm on a pivot at
+# the gauge centre, Godot (0, 0.05, 0.14925), resting 25 degrees right of straight up), which the
+# script kicks toward the red tick on every shot.
 # Inventory tag on the top deck behind the canister: a cream plate with two typed lines.
 part_box(gun, (-0.036, -0.104, 0.098), (0.036, -0.05, 0.1035), 0.002, P)
 part_box(gun, (-0.027, -0.076, 0.103), (0.027, -0.069, 0.1045), 0.0, K)

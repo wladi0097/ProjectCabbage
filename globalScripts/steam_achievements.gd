@@ -5,10 +5,11 @@ extends Node
 ## never needs to know. Steam is only reached through Engine.get_singleton, never the `Steam` class,
 ## so this script still compiles if the extension is missing.
 
-## TODO(app id): Project Cabbage's Steam app id, once Steamworks has one. 0 = take it from Steam's
-## launch (SteamAppId), which is all a build started from the Steam client needs; set it (or put a
-## steam_appid.txt next to the Godot exe) to get Steam in editor and dist/ test runs.
-const APP_ID := 0
+## Project Cabbage's Steam app id (the full game). Passed to steamInitEx, so editor and dist/ runs
+## reach Steam too while the Steam client is running. The demo has its own app id: it passes 0 and
+## takes the id from Steam's launch instead (app_id()).
+const APP_ID := 5613070
+const Demo := preload("res://globalScripts/demo.gd")
 
 ## The running Steam (GodotSteam singleton, or a test's fake); null while Steam is not running.
 var steam: Object
@@ -19,11 +20,16 @@ func _ready() -> void:
 		return
 	var api := Engine.get_singleton("Steam")
 	# embed_callbacks = true: GodotSteam runs Steam's callbacks every frame itself.
-	var result: Dictionary = api.steamInitEx(APP_ID, true)
+	var result: Dictionary = api.steamInitEx(app_id(Demo.active()), true)
 	if result.get("status") != 0:  # Steam.STEAM_API_INIT_RESULT_OK
 		print("Steam not running: %s" % result.get("verbal"))
 		return
 	start(api)
+
+
+## The app id Steam starts with: the full game's, or 0 in the demo (Steam's launch names the demo's).
+static func app_id(demo: bool) -> int:
+	return 0 if demo else APP_ID
 
 
 ## Uses `api` from now on and sends every memo already filed (offline, or before this start). Steam

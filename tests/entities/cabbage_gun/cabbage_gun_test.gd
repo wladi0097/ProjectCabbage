@@ -103,6 +103,7 @@ func test_the_shot_at_the_player_shows_and_sounds_nothing() -> void:
 	assert_bool((gun.get_node("Shot") as AudioStreamPlayer).playing).is_false()
 	assert_bool((gun.get_node("Rig/Pivot/Kick/Muzzle/Flash") as Node3D).visible).is_false()
 	assert_bool((gun.get_node("Trail") as Node3D).visible).is_false()
+	assert_float(gun._needle_dip.x).is_equal(0.0)
 	assert_bool((gun.get_node("Rig/Pivot/Kick") as Node3D).transform.is_equal_approx(Transform3D.IDENTITY)).is_true()
 
 
@@ -219,3 +220,42 @@ func test_a_miss_draws_its_trail_out_to_the_guns_full_range() -> void:
 	var trail := gun.get_node("Trail") as Node3D
 	var end := trail.global_transform * Vector3(0.0, 0.0, -1.0)
 	assert_float(end.distance_to(_camera.global_position)).is_equal_approx(CabbageGun.RANGE, 0.5)
+
+
+func test_a_shot_drops_the_gauge_needle_and_it_wobbles_back_to_rest_in_under_a_second() -> void:
+	var state := CabbageGun.needle_kick(Vector2.ZERO)
+	assert_float(state.x).is_equal_approx(CabbageGun.NEEDLE_KICK, 0.0001)
+	var lowest := state.x
+	var settled_at := 0.0
+	for i in 120:
+		state = CabbageGun.needle_step(state, 1.0 / 60.0)
+		lowest = minf(lowest, state.x)
+		if absf(state.x) > 0.03:
+			settled_at = (i + 1) / 60.0
+	# It swings past rest before it settles, and is still within 0.5 to 0.8 s.
+	assert_float(lowest).is_less(-0.05)
+	assert_float(settled_at).is_between(0.3, 0.8)
+	assert_float(state.length()).is_less(0.01)
+
+
+func test_quick_shots_stack_the_needles_drop_up_to_a_cap() -> void:
+	var one := CabbageGun.needle_kick(Vector2.ZERO)
+	var two := CabbageGun.needle_kick(CabbageGun.needle_step(one, 1.0 / 60.0))
+	assert_float(two.x).is_greater(one.x + 0.2)
+	var state := Vector2.ZERO
+	for i in 10:
+		state = CabbageGun.needle_kick(state)
+	assert_float(state.x).is_equal_approx(CabbageGun.NEEDLE_MAX, 0.0001)
+
+
+func test_a_shot_swings_the_needle_on_the_gauge() -> void:
+	var gun := spawn()
+	await gun.raise()
+	var needle := gun.get_node("Rig/Pivot/Kick/Needle") as Node3D
+	await get_tree().process_frame
+	var rest := needle.rotation.z
+	gun.armed = true
+	gun._unhandled_input(click())
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_float(needle.rotation.z).is_greater(rest + 0.3)

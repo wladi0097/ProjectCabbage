@@ -74,6 +74,14 @@ rings = 1
 cap_top = false
 cap_bottom = false
 
+[sub_resource type="StandardMaterial3D" id="NeedleMat"]
+albedo_color = Color(0.03, 0.03, 0.03, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="NeedleBox"]
+material = SubResource("NeedleMat")
+size = Vector3(0.0036, 0.027, 0.0025)
+
 [sub_resource type="AudioStreamRandomizer" id="Shots"]
 random_pitch = 1.08
 streams_count = 3
@@ -124,6 +132,15 @@ gi_mode = 0
 cast_shadow = 0
 mesh = ExtResource("13_glow")
 surface_material_override/0 = SubResource("GlowMat")
+
+[node name="Needle" type="Node3D" parent="Rig/Pivot/Kick"]
+transform = Transform3D(0.9063, 0.4226, 0, -0.4226, 0.9063, 0, 0, 0, 1, 0, 0.05, 0.14925)
+
+[node name="Pointer" type="MeshInstance3D" parent="Rig/Pivot/Kick/Needle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0075, 0)
+gi_mode = 0
+cast_shadow = 0
+mesh = SubResource("NeedleBox")
 
 [node name="Hand" parent="Rig/Pivot/Kick" instance=ExtResource("9_hand")]
 transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0.056, -0.055, 0.156)
