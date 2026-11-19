@@ -3903,3 +3903,103 @@ Stamped, the programme begins. Its first vessel is still on the drawing board.",
 Stamped, the programme begins. Its first vessel is still on the drawing board.","Der Planet ist ausgebucht. Der Vorstand hat nach oben geblickt.
 Gestempelt, beginnt das Programm. Sein erstes Schiff ist noch auf dem Reißbrett."
 The star programme is still under review. You will be notified in writing.,The star programme is still under review. You will be notified in writing.,Das Sternenprogramm befindet sich noch in Prüfung. Sie werden schriftlich benachrichtigt.
+CONDENSE XIII,CONDENSE XIII,VERDICHTEN XIII
+"The vessel holds. The cabbage is less sure.
+A condensed cabbage holds 128 cabbages, not 96:
+it takes 128 from stock and counts as 128.","The vessel holds. The cabbage is less sure.
+A condensed cabbage holds 128 cabbages, not 96:
+it takes 128 from stock and counts as 128.","Der Behälter hält. Der Kohlkopf ist sich weniger sicher.
+Ein verdichteter Kohlkopf fasst 128 statt 96:
+Er nimmt 128 aus dem Lager und zählt als 128."
+CONDENSE XIV,CONDENSE XIV,VERDICHTEN XIV
+"The pressure gauge has been replaced with a larger gauge.
+A condensed cabbage holds 192 cabbages, not 128:
+it takes 192 from stock and counts as 192.","The pressure gauge has been replaced with a larger gauge.
+A condensed cabbage holds 192 cabbages, not 128:
+it takes 192 from stock and counts as 192.","Das Manometer wurde durch ein größeres Manometer ersetzt.
+Ein verdichteter Kohlkopf fasst 192 statt 128:
+Er nimmt 192 aus dem Lager und zählt als 192."
+CONDENSE XV,CONDENSE XV,VERDICHTEN XV
+"The cabbage is now classified as a pressure vessel.
+A condensed cabbage holds 256 cabbages, not 192:
+it takes 256 from stock and counts as 256.","The cabbage is now classified as a pressure vessel.
+A condensed cabbage holds 256 cabbages, not 192:
+it takes 256 from stock and counts as 256.","Der Kohlkopf gilt jetzt als Druckbehälter.
+Ein verdichteter Kohlkopf fasst 256 statt 192:
+Er nimmt 256 aus dem Lager und zählt als 256."
+CONDENSE XVI,CONDENSE XVI,VERDICHTEN XVI
+"The leaves have stopped keeping their distance.
+A condensed cabbage holds 384 cabbages, not 256:
+it takes 384 from stock and counts as 384.","The leaves have stopped keeping their distance.
+A condensed cabbage holds 384 cabbages, not 256:
+it takes 384 from stock and counts as 384.","Die Blätter halten keinen Abstand mehr.
+Ein verdichteter Kohlkopf fasst 384 statt 256:
+Er nimmt 384 aus dem Lager und zählt als 384."
+PRESSURISED SAMPLES,PRESSURISED SAMPLES,DRUCKPROBEN
+"The sample is kept under pressure, like the staff.
+A condensed research cabbage holds 12 cabbages,
+not 8: it takes 12 from stock and counts as 12.","The sample is kept under pressure, like the staff.
+A condensed research cabbage holds 12 cabbages,
+not 8: it takes 12 from stock and counts as 12.","Die Probe steht unter Druck, wie das Personal.
+Ein verdichteter Forschungskohlkopf fasst 12 statt 8:
+Er nimmt 12 aus dem Lager und zählt als 12."
+SEALED SAMPLES,SEALED SAMPLES,VERSIEGELTE PROBEN
+"Opening one requires a second signature.
+A condensed research cabbage holds 16 cabbages,
+not 12: it takes 16 from stock and counts as 16.","Opening one requires a second signature.
+A condensed research cabbage holds 16 cabbages,
+not 12: it takes 16 from stock and counts as 16.","Zum Öffnen braucht es eine zweite Unterschrift.
+Ein verdichteter Forschungskohlkopf fasst 16 statt 12:
+Er nimmt 16 aus dem Lager und zählt als 16."
+BULLION UNDER PRESSURE,BULLION UNDER PRESSURE,GOLD UNTER DRUCK
+"The vault now doubles as a press.
+A condensed golden cabbage holds 8 cabbages,
+not 6: it takes 8 from your golden stock.","The vault now doubles as a press.
+A condensed golden cabbage holds 8 cabbages,
+not 6: it takes 8 from your golden stock.","Der Tresor dient jetzt auch als Presse.
+Ein verdichteter goldener Kohlkopf fasst 8 statt 6:
+Er nimmt 8 aus Ihrem goldenen Bestand."
+SOVEREIGN INGOT,SOVEREIGN INGOT,STAATSBARREN
+"Its weight is now a matter of national security.
+A condensed golden cabbage holds 12 cabbages,
+not 8: it takes 12 from your golden stock.","Its weight is now a matter of national security.
+A condensed golden cabbage holds 12 cabbages,
+not 8: it takes 12 from your golden stock.","Sein Gewicht ist jetzt eine Frage der nationalen Sicherheit.
+Ein verdichteter goldener Kohlkopf fasst 12 statt 8:
+Er nimmt 12 aus Ihrem goldenen Bestand."
+CRITICAL PRICING I,CRITICAL PRICING I,KRITISCHE PREISE I
+"A denser cabbage is a dearer cabbage. This was always the policy.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","A denser cabbage is a dearer cabbage. This was always the policy.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Ein dichterer Kohlkopf ist ein teurerer Kohlkopf. So war es schon immer vorgesehen.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+CRITICAL PRICING II,CRITICAL PRICING II,KRITISCHE PREISE II
+"The price is now held at a pressure the street cannot match.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","The price is now held at a pressure the street cannot match.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Der Preis steht jetzt unter einem Druck, dem die Straße nicht standhält.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+ISOMER PREMIUM I,ISOMER PREMIUM I,ISOMERPRÄMIE I
+"The gold is now a long-lived isomer. The price is longer-lived.
+A golden cabbage sold pays 65× your price, not 50×.","The gold is now a long-lived isomer. The price is longer-lived.
+A golden cabbage sold pays 65× your price, not 50×.","Das Gold ist jetzt ein langlebiges Isomer. Der Preis lebt länger.
+Ein verkaufter goldener Kohlkopf bringt das 65-Fache Ihres Preises, nicht das 50-Fache."
+ISOMER PREMIUM II,ISOMER PREMIUM II,ISOMERPRÄMIE II
+"Each golden cabbage is issued with its own decay schedule.
+A golden cabbage sold pays 85× your price, not 65×.","Each golden cabbage is issued with its own decay schedule.
+A golden cabbage sold pays 85× your price, not 65×.","Jeder goldene Kohlkopf bekommt seinen eigenen Zerfallsplan.
+Ein verkaufter goldener Kohlkopf bringt das 85-Fache Ihres Preises, nicht das 65-Fache."
+PRESSURE VESSEL PROTOCOL,PRESSURE VESSEL PROTOCOL,DRUCKBEHÄLTER-PROTOKOLL
+"The compactor now runs at a pressure the vessel was not rated for. The vessel has been re-rated.
+CONDENSE XIII, XIV and XV open on the projector (128, 192 and 256 to a cabbage), with denser research and golden cabbages and CRITICAL PRICING.","The compactor now runs at a pressure the vessel was not rated for. The vessel has been re-rated.
+CONDENSE XIII, XIV and XV open on the projector (128, 192 and 256 to a cabbage), with denser research and golden cabbages and CRITICAL PRICING.","Der Verdichter läuft jetzt mit einem Druck, für den der Behälter nicht zugelassen war. Der Behälter wurde neu zugelassen.
+Am Projektor öffnen VERDICHTEN XIII, XIV und XV (128, 192 und 256 in einem Kohlkopf), dazu dichtere Forschungs- und Goldkohlköpfe und KRITISCHE PREISE."
+DEGENERATE MATTER POLICY,DEGENERATE MATTER POLICY,RICHTLINIE ENTARTETE MATERIE
+"The atoms in the compactor no longer have room for their own electrons. Facilities has been informed.
+CONDENSE XVI opens on the projector (384 to a cabbage), and ISOMER PREMIUM for golden cabbages.","The atoms in the compactor no longer have room for their own electrons. Facilities has been informed.
+CONDENSE XVI opens on the projector (384 to a cabbage), and ISOMER PREMIUM for golden cabbages.","Die Atome im Verdichter haben keinen Platz mehr für ihre eigenen Elektronen. Die Haustechnik wurde informiert.
+Am Projektor öffnen VERDICHTEN XVI (384 in einem Kohlkopf) und die ISOMERPRÄMIE für goldene Kohlköpfe."

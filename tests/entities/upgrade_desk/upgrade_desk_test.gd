@@ -2184,10 +2184,10 @@ func test_the_research_light_card_is_an_optional_findings_card_dealt_with_briber
 # ---- Chapter 4, part 0: NUCLEAR ----
 
 const NUCLEAR := ["print_numbers", "nuclear_research", "half_life", "critical_mass", "isotope_seed", "lead_storage",
-		"reactor_machinery", "enrichment_cascade", "nuclear_family", "star_programme"]
+		"reactor_machinery", "enrichment_cascade", "pressure_vessel", "nuclear_family", "degenerate_matter", "star_programme"]
 
 
-func test_the_nuclear_hours_ten_cards_follow_the_stars_card_one_after_the_other() -> void:
+func test_the_nuclear_hours_twelve_cards_follow_the_stars_card_one_after_the_other() -> void:
 	var previous := "stars"
 	for id: String in NUCLEAR:
 		assert_array(UpgradeDesk.card_data(id).needs).override_failure_message(id).is_equal([previous])
