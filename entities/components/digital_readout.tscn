@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://entities/components/digital_readout.gd" id="1_script"]
-[ext_resource type="SystemFont" path="res://assets/fonts/terminal_font.tres" id="2_font"]
+[ext_resource type="Shader" path="res://assets/shaders/segment_display.gdshader" id="2_shader"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_glass"]
 shading_mode = 0
@@ -10,6 +10,15 @@ albedo_color = Color(0.05, 0.07, 0.06, 1)
 [sub_resource type="BoxMesh" id="Mesh_glass"]
 material = SubResource("Mat_glass")
 size = Vector3(1, 1, 1)
+
+[sub_resource type="ShaderMaterial" id="Mat_ink"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/ink = Color(0.62, 0.86, 0.68, 1)
+
+[sub_resource type="QuadMesh" id="Mesh_ink"]
+size = Vector2(1, 1)
 
 [node name="DigitalReadout" type="Node3D"]
 visible = false
@@ -20,15 +29,9 @@ transform = Transform3D(0.4, 0, 0, 0, 0.05, 0, 0, 0, 0.01, 0, 0, -0.005)
 mesh = SubResource("Mesh_glass")
 gi_mode = 0
 
-[node name="Ink" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0005)
-pixel_size = 0.00065
-modulate = Color(0.62, 0.86, 0.68, 1)
-outline_modulate = Color(0.62, 0.86, 0.68, 0.22)
-shaded = false
-auto_translate_mode = 2
-text = "0"
-font = ExtResource("2_font")
-font_size = 72
-horizontal_alignment = 2
-outline_size = 10
+[node name="Ink" type="MeshInstance3D" parent="Glass"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.52)
+mesh = SubResource("Mesh_ink")
+surface_material_override/0 = SubResource("Mat_ink")
+cast_shadow = 0
+gi_mode = 0

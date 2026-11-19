@@ -16,7 +16,9 @@ extends Node3D
 ## in) prints it in FULL_INK, the desk counters' FULL red, and flicks over as it turns; under the
 ## limit again it flicks back to its own colour.
 ## Once PRINT LARGER NUMBERS is stamped every window prints in the desk readouts' green
-## (DigitalReadout.INK) instead of its own colour, flicking over as it changes; FULL_INK still wins.
+## (DigitalReadout.INK) instead of its own colour; FULL_INK still wins. The flaps then sit under a
+## fourteen-segment readout each ($Readouts, DigitalReadout) that prints the same text and ink, and
+## nothing flicks over any more (no flaps to turn).
 
 const Events := preload("res://globalScripts/game_events.gd")
 
@@ -45,6 +47,7 @@ var _full: Array[bool] = [false, false, false, false]
 var _digital := false
 
 @onready var _windows: Array[Label3D] = [$Windows/Coins, $Windows/Cabbages, $Windows/Findings, $Windows/Farms]
+@onready var _readouts: Array[DigitalReadout] = [$Readouts/Coins, $Readouts/Cabbages, $Readouts/Findings, $Readouts/Farms]
 @onready var _tick: SoundCue = $Tick
 
 
@@ -89,8 +92,12 @@ func show_save(save: SaveGame, animate := true) -> void:
 			_windows[i].modulate = _ink(i)
 		if _windows[i].text != texts[i] or turned:
 			_windows[i].text = texts[i]
-			if animate and (turned or rested(_now() - _flicked_at[i])):
+			if animate and not _digital and (turned or rested(_now() - _flicked_at[i])):
 				_flick(i)
+		_windows[i].visible = not _digital
+		if _digital:
+			_readouts[i].show_text(texts[i])
+			_readouts[i].ink = _ink(i)
 
 
 ## Whether a window that last flicked `since` seconds ago may flick again.

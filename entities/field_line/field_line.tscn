@@ -15,6 +15,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_relay_2.wav" id="sfx_field_line_relay_2"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/field_line_relay_3.wav" id="sfx_field_line_relay_3"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/console_drop.wav" id="sfx_console_drop"]
+[ext_resource type="PackedScene" path="res://entities/components/digital_readout.tscn" id="9_readout"]
 
 [sub_resource type="AudioStreamRandomizer" id="Rand_lift"]
 random_pitch = 1.06
@@ -94,6 +95,13 @@ text = "0/24"
 font_size = 64
 outline_size = 0
 
+[node name="Readout" parent="." instance=ExtResource("9_readout")]
+transform = Transform3D(1, 0, 0, 0, 0.4416, 0.8972, 0, -0.8972, 0.4416, 0.1365, 0.0785, 0.0505)
+min_cells = 5
+
+[node name="Glass" parent="Readout" index="0"]
+transform = Transform3D(0.129, 0, 0, 0, 0.064, 0, 0, 0, 0.004, 0, 0, 0)
+
 [node name="FarmSign" type="Sprite3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.4416, 0.8972, 0, -0.8972, 0.4416, 0.049, 0.0785, 0.0505)
 pixel_size = 0.0006
@@ -128,3 +136,5 @@ stream = SubResource("Rand_land")
 pitch_scale = 1.12
 bus = &"SFX"
 script = ExtResource("3_cue")
+
+[editable path="Readout"]

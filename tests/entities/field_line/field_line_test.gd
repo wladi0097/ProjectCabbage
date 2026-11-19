@@ -254,5 +254,8 @@ func test_the_count_window_turns_the_readouts_green_once_digital_and_back_to_amb
 	machine.digital = true
 	assert_bool(count.modulate.is_equal_approx(DigitalReadout.INK)).is_true()
 	assert_bool((machine.get_node("FarmSign") as Sprite3D).modulate.is_equal_approx(DigitalReadout.INK)).is_true()
+	# The number moves to the segment readout over the window.
+	assert_bool(count.visible).is_false()
+	assert_str((machine.get_node("Readout") as DigitalReadout).text).is_equal(count.text)
 	machine.digital = false
 	assert_bool(count.modulate.is_equal_approx(amber)).is_true()
