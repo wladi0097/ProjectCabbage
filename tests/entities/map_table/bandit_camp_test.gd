@@ -261,3 +261,35 @@ func test_the_top_level_is_won_only_with_every_war_upgrade_and_lost_without_them
 	assert_bool(_wins("morrow-2", army, top, "nuclear")).is_true()
 	assert_bool(_wins("morrow-2", army, top, "full")).is_false()
 	assert_bool(_wins("morrow-2", army, top * 1.15, "nuclear")).is_false()  # Barely: a little more and it falls.
+
+
+func test_a_reward_does_not_raise_the_next_reward() -> void:
+	var save := _save()
+	_earn(save, 6, 60000000, 1200000, 120000)
+	var first := BanditCamp.reward(save)
+	BanditCamp.pay(save, first)
+	assert_dict(BanditCamp.reward(save)).is_equal(first)
+
+
+func test_the_clock_waits_while_staff_are_on_their_way_to_a_camp() -> void:
+	var save := _save()
+	BanditCamp.tick(save, 0.016)
+	var camp := save.bandit_camp
+	save.war_pending = {field_associate = 2}
+	BanditCamp.tick(save, BanditCamp.EVERY + 1.0)
+	assert_int(save.bandit_camp).is_equal(camp)
+	save.war_pending = {}
+	BanditCamp.tick(save, 0.016)
+	assert_int(save.bandit_camp).is_not_equal(camp)
+
+
+func test_no_resurvey_while_an_operation_is_under_way() -> void:
+	var save := _save()
+	save.tree_bought = PackedStringArray([BanditCamp.RESURVEY_NODE])
+	save.coins = 1000000
+	BanditCamp.tick(save, 0.016)
+	save.war_pending = {field_associate = 2}
+	assert_bool(BanditCamp.can_resurvey(save)).is_false()
+	save.war_pending = {}
+	assert_bool(BanditCamp.can_resurvey(save, true)).is_false()
+	assert_bool(BanditCamp.can_resurvey(save)).is_true()

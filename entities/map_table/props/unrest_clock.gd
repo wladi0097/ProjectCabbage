@@ -7,6 +7,8 @@ extends Node3D
 ## push button (`Resurvey`, the map table's desk button) stands beside it once the depot's REVISED SITE
 ## SURVEY is bought (BanditCamp.RESURVEY_NODE): MapTable picks its `Plate` (RESURVEY) and calls resurvey.
 
+const War := preload("res://entities/map_table/war_sheet.gd")
+
 @onready var _ink: Label3D = $Glass/Ink
 @onready var _caption: Label3D = $Caption
 @onready var _button: Node3D = $Resurvey
@@ -47,7 +49,7 @@ func can_press() -> bool:
 ## (BanditCamp.resurvey), or the refusal's clunk when the coins are short. Whether it was done.
 func resurvey() -> bool:
 	_button.press()
-	if BanditCamp.resurvey(SaveManager.save):
+	if BanditCamp.resurvey(SaveManager.save, War.at_war):
 		SaveManager.autosave()
 		return true
 	_denied.cue(global_position)

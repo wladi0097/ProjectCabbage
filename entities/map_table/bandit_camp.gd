@@ -59,6 +59,9 @@ const NAME := "BANDIT CAMP"
 const BRIEFING := "Former staff are camping on company land. Both remain company property."
 const LEVEL_TEXT := "UNREST LEVEL %d"
 
+## Per SOURCES map, once built: [its k, whether it can be mirrored] (plan).
+static var _maps: Dictionary = {}
+
 
 ## Whether the camps run for `save`: the card is stamped.
 static func active(save: SaveGame) -> bool:
@@ -76,14 +79,14 @@ static func level(save: SaveGame) -> int:
 
 
 ## `delta` s of play: the output is sampled, and with the card stamped the clock runs down; at zero
-## the camp standing is gone and the next one comes (spawn), unless a camp fight is on (`fighting`):
-## then it waits for its end.
+## the camp standing is gone and the next one comes (spawn), unless a camp fight is on (`fighting`)
+## or staff are on their way to one (war_pending: stamped, the war sheet not yet up): then it waits.
 static func tick(save: SaveGame, delta: float, fighting := false) -> void:
 	sample(save, delta)
 	if not active(save):
 		return
 	save.bandit_wait -= delta
-	if save.bandit_wait <= 0.0 and not fighting:
+	if save.bandit_wait <= 0.0 and not fighting and save.war_pending.is_empty():
 		spawn(save)
 
 
@@ -157,12 +160,15 @@ static func plan(camp: int, at: int) -> Dictionary:
 	draw.seed = camp
 	var source := SOURCES[draw.randi() % SOURCES.size()]
 	var mirror := draw.randf() < 0.5
-	var map: WarMap = load(WarMap.path_of(source)).instantiate()
-	var base := float(map.difficulty.get("k", 1.0))
-	mirror = mirror and can_mirror(map)
-	map.free()
+	var known: Array = _maps.get(source, [])
+	if known.is_empty():  # Built once per map: its k and whether it flips (the deed reprints often).
+		var map: WarMap = load(WarMap.path_of(source)).instantiate()
+		known = [float(map.difficulty.get("k", 1.0)), can_mirror(map)]
+		map.free()
+		_maps[source] = known
+	mirror = mirror and bool(known[1])
 	var times := buff_at(source, at)
-	return {source = source, mirror = mirror, buff = times, k = times * base}
+	return {source = source, mirror = mirror, buff = times, k = times * float(known[0])}
 
 
 ## Whether `map` can be flipped top to bottom: nothing would land on the title block's cells.
@@ -241,12 +247,11 @@ static func lose(save: SaveGame) -> void:
 
 
 ## Pays `amount` ({coins, findings, stock}) as far as each limit holds: coins and Findings through
-## earn (and counted as earned), cabbages up to storage_cap. What was paid.
+## earn, cabbages up to storage_cap. What was paid. Not counted in coins_earned / findings_earned:
+## those feed rates, and a reward counted there would raise the next one (RESURVEY, win, repeat).
 static func pay(save: SaveGame, amount: Dictionary) -> Dictionary:
 	var coins := save.earn(&"coins", int(amount.get("coins", 0)))
-	save.coins_earned += coins
 	var findings := save.earn(&"findings", int(amount.get("findings", 0)))
-	save.findings_earned += findings
 	var stock := clampi(int(amount.get("stock", 0)), 0, maxi(save.storage_cap - save.stock, 0))
 	save.stock += stock
 	return {coins = coins, findings = findings, stock = stock}
@@ -257,15 +262,18 @@ static func resurvey_price(save: SaveGame) -> int:
 	return roundi(rates(save).coins * RESURVEY_MINUTES)
 
 
-## Whether the clock's RESURVEY can be pressed: the camps run, its node is bought, the coins are there.
-static func can_resurvey(save: SaveGame) -> bool:
-	return active(save) and save.tree_bought.has(RESURVEY_NODE) and save.coins >= resurvey_price(save)
+## Whether the clock's RESURVEY can be pressed: the camps run, its node is bought, the coins are there,
+## and no operation is under way (staff sent or a fight on: the camp they go for must stay).
+## `fighting`: a camp fight is on (UnrestClock passes the war sheet's at_war).
+static func can_resurvey(save: SaveGame, fighting := false) -> bool:
+	return active(save) and save.tree_bought.has(RESURVEY_NODE) and save.coins >= resurvey_price(save) \
+			and save.war_pending.is_empty() and not fighting
 
 
 ## RESURVEY: its coins are paid and a new camp of the same level replaces the one standing (or comes
 ## to an empty map), the clock starting over. Whether it was done.
-static func resurvey(save: SaveGame) -> bool:
-	if not can_resurvey(save):
+static func resurvey(save: SaveGame, fighting := false) -> bool:
+	if not can_resurvey(save, fighting):
 		return false
 	save.coins -= resurvey_price(save)
 	spawn(save)
