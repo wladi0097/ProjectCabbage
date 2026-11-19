@@ -468,6 +468,13 @@ func test_a_hundred_findings_payout_ejects_one_hundred_token_bigger_than_a_fifty
 	assert_object(look.call("Slip100")).is_not_equal(look.call("Slip50"))
 
 
+func test_findings_tokens_stop_at_ten_thousand_even_with_the_coins_past_it_open() -> void:
+	assert_bool(CoinPile.coin_values(5000000).all(func(v: int) -> bool: return QaBay.slip_template(v) == "Slip10000")).is_true()
+	assert_str(QaBay.slip_template(1000000000)).is_equal("Slip10000")
+	var tens_k: Array[int] = [10000, 10000, 10000, 10000, 10000]
+	assert_array(CoinPile.merge_pick(tens_k, 1000000000)).is_empty()  # The bay merges with the default: no ¶50K.
+
+
 func test_a_big_findings_payout_comes_as_a_handful_of_high_tokens_each_bigger_than_the_last() -> void:
 	var bay := _bay_in_tree()
 	var ten_k := CoinPile.coin_values(10000)
@@ -479,7 +486,7 @@ func test_a_big_findings_payout_comes_as_a_handful_of_high_tokens_each_bigger_th
 			templates[QaBay.slip_template(value)] = true
 	assert_array(templates.keys()).contains(["Slip1000", "Slip5000", "Slip10000"])
 	var previous := 0.0
-	for denomination in CoinPile.DENOMINATIONS:
+	for denomination in CoinPile.DENOMINATIONS.slice(0, CoinPile.OLD_COINS):
 		var template: MeshInstance3D = bay.get_node(QaBay.slip_template(denomination))
 		assert_float(template.scale.x).is_greater(previous)
 		previous = template.scale.x

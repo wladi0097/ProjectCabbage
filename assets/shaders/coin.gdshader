@@ -1,9 +1,9 @@
-// The loose coins (CoinPile's MultiMesh): the coin texture is an atlas of nine faces ($1, $5,
-// $10, $50, $100, $500, $1K, $5K, $10K); INSTANCE_CUSTOM.x picks the column, the instance colour
+// The loose coins (CoinPile's MultiMesh): the coin texture is an atlas of sixteen faces ($1, $5,
+// $10, $50, $100, $500, $1K, $5K, $10K, $50K, $100K, $500K, $1M, $10M, $100M, $1B); INSTANCE_CUSTOM.x picks the column, the instance colour
 // tints the metal.
 shader_type spatial;
 
-const float FACES = 9.0;
+const float FACES = 16.0;
 
 uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform sampler2D normal_tex : hint_normal, filter_linear_mipmap, repeat_disable;

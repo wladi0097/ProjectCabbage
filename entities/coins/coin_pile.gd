@@ -2,8 +2,8 @@ class_name CoinPile
 extends MultiMeshInstance3D
 ## Every loose coin, drawn as one MultiMesh. Coins are animated, not simulated: they arc in,
 ## bounce once and land on a height grid. One payout comes as silver ($1), gold ($5), bronze ($10),
-## steel ($50) and platinum ($100) coins, and for a big one $500 / $1K / $5K / $10K coins (see
-## coin_values), each bigger and thicker from $10 up, that all aim at one
+## steel ($50) and platinum ($100) coins, and for a big one $500 / $1K / $5K / $10K coins (and with
+## CRITICAL_MASS_CARD up to $1B, see coin_values), each bigger and thicker from $10 up, that all aim at one
 ## spot and stack there, at most MAX_STACK high; extra coins start a stack right beside it. Sweeping an empty hand over them sends them into the deposit.
 ## The purse has a limit (SaveGame.coin_limit): a payout only throws in what still fits beside the
 ## coins already out (fitting); the rest never comes in. One coin of it is tossed up to the gap and
@@ -47,7 +47,14 @@ const HUNDRED_VALUE := 100
 ## Every coin face, smallest first: the index is its column in the coin atlas. $1..$100 make change
 ## for every payout; the high coins from $500 up join a payout only when it would otherwise throw
 ## more than MAX_THROW of the coin below them (coin_values).
-const DENOMINATIONS: Array[int] = [1, GOLD_VALUE, BIG_VALUE, FIFTY_VALUE, HUNDRED_VALUE, 500, 1000, 5000, 10000]
+## The seven past $10K pay out and merge only once CRITICAL_MASS_CARD is stamped (coins_open).
+const DENOMINATIONS: Array[int] = [1, GOLD_VALUE, BIG_VALUE, FIFTY_VALUE, HUNDRED_VALUE, 500, 1000, 5000, 10000,
+		50000, 100000, 500000, 1000000, 10000000, 100000000, 1000000000]
+## How many of DENOMINATIONS are out before CRITICAL_MASS_CARD ($1 .. $10K), and what the Findings
+## tokens always use (they stop at ¶10K).
+const OLD_COINS := 9
+## The desk card that opens the coins past $10K.
+const CRITICAL_MASS_CARD := "critical_mass"
 ## How many of DENOMINATIONS (from $1) every payout may use.
 const CHANGE := 5
 const MAX_THROW := 30
@@ -68,16 +75,30 @@ const PEWTER := Color(0.68, 0.7, 0.72)
 const PALE_GOLD := Color(0.86, 0.79, 0.6)
 ## The $5K coin: dark oxidised bronze, a square seal.
 const OXIDE := Color(0.55, 0.4, 0.3)
-## The $10K coin (and the rare $100K+ ones a huge payout is made of): blackened steel, a pale double
+## The $10K coin (and, before CRITICAL_MASS_CARD, the bigger ones a huge payout is made of): blackened steel, a pale double
 ## reeded rim and numeral on a black field, the biggest and thickest.
 const BLACK_STEEL := Color(0.6, 0.63, 0.67)
-const COLOURS: Array[Color] = [SILVER, GOLD, BRONZE, STEEL, PLATINUM, PEWTER, PALE_GOLD, OXIDE, BLACK_STEEL]
+## CRITICAL MASS ($50K .. $1B), every field dark: blued steel ($50K, hexagon seal), gunmetal ($100K,
+## three rings), lead grey ($500K, rays), cold titanium ($1M, turned double square), black steel
+## ($10M, notched gear rim), violet-grey tempered steel ($100M, 12-sided seal) and a pale
+## uranium-glass tint ($1B, three blades): cold and never cabbage green.
+const BLUED := Color(0.48, 0.58, 0.78)
+const GUNMETAL := Color(0.5, 0.52, 0.55)
+const LEAD := Color(0.66, 0.66, 0.7)
+const TITANIUM := Color(0.76, 0.79, 0.86)
+const BLACK_IRON := Color(0.42, 0.43, 0.46)
+const TEMPERED := Color(0.64, 0.6, 0.72)
+const URANIUM := Color(0.86, 0.9, 0.72)
+const COLOURS: Array[Color] = [SILVER, GOLD, BRONZE, STEEL, PLATINUM, PEWTER, PALE_GOLD, OXIDE, BLACK_STEEL,
+		BLUED, GUNMETAL, LEAD, TITANIUM, BLACK_IRON, TEMPERED, URANIUM]
 const SCALES: Array[Vector3] = [Vector3.ONE, Vector3.ONE, BIG_SCALE, FIFTY_SCALE, HUNDRED_SCALE,
-		Vector3(1.58, 2.0, 1.58), Vector3(1.66, 2.1, 1.66), Vector3(1.74, 2.2, 1.74), Vector3(1.82, 2.3, 1.82)]
+		Vector3(1.58, 2.0, 1.58), Vector3(1.66, 2.1, 1.66), Vector3(1.74, 2.2, 1.74), Vector3(1.82, 2.3, 1.82),
+		Vector3(1.9, 2.4, 1.9), Vector3(1.98, 2.5, 1.98), Vector3(2.06, 2.6, 2.06), Vector3(2.14, 2.7, 2.14),
+		Vector3(2.22, 2.8, 2.22), Vector3(2.3, 2.9, 2.3), Vector3(2.4, 3.0, 2.4)]
 ## How far (in cells) a payout's coins scatter around its spot, and sit off a stack's centre.
 const AIM_JITTER := 0.25
 const STACK_JITTER := 0.12
-const FLOATS := 20  # per instance: 12 transform + 4 colour + 4 custom (x: the coin face, 0..8 = $1 .. $10K)
+const FLOATS := 20  # per instance: 12 transform + 4 colour + 4 custom (x: the coin face, 0..15 = $1 .. $1B)
 const GRAVITY := 9.8
 const SETTLE_TIME := 0.12
 const HOME_TIME := 0.5
@@ -172,6 +193,8 @@ var _swept_rise := Vector3.ZERO
 var _landed := false
 ## Seconds to the next merge (MERGE_CARD).
 var _merge_in := 0.0
+## How many of DENOMINATIONS pay out, merge and show (coins_open), kept up each frame.
+var _open := OLD_COINS
 
 
 func _ready() -> void:
@@ -222,7 +245,7 @@ func throw_in(origin: Vector3, amount: int) -> void:
 	if fits < amount:
 		_toss_back(origin)  # The street keeps it: shown at the gap, never on the mat.
 	_withheld_from = origin
-	var values := _hold_back(coin_values(fits))
+	var values := _hold_back(coin_values(fits, _open))
 	if values.is_empty():
 		return
 	thrown.emit(origin, values.size())
@@ -287,7 +310,7 @@ func _release(delta: float) -> void:
 ## Pops `amount` worth of coins up out of `origin` (the bin's mouth) in a short arc onto one spot
 ## around `spot` on the desk, to be swept up like any payout.
 func pop_out(origin: Vector3, spot: Vector3, amount: int) -> void:
-	var values := _hold_back(coin_values(_fit(amount, origin)))
+	var values := _hold_back(coin_values(_fit(amount, origin), _open))
 	if values.is_empty():
 		return
 	thrown.emit(origin, values.size())
@@ -313,6 +336,9 @@ func _process(delta: float) -> void:
 	if _withheld > 0:
 		_release(delta)
 	var save := SaveManager.save
+	var open := coins_open(save)
+	if open != _open:
+		_reopen(open)
 	if save.stamped.has(MERGE_CARD):
 		_merge_in -= delta
 		if _merge_in <= 0.0:
@@ -369,7 +395,7 @@ func _fly(coin: Coin, delta: float) -> void:
 		return
 	if _stacks.get(coin.cell, []).size() >= MAX_STACK or keep_clear.has_point(coin.cell):
 		coin.cell = stack_cell(_stacks, coin.cell, MAX_STACK, _pile_cells(), keep_clear)
-	var floor_y := _top(coin.cell) + thickness(coin.value) * 0.5
+	var floor_y := _top(coin.cell) + thickness(coin.value, _open) * 0.5
 	if coin.xf.origin.y > floor_y or coin.velocity.y > 0.0:
 		return
 	coin.xf.origin.y = floor_y
@@ -391,11 +417,11 @@ func _land(coin: Coin) -> void:
 	var tilt := Basis(Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized(), randf_range(0, 0.12))
 	coin.from = coin.xf
 	coin.to = Transform3D(tilt * Basis(Vector3.UP, randf() * TAU),
-			Vector3(centre.x, below + thickness(coin.value) * 0.5, centre.y))
+			Vector3(centre.x, below + thickness(coin.value, _open) * 0.5, centre.y))
 	coin.state = State.SETTLING
 	coin.t = 0.0
 	_landed = true
-	_tallest = maxf(_tallest, below + thickness(coin.value) - desk_height)
+	_tallest = maxf(_tallest, below + thickness(coin.value, _open) - desk_height)
 	landed.emit(coin.to.origin)
 
 
@@ -483,7 +509,22 @@ static func bag_delay(i: int, count: int, bulk: bool) -> float:
 	return home_delay(i, count) if bulk else i * HOME_STAGGER
 
 
-## How many of DENOMINATIONS[i] make one of the next coin up: 5 or 2.
+## How many of DENOMINATIONS `save` has open: all once CRITICAL_MASS_CARD is stamped, else OLD_COINS.
+static func coins_open(save: SaveGame) -> int:
+	return DENOMINATIONS.size() if save.stamped.has(CRITICAL_MASS_CARD) else OLD_COINS
+
+
+## The coins past $10K open (or close, on a reset): every coin is drawn afresh and the stacks settle
+## onto their new thicknesses.
+func _reopen(open: int) -> void:
+	_open = open
+	for coin in _coins:
+		coin.slot = -1
+	for cell: Vector2i in _stacks.keys():
+		_drop_down(cell)
+
+
+## How many of DENOMINATIONS[i] make one of the next coin up: 5 or 2 (10 from $1M to $1B).
 static func merge_ratio(i: int) -> int:
 	@warning_ignore("integer_division")
 	return DENOMINATIONS[i + 1] / DENOMINATIONS[i]
@@ -491,8 +532,9 @@ static func merge_ratio(i: int) -> int:
 
 ## The coins of `values` that merge next, as their indices: the first merge_ratio of the smallest
 ## coin there are enough of whose next coin up is at most `top`. None: nothing to merge.
-static func merge_pick(values: Array[int], top: int) -> Array[int]:
-	for i in DENOMINATIONS.size() - 1:
+## Only the first `coins` DENOMINATIONS merge (the Findings tokens stay at the default: ¶10K).
+static func merge_pick(values: Array[int], top: int, coins := OLD_COINS) -> Array[int]:
+	for i in coins - 1:
 		if DENOMINATIONS[i + 1] > top:
 			break
 		var found: Array[int] = []
@@ -519,7 +561,7 @@ func merge_once(top: int) -> bool:
 	var values: Array[int] = []
 	for coin in coins:
 		values.append(coin.value)
-	var pick := merge_pick(values, top)
+	var pick := merge_pick(values, top, _open)
 	if pick.is_empty():
 		return false
 	var spot := coins[pick[0]].xf.origin + Vector3.UP * MERGE_LIFT
@@ -577,8 +619,8 @@ func _drop_down(cell: Vector2i) -> void:
 		return
 	var y := desk_height
 	for coin: Coin in stack:
-		var want := y + thickness(coin.value) * 0.5
-		y += thickness(coin.value)
+		var want := y + thickness(coin.value, _open) * 0.5
+		y += thickness(coin.value, _open)
 		if absf(coin.xf.origin.y - want) > 0.0001:
 			coin.from = coin.xf
 			coin.to = Transform3D(coin.xf.basis, Vector3(coin.xf.origin.x, want, coin.xf.origin.z))
@@ -657,7 +699,7 @@ func bank_from(point: Vector3, value: int, bulk := false) -> void:
 	value = mini(value, _held)
 	_held -= value
 	var order := 0
-	var values := coin_values(value)
+	var values := coin_values(value, _open)
 	for v in values:
 		if _coins.size() >= MAX_COINS:
 			_deposit_now(v)
@@ -727,12 +769,12 @@ func _deposit_now(value: int) -> void:
 func _top(cell: Vector2i) -> float:
 	var top := desk_height
 	for coin: Coin in _stacks.get(cell, []):
-		top += thickness(coin.value)
+		top += thickness(coin.value, _open)
 	return top
 
 
-static func thickness(value: int) -> float:
-	return THICKNESS * SCALES[tier(value)].y
+static func thickness(value: int, coins := OLD_COINS) -> float:
+	return THICKNESS * SCALES[tier(value, coins)].y
 
 
 ## Resting coins still in the slot they were last written to are skipped: the buffer keeps them.
@@ -747,7 +789,7 @@ func _upload() -> void:
 		_coins[i].slot = i
 		var xf := _coins[i].xf
 		if _coins[i].value >= BIG_VALUE:
-			xf.basis = xf.basis * Basis.from_scale(SCALES[tier(_coins[i].value)])
+			xf.basis = xf.basis * Basis.from_scale(SCALES[tier(_coins[i].value, _open)])
 		if _coins[i].state == State.FLYING and _coins[i].pop > 0.0:
 			xf.basis = xf.basis * Basis.from_scale(Vector3.ONE * pop_scale(_coins[i].pop))
 		if _coins[i].state == State.FLYING and _coins[i].delay > 0.0:
@@ -765,28 +807,29 @@ func _upload() -> void:
 		_buffer[o + 9] = xf.basis.y.z
 		_buffer[o + 10] = xf.basis.z.z
 		_buffer[o + 11] = xf.origin.z
-		var colour := coin_colour(_coins[i].value)
+		var colour := coin_colour(_coins[i].value, _open)
 		_buffer[o + 12] = colour.r
 		_buffer[o + 13] = colour.g
 		_buffer[o + 14] = colour.b
 		_buffer[o + 15] = 1.0
-		_buffer[o + 16] = coin_face(_coins[i].value)
+		_buffer[o + 16] = coin_face(_coins[i].value, _open)
 	multimesh.buffer = _buffer
 	multimesh.visible_instance_count = _coins.size()
 
 
 ## Which face of the coin atlas (assets/shaders/coin.gdshader) the coin shows.
-static func coin_face(value: int) -> float:
-	return float(tier(value))
+static func coin_face(value: int, coins := OLD_COINS) -> float:
+	return float(tier(value, coins))
 
 
-static func coin_colour(value: int) -> Color:
-	return COLOURS[tier(value)]
+static func coin_colour(value: int, coins := OLD_COINS) -> Color:
+	return COLOURS[tier(value, coins)]
 
 
-## The biggest denomination `value` reaches (its index in DENOMINATIONS): $100K+ coins show as $10K.
-static func tier(value: int) -> int:
-	for i in range(DENOMINATIONS.size() - 1, 0, -1):
+## The biggest of the first `coins` DENOMINATIONS `value` reaches (its index): before CRITICAL_MASS_CARD
+## $50K+ coins show as $10K, after it $10B+ ones as $1B.
+static func tier(value: int, coins := OLD_COINS) -> int:
+	for i in range(coins - 1, 0, -1):
 		if value >= DENOMINATIONS[i]:
 			return i
 	return 0
@@ -803,14 +846,16 @@ static func cell_centre(cell: Vector2i) -> Vector2:
 ## The fewest coins, largest first ($100, $50, $10, $5, $1), thrown smallest first so the biggest
 ## end up on top of the stack where the camera sees them. A big amount, one that would take more than
 ## MAX_THROW of the top coin, brings in the next coin up ($500, $1K, $5K, $10K), and past $10K coins
-## worth ten times more (drawn as $10K), and again, so one payout never throws much more than
+## worth ten times more (drawn as $10K; with CRITICAL_MASS_CARD $50K .. $1B, then times ten drawn as
+## $1B), and again, so one payout never throws much more than
 ## MAX_THROW coins and a big one still comes as a handful, not one lonely coin.
-static func coin_values(amount: int) -> Array[int]:
+## Only the first `coins` of DENOMINATIONS are used before the times-ten steps (coins_open).
+static func coin_values(amount: int, coins := OLD_COINS) -> Array[int]:
 	var denominations := DENOMINATIONS.slice(0, CHANGE)
 	@warning_ignore("integer_division")
 	while amount / denominations[-1] > MAX_THROW:
 		var up := denominations.size()
-		denominations.append(DENOMINATIONS[up] if up < DENOMINATIONS.size() else denominations[-1] * 10)
+		denominations.append(DENOMINATIONS[up] if up < coins else denominations[-1] * 10)
 	var counts: Array[int] = []
 	for i in range(denominations.size() - 1, -1, -1):
 		@warning_ignore("integer_division")

@@ -79,21 +79,50 @@ func test_a_payout_past_thirty_hundreds_brings_in_the_next_coin_up_and_so_on_pas
 	assert_bool(million.all(func(v: int) -> bool: return v == 100000)).is_true()
 
 
+func test_before_critical_mass_a_billion_dollar_payout_is_ten_coins_drawn_as_ten_thousands() -> void:
+	var save := SaveGame.new()
+	var open := CoinPile.coins_open(save)
+	assert_int(open).is_equal(CoinPile.OLD_COINS)
+	var billion := CoinPile.coin_values(1000000000, open)
+	assert_array(billion).has_size(10)
+	assert_bool(billion.all(func(v: int) -> bool: return v == 100000000 and CoinPile.coin_face(v, open) == 8.0)).is_true()
+	assert_bool(CoinPile.coin_values(1500000, open).all(func(v: int) -> bool: return v == 100000)).is_true()
+
+
+func test_after_critical_mass_payouts_use_the_new_coins_and_a_billion_is_a_handful() -> void:
+	var save := SaveGame.new()
+	save.stamped.append(CoinPile.CRITICAL_MASS_CARD)
+	var open := CoinPile.coins_open(save)
+	assert_int(open).is_equal(CoinPile.DENOMINATIONS.size())
+	assert_bool(CoinPile.coin_values(1500000, open).all(func(v: int) -> bool: return v == 50000)).is_true()
+	for amount: int in [1000000000, 3500000000, 987654321, 123456789]:
+		var values := CoinPile.coin_values(amount, open)
+		assert_int(_sum(values)).override_failure_message("payout %d" % amount).is_equal(amount)
+		var big := values.filter(func(v: int) -> bool: return v >= 50000)
+		assert_int(big.size()).override_failure_message("payout %d" % amount).is_less_equal(CoinPile.MAX_THROW)
+	assert_int(CoinPile.coin_values(1000000000, open).size()).is_equal(10)  # Ten $100M coins.
+	assert_int(CoinPile.coin_values(3500000000, open).max()).is_equal(1000000000)
+	assert_float(CoinPile.coin_face(1000000000, open)).is_equal(15.0)
+
+
 func test_a_payout_always_adds_up_to_its_amount() -> void:
 	for amount: int in [1, 9, 10, 49, 50, 99, 150, 301, 4321, 31990, 123456, 2000000000]:
 		assert_int(_sum(CoinPile.coin_values(amount))).override_failure_message("payout %d" % amount).is_equal(amount)
 
 
 func test_each_denomination_looks_different_and_huge_ones_look_like_the_ten_thousand() -> void:
-	var colours := CoinPile.DENOMINATIONS.map(func(v: int) -> Color: return CoinPile.coin_colour(v))
+	var all := CoinPile.DENOMINATIONS.size()
+	var colours := CoinPile.DENOMINATIONS.map(func(v: int) -> Color: return CoinPile.coin_colour(v, all))
 	assert_array(colours).is_equal([CoinPile.SILVER, CoinPile.GOLD, CoinPile.BRONZE, CoinPile.STEEL, CoinPile.PLATINUM,
-			CoinPile.PEWTER, CoinPile.PALE_GOLD, CoinPile.OXIDE, CoinPile.BLACK_STEEL])
+			CoinPile.PEWTER, CoinPile.PALE_GOLD, CoinPile.OXIDE, CoinPile.BLACK_STEEL, CoinPile.BLUED, CoinPile.GUNMETAL,
+			CoinPile.LEAD, CoinPile.TITANIUM, CoinPile.BLACK_IRON, CoinPile.TEMPERED, CoinPile.URANIUM])
 	for i in colours.size():
 		assert_int(colours.count(colours[i])).is_equal(1)
 	assert_that(CoinPile.coin_colour(100000)).is_equal(CoinPile.BLACK_STEEL)
-	for i in CoinPile.DENOMINATIONS.size():
-		assert_float(CoinPile.coin_face(CoinPile.DENOMINATIONS[i])).is_equal(float(i))
+	for i in all:
+		assert_float(CoinPile.coin_face(CoinPile.DENOMINATIONS[i], all)).is_equal(float(i))
 	assert_float(CoinPile.coin_face(100000)).is_equal(8.0)
+	assert_float(CoinPile.coin_face(10000000000, all)).is_equal(15.0)
 	assert_int(CoinPile.COLOURS.size()).is_equal(CoinPile.DENOMINATIONS.size())
 	assert_int(CoinPile.SCALES.size()).is_equal(CoinPile.DENOMINATIONS.size())
 
@@ -104,8 +133,9 @@ func test_coins_from_ten_dollars_up_get_thicker_with_their_value() -> void:
 	assert_float(CoinPile.thickness(10)).is_equal_approx(CoinPile.THICKNESS * 1.5, 0.00001)
 	assert_float(CoinPile.thickness(50)).is_greater(CoinPile.thickness(10))
 	assert_float(CoinPile.thickness(100)).is_greater(CoinPile.thickness(50))
-	for i in range(5, CoinPile.DENOMINATIONS.size()):
-		assert_float(CoinPile.thickness(CoinPile.DENOMINATIONS[i])).is_greater(CoinPile.thickness(CoinPile.DENOMINATIONS[i - 1]))
+	var all := CoinPile.DENOMINATIONS.size()
+	for i in range(5, all):
+		assert_float(CoinPile.thickness(CoinPile.DENOMINATIONS[i], all)).is_greater(CoinPile.thickness(CoinPile.DENOMINATIONS[i - 1], all))
 		assert_float(CoinPile.SCALES[i].x).is_greater(CoinPile.SCALES[i - 1].x)
 	assert_float(CoinPile.thickness(100000)).is_equal(CoinPile.thickness(10000))
 
@@ -535,6 +565,40 @@ func test_five_one_dollar_coins_or_two_fives_merge_into_the_next_coin_up_and_the
 	assert_array(CoinPile.merge_pick(fives, 100)).is_equal([1, 3])
 	var few: Array[int] = [1, 1, 1, 1, 10]
 	assert_array(CoinPile.merge_pick(few, 100)).is_empty()  # Four $1 make no $5.
+
+
+func test_past_ten_thousand_coins_merge_only_after_critical_mass_and_up_to_the_highest_allowed() -> void:
+	var all := CoinPile.DENOMINATIONS.size()
+	var tens_k: Array[int] = [10000, 10000, 10000, 10000, 10000]
+	assert_array(CoinPile.merge_pick(tens_k, 1000000000)).is_empty()  # Before the card: nothing past $10K.
+	assert_array(CoinPile.merge_pick(tens_k, 1000000000, all)).has_size(5)
+	assert_array(CoinPile.merge_pick(tens_k, 10000, all)).is_empty()
+	var ratios: Array[int] = []
+	for i in range(CoinPile.OLD_COINS - 1, all - 1):
+		ratios.append(CoinPile.merge_ratio(i))
+	assert_array(ratios).is_equal([5, 2, 5, 2, 10, 10, 10])
+	var millions: Array[int] = []
+	for n in 10:
+		millions.append(1000000)
+	assert_array(CoinPile.merge_pick(millions, 10000000, all)).has_size(10)
+	millions.pop_back()
+	assert_array(CoinPile.merge_pick(millions, 10000000, all)).is_empty()  # Nine $1M make no $10M.
+	var hundred_m: Array[int] = []
+	for n in 10:
+		hundred_m.append(100000000)
+	assert_array(CoinPile.merge_pick(hundred_m, 1000000000, all)).has_size(10)
+	var billions: Array[int] = [1000000000, 1000000000]
+	assert_array(CoinPile.merge_pick(billions, 1000000000, all)).is_empty()  # Nothing past the $1B coin.
+
+
+func test_merging_ten_one_million_coins_on_the_desk_makes_one_ten_million_coin() -> void:
+	var pile := _pile_with([[Vector2i(0, 0), [1000000, 1000000, 1000000, 1000000, 1000000]],
+			[Vector2i(1, 0), [1000000, 1000000, 1000000, 1000000, 1000000]]])
+	pile._open = CoinPile.DENOMINATIONS.size()
+	assert_bool(pile.merge_once(10000000)).is_true()
+	var merged := pile._coins.filter(func(c: CoinPile.Coin) -> bool: return c.merged > 0)
+	assert_array(merged).has_size(1)
+	assert_int((merged[0] as CoinPile.Coin).merged).is_equal(10000000)
 
 
 func test_no_merge_makes_a_coin_above_the_highest_allowed() -> void:
