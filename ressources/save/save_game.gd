@@ -341,6 +341,9 @@ extends Resource
 ## and how many times a plain square's cabbages each farm square harvests (CH2's FARM OUTPUT raises it).
 @export var farm_squares := PackedInt32Array()
 @export var farm_square_mult := 10.0
+## What every square's ripening time is multiplied by (FarmScreen.grow_time): 1.0 until chapter 4's
+## ACCELERATED RIPENING on the farm tree (×0.75 a step).
+@export var farm_grow_mult := 1.0
 ## Seeds a farm square holds (2; CH2's SEED BEDS behind STRUCTURED FARM raise it). Each farm square's
 ## seeds, in farm_squares' order, oldest first: every seed's own seconds grown (it ripens and is
 ## harvested as its own batch) and whether it grows golden (1). farm_growth / farm_golden hold the
@@ -357,7 +360,7 @@ extends Resource
 @export var chute_blocked := false
 ## Big events whose boss report has been shown or filed (entities/boss_report/), GameEvents ids.
 @export var reports := PackedStringArray()
-## The alpha's end popup (ui/sub/alpha_end/, chapter 3's last card stamped) has been closed: it never comes again.
+## The alpha's end popup (ui/sub/alpha_end/, the CABBAGE STAR PROGRAMME card stamped) has been closed: it never comes again.
 @export var alpha_end := false
 ## A new game started by the ending's credits (entities/ending/): its first boss paper is the
 ## closing one (BossReport.CLOSING, filed as "closing" once signed), then the welcome.

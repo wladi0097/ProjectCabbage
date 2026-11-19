@@ -375,7 +375,7 @@ Express couriers join the personnel depot. They ride fast, hop any fence and lea
 	# Chapter 3's end (`priority`, the end-of-chapter rule), last in the chain, so it reaches the tray
 	# only once the card before it is stamped: `farms` is a requirement, not a price: the
 	# company must own that many farms (save.farms_owned; all GameEvents.FARMS of them), none is spent
-	# (costs, spendable, pay). Stamped, the alpha's end popup comes (ui/sub/alpha_end); chapter 4 later.
+	# (costs, spendable, pay). Stamped, chapter 4 begins: its nuclear hour's cards follow below.
 	# The farms are the wall (the last one is the final island); the coins and Findings on top are a
 	# last lap. Chapter 4 starts with everything bought (designer 2026-11-19): every chapter 3 card,
 	# projector, depot and farm tree node first. So it costs the whole vault and the whole archive (the
@@ -386,7 +386,55 @@ Express couriers join the personnel depot. They ride fast, hop any fence and lea
 	# the sim holding it back it still comes last (176:36).
 	{id = "stars", price = 16000000, also = {findings = 900000}, farms = 24, priority = true, title = "WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS", needs = ["market_intelligence", "big_ideas", "condense", "negotiation", "bribery", "war_mode", "world_map", "no_taxes", "sea_lanes", "bigger_armies", "retreat", "unit_courier"],
 		body = "There is nothing left to buy down here.
-The field line counts the farms. Stamped, the board looks up."},
+The field line counts the farms. Stamped, the board looks up, and the next forms on the desk are nuclear."},
+	# ---- Chapter 4, part 0: NUCLEAR (research/gameplan.md, decided 2026-11-19). The hour after
+	# `stars`, before the flagship: ten cards, one after the other by `needs`, each opening projector
+	# and farm tree chains (needs = [this card] there). Paid in coins and Findings like the war phase's
+	# cards. Prices paced in tools/pace.py (`python tools/pace.py ch4`): ~60 min from stars to the
+	# programme card, ~100 purchases. ----
+	# Every mechanical number display turns into a green digital readout (entities/tally_machine/ and
+	# the other counters read save.stamped), and the purse holds NUMBERS_RAISE times as much (apply).
+	{id = "print_numbers", price = 14000000, title = "PRINT LARGER NUMBERS", needs = ["stars"],
+		body = "The drums have run out of digits. Accounts have asked for more digits.
+Every counter on the desk becomes a digital readout that prints large sums short (4.5B). You can hold up to $40M instead of $16M. More on the projector."},
+	{id = "nuclear_research", price = 15000000, also = {findings = 180000}, title = "NUCLEAR RESEARCH", needs = ["print_numbers"],
+		body = "Fission is a growth sector. The board has approved one.
+NUCLEAR opens on the projector: the street's price and the Findings per cabbage. ENRICHED SOIL opens on the farm tree."},
+	{id = "half_life", price = 74000000, also = {findings = 620000}, title = "HALF-LIFE ACCOUNTING", needs = ["nuclear_research"],
+		body = "Assets that decay slowly are booked as permanent.
+CHAIN REACTION (research cabbages), the DECAY ARCHIVE (Findings limit) and DECAY PREMIUM: LAB (golden cabbages in the research lab) open on the projector."},
+	# No effect here: entities/coins/ mints the coins above $10K once it is stamped.
+	{id = "critical_mass", price = 120000000, also = {findings = 1900000}, title = "CRITICAL MASS", needs = ["half_life"],
+		body = "Enough money in one place starts a reaction.
+Seven larger coins are minted, $50K to $1B: payouts come in fewer, heavier coins. Merges past the $10K coin open on the projector."},
+	{id = "isotope_seed", price = 190000000, also = {findings = 3700000, stock = 150000}, title = "ISOTOPE-ENRICHED SEED", needs = ["critical_mass"],
+		body = "The seed has been improved at the atomic level. The packet has not.
+FORCED RIPENING (squares ripen sooner) and MUTATION (more golden squares) open on the farm tree."},
+	{id = "lead_storage", price = 250000000, also = {findings = 4400000, stock = 300000}, title = "LEAD-LINED STORAGE", needs = ["isotope_seed"],
+		body = "The warehouses glow faintly. Stock levels are unaffected.
+LEAD LINING takes storage past 999.999 cabbages, and DECAY PREMIUM: SALE raises what golden cabbages sell for. Both on the projector."},
+	{id = "reactor_machinery", price = 370000000, also = {findings = 5500000, stock = 400000}, title = "REACTOR-POWERED MACHINERY", needs = ["lead_storage"],
+		body = "Every tractor now has a reactor. Every reactor has a logbook.
+REACTOR DRIVES (faster farm hands and tractors) open on the farm tree, HANDLED WITH TONGS (your own sales and research) on the projector."},
+	{id = "enrichment_cascade", price = 490000000, also = {findings = 6200000, stock = 600000}, title = "ENRICHMENT CASCADE", needs = ["reactor_machinery"],
+		body = "The compactor is now fed through a cascade of centrifuges. The cabbages spin.
+CONDENSE X, XI and XII open on the projector: 48, 64 and 96 to a cabbage."},
+	# The compaction cards (user 2026-11-19): the chute cannot move cabbages faster, so money comes
+	# from what each one holds. Each opens CONDENSE steps past XII and NUCLEAR rows that pay for them.
+	{id = "pressure_vessel", price = 560000000, also = {findings = 6700000, stock = 1000000}, title = "PRESSURE VESSEL PROTOCOL", needs = ["enrichment_cascade"],
+		body = "The compactor now runs at a pressure the vessel was not rated for. The vessel has been re-rated.
+CONDENSE XIII, XIV and XV open on the projector (128, 192 and 256 to a cabbage), with denser research and golden cabbages and CRITICAL PRICING."},
+	{id = "nuclear_family", price = 470000000, also = {findings = 7400000, stock = 800000}, title = "NUCLEAR FAMILY", needs = ["pressure_vessel"],
+		body = "Staff housing has been moved next to the cooling towers. Families are welcome.
+A sixth, seventh and eighth farm hand and tractor open on the farm tree, with a hut and a parking bay each in the yard."},
+	{id = "degenerate_matter", price = 1600000000, also = {findings = 7800000, stock = 1500000}, title = "DEGENERATE MATTER POLICY", needs = ["nuclear_family"],
+		body = "The atoms in the compactor no longer have room for their own electrons. Facilities has been informed.
+CONDENSE XVI opens on the projector (384 to a cabbage), and ISOMER PREMIUM for golden cabbages."},
+	# The nuclear hour's end (`priority`, like the end of every chapter). The flagship build follows
+	# (not built yet): until then the alpha's end popup comes (ui/sub/alpha_end) once it is stamped.
+	{id = "star_programme", price = 7500000000, also = {findings = 5000000, stock = 1500000}, priority = true, title = "CABBAGE STAR PROGRAMME", needs = ["degenerate_matter"],
+		body = "The planet is fully booked. The board has looked up.
+Stamped, the programme begins. Its first vessel is still on the drawing board."},
 	# The annexed grid (Projector.GRID_CARD; decision 2026-11-17): the conquered countries' power
 	# is rerouted to the compactor. The projector's
 	# CONDENSE chain stops at V (8 to a cabbage), and at 20 farms this one takes a plain condensed
@@ -754,6 +802,8 @@ const UNTIMED_EVENTS := ["supply_warning", "promotion", "invest_in_growth", "no_
 const TAX_FREE := 1.19
 ## Cards cash_holding and archive_capacity: what the coin and the Findings limit are multiplied by.
 const LIMIT_RAISE := 5
+## Card print_numbers: what the coin limit is multiplied by ($16M to $40M).
+const NUMBERS_RAISE := 2.5
 
 
 ## Whether timed card `card` is due in `save`: its event has started, its projector node is bought.
@@ -973,6 +1023,8 @@ static func apply(id: String, save: SaveGame) -> void:
 			save.coin_limit *= LIMIT_RAISE
 		"archive_capacity":
 			save.findings_limit *= LIMIT_RAISE
+		"print_numbers":  # The readouts print short sums, so the purse may hold more.
+			save.coin_limit = roundi(save.coin_limit * NUMBERS_RAISE)
 		"no_taxes":  # The street pays 19% more for the same cabbage, and the slate's price goes up with it.
 			save.marketing *= TAX_FREE
 			save.sale_price = mini(roundi(save.sale_price * TAX_FREE), PriceSlate.max_price(save.marketing))

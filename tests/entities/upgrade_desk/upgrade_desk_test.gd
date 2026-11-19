@@ -1352,7 +1352,7 @@ func test_the_stars_card_costs_the_full_vault_and_the_full_archive_so_it_comes_a
 	UpgradeDesk.apply("cash_holding", top)
 	UpgradeDesk.apply("archive_capacity", top)
 	for node: Dictionary in Projector.NODES:
-		if node.get("add", {}).has("coin_limit") or node.get("add", {}).has("findings_limit"):
+		if (node.get("add", {}).has("coin_limit") or node.get("add", {}).has("findings_limit")) and not _nuclear_node(node.id):
 			UpgradeTree.apply_effect(node, top)
 	var card := UpgradeDesk.card_data("stars")
 	assert_int(int(card.price)).is_equal(top.coin_limit)
@@ -1389,7 +1389,8 @@ func test_the_world_map_card_needs_five_farms_its_cabbages_and_its_findings_and_
 func test_the_world_map_cards_cabbages_fit_the_biggest_store_with_a_full_mat_of_condensed_cabbages_out() -> void:
 	var biggest := SaveGame.new().storage_cap
 	for node: Dictionary in Projector.NODES:
-		biggest += int(node.get("add", {}).get("storage_cap", 0))
+		if not _nuclear_node(node.id):  # Chapter 4's LEAD LINING comes long after.
+			biggest += int(node.get("add", {}).get("storage_cap", 0))
 	assert_int(biggest).is_equal(999999)
 	# A full mat of ten cabbages holding 32 each cannot pay (UpgradeDesk.spendable).
 	assert_int(Projector.MAT_MAX).is_equal(10)
@@ -1465,7 +1466,7 @@ func _home_farms(count: int) -> PackedStringArray:
 
 func test_chapter_threes_cards_come_one_after_the_other_but_for_two_groups_that_arrive_together_from_the_fifth_farm_on() -> void:
 	var at := _all_ids().find("consolidation")
-	assert_array(_all_ids().slice(at + 1)).is_equal(CHAPTER_3)  # Every card after chapter 2's last one, in order.
+	assert_array(_all_ids().slice(at + 1).filter(func(id: String) -> bool: return id not in NUCLEAR)).is_equal(CHAPTER_3)  # Every card after chapter 2's last one, in order (chapter 4's aside).
 	var chain := []
 	for deal: Array in CHAPTER_3_DEALS:
 		chain.append_array(deal)
@@ -1569,14 +1570,14 @@ func test_the_stars_card_reaches_the_tray_only_once_the_first_law_and_the_sea_la
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["sea_lanes"])
 	save.stamped.append("sea_lanes")
 	assert_array(_next(save.stamped, UpgradeDesk.CARDS.size(), save)).is_equal(["stars"])
-	# The chain's last card; only an optional card (which nothing waits for) may come after it.
-	var chain := UpgradeDesk.CARDS.filter(func(c: Dictionary) -> bool: return not c.id in UpgradeDesk.Events.DRY_LEFT)
+	# Chapter 3's last card; only an optional card (which nothing waits for) and chapter 4's may come after it.
+	var chain := UpgradeDesk.CARDS.filter(func(c: Dictionary) -> bool: return not c.id in UpgradeDesk.Events.DRY_LEFT and not c.id in NUCLEAR)
 	assert_dict(chain[-1]).is_equal(UpgradeDesk.card_data("stars"))
 
 
 func test_only_chapter_changing_cards_are_priority_forms() -> void:
 	for card: Dictionary in UpgradeDesk.CARDS:
-		assert_bool(card.get("priority", false)).override_failure_message(card.id).is_equal(card.id in ["family_farm", "consolidation", "stars"])
+		assert_bool(card.get("priority", false)).override_failure_message(card.id).is_equal(card.id in ["family_farm", "consolidation", "stars", "star_programme"])
 
 
 func test_sea_lanes_needs_almost_all_farms_of_the_starting_continent() -> void:
@@ -2086,7 +2087,8 @@ func test_stamping_a_card_paid_in_cabbages_takes_them_from_the_store_and_its_coi
 
 
 ## The cards dealt once the war has started: the war card (dealt by the boss's THIS MEANS WAR paper)
-## and every card that waits on it, however far down the chain.
+## and every card that waits on it, however far down the chain, to chapter 3's end (chapter 4's
+## NUCLEAR cards are a new chapter's).
 func _war_phase_cards() -> Array[Dictionary]:
 	var dealt := [FarmRegister.WAR_CARD]
 	var out: Array[Dictionary] = [UpgradeDesk.card_data(FarmRegister.WAR_CARD)]
@@ -2094,7 +2096,7 @@ func _war_phase_cards() -> Array[Dictionary]:
 	while grew:
 		grew = false
 		for card: Dictionary in UpgradeDesk.CARDS:
-			if card.id not in dealt and card.get("needs", []).any(func(n: String) -> bool: return n in dealt):
+			if card.id not in dealt and card.id not in NUCLEAR and card.get("needs", []).any(func(n: String) -> bool: return n in dealt):
 				dealt.append(card.id)
 				out.append(card)
 				grew = true
@@ -2177,3 +2179,53 @@ func test_the_research_light_card_is_an_optional_findings_card_dealt_with_briber
 	var german := _german()
 	for text: String in [card.title, card.body]:
 		assert_bool(german.has(text)).override_failure_message("no German for " + text).is_true()
+
+
+# ---- Chapter 4, part 0: NUCLEAR ----
+
+const NUCLEAR := ["print_numbers", "nuclear_research", "half_life", "critical_mass", "isotope_seed", "lead_storage",
+		"reactor_machinery", "enrichment_cascade", "pressure_vessel", "nuclear_family", "degenerate_matter", "star_programme"]
+
+
+func test_the_nuclear_hours_twelve_cards_follow_the_stars_card_one_after_the_other() -> void:
+	var previous := "stars"
+	for id: String in NUCLEAR:
+		assert_array(UpgradeDesk.card_data(id).needs).override_failure_message(id).is_equal([previous])
+		previous = id
+	var stamped := _all_ids().filter(func(id: String) -> bool: return id not in NUCLEAR)
+	for id: String in NUCLEAR:
+		assert_bool(id in _next(stamped, 99)).override_failure_message(id).is_true()
+		stamped.append(id)
+
+
+func test_printing_larger_numbers_lets_the_purse_hold_two_and_a_half_times_as_much() -> void:
+	var save := SaveGame.new()
+	save.coin_limit = 16000000
+	UpgradeDesk.apply("print_numbers", save)
+	assert_int(save.coin_limit).is_equal(40000000)
+
+
+func test_each_nuclear_card_fits_the_limits_the_cards_and_nodes_before_it_give() -> void:
+	# Coins: $16M until print_numbers, $40M from it; Findings: chapter 3's ¶900K before the decay archive (half_life).
+	assert_int(UpgradeDesk.card_data("print_numbers").price).is_less_equal(16000000)
+	assert_int(UpgradeDesk.card_data("nuclear_research").price).is_less_equal(40000000)
+	for id: String in ["nuclear_research", "half_life"]:
+		assert_int(UpgradeDesk.card_data(id).also.findings).override_failure_message(id).is_less(900000)
+	for id: String in NUCLEAR.slice(1):
+		var bill := UpgradeDesk.costs(UpgradeDesk.card_data(id))
+		assert_int(bill.get("findings", 0)).override_failure_message(id).is_less(10000000)
+		assert_int(bill.get("stock", 0)).override_failure_message(id).is_less(999999 if NUCLEAR.find(id) <= NUCLEAR.find("lead_storage") else 10000000)
+
+
+func test_the_star_programme_is_a_priority_form_dearer_than_every_nuclear_card_before_it() -> void:
+	var last := UpgradeDesk.card_data("star_programme")
+	assert_bool(last.get("priority", false)).is_true()
+	for id: String in NUCLEAR.slice(0, -1):
+		assert_int(UpgradeDesk.card_data(id).price).override_failure_message(id).is_less(last.price)
+
+
+## Whether projector node `id` (or one above it) waits for a chapter 4 card.
+func _nuclear_node(id: String) -> bool:
+	var node := Projector.node_data(id)
+	return node.get("needs", []).any(func(card: String) -> bool: return card in NUCLEAR) \
+			or (node.parent != "" and _nuclear_node(node.parent))

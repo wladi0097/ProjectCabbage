@@ -227,18 +227,22 @@ static func count_colour(count: int) -> Color:
 	return COUNT_COLOURS[mini(doublings, COUNT_COLOURS.size() - 1)]
 
 
-## The digits of `count`, white, centred on a square (made once per count, then shared).
+## The digits of `count`, white, centred on a square (made once per count, then shared). Three
+## digits or more (chapter 4's CONDENSE past 96) are set at full size, then shrunk to fit the width.
 static func count_texture(count: int) -> Texture2D:
 	if not _count_textures.has(count):
 		var digits := DIGITS.get_image()
 		digits.convert(Image.FORMAT_RGBA8)
 		var text := str(count)
-		var square := Image.create_empty(NUMBER_SIZE, NUMBER_SIZE, false, Image.FORMAT_RGBA8)
-		var left := (NUMBER_SIZE - DIGIT_W - DIGIT_STEP * (text.length() - 1)) / 2.0
-		var top := (NUMBER_SIZE - digits.get_height()) / 2.0
+		var wide := DIGIT_W + DIGIT_STEP * (text.length() - 1)
+		var line := Image.create_empty(maxi(wide, NUMBER_SIZE), digits.get_height(), false, Image.FORMAT_RGBA8)
 		for i in text.length():
-			square.blend_rect(digits, Rect2i(text[i].to_int() * DIGIT_W, 0, DIGIT_W, digits.get_height()),
-					Vector2i(int(left) + i * DIGIT_STEP, int(top)))
+			line.blend_rect(digits, Rect2i(text[i].to_int() * DIGIT_W, 0, DIGIT_W, digits.get_height()),
+					Vector2i(int((line.get_width() - wide) / 2.0) + i * DIGIT_STEP, 0))
+		if line.get_width() > NUMBER_SIZE:
+			line.resize(NUMBER_SIZE, roundi(line.get_height() * float(NUMBER_SIZE) / line.get_width()), Image.INTERPOLATE_LANCZOS)
+		var square := Image.create_empty(NUMBER_SIZE, NUMBER_SIZE, false, Image.FORMAT_RGBA8)
+		square.blend_rect(line, Rect2i(Vector2i.ZERO, line.get_size()), Vector2i(0, int((NUMBER_SIZE - line.get_height()) / 2.0)))
 		square.generate_mipmaps()
 		_count_textures[count] = ImageTexture.create_from_image(square)
 	return _count_textures[count]

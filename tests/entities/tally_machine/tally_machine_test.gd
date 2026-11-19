@@ -208,13 +208,14 @@ func test_each_counter_fills_and_buzzes_on_its_own() -> void:
 	assert_bool(_buzzed(coins)).is_false()
 
 
-func test_no_limit_climbs_past_what_its_counters_drums_can_show() -> void:
+func test_no_limit_climbs_past_what_its_counters_drums_can_show_before_the_drums_become_readouts() -> void:
 	for path: String in ["res://entities/tally_machine/tally_machine.tscn", "res://entities/tally_machine/findings_counter.tscn"]:
 		var machine: TallyMachine = auto_free((load(path) as PackedScene).instantiate())
 		var limit: StringName = SaveGame.LIMITS[machine.field]
 		var top: int = SaveGame.new().get(limit) * UpgradeDesk.LIMIT_RAISE  # The start, the desk card, then every tree step.
 		for node: Dictionary in Projector.NODES + FarmTree.NODES:
-			top += node.get("add", {}).get(limit, 0)
+			if not (node.id.begins_with("capital_") or node.id.begins_with("decay_archive_")):  # Chapter 4's, after PRINT LARGER NUMBERS.
+				top += node.get("add", {}).get(limit, 0)
 		assert_int(top).override_failure_message("%s: %d on %d drums" % [path, top, machine.drums]).is_less(int(pow(10.0, machine.drums)))
 
 

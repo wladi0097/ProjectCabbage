@@ -764,3 +764,24 @@ func test_a_rotten_cabbage_shakes_harder_toward_the_burst_and_quivers_at_the_end
 	assert_float(Cabbage.shake_at(60.0)).is_equal(0.0)
 	assert_float(Cabbage.shake_at(25.0)).is_less(Cabbage.shake_at(10.0))
 	assert_float(Cabbage.shake_at(3.0)).is_greater(Cabbage.shake_at(6.0))
+
+
+func test_a_three_digit_count_fits_the_decal_with_every_digit_showing() -> void:
+	for count: int in [128, 384, 888]:
+		var image := CabbageScript.count_texture(count).get_image()
+		assert_int(image.get_width()).is_equal(CabbageScript.NUMBER_SIZE)
+		# Ink in each third of the square: no digit is cut off at an edge.
+		for third in 3:
+			var inked := false
+			for x in range(int(third * image.get_width() / 3.0), int((third + 1) * image.get_width() / 3.0), 2):
+				for y in range(0, image.get_height(), 2):
+					if image.get_pixel(x, y).a > 0.5:
+						inked = true
+						break
+				if inked:
+					break
+			assert_bool(inked).override_failure_message("%d, third %d" % [count, third]).is_true()
+		# And nothing touches the very edge columns.
+		for y in image.get_height():
+			assert_float(image.get_pixel(0, y).a).is_less(0.5)
+			assert_float(image.get_pixel(image.get_width() - 1, y).a).is_less(0.5)

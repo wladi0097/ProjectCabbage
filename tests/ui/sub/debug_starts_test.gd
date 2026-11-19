@@ -124,6 +124,27 @@ func test_the_home_country_start_point_opens_in_the_world_phase_with_the_first_l
 	assert_bool(save.stamped.has(world.SEA_CARD)).is_false()
 
 
+## The desk cards that wait for the stars card (chapter 4's), directly or through another.
+func _chapter_4_cards() -> Array:
+	var out := ["stars"]
+	var found := true
+	while found:
+		found = false
+		for card: Dictionary in UpgradeDesk.CARDS:
+			if card.id not in out and card.get("needs", []).any(func(need: String) -> bool: return need in out):
+				out.append(card.id)
+				found = true
+	out.erase("stars")
+	return out
+
+
+## Whether node `id` of tree `rules` (or one above it) needs one of `cards`.
+func _waits_for(rules: Variant, id: String, cards: Array) -> bool:
+	var node: Dictionary = rules.node_data(id)
+	return node.get("needs", []).any(func(card: String) -> bool: return card in cards) \
+			or (node.parent != "" and _waits_for(rules, node.parent, cards))
+
+
 func test_the_chapter_4_card_start_point_sorts_just_before_the_gun_with_everything_bought_and_the_stars_card_ready_to_stamp() -> void:
 	var path := DebugStarts.START_DIR.path_join("95_chapter_4_card.tres")
 	assert_str(DebugStarts.entries()[-2]).is_equal(path)
@@ -133,14 +154,16 @@ func test_the_chapter_4_card_start_point_sorts_just_before_the_gun_with_everythi
 	# Every farm in the world, each on its own square.
 	assert_int(save.farms_owned.size()).is_equal(UpgradeDesk.Events.FARMS)
 	assert_int(save.farm_squares.size()).is_equal(save.farms_owned.size())
-	# Every chapter 3 card but the last is stamped; every node of every tree is bought.
+	# Every chapter 3 card but the last is stamped (chapter 4's wait behind it); every node of every
+	# tree is bought but chapter 4's.
+	var ahead := _chapter_4_cards()
 	for card: Dictionary in UpgradeDesk.CARDS:
-		assert_bool(save.stamped.has(card.id)).override_failure_message("%s is not stamped" % card.id).is_equal(card.id != "stars")
+		assert_bool(save.stamped.has(card.id)).override_failure_message("%s is not stamped" % card.id).is_equal(card.id != "stars" and card.id not in ahead)
 	for node: Dictionary in Projector.NODES:
-		if not Projector.is_dept(node.id):
+		if not Projector.is_dept(node.id) and not _waits_for(Projector, node.id, ahead):
 			assert_bool(Projector.is_bought(node.id, save)).override_failure_message("projector %s" % node.id).is_true()
 	for node: Dictionary in FarmTree.NODES:
-		if not FarmTree.is_dept(node.id):
+		if not FarmTree.is_dept(node.id) and not _waits_for(FarmTree, node.id, ahead):
 			assert_bool(FarmTree.is_bought(node.id, save)).override_failure_message("farm tree %s" % node.id).is_true()
 	for node: Dictionary in DepotResearch.NODES:
 		if not DepotResearch.is_dept(node.id):

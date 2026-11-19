@@ -347,9 +347,9 @@ func test_everything_bought_fills_the_mat_to_ten_and_hires_two_hands_more_than_t
 	assert_int(full.desk_capacity).is_equal(10)
 	assert_int(full.hands).is_equal(Associate.MAX_VISIBLE + 2)  # DEPARTMENTAL HEADCOUNT's two speed up the visible ten.
 	assert_int(full.hand_trip).is_equal(2)
-	assert_int(full.condense).is_equal(27)  # CONDENSE II to V, VII to IX on a save without the cards' own steps (2, 12).
-	assert_int(full.research_condense).is_equal(8)
-	assert_int(full.golden_condense).is_equal(6)
+	assert_int(full.condense).is_equal(379)  # CONDENSE II to V, VII to XVI on a save without the cards' own steps (2, 12).
+	assert_int(full.research_condense).is_equal(16)
+	assert_int(full.golden_condense).is_equal(12)
 	assert_float(full.restock_delay).is_equal_approx(SaveGame.new().restock_delay / 4.0, 0.0001)  # CONVEYOR II and III.
 	assert_float(full.hand_output).is_equal_approx(2.25, 0.0001)
 	assert_int(full.qa_slots).is_equal(5)
@@ -481,7 +481,7 @@ func test_storage_grows_from_20_to_999999_in_many_steps_each_at_least_a_quarter_
 	var save := _save(["projector", "offsite_storage", "big_ideas", "cash_holding"], 1000000000)
 	var caps := [save.storage_cap]
 	var prices := [0]
-	for id: String in _storage_chain():
+	for id: String in _storage_chain().filter(func(id: String) -> bool: return not id.begins_with("lead_lining_")):  # Chapter 4's go on past it.
 		assert_bool(Projector.buy(id, save)).override_failure_message(id).is_true()
 		caps.append(save.storage_cap)
 		prices.append(Projector.price_of(id, save))
@@ -766,8 +766,8 @@ func test_the_affordable_count_is_the_number_of_upgrades_a_budget_covers_each_in
 	budget.coins = 0
 	budget.findings = 0
 	assert_int(Projector.affordable(budget)).is_equal(0)
-	budget.coins = 1 << 30
-	budget.findings = 1 << 30
+	budget.coins = 1 << 40
+	budget.findings = 1 << 40
 	assert_int(Projector.affordable(budget)).is_equal(upgrades.size())
 	budget.coins = 40
 	budget.findings = 0
@@ -1352,10 +1352,12 @@ const WIDE_ONLY: Array[String] = ["slogan_7", "slogan_8", "mandatory_consumption
 
 
 ## Every desk card stamped but `missing`.
+## Every card stamped but `missing`; without stars, none of chapter 4's either (they all wait for it).
 func _stamped_but(missing: Array) -> SaveGame:
 	var save := SaveGame.new()
+	var skip := missing + (_behind("stars") if "stars" in missing else [])
 	for card: Dictionary in UpgradeDesk.CARDS:
-		if card.id not in missing:
+		if card.id not in skip:
 			save.stamped.append(card.id)
 	return save
 
@@ -1667,12 +1669,28 @@ func test_the_projector_has_no_war_nodes_they_live_in_the_depots_general_program
 		assert_bool(node.get("needs", []).has("war_mode")).override_failure_message(node.id).is_false()
 
 
-func test_the_biggest_store_still_fits_the_chutes_stock_counter() -> void:
+func test_the_biggest_store_before_lead_lining_still_fits_the_chutes_stock_counter() -> void:
 	var top := 0
 	for id: String in _storage_chain():
-		top = maxi(top, Projector.cap_at(id))
+		if not id.begins_with("lead_lining_"):
+			top = maxi(top, Projector.cap_at(id))
 	assert_int(top).is_greater(9999)
 	assert_int(top).is_less_equal(int(pow(10, Associate.Feeder.DRUMS)) - 1)
+	# Past it the store needs the readout PRINT LARGER NUMBERS brings, stamped long before.
+	assert_array(Projector.node_data("lead_lining_1").needs).contains(["lead_storage"])
+	assert_array(_ahead_of("lead_storage")).contains(["print_numbers"])
+
+
+## Every desk card that must be stamped before `card` can be (its needs, and theirs).
+func _ahead_of(card: String) -> Array:
+	var out := []
+	var todo: Array = UpgradeDesk.card_data(card).get("needs", []).duplicate()
+	while not todo.is_empty():
+		var need: String = todo.pop_back()
+		if need not in out:
+			out.append(need)
+			todo += UpgradeDesk.card_data(need).get("needs", [])
+	return out
 
 
 func test_the_merging_chains_wait_for_the_coin_merging_card_and_halve_the_wait_and_raise_the_top_coin_to_ten_thousand() -> void:
@@ -1703,19 +1721,20 @@ func test_the_money_limit_and_the_golden_nodes_have_their_own_headings_and_stora
 	assert_array(Projector.THEMES[UpgradeTree.theme_of(Projector.THEMES, "stock_25")][2]).is_equal(["stock_25"])
 
 
-## The x span [left, right] of the chain of nodes raising `stat`.
-func _span_of(stat: String) -> Vector2:
+## The x span [left, right] of the chain of nodes raising `stat`, but those whose id starts with `skip`.
+func _span_of(stat: String, skip := "") -> Vector2:
 	var span := Vector2(INF, -INF)
 	for node: Dictionary in Projector.NODES:
-		if node.get("add", {}).has(stat):
+		if node.get("add", {}).has(stat) and (skip == "" or not node.id.begins_with(skip)):
 			span = Vector2(minf(span.x, node.at.x), maxf(span.y, node.at.x))
 	return span
 
 
 func test_the_three_limit_categories_stand_side_by_side_store_then_money_then_findings() -> void:
-	var store := _span_of("storage_cap")
-	var money := _span_of("coin_limit")
-	var findings := _span_of("findings_limit")
+	# Chapter 3's columns; chapter 4's steps run on from their tops along the top of the sheet.
+	var store := _span_of("storage_cap", "lead_lining_")
+	var money := _span_of("coin_limit", "capital_")
+	var findings := _span_of("findings_limit", "decay_archive_")
 	assert_float(money.x).is_greater(store.y)
 	assert_float(findings.x).is_greater(money.y)
 	assert_float(findings.x - store.y).is_less(2.5)  # Neighbours, not across the sheet.
@@ -1723,7 +1742,7 @@ func test_the_three_limit_categories_stand_side_by_side_store_then_money_then_fi
 
 ## The levels a condensing chain reaches from 1, buying from `root` down: [stat after each step].
 func _chain_levels(root: String, stat: String) -> Array:
-	var save := _stamped_but(["stars"])
+	var save := _stamped_but([])  # Chapter 4's compaction cards included: they take both chains further.
 	save.coins = 1 << 40
 	save.findings = 1 << 40
 	UpgradeDesk.apply("condense", save)
@@ -1740,16 +1759,16 @@ func _chain_levels(root: String, stat: String) -> Array:
 	return out
 
 
-func test_research_cabbages_have_their_own_condensing_chain_paid_in_findings_from_two_to_eight() -> void:
-	assert_array(_chain_levels("condense_research", "research_condense")).is_equal([2, 3, 4, 6, 8])
+func test_research_cabbages_have_their_own_condensing_chain_paid_in_findings_from_two_to_sixteen() -> void:
+	assert_array(_chain_levels("condense_research", "research_condense")).is_equal([2, 3, 4, 6, 8, 12, 16])
 	for node: Dictionary in Projector.NODES:
 		if node.get("add", {}).has("research_condense"):
 			assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("findings")
 	assert_str(Projector.node_data("condense_research").parent).is_equal("dept_manual")
 
 
-func test_golden_cabbages_have_their_own_condensing_chain_in_coins_from_two_to_six() -> void:
-	assert_array(_chain_levels("condense_gold", "golden_condense")).is_equal([2, 3, 4, 6])
+func test_golden_cabbages_have_their_own_condensing_chain_in_coins_from_two_to_twelve() -> void:
+	assert_array(_chain_levels("condense_gold", "golden_condense")).is_equal([2, 3, 4, 6, 8, 12])
 	for node: Dictionary in Projector.NODES:
 		if node.get("add", {}).has("golden_condense"):
 			assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("coins")
@@ -1871,3 +1890,191 @@ func test_the_pull_tab_is_gone_once_the_gun_is_bought() -> void:
 	save.stamped.append(Projector.Events.GUN_CARD)
 	assert_bool(Projector.pull_shown(true, false, save)).is_false()
 
+
+# ---- Chapter 4, part 0: NUCLEAR ----
+
+## The first node of each of chapter 4's projector chains.
+const NUCLEAR_ROOTS: Array[String] = ["capital_1", "decay_archive_1", "lead_lining_1", "condense_10", "merge_top_5", "merge_speed_4",
+		"fission_1", "isotope_1", "chain_reaction_1", "decay_sale_1", "decay_lab_1", "tongs_1", "condense_research_12", "condense_gold_8",
+		"critical_pricing_1", "isomer_premium_1"]
+
+
+## The chain from `root` on (each step the child named like it), in order.
+func _nuclear_chain(root: String) -> Array[String]:
+	var out: Array[String] = [root]
+	var found := true
+	while found:
+		found = false
+		for node: Dictionary in Projector.NODES:
+			if node.parent == out[-1] and node.id.get_slice("_", 0) == root.get_slice("_", 0):
+				out.append(node.id)
+				found = true
+				break
+	return out
+
+
+## Every card stamped, every node before chapter 4 bought, chapter 3's ends of the chains it goes on
+## from as the save holds them then, and coins and Findings without end.
+func _rich() -> SaveGame:
+	var save := _stamped_but([])
+	var nuclear := []
+	for root: String in NUCLEAR_ROOTS:
+		nuclear += _nuclear_chain(root)
+	for node: Dictionary in Projector.NODES:
+		if node.id not in nuclear and not node.get("dept", false):
+			save.tree_bought.append(node.id)
+	save.coins = 1 << 60
+	save.findings = 1 << 60
+	save.coin_limit = 40000000
+	save.findings_limit = 900000
+	save.storage_cap = 999999
+	save.merge_top = 10000
+	save.merge_every = 0.25
+	save.condense = 32
+	save.research_condense = 8
+	save.golden_condense = 6
+	save.research_mult = 20.0
+	save.golden_lab = 25.0
+	save.golden_sale = 20.0
+	save.findings_per_cabbage = 6
+	return save
+
+
+## Buys `ids` in order: `stat` before the first and after each.
+func _levels(save: SaveGame, ids: Array, stat: String) -> Array:
+	var out := [save.get(stat)]
+	for id: String in ids:
+		assert_bool(Projector.buy(id, save)).override_failure_message(id).is_true()
+		out.append(save.get(stat))
+	return out
+
+
+func test_the_nuclear_rows_have_their_own_heading_and_wait_for_nuclear_research() -> void:
+	var without := _stamped_but(["nuclear_research"])
+	var stamped := _stamped_but([])
+	for id: String in ["fission_1", "isotope_1"]:
+		assert_bool(Projector.is_shown(id, without)).override_failure_message(id).is_false()
+		assert_bool(Projector.is_shown(id, stamped)).override_failure_message(id).is_true()
+	assert_str(Projector.THEMES[UpgradeTree.theme_of(Projector.THEMES, "fission_1")][0]).is_equal("NUCLEAR")
+	# The other rows hang off FISSION PRICING I, the first step every nuclear row starts from.
+	for root: String in ["isotope_1", "chain_reaction_1", "decay_lab_1", "decay_sale_1", "tongs_1", "critical_pricing_1", "isomer_premium_1"]:
+		assert_str(Projector.node_data(root).parent).override_failure_message(root).is_equal("fission_1")
+
+
+func test_each_nuclear_chain_waits_for_its_own_card() -> void:
+	for pair: Array in [["capital_1", "print_numbers"], ["chain_reaction_1", "half_life"], ["decay_archive_1", "half_life"],
+			["decay_lab_1", "half_life"], ["merge_top_5", "critical_mass"], ["merge_speed_4", "critical_mass"],
+			["lead_lining_1", "lead_storage"], ["decay_sale_1", "lead_storage"], ["tongs_1", "reactor_machinery"],
+			["condense_10", "enrichment_cascade"]]:
+		assert_bool(Projector.is_shown(pair[0], _stamped_but([pair[1]]))).override_failure_message(pair[0]).is_false()
+		assert_bool(Projector.is_shown(pair[0], _stamped_but([]))).override_failure_message(pair[0]).is_true()
+
+
+func test_capital_takes_the_money_limit_from_forty_million_to_ten_billion_in_fourteen_steps_of_a_third_or_more() -> void:
+	var save := _rich()
+	var chain := _nuclear_chain("capital_1")
+	var levels := _levels(save, chain, "coin_limit")
+	assert_int(levels[-1]).is_equal(10000000000)
+	assert_int(chain.size()).is_equal(14)
+	for i in chain.size():
+		assert_float(float(levels[i + 1]) / levels[i]).is_greater_equal(1.3)
+		assert_int(Projector.node_data(chain[i]).price).override_failure_message(chain[i]).is_less(levels[i])
+
+
+func test_the_decay_archive_takes_the_findings_limit_from_nine_hundred_thousand_to_ten_million_paid_in_findings() -> void:
+	var save := _rich()
+	var chain := _nuclear_chain("decay_archive_1")
+	var levels := _levels(save, chain, "findings_limit")
+	assert_int(levels[-1]).is_equal(10000000)
+	assert_int(chain.size()).is_equal(10)
+	for i in chain.size():
+		assert_float(float(levels[i + 1]) / levels[i]).is_greater_equal(1.2)  # Small steps (user 2026-11-19).
+		assert_str(UpgradeTree.currency_of(Projector.node_data(chain[i]))).is_equal("findings")
+		assert_int(Projector.node_data(chain[i]).price).override_failure_message(chain[i]).is_less(levels[i])
+
+
+func test_lead_lining_takes_storage_from_999999_to_ten_million() -> void:
+	var levels := _levels(_rich(), _nuclear_chain("lead_lining_1"), "storage_cap")
+	assert_int(levels[-1]).is_equal(10000000)
+	assert_int(levels.size()).is_equal(9)
+	for i in range(1, levels.size()):
+		assert_float(float(levels[i]) / levels[i - 1]).is_greater_equal(1.15)
+
+
+func test_merge_top_steps_from_ten_thousand_to_a_billion_each_landing_on_a_minted_coin_and_merges_come_four_times_as_often() -> void:
+	var save := _rich()
+	var top := _levels(save, _nuclear_chain("merge_top_5"), "merge_top")
+	assert_array(top).is_equal([10000, 100000, 500000, 1000000, 10000000, 100000000, 1000000000])
+	var every := _levels(save, _nuclear_chain("merge_speed_4"), "merge_every")
+	assert_float(every[-1]).is_equal_approx(0.0625, 0.0001)
+
+
+func test_fission_pricing_and_isotope_analysis_each_lift_about_fifteen_percent_a_step_about_ten_times_in_sixteen() -> void:
+	var save := _rich()
+	var street := _levels(save, _nuclear_chain("fission_1"), "marketing")
+	assert_int(street.size()).is_equal(17)
+	assert_float(street[-1] / street[0]).is_between(9.0, 11.0)
+	var lab := _levels(save, _nuclear_chain("isotope_1"), "findings_per_cabbage")
+	assert_int(lab.size()).is_equal(17)
+	for i in range(1, lab.size()):
+		assert_float(float(lab[i]) / lab[i - 1]).override_failure_message("isotope step %d" % i).is_greater(1.05)
+	assert_float(float(lab[-1]) / lab[0]).is_between(9.0, 11.5)
+
+
+func test_chain_reaction_and_the_decay_premiums_lift_what_they_name_by_a_tenth_or_more_each_small_step() -> void:
+	var save := _rich()
+	assert_bool(Projector.buy("fission_1", save)).is_true()  # Every row but FISSION PRICING hangs off its first step.
+	var rows := {"chain_reaction_1": ["research_mult", 20.0, 85.0], "decay_lab_1": ["golden_lab", 25.0, 50.0], "decay_sale_1": ["golden_sale", 20.0, 50.0]}
+	for root: String in rows:
+		var levels := _levels(save, _nuclear_chain(root), rows[root][0])
+		assert_float(levels[0]).override_failure_message(root).is_equal(rows[root][1])
+		assert_float(levels[-1]).override_failure_message(root).is_equal(rows[root][2])
+		for i in range(1, levels.size()):
+			assert_float(levels[i] / levels[i - 1]).override_failure_message("%s step %d" % [root, i]).is_greater_equal(1.1)
+
+
+func test_handled_with_tongs_multiplies_your_own_sales_and_research_by_about_five_in_eight_steps() -> void:
+	var save := _rich()
+	assert_bool(Projector.buy("fission_1", save)).is_true()
+	var sale: float = save.own_sale
+	var lab: float = save.own_lab
+	_levels(save, _nuclear_chain("tongs_1"), "own_sale")
+	assert_float(save.own_sale).is_equal_approx(sale * pow(1.5, 4), 0.01)
+	assert_float(save.own_lab).is_equal_approx(lab * pow(1.5, 4), 0.01)
+
+
+func test_the_enrichment_cascade_then_the_compaction_cards_condense_a_cabbage_from_32_to_384() -> void:
+	var chain := _nuclear_chain("condense_10")
+	assert_array(_levels(_rich(), chain, "condense")).is_equal([32, 48, 64, 96, 128, 192, 256, 384])
+	for pair: Array in [["condense_10", "enrichment_cascade"], ["condense_13", "pressure_vessel"], ["condense_16", "degenerate_matter"]]:
+		assert_array(Projector.node_data(pair[0]).needs).override_failure_message(pair[0]).is_equal([pair[1]])
+
+
+func test_research_and_golden_cabbages_condense_further_but_research_stays_far_behind_the_plain_ladder() -> void:
+	var save := _rich()
+	assert_array(_levels(save, _nuclear_chain("condense_research_12"), "research_condense")).is_equal([8, 12, 16])
+	assert_array(_levels(save, _nuclear_chain("condense_gold_8"), "golden_condense")).is_equal([6, 8, 12])
+	_levels(save, _nuclear_chain("condense_10"), "condense")
+	assert_int(save.research_condense * 16).is_less_equal(save.condense)  # Findings must not run away with the sales.
+
+
+func test_critical_pricing_and_the_isomer_premium_pay_off_the_denser_cabbages_in_small_steps() -> void:
+	var save := _rich()
+	save.golden_sale = 50.0
+	assert_bool(Projector.buy("fission_1", save)).is_true()
+	var street := _levels(save, _nuclear_chain("critical_pricing_1"), "marketing")
+	for i in range(1, street.size()):
+		assert_float(street[i] / street[i - 1]).is_equal_approx(sqrt(1.33), 0.0001)
+	assert_array(_levels(save, _nuclear_chain("isomer_premium_1"), "golden_sale")).is_equal([50.0, 57.0, 65.0, 74.0, 85.0])
+	for pair: Array in [["critical_pricing_1", "pressure_vessel"], ["isomer_premium_1", "degenerate_matter"]]:
+		assert_bool(Projector.is_shown(pair[0], _stamped_but([pair[1]]))).override_failure_message(pair[0]).is_false()
+
+
+func test_every_nuclear_chain_gets_dearer_step_by_step_in_each_currency() -> void:
+	for root: String in NUCLEAR_ROOTS:
+		var chain := _nuclear_chain(root)
+		for i in range(1, chain.size()):
+			var now := Projector.node_data(chain[i])
+			var previous := Projector.node_data(chain[i - 1])
+			if UpgradeTree.currency_of(now) == UpgradeTree.currency_of(previous):
+				assert_int(now.price).override_failure_message(chain[i]).is_greater(previous.price)

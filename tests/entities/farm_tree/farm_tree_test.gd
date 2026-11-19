@@ -18,6 +18,10 @@ const FARM_OUTPUT := ["farm_square_mult"]
 const SEED_BEDS := ["farm_slots"]
 ## FIELD THINNING minis out at once (THINNING).
 const THINNING := ["thinning_cap"]
+## How long a square takes to ripen (chapter 4's ACCELERATED RIPENING).
+const GROWTH := ["farm_grow_mult"]
+## Chapter 4's NUCLEAR cards, which open the farm tree's furthest runs.
+const NUCLEAR_CARDS := ["nuclear_research", "isotope_seed", "reactor_machinery", "nuclear_family"]
 ## The outer ring: what only shows once the desk card STRUCTURED FARM is stamped. Its own nodes, and
 ## the late steps that moved behind it.
 const RING: Array[String] = ["farm_slots_1", "farm_slots_2", "farm_slots_3", "hand_route_2", "hand_shift_2"]
@@ -59,10 +63,10 @@ func test_every_farm_node_is_paid_in_findings_so_coins_stay_for_the_projector() 
 		assert_str(UpgradeTree.currency_of(node)).override_failure_message(node.id).is_equal("findings")
 
 
-func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_the_seed_order_the_rot_delay_farm_output_seed_beds_and_the_thinning_cap() -> void:
+func test_farm_nodes_only_change_worker_numbers_routes_the_hand_harvest_the_golden_chance_the_seed_order_the_rot_delay_farm_output_seed_beds_the_thinning_cap_and_the_ripening_time() -> void:
 	for node: Dictionary in FarmTree.NODES:
 		for stat: String in node.get("add", {}).keys() + node.get("mul", {}).keys():
-			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER or stat in ROT or stat in FARM_OUTPUT or stat in SEED_BEDS or stat in THINNING).override_failure_message("%s: %s" % [node.id, stat]).is_true()
+			assert_bool(stat in WORKER_NUMBERS or stat in ROUTES or stat in HARVEST_NUMBERS or stat in SEED_ORDER or stat in ROT or stat in FARM_OUTPUT or stat in SEED_BEDS or stat in THINNING or stat in GROWTH).override_failure_message("%s: %s" % [node.id, stat]).is_true()
 
 
 func test_every_number_a_node_changes_is_tracked_by_the_save() -> void:
@@ -480,15 +484,27 @@ func test_a_save_that_has_seen_the_tree_open_up_starts_opened_without_the_sound(
 	assert_bool((screen.get_node("Sfx") as AudioStreamPlayer).playing).is_false()
 
 
-func test_opened_up_the_whole_ring_fits_the_screen_at_the_view_it_settles_on() -> void:
+## Whether node `id` or one of its ancestors waits for a chapter 4 card.
+func _nuclear(id: String) -> bool:
+	var node := FarmTree.node_data(id)
+	return node.get("needs", []).any(func(card: String) -> bool: return card in NUCLEAR_CARDS) \
+			or (node.parent != "" and _nuclear(node.parent))
+
+
+func test_opened_up_the_whole_ring_fits_the_screen_at_the_view_it_settles_on_and_the_nuclear_runs_once_it_settles_further_out() -> void:
 	# The Tree's rect on the glass (farm_tree.tscn) and the wheel's scale on it (UpgradeTree._wheel).
 	var area := Vector2(1440.0, 620.0)
 	var uy := area.y / 2.0 / 1.25
-	var unit := Vector2(minf(area.x / 2.0 / 1.05, uy * UpgradeTree.WIDEN), uy) * FarmTree.ZOOM_WIDE
 	var centre := area / 2.0 + Vector2(0.0, uy * 0.06)
-	for node: Dictionary in FarmTree.NODES:
-		var at: Vector2 = centre + node.at * unit
-		assert_bool(Rect2(Vector2.ZERO, area).grow(-15.0).has_point(at)).override_failure_message(node.id).is_true()
+	for zoom: float in [FarmTree.ZOOM_WIDE, FarmTree.ZOOM_NUCLEAR]:
+		var unit := Vector2(minf(area.x / 2.0 / 1.05, uy * UpgradeTree.WIDEN), uy) * zoom
+		for node: Dictionary in FarmTree.NODES:
+			if zoom == FarmTree.ZOOM_WIDE and _nuclear(node.id):
+				continue
+			var at: Vector2 = centre + node.at * unit
+			assert_bool(Rect2(Vector2.ZERO, area).grow(-15.0).has_point(at)).override_failure_message(node.id).is_true()
+	assert_float(FarmTree.home_zoom(_save(["structured_farm"]))).is_equal(FarmTree.ZOOM_WIDE)
+	assert_float(FarmTree.home_zoom(_save(["structured_farm", FarmTree.NUCLEAR_CARD]))).is_equal(FarmTree.ZOOM_NUCLEAR)
 
 
 func test_the_archive_is_no_longer_on_the_farm_tree_it_moved_to_the_projector() -> void:
@@ -543,8 +559,8 @@ func test_the_fourth_and_fifth_farm_hand_and_tractor_wait_for_structured_farm_th
 	save.farm_tractors = 3
 	for id: String in ["hand_4", "hand_5", "tractor_4", "tractor_5"]:
 		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
-	assert_int(save.farm_hands).is_equal(FarmScreen.SLOTS)
-	assert_int(save.farm_tractors).is_equal(FarmScreen.SLOTS)
+	assert_int(save.farm_hands).is_equal(5)
+	assert_int(save.farm_tractors).is_equal(5)
 
 
 func test_the_thinning_quota_nodes_wait_for_the_thinning_card_and_raise_the_cap_from_six_to_eight_then_ten() -> void:
@@ -558,3 +574,89 @@ func test_the_thinning_quota_nodes_wait_for_the_thinning_card_and_raise_the_cap_
 		assert_bool(FarmTree.buy(step[0], save)).override_failure_message(step[0]).is_true()
 		assert_int(save.thinning_cap).is_equal(step[1])
 		assert_float(float(save.thinning_cap) / was).override_failure_message(step[0]).is_greater_equal(1.25)  # Each step felt.
+
+
+# ---- Chapter 4, part 0: NUCLEAR ----
+
+## A save with every card and every farm tree node before chapter 4, and Findings without end.
+func _nuclear_save() -> SaveGame:
+	var save := _save(["farm_terminal", "seasonal_workforce", "mechanisation", "golden_cabbage", "green_thumb", "archive_capacity",
+			"structured_farm", "mini_thinning", "standing_seed_order"] + NUCLEAR_CARDS, 0, 1 << 60)
+	save.findings_limit = 1 << 61
+	save.farms_owned.append("site_a")
+	for node: Dictionary in FarmTree.NODES:
+		if not _nuclear(node.id):
+			save.farm_bought.append(node.id)
+			UpgradeTree.apply_effect(node, save)
+	save.farm_hands += 1  # The first of each came with its card.
+	save.farm_tractors += 1
+	return save
+
+
+## Buys `ids` in order: `stat` before the first and after each.
+func _levels(save: SaveGame, ids: Array, stat: String) -> Array:
+	var out := [save.get(stat)]
+	for id: String in ids:
+		assert_bool(FarmTree.buy(id, save)).override_failure_message(id).is_true()
+		out.append(save.get(stat))
+	return out
+
+
+func test_each_nuclear_run_waits_for_its_card() -> void:
+	for pair: Array in [["soil_1", "nuclear_research"], ["ripening_1", "isotope_seed"], ["mutation_1", "isotope_seed"],
+			["hand_drive_1", "reactor_machinery"], ["tractor_drive_1", "reactor_machinery"], ["hand_6", "nuclear_family"], ["tractor_6", "nuclear_family"]]:
+		var save := _nuclear_save()
+		assert_bool(FarmTree.can_buy(pair[0], save)).override_failure_message(pair[0]).is_true()
+		save.stamped.remove_at(save.stamped.find(pair[1]))
+		assert_bool(FarmTree.can_buy(pair[0], save)).override_failure_message(pair[0]).is_false()
+		assert_bool(FarmTree.is_shown(pair[0], save)).override_failure_message(pair[0]).is_false()
+
+
+func test_enriched_soil_takes_a_farm_square_from_thirty_to_293_times_a_plain_square_in_sixteen_steps() -> void:
+	var levels := _levels(_nuclear_save(), _run("soil", 16), "farm_square_mult")
+	assert_float(levels[0]).is_equal(30.0)
+	assert_float(levels[-1]).is_equal(293.0)
+	for i in range(1, levels.size()):
+		assert_float(levels[i] / levels[i - 1]).override_failure_message("step %d" % i).is_greater_equal(1.1)  # Small steps (user 2026-11-19).
+
+
+func test_accelerated_ripening_takes_a_square_from_fifteen_seconds_to_under_four() -> void:
+	var save := _nuclear_save()
+	assert_float(FarmScreen.grow_time(save)).is_equal(15.0)
+	_levels(save, _run("ripening", 10), "farm_grow_mult")
+	assert_float(FarmScreen.grow_time(save)).is_equal_approx(15.0 * pow(0.75, 5), 0.01)
+	assert_float(FarmScreen.grow_time(save)).is_less(3.6)
+
+
+func test_mutation_takes_the_golden_chance_from_one_in_ten_to_one_in_four_in_eight_steps() -> void:
+	var levels := _levels(_nuclear_save(), _run("mutation", 8), "golden_chance")
+	assert_float(levels[0]).is_equal_approx(0.1, 0.0001)
+	assert_float(levels[-1]).is_equal_approx(0.25, 0.0001)
+	for i in range(1, levels.size()):
+		assert_float(levels[i] / levels[i - 1]).override_failure_message("step %d" % i).is_greater_equal(1.1)
+
+
+func test_reactor_drives_make_farm_hands_and_tractors_about_four_times_as_fast_in_eight_steps() -> void:
+	var save := _nuclear_save()
+	var hands := _levels(save, _run("hand_drive", 8), "farm_hand_speed")
+	var tractors := _levels(save, _run("tractor_drive", 8), "farm_tractor_speed")
+	assert_float(hands[-1] / hands[0]).is_equal_approx(pow(1.4, 4), 0.01)
+	assert_float(tractors[-1] / tractors[0]).is_equal_approx(pow(1.4, 4), 0.01)
+
+
+func test_the_nuclear_family_brings_the_sixth_to_eighth_farm_hand_and_tractor_filling_the_yard() -> void:
+	var save := _nuclear_save()
+	assert_int(save.farm_hands).is_equal(5)
+	assert_array(_levels(save, ["hand_6", "hand_7", "hand_8"], "farm_hands")).is_equal([5, 6, 7, 8])
+	assert_array(_levels(save, ["tractor_6", "tractor_7", "tractor_8"], "farm_tractors")).is_equal([5, 6, 7, 8])
+	assert_int(save.farm_hands).is_equal(FarmScreen.SLOTS)
+	assert_int(save.farm_tractors).is_equal(FarmScreen.SLOTS)
+
+
+## The ids of run `prefix` from its first step to step `count`.
+func _run(prefix: String, count: int) -> Array:
+	var out := []
+	for i in range(1, count + 1):
+		out.append("%s_%d" % [prefix, i])
+	assert_dict(FarmTree.node_data("%s_%d" % [prefix, count + 1])).override_failure_message(prefix).is_empty()  # And no further.
+	return out

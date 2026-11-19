@@ -59,7 +59,7 @@ autowrap_mode = 2
 [node name="Body" type="Label" parent="Center/Memo/Stack"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "Chapter 3 is still under review. You will be notified in writing."
+text = "The star programme is still under review. You will be notified in writing."
 horizontal_alignment = 1
 autowrap_mode = 2
 
