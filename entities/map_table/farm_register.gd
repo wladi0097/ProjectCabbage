@@ -580,9 +580,22 @@ static func can_declare(save: SaveGame, site: StringName, chosen: Dictionary, ou
 ## save.army into save.war_pending (a game closed before they are committed gives them back).
 ## Whether it was declared; refused (can_declare), nothing changes.
 static func declare(save: SaveGame, site: StringName, chosen: Dictionary, out := Vector2i.ZERO) -> bool:
-	if not can_declare(save, site, chosen, out):
+	return can_declare(save, site, chosen, out) and send(save, war_bill(save, site), chosen, out)
+
+
+## Pays `bill` and sends `chosen` (unit id -> count) off to war, as declare does once allowed (a
+## bandit camp's operation too, BanditCamp.declare): refused (nothing changes) short of the coins,
+## with nobody trained, nobody chosen or more chosen than are ready.
+static func send(save: SaveGame, bill: Dictionary, chosen: Dictionary, out := Vector2i.ZERO) -> bool:
+	if not UpgradeDesk.affords(save, bill, out) or not has_staff(save):
 		return false
-	var bill := war_bill(save, site)
+	var sent := 0
+	for unit: String in chosen:
+		if int(chosen[unit]) < 0 or int(chosen[unit]) > int(save.army.get(unit, 0)):
+			return false
+		sent += int(chosen[unit])
+	if sent <= 0:
+		return false
 	for paid_in: String in bill:
 		UpgradeDesk.pay(save, paid_in, bill[paid_in], out)
 	save.war_fee = int(bill.get("coins", 0))  # Given back if the game closes before START.

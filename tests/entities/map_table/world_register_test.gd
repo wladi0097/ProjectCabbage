@@ -420,3 +420,64 @@ func test_endmark_with_nordhal_ours_but_no_sea_lanes_waits_for_the_sea_lanes() -
 	_own(save, [WorldRegister.HOME, &"nordhal"])
 	assert_str(WorldRegister.reach(save, WorldRegister.FINAL)).is_equal(WorldRegister.NO_SEA_LANES)
 	assert_str(WorldRegister.closed(save, WorldRegister.FINAL)).is_equal(WorldRegister.CLOSED_SEA)
+
+
+## A save with a bandit camp standing: the camps' card, staff ready, a purse for the fee.
+func _camp_save() -> SaveGame:
+	var save := _rich()
+	save.stamped.append(BanditCamp.CARD)
+	save.army = {field_associate = 4}
+	BanditCamp.tick(save, 0.016)
+	return save
+
+
+func test_a_camp_shows_its_marker_with_its_level_inside_its_country() -> void:
+	SaveManager.save = _camp_save()
+	var sheet := _sheet()
+	sheet._process(0.0)
+	var marker: Node3D = sheet.get_node("Camp")
+	assert_bool(marker.visible).is_true()
+	assert_str((sheet.get_node("Camp/Level") as Label3D).text).is_equal("UNREST LEVEL 1")
+	var at := sheet.camp_pixel(SaveManager.save.bandit_camp)
+	var country := BanditCamp.country_of(SaveManager.save.bandit_camp)
+	assert_bool(Geometry2D.is_point_in_polygon(at, (sheet.get_node("Page/Sheet/Outlines/" + country) as Line2D).points)).is_true()
+	assert_str(sheet.spot_at(at)).is_equal("camp")
+
+
+func test_no_camp_no_marker() -> void:
+	var sheet := _sheet()
+	sheet._process(0.0)
+	assert_bool((sheet.get_node("Camp") as Node3D).visible).is_false()
+
+
+func test_the_recovery_operation_names_the_camp_and_its_level_never_a_country() -> void:
+	SaveManager.save = _camp_save()
+	var sheet := _sheet()
+	sheet._process(0.0)
+	sheet.press(&"camp")
+	var deed: Node = sheet.get_node("Deed")
+	var text := ""
+	for label: Label in deed.find_children("*", "Label", true, false):
+		if label.is_visible_in_tree():
+			text += label.text + "\n"
+	assert_str(text).contains("RECOVERY OPERATION").contains("BANDIT CAMP").contains("UNREST LEVEL 1")
+	assert_str(text).not_contains("WAR")
+	for point: MapBuilding in sheet.get_node("Things").get_children():
+		assert_str(text.to_lower()).not_contains(point.title.to_lower())
+
+
+func test_stamping_the_recovery_operation_pays_its_fee_and_sends_the_staff_to_the_camp() -> void:
+	var save := _camp_save()
+	save.bandit_fee = 5000
+	SaveManager.save = save
+	var sheet := _sheet()
+	sheet._process(0.0)
+	sheet.press(&"camp")
+	var asked := []
+	sheet.sheet_wanted.connect(func(id: StringName, farm: StringName) -> void: asked.append([id, farm]))
+	var coins := save.coins
+	sheet.press(FarmRegister.STAMP)
+	assert_int(save.coins).is_equal(coins - 5000)
+	assert_dict(sheet.committed).is_equal({field_associate = 4})
+	await await_millis(1200)
+	assert_array(asked).is_equal([[&"war", BanditCamp.SITE]])

@@ -201,7 +201,7 @@ func test_the_research_area_spans_the_sheet_below_the_columns_left_of_the_title_
 
 
 func test_the_general_programme_holds_the_four_war_chains_off_its_department_paid_in_coins() -> void:
-	var chains := {war_time_ = 3, war_training_ = 3, war_cap_ = 3, war_retreat_ = 5}
+	var chains := {war_time_ = 3, war_training_ = 4, war_cap_ = 5, war_retreat_ = 5}  # With chapter 4's steps.
 	for prefix: String in chains:
 		var parent := "dept_general"
 		var price := 0
@@ -281,7 +281,8 @@ func test_one_research_tree_holds_a_department_with_its_branch_for_every_hired_u
 		assert_bool(tree._shown.has(dept)).override_failure_message(unit).is_equal(unit in hired)
 		for node: Dictionary in WarRules.RESEARCH:
 			if node.unit == unit:
-				assert_bool(tree._shown.has(node.id)).override_failure_message(node.id).is_equal(unit in hired)
+				# Chapter 4's steps wait for the CIVIL UNREST card.
+				assert_bool(tree._shown.has(node.id)).override_failure_message(node.id).is_equal(unit in hired and not node.has("card"))
 	assert_bool(DepotResearch.can_hold("dept_field_associate", SaveManager.save)).is_false()  # Info only.
 
 
@@ -317,6 +318,17 @@ func test_the_research_is_an_org_chart_hub_on_top_plates_in_a_row_in_column_orde
 
 
 func test_every_node_plate_and_title_fits_the_research_box_at_home_without_meeting_another_in_english_and_german() -> void:
+	_assert_fits(24)  # Readable from the map camera at 720p.
+
+
+func test_with_civil_unrest_the_deeper_tree_still_fits_its_box_at_home_without_titles_meeting() -> void:
+	SaveManager.save.stamped.append("civil_unrest")
+	_assert_fits(18)  # Zoomed out for the four extra rows (DepotSheet.UNREST_ZOOM).
+
+
+## Every shown node, plate and title lies in the research box at the home zoom and meets no other,
+## in English and German, with every unit hired; titles print at least `title_min` px.
+func _assert_fits(title_min: int) -> void:
 	SaveManager.save.stamped.append_array(["unit_charge", "unit_senior", "unit_pult", "unit_courier"])
 	var sheet := _sheet()
 	var tree := sheet.get_node("Page/Sheet/Tree") as UpgradeTree
@@ -328,6 +340,8 @@ func test_every_node_plate_and_title_fits_the_research_box_at_home_without_meeti
 		var boxes: Array[Rect2] = [Rect2(wheel[0] - Vector2.ONE * r * 1.1, Vector2.ONE * r * 2.2)]  # The hub.
 		var ids: Array[String] = ["hub"]
 		for node: Dictionary in DepotResearch.NODES:
+			if not DepotResearch.is_shown(node.id, SaveManager.save):
+				continue
 			var at: Vector2 = wheel[0] + node.at * wheel[1]
 			var own: Array[Rect2] = []
 			if node.get("dept", false):
@@ -343,7 +357,58 @@ func test_every_node_plate_and_title_fits_the_research_box_at_home_without_meeti
 			for box in own:
 				boxes.append(box)
 				ids.append(node.id)
-	assert_int(title_size).is_greater_equal(24)  # Readable from the map camera at 720p.
+	assert_int(title_size).is_greater_equal(title_min)
+
+
+func test_civil_unrest_nodes_stay_hidden_and_unbuyable_until_the_card_is_stamped() -> void:
+	var save := SaveManager.save
+	save.stamped.append_array(["unit_charge", "unit_senior", "unit_pult", "unit_courier"])
+	save.coins = 2000000000
+	save.findings = 100000000
+	save.tree_bought = PackedStringArray(["war_cap_1", "war_cap_2", "war_cap_3", "war_time_1", "war_time_2", "war_time_3"])
+	save.unit_research = PackedStringArray(["fa_hp_0", "fa_hp_1", "fa_speed_1", "fa_damage_1", "fa_hp_2"])
+	var gated := 0
+	for node: Dictionary in DepotResearch.NODES:
+		if DepotResearch.card_of(node.id) != "":
+			assert_str(DepotResearch.card_of(node.id)).is_equal("civil_unrest")
+			assert_bool(DepotResearch.is_shown(node.id, save)).override_failure_message(node.id).is_false()
+			assert_bool(DepotResearch.can_buy(node.id, save)).override_failure_message(node.id).is_false()
+			gated += 1
+	assert_int(gated).is_equal(27)  # Four per unit, two cap, one training, three drill, the resurvey.
+	assert_bool(DepotResearch.buy("war_cap_4", save)).is_false()
+	assert_bool(DepotResearch.buy("fa_hp_3", save)).is_false()
+	assert_bool(DepotResearch.is_shown("war_cap_3", save)).is_true()  # Chapter 3's tree as it was.
+	save.stamped.append("civil_unrest")
+	for node: Dictionary in DepotResearch.NODES:
+		if DepotResearch.card_of(node.id) != "":
+			assert_bool(DepotResearch.is_shown(node.id, save)).override_failure_message(node.id).is_true()
+	assert_bool(DepotResearch.buy("war_cap_4", save)).is_true()
+	assert_bool(DepotResearch.buy("war_drill_1", save)).is_true()
+	assert_bool(DepotResearch.buy("fa_hp_3", save)).is_true()
+	assert_int(WarRules.army_cap(save)).is_equal(WarRules.BASE_CAP + 4 * WarRules.NODE_CAP)
+
+
+func test_the_drill_chain_hangs_off_the_fight_time_chain_paid_in_coins_each_dearer() -> void:
+	var parent := "war_time_3"
+	var price := 0
+	for step in range(1, 4):
+		var node := DepotResearch.node_data("war_drill_%d" % step)
+		assert_str(node.parent).is_equal(parent)
+		assert_int(node.price).is_greater(price)
+		assert_str(UpgradeTree.currency_of(node)).is_equal("coins")
+		parent = node.id
+		price = node.price
+	assert_dict(DepotResearch.node_data("war_drill_4")).is_empty()
+
+
+func test_the_sheet_zooms_out_to_its_unrest_view_once_civil_unrest_is_stamped() -> void:
+	var sheet := _sheet()
+	var tree := sheet.get_node("Page/Sheet/Tree") as UpgradeTree
+	assert_float(tree.zoom_home).is_equal(DepotSheet.TREE_ZOOM)
+	SaveManager.save.stamped.append("civil_unrest")
+	sheet.refresh()
+	assert_float(tree.zoom_home).is_equal(DepotSheet.UNREST_ZOOM)
+	assert_vector(tree.hub_at).is_equal(DepotSheet.UNREST_HUB)
 
 
 func test_a_unit_with_research_it_can_buy_carries_a_mark_on_its_column() -> void:

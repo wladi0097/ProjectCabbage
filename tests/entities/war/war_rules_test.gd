@@ -85,6 +85,11 @@ func test_each_war_cap_node_adds_two_more() -> void:
 	assert_int(WarRules.army_cap(_save(["war_mode", "bigger_armies"], ["war_cap_1", "war_cap_2", "war_cap_3"]))).is_equal(11)
 
 
+func test_civil_unrests_two_cap_nodes_take_the_army_cap_to_fifteen() -> void:
+	var nodes := ["war_cap_1", "war_cap_2", "war_cap_3", "war_cap_4", "war_cap_5"]
+	assert_int(WarRules.army_cap(_save(["war_mode", "bigger_armies", "civil_unrest"], nodes))).is_equal(15)
+
+
 func test_a_fight_lasts_ninety_seconds_and_war_time_nodes_add_fifteen_each() -> void:
 	assert_float(WarRules.fight_seconds(_save())).is_equal(90.0)
 	assert_float(WarRules.fight_seconds(_save(["war_mode"], ["war_time_1", "war_time_2"]))).is_equal(120.0)
@@ -95,6 +100,40 @@ func test_war_training_nodes_cut_training_by_a_quarter_each() -> void:
 	assert_float(WarRules.training_seconds(_save(["war_mode"], ["war_training_1"]), "field_associate")).is_equal_approx(11.25, 0.001)
 	assert_float(WarRules.training_seconds(_save(["war_mode"], ["war_training_1", "war_training_2", "war_training_3"]), "senior_asset")) \
 			.is_equal_approx(45.0 * 0.421875, 0.001)
+	var four := ["war_training_1", "war_training_2", "war_training_3", "war_training_4"]
+	assert_float(WarRules.training_seconds(_save(["war_mode", "civil_unrest"], four), "senior_asset")) 			.is_equal_approx(45.0 * 0.31640625, 0.001)
+
+
+func test_each_drill_node_makes_every_unit_type_hit_fifteen_percent_harder_and_nothing_else() -> void:
+	for unit: String in WarRules.UNITS:
+		var base := WarRules.unit_stats(_save(), unit)
+		var drilled := WarRules.unit_stats(_save(["war_mode", "civil_unrest"], ["war_drill_1", "war_drill_2", "war_drill_3"]), unit)
+		assert_float(float(drilled.damage)).override_failure_message(unit).is_equal_approx(float(base.damage) * pow(1.15, 3), 0.0001)
+		drilled.damage = base.damage
+		assert_dict(drilled).override_failure_message(unit).is_equal(base)
+	var one := WarRules.unit_stats(_save(["war_mode"], ["war_drill_1"]), "courier")
+	assert_float(float(one.damage)).is_equal_approx(WarRules.BASE_STATS.courier.damage * WarRules.DRILL_STEP, 0.0001)
+
+
+func test_every_civil_unrest_research_step_multiplies_its_stat_by_one_point_one_five() -> void:
+	var save := _save(["war_mode", "unit_charge", "unit_senior", "unit_pult", "unit_courier", "civil_unrest"])
+	for node in WarRules.RESEARCH:
+		if node.has("card"):
+			var old := float(WarRules.unit_stats(save, node.unit)[node.stat])
+			save.unit_research.append(node.id)
+			assert_float(float(WarRules.unit_stats(save, node.unit)[node.stat])).override_failure_message(node.id).is_equal_approx(old * 1.15, 0.0001)
+			save.unit_research.remove_at(save.unit_research.size() - 1)
+
+
+func test_civil_unrest_research_cannot_be_bought_before_the_card_is_stamped() -> void:
+	var save := _save()
+	save.findings = 100000000
+	save.unit_research = PackedStringArray(["fa_hp_0", "fa_hp_1", "fa_speed_1", "fa_damage_1", "fa_hp_2"])
+	assert_bool(WarRules.can_buy_research(save, "fa_hp_3")).is_false()
+	assert_bool(WarRules.buy_research(save, "fa_hp_3")).is_false()
+	save.stamped.append("civil_unrest")
+	assert_bool(WarRules.buy_research(save, "fa_hp_3")).is_true()
+	assert_int(save.findings).is_equal(100000000 - 600000)
 
 
 func test_retreat_saves_nothing_without_the_card() -> void:
@@ -200,11 +239,14 @@ func _chain(unit: String) -> Array[Dictionary]:
 	return out
 
 
-func test_every_unit_has_one_research_chain_of_five() -> void:
+func test_every_unit_has_one_research_chain_of_five_and_civil_unrest_carries_it_on_four_more() -> void:
 	for unit in WarRules.UNITS:
 		var nodes := WarRules.RESEARCH.filter(func(node: Dictionary) -> bool: return node.unit == unit)
-		assert_int(nodes.size()).override_failure_message(unit).is_equal(5)
-		assert_int(_chain(unit).size()).override_failure_message(unit).is_equal(5)
+		assert_int(nodes.size()).override_failure_message(unit).is_equal(9)
+		var chain := _chain(unit)
+		assert_int(chain.size()).override_failure_message(unit).is_equal(9)
+		for i in chain.size():
+			assert_str(chain[i].get("card", "")).override_failure_message(chain[i].id).is_equal("civil_unrest" if i >= 5 else "")
 
 
 func test_each_research_step_raises_its_stat_by_a_tenth_to_under_a_third() -> void:
@@ -220,11 +262,11 @@ func test_each_research_step_raises_its_stat_by_a_tenth_to_under_a_third() -> vo
 func test_each_units_research_starts_cheap_and_every_step_costs_more_than_the_one_before() -> void:
 	assert_int(int(_chain("field_associate")[0].findings)).is_less_equal(5000)  # Paid from what a player who ignored research holds at war start.
 	for unit in WarRules.UNITS:
-		var chain := _chain(unit)
+		var chain := _chain(unit)  # Chapter 4's steps too: dearer still.
 		for i in range(1, chain.size()):
 			assert_int(int(chain[i].findings)).override_failure_message(chain[i].id).is_greater(int(chain[i - 1].findings))
-		# The last step is no wall: at most about forty times the first.
-		assert_int(int(chain[-1].findings)).override_failure_message(unit).is_less_equal(int(chain[0].findings) * 40)
+		# Chapter 3's last step is no wall: at most about forty times the first.
+		assert_int(int(chain[4].findings)).override_failure_message(unit).is_less_equal(int(chain[0].findings) * 40)
 
 
 func test_a_unit_hired_later_starts_its_research_dearer() -> void:

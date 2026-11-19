@@ -432,9 +432,17 @@ A sixth, seventh and eighth farm hand and tractor open on the farm tree, with a 
 CONDENSE XVI opens on the projector (384 to a cabbage), and ISOMER PREMIUM for golden cabbages."},
 	# The nuclear hour's end (`priority`, like the end of every chapter). The flagship build follows
 	# (not built yet): until then the alpha's end popup comes (ui/sub/alpha_end) once it is stamped.
-	{id = "star_programme", price = 7500000000, also = {findings = 5000000, stock = 1500000}, priority = true, title = "CABBAGE STAR PROGRAMME", needs = ["degenerate_matter"],
+	{id = "star_programme", price = 7500000000, also = {findings = 9500000, stock = 1500000}, priority = true, title = "CABBAGE STAR PROGRAMME", needs = ["degenerate_matter"],
 		body = "The planet is fully booked. The board has looked up.
 Stamped, the programme begins. Its first vessel is still on the drawing board."},
+	# Optional (no card needs it; one of GameEvents.DRY_LEFT): chapter 4's bandit camps (BanditCamp,
+	# research/gameplan.md "Chapter 4: bandit camps"), war for those who liked it. Behind the chain's
+	# end in the queue, so it never holds a chain card back. No effect here: BanditCamp reads
+	# save.stamped (the camps, the clock), and the depot's nuclear research shows with it.
+	# Priced in tools/pace.py ch4.
+	{id = "civil_unrest", price = 30000000, also = {findings = 200000}, title = "CIVIL UNREST: RECOVERY OF COMPANY PROPERTY", needs = ["half_life"],
+		body = "Some former staff no longer accept that the world belongs to the company. It does.
+A camp of them appears on the world map now and a new one every 10 minutes. A camp left standing is gone when the next one arrives. Clear it with a recovery operation and the company takes back five minutes of its output in coins, Findings and cabbages. Each camp cleared makes the next one harder."},
 	# The annexed grid (Projector.GRID_CARD; decision 2026-11-17): the conquered countries' power
 	# is rerouted to the compactor. The projector's
 	# CONDENSE chain stops at V (8 to a cabbage), and at 20 farms this one takes a plain condensed

@@ -18,6 +18,7 @@
 [ext_resource type="AudioStream" uid="uid://18l5un5kj1d6" path="res://assets/audio/effects/map_view_in.wav" id="sfx_map_view_in"]
 [ext_resource type="AudioStream" uid="uid://bp8emgxakjll8" path="res://assets/audio/effects/map_view_out.wav" id="sfx_map_view_out"]
 
+[ext_resource type="PackedScene" path="res://entities/map_table/props/unrest_clock.tscn" id="20_clock"]
 [sub_resource type="AudioStreamRandomizer" id="Rand_hover"]
 random_pitch = 1.06
 random_volume_offset_db = 1.5
@@ -96,6 +97,9 @@ text = "TO FARM"
 
 [node name="Tally" parent="." unique_id=1222538545 instance=ExtResource("8_tally")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.37, 0.75, -0.1)
+
+[node name="UnrestClock" parent="." instance=ExtResource("20_clock")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.62, 0.75, 1.75)
 
 [node name="Depot" parent="." unique_id=2052589862 instance=ExtResource("10_depot")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.8, 0.75, 3.395)

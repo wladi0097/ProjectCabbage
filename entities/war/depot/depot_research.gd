@@ -34,6 +34,8 @@ const DEPTS := [
 ## kept in save.tree_bought, where WarRules reads them (fight time, training time, army cap, retreat
 ## share; they came over from the projector, ids and prices unchanged). Shown with the war card
 ## (WAR_CARD); EXIT INTERVIEWS also waits on the withdrawal protocol (`lock`, the RETREAT card).
+## Chapter 4's CIVIL UNREST card (`card`) adds two cap steps, a training step and the DRILL chain
+## (every unit type's damage, WarRules.DRILL_STEP) off the fight-time chain.
 const GENERAL := [
 	{id = "dept_general", parent = "", at = Vector2(0.000, -0.289), icon = "chair", dept = true, unit = "", title = "GENERAL",
 		body = "Standing orders for the whole depot.\nFight time, training, headcount and retreats, paid in coins."},
@@ -49,7 +51,7 @@ const GENERAL := [
 	{id = "war_training_1", parent = "dept_general", at = Vector2(-0.365, -0.212), icon = "hand", price = 350000,
 		title = "INDUCTION BOOKLET",
 		body = "Forty pages. Nobody reads past the first.\nStaff train 25% faster at the personnel depot."},
-	{id = "war_training_2", parent = "war_training_1", at = Vector2(-0.662, -0.066), icon = "hand", price = 850000,
+	{id = "war_training_2", parent = "war_training_1", at = Vector2(-0.662, -0.062), icon = "hand", price = 850000,
 		title = "ON-THE-JOB TRAINING",
 		body = "The job is the training. The training is the job.\nStaff train another 25% faster."},
 	{id = "war_training_3", parent = "war_training_2", at = Vector2(-0.959, -0.212), icon = "hand", price = 1700000,
@@ -67,20 +69,45 @@ const GENERAL := [
 	{id = "war_retreat_1", parent = "dept_general", at = Vector2(0.365, -0.212), icon = "belt", price = 350000,
 		lock = "retreat", title = "EXIT INTERVIEWS",
 		body = "Leaving is a process. The process saves lives.\nA retreat brings 40% of the placed staff home,\nnot 30%."},
-	{id = "war_retreat_2", parent = "war_retreat_1", at = Vector2(0.662, -0.066), icon = "belt", price = 500000,
+	{id = "war_retreat_2", parent = "war_retreat_1", at = Vector2(0.662, -0.062), icon = "belt", price = 500000,
 		title = "MARKED FIRE EXITS",
 		body = "The exits are signposted. In green, naturally.\nA retreat brings 50% of the placed staff home,\nnot 40%."},
 	{id = "war_retreat_3", parent = "war_retreat_2", at = Vector2(0.959, -0.212), icon = "belt", price = 850000,
 		title = "ORDERLY WITHDRAWAL",
 		body = "Single file. No running. Mind the cannon.\nA retreat brings 60% of the placed staff home,\nnot 50%."},
-	{id = "war_retreat_4", parent = "war_retreat_3", at = Vector2(1.256, -0.066), icon = "belt", price = 1200000,
+	{id = "war_retreat_4", parent = "war_retreat_3", at = Vector2(1.256, -0.062), icon = "belt", price = 1200000,
 		title = "STAFF SHUTTLE",
 		body = "Departs every few seconds, under fire.\nA retreat brings 70% of the placed staff home,\nnot 60%."},
 	{id = "war_retreat_5", parent = "war_retreat_4", at = Vector2(1.553, -0.212), icon = "belt", price = 1700000,
 		title = "NOBODY LEFT BEHIND",
 		body = "Staff are assets. Assets are recovered.\nA retreat brings 80% of the placed staff home,\nnot 70%."},
+	# Chapter 4, with the CIVIL UNREST card (`card`: hidden and not for sale until it is stamped).
+	# ponytail: prices provisional, not paced yet.
+	{id = "war_cap_4", parent = "war_cap_3", at = Vector2(1.256, -0.365), icon = "chair", price = 250000000,
+		card = "civil_unrest", title = "HIRING FREEZE",
+		body = "The freeze applies to salaries, not to staff.\nThe army cap is raised by 2 more."},
+	{id = "war_cap_5", parent = "war_cap_4", at = Vector2(1.553, -0.512), icon = "chair", price = 800000000,
+		card = "civil_unrest", title = "MANDATORY VOLUNTEERS",
+		body = "Everyone volunteered. The form was pre-filled.\nThe army cap is raised by 2 more."},
+	{id = "war_training_4", parent = "war_training_3", at = Vector2(-1.256, -0.062), icon = "hand", price = 200000000,
+		card = "civil_unrest", title = "WEEKEND SEMINAR",
+		body = "Attendance is optional. Absence is noted.\nStaff train another 25% faster."},
+	{id = "war_drill_1", parent = "war_time_3", at = Vector2(-1.256, -0.365), icon = "crate", price = 150000000,
+		card = "civil_unrest", title = "MORNING DRILL",
+		body = "Calisthenics at six. Coffee at never.\nAll staff hit 15% harder."},
+	{id = "war_drill_2", parent = "war_drill_1", at = Vector2(-1.553, -0.512), icon = "crate", price = 400000000,
+		card = "civil_unrest", title = "LIVE-FIRE APPRAISAL",
+		body = "The appraisal is annual. The rounds are live.\nAll staff hit another 15% harder."},
+	{id = "war_drill_3", parent = "war_drill_2", at = Vector2(-1.850, -0.365), icon = "crate", price = 900000000,
+		card = "civil_unrest", title = "ZERO TOLERANCE",
+		body = "Tolerance was reviewed and found to be zero.\nAll staff hit another 15% harder."},
+	# BanditCamp.RESURVEY_NODE: the unrest clock's RESURVEY button (a new camp of the same level, the
+	# clock started over, for a minute of coins each time).
+	{id = "war_resurvey", parent = "war_retreat_5", at = Vector2(1.85, -0.062), icon = "lens", price = 300000000,
+		card = "civil_unrest", title = "REVISED SITE SURVEY",
+		body = "The camp was surveyed again. It had moved.\nThe unrest clock gets a RESURVEY button: a new camp at the same level, for a minute of coins."},
 ]
-## Every unit's research: a chain of five down its department's slot, zigzagging left and right a
+## Every unit's research: a chain of five (nine with CIVIL UNREST) down its department's slot, zigzagging left and right a
 ## row apart (same-side nodes two rows apart, so no title meets the node above it); the root hangs
 ## off the department.
 const ALL := [
@@ -159,12 +186,76 @@ const ALL := [
 	{id = "cr_damage_1", parent = "cr_hp_1", at = Vector2(1.203, 1.138), icon = "crate", currency = "findings",
 		title = "PRIORITY POST",
 		body = "Delivered with force. Signed for by no one.\nExpress couriers hit 30% harder."},
+	# Chapter 4 (WarRules.RESEARCH `card`: civil_unrest): four more steps down every chain, the same
+	# zigzag. They only show with that card, and the sheet then zooms out to fit them (DepotSheet.UNREST_ZOOM).
+	{id = "fa_hp_3", parent = "fa_hp_2", at = Vector2(-1.203, 1.288), icon = "hand", currency = "findings",
+		title = "RIOT CLIPBOARD",
+		body = "Doubles as a shield. Triples as a form.\nField associates take another 15% more damage before they fall."},
+	{id = "fa_damage_2", parent = "fa_hp_3", at = Vector2(-1.477, 1.438), icon = "crate", currency = "findings",
+		title = "LOADED STAPLER",
+		body = "Safety off. Paper optional.\nField associates hit another 15% harder."},
+	{id = "fa_hp_4", parent = "fa_damage_2", at = Vector2(-1.203, 1.588), icon = "hand", currency = "findings",
+		title = "HI-VIS TABARD",
+		body = "Visible from orbit. Targeted from slightly closer.\nField associates take another 15% more damage before they fall."},
+	{id = "fa_damage_3", parent = "fa_hp_4", at = Vector2(-1.477, 1.738), icon = "crate", currency = "findings",
+		title = "FINAL WARNING",
+		body = "There were no earlier warnings.\nField associates hit another 15% harder."},
+	{id = "rc_hp_2", parent = "rc_splash_1", at = Vector2(-0.533, 1.288), icon = "hand", currency = "findings",
+		title = "TAMPER-PROOF SEAL",
+		body = "Not to be opened before the meeting.\nRestructuring charges take another 15% more damage before they fall."},
+	{id = "rc_wall_2", parent = "rc_hp_2", at = Vector2(-0.807, 1.438), icon = "pilcrow", currency = "findings",
+		title = "PLANNING REFUSAL",
+		body = "The fence was never approved. It has now been withdrawn.\nRestructuring charges do another 15% more damage to fences."},
+	{id = "rc_hp_3", parent = "rc_wall_2", at = Vector2(-0.533, 1.588), icon = "hand", currency = "findings",
+		title = "STEEL BRIEFCASE",
+		body = "Locked and regrettably full.\nRestructuring charges take another 15% more damage before they fall."},
+	{id = "rc_splash_2", parent = "rc_hp_3", at = Vector2(-0.807, 1.738), icon = "megaphone", currency = "findings",
+		title = "GROUP-WIDE REVIEW",
+		body = "No department was spared. None was consulted.\nRestructuring charges blast another 15% wider."},
+	{id = "sa_hp_3", parent = "sa_hp_2", at = Vector2(0.137, 1.288), icon = "hand", currency = "findings",
+		title = "SECOND LUNCH",
+		body = "Lunch has been extended into the afternoon.\nSenior assets take another 15% more damage before they fall."},
+	{id = "sa_damage_2", parent = "sa_hp_3", at = Vector2(-0.137, 1.438), icon = "crate", currency = "findings",
+		title = "PERFORMANCE REVIEW",
+		body = "Conducted in person. Conducted with force.\nSenior assets hit another 15% harder."},
+	{id = "sa_hp_4", parent = "sa_damage_2", at = Vector2(0.137, 1.588), icon = "hand", currency = "findings",
+		title = "TENURE",
+		body = "Cannot be removed. This has been tested.\nSenior assets take another 15% more damage before they fall."},
+	{id = "sa_damage_3", parent = "sa_hp_4", at = Vector2(-0.137, 1.738), icon = "crate", currency = "findings",
+		title = "BOARDROOM MANNER",
+		body = "Every handshake now ends a career.\nSenior assets hit another 15% harder."},
+	{id = "pc_damage_3", parent = "pc_damage_2", at = Vector2(0.807, 1.288), icon = "crate", currency = "findings",
+		title = "WINTER CABBAGE",
+		body = "Harvested frozen. Delivered frozen.\nCabbage-pult crews hit another 15% harder."},
+	{id = "pc_range_2", parent = "pc_damage_3", at = Vector2(0.533, 1.438), icon = "lens", currency = "findings",
+		title = "LONG-HAUL CONTRACT",
+		body = "Delivery now covers the outer districts.\nCabbage-pult crews throw another 15% further."},
+	{id = "pc_damage_4", parent = "pc_range_2", at = Vector2(0.807, 1.588), icon = "crate", currency = "findings",
+		title = "GRADE A HEADS",
+		body = "Inspected and certified, then launched.\nCabbage-pult crews hit another 15% harder."},
+	{id = "pc_splash_2", parent = "pc_damage_4", at = Vector2(0.533, 1.738), icon = "megaphone", currency = "findings",
+		title = "PRE-SHREDDED",
+		body = "Shredded at source for even distribution.\nCabbage-pult crews splash another 15% wider."},
+	{id = "cr_hp_2", parent = "cr_damage_1", at = Vector2(1.477, 1.288), icon = "hand", currency = "findings",
+		title = "PADDED SATCHEL",
+		body = "The bag is padded. The courier wears the bag.\nExpress couriers take another 15% more damage before they fall."},
+	{id = "cr_damage_2", parent = "cr_hp_2", at = Vector2(1.203, 1.438), icon = "crate", currency = "findings",
+		title = "RECORDED DELIVERY",
+		body = "Signature required. Signature taken.\nExpress couriers hit another 15% harder."},
+	{id = "cr_hp_3", parent = "cr_damage_2", at = Vector2(1.477, 1.588), icon = "hand", currency = "findings",
+		title = "FULL-FACE HELMET",
+		body = "The incident will not be repeated. Or discussed.\nExpress couriers take another 15% more damage before they fall."},
+	{id = "cr_damage_3", parent = "cr_hp_3", at = Vector2(1.203, 1.738), icon = "crate", currency = "findings",
+		title = "SAME-DAY FORCE",
+		body = "Delivered before it was ordered.\nExpress couriers hit another 15% harder."},
 ]
 const THEMES := []
 ## Everything the tree draws (UpgradeTree reads `rules.NODES`).
 const NODES := GENERAL + DEPTS + ALL
 ## The card that opens the depot, and with it the GENERAL programme.
 const WAR_CARD := "war_mode"
+## Chapter 4's card that opens the `card` nodes (and the bandit camps).
+const UNREST_CARD := "civil_unrest"
 
 
 static func node_data(id: String) -> Dictionary:
@@ -179,9 +270,17 @@ static func is_general(id: String) -> bool:
 	return id == "dept_general" or id.begins_with("war_")
 
 
-## Shown once the war card is stamped (GENERAL) or its unit type is hired.
+## The desk card node `id` waits for before it even shows (its `card`: chapter 4's CIVIL UNREST), or "".
+static func card_of(id: String) -> String:
+	return node_data(id).get("card", WarRules.research_node(id).get("card", ""))
+
+
+## Shown once the war card is stamped (GENERAL) or its unit type is hired, and its `card` if it has one.
 static func is_shown(id: String, save: SaveGame) -> bool:
 	if node_data(id).is_empty():
+		return false
+	var card := card_of(id)
+	if card != "" and not save.stamped.has(card):
 		return false
 	if is_general(id):
 		return save.stamped.has(WAR_CARD)

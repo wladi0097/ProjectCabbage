@@ -337,6 +337,19 @@ extends Resource
 @export var untouched_losses := 0
 @export var owners_insulted := 0
 @export var floor_buys := 0
+# Chapter 4's bandit camps (entities/map_table/bandit_camp.gd, BanditCamp): the open camp's seed (0:
+# none), the seconds of play until it goes and the next one comes, its operation fee (coins), the
+# camps recovered (the level is 1 + this), operations lost and camps ever spawned (each one's seed).
+@export var bandit_camp := 0
+@export var bandit_wait := 0.0
+@export var bandit_fee := 0
+@export var camps_recovered := 0
+@export var camps_lost := 0
+@export var camps_spawned := 0
+## The company's output, sampled every BanditCamp.SAMPLE_EVERY s of play (the last WINDOW): each
+## [coins_earned, findings_earned, cabbages harvested]; and the seconds since the last sample.
+@export var output_samples := []
+@export var output_clock := 0.0
 ## The CH1 squares made farm squares, one per farm owned, picked by the player (FarmScreen.place_farm),
 ## and how many times a plain square's cabbages each farm square harvests (CH2's FARM OUTPUT raises it).
 @export var farm_squares := PackedInt32Array()

@@ -1466,7 +1466,7 @@ func _home_farms(count: int) -> PackedStringArray:
 
 func test_chapter_threes_cards_come_one_after_the_other_but_for_two_groups_that_arrive_together_from_the_fifth_farm_on() -> void:
 	var at := _all_ids().find("consolidation")
-	assert_array(_all_ids().slice(at + 1).filter(func(id: String) -> bool: return id not in NUCLEAR)).is_equal(CHAPTER_3)  # Every card after chapter 2's last one, in order (chapter 4's aside).
+	assert_array(_all_ids().slice(at + 1).filter(func(id: String) -> bool: return id not in NUCLEAR and id != BanditCamp.CARD)).is_equal(CHAPTER_3)  # Every card after chapter 2's last one, in order (chapter 4's aside).
 	var chain := []
 	for deal: Array in CHAPTER_3_DEALS:
 		chain.append_array(deal)

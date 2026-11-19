@@ -166,7 +166,7 @@ func test_the_chapter_4_card_start_point_sorts_just_before_the_gun_with_everythi
 		if not FarmTree.is_dept(node.id) and not _waits_for(FarmTree, node.id, ahead):
 			assert_bool(FarmTree.is_bought(node.id, save)).override_failure_message("farm tree %s" % node.id).is_true()
 	for node: Dictionary in DepotResearch.NODES:
-		if not DepotResearch.is_dept(node.id):
+		if not DepotResearch.is_dept(node.id) and DepotResearch.card_of(node.id) not in ahead:
 			assert_bool(DepotResearch.is_bought(node.id, save)).override_failure_message("depot %s" % node.id).is_true()
 	# The stars card alone in the tray, paid at once, nothing in the way; chapter 3 not over yet.
 	assert_array(UpgradeDesk.next_cards(save.stamped, UpgradeDesk.OFFERED, save)).is_equal(["stars"])

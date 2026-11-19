@@ -67,6 +67,29 @@ const RESEARCH: Array[Dictionary] = [
 	{id = "cr_hp_0", unit = "courier", stat = "hp", step = 1.1402, findings = 120000, parent = "cr_speed_1"},
 	{id = "cr_hp_1", unit = "courier", stat = "hp", step = 1.1402, findings = 200000, parent = "cr_hp_0"},
 	{id = "cr_damage_1", unit = "courier", stat = "damage", step = 1.3, findings = 300000, parent = "cr_hp_1"},
+	# Chapter 4, with the CIVIL UNREST card (`card`: hidden and not for sale until it is stamped): four
+	# more steps on every chain, +15% each, for the bandit camps (entities/map_table/bandit_camp.gd).
+	# ponytail: prices provisional, not paced yet.
+	{id = "fa_hp_3", unit = "field_associate", stat = "hp", step = 1.15, findings = 600000, parent = "fa_hp_2", card = "civil_unrest"},
+	{id = "fa_damage_2", unit = "field_associate", stat = "damage", step = 1.15, findings = 1200000, parent = "fa_hp_3", card = "civil_unrest"},
+	{id = "fa_hp_4", unit = "field_associate", stat = "hp", step = 1.15, findings = 2000000, parent = "fa_damage_2", card = "civil_unrest"},
+	{id = "fa_damage_3", unit = "field_associate", stat = "damage", step = 1.15, findings = 3000000, parent = "fa_hp_4", card = "civil_unrest"},
+	{id = "rc_hp_2", unit = "restructuring_charge", stat = "hp", step = 1.15, findings = 600000, parent = "rc_splash_1", card = "civil_unrest"},
+	{id = "rc_wall_2", unit = "restructuring_charge", stat = "wall_mult", step = 1.15, findings = 1200000, parent = "rc_hp_2", card = "civil_unrest"},
+	{id = "rc_hp_3", unit = "restructuring_charge", stat = "hp", step = 1.15, findings = 2000000, parent = "rc_wall_2", card = "civil_unrest"},
+	{id = "rc_splash_2", unit = "restructuring_charge", stat = "splash", step = 1.15, findings = 3000000, parent = "rc_hp_3", card = "civil_unrest"},
+	{id = "sa_hp_3", unit = "senior_asset", stat = "hp", step = 1.15, findings = 600000, parent = "sa_hp_2", card = "civil_unrest"},
+	{id = "sa_damage_2", unit = "senior_asset", stat = "damage", step = 1.15, findings = 1200000, parent = "sa_hp_3", card = "civil_unrest"},
+	{id = "sa_hp_4", unit = "senior_asset", stat = "hp", step = 1.15, findings = 2000000, parent = "sa_damage_2", card = "civil_unrest"},
+	{id = "sa_damage_3", unit = "senior_asset", stat = "damage", step = 1.15, findings = 3000000, parent = "sa_hp_4", card = "civil_unrest"},
+	{id = "pc_damage_3", unit = "pult_crew", stat = "damage", step = 1.15, findings = 600000, parent = "pc_damage_2", card = "civil_unrest"},
+	{id = "pc_range_2", unit = "pult_crew", stat = "range", step = 1.15, findings = 1200000, parent = "pc_damage_3", card = "civil_unrest"},
+	{id = "pc_damage_4", unit = "pult_crew", stat = "damage", step = 1.15, findings = 2000000, parent = "pc_range_2", card = "civil_unrest"},
+	{id = "pc_splash_2", unit = "pult_crew", stat = "splash", step = 1.15, findings = 3000000, parent = "pc_damage_4", card = "civil_unrest"},
+	{id = "cr_hp_2", unit = "courier", stat = "hp", step = 1.15, findings = 600000, parent = "cr_damage_1", card = "civil_unrest"},
+	{id = "cr_damage_2", unit = "courier", stat = "damage", step = 1.15, findings = 1200000, parent = "cr_hp_2", card = "civil_unrest"},
+	{id = "cr_hp_3", unit = "courier", stat = "hp", step = 1.15, findings = 2000000, parent = "cr_damage_2", card = "civil_unrest"},
+	{id = "cr_damage_3", unit = "courier", stat = "damage", step = 1.15, findings = 3000000, parent = "cr_hp_3", card = "civil_unrest"},
 ]
 ## The split steps (2026-11-16): new first half -> the old id, now the second half. migrate_research
 ## files the first half for a save that bought the old id before the split.
@@ -74,14 +97,16 @@ const SPLITS := {fa_hp_0 = "fa_hp_1", rc_hp_0 = "rc_hp_1", rc_wall_0 = "rc_wall_
 		pc_damage_0 = "pc_damage_1", cr_speed_0 = "cr_speed_1", cr_hp_0 = "cr_hp_1"}
 
 const BASE_CAP := 3
-## Army cap added by the BIGGER ARMIES card, and by each depot GENERAL war_cap_1..3 node.
+## Army cap added by the BIGGER ARMIES card, and by each depot GENERAL war_cap_1..5 node.
 const CARD_CAP := 2
 const NODE_CAP := 2
 const BASE_FIGHT := 90.0
 ## Seconds each depot GENERAL war_time_1..3 node adds to the fight.
 const NODE_FIGHT := 15.0
-## Training time kept by each depot GENERAL war_training_1..3 node (0.75: 25% shorter each).
+## Training time kept by each depot GENERAL war_training_1..4 node (0.75: 25% shorter each).
 const NODE_TRAINING := 0.75
+## Damage of every unit type times this per depot GENERAL war_drill_1..3 node (chapter 4).
+const DRILL_STEP := 1.15
 ## Retreat share with the RETREAT card, added per war_retreat_1..5 node, and its top.
 const BASE_RETREAT := 0.3
 const NODE_RETREAT := 0.1
@@ -93,7 +118,7 @@ static func unit_unlocked(save: SaveGame, unit: String) -> bool:
 
 
 static func army_cap(save: SaveGame) -> int:
-	return BASE_CAP + CARD_CAP * int(save.stamped.has("bigger_armies")) + NODE_CAP * _nodes(save, "war_cap_", 3)
+	return BASE_CAP + CARD_CAP * int(save.stamped.has("bigger_armies")) + NODE_CAP * _nodes(save, "war_cap_", 5)
 
 
 ## Army places one figure of `unit` takes (UNIT_SPACE).
@@ -121,7 +146,7 @@ static func fight_seconds(save: SaveGame) -> float:
 
 
 static func training_seconds(save: SaveGame, unit: String) -> float:
-	return float(UNIT_TRAINING[unit]) * pow(NODE_TRAINING, _nodes(save, "war_training_", 3))
+	return float(UNIT_TRAINING[unit]) * pow(NODE_TRAINING, _nodes(save, "war_training_", 4))
 
 
 static func unit_cabbage_price(unit: String) -> int:
@@ -139,12 +164,14 @@ static func can_place_mid_round(save: SaveGame) -> bool:
 	return save.stamped.has("tactics")
 
 
-## `unit`'s stats (BASE_STATS keys) with every research node bought for it applied.
+## `unit`'s stats (BASE_STATS keys) with every research node bought for it and the GENERAL drill
+## (war_drill_n, every unit type) applied.
 static func unit_stats(save: SaveGame, unit: String) -> Dictionary:
 	var stats: Dictionary = BASE_STATS[unit].duplicate()
 	for node in RESEARCH:
 		if node.unit == unit and save.unit_research.has(node.id):
 			stats[node.stat] = float(stats[node.stat]) * float(node.step)
+	stats.damage = float(stats.damage) * pow(DRILL_STEP, _nodes(save, "war_drill_", 3))
 	return stats
 
 
@@ -205,11 +232,12 @@ static func research_node(id: String) -> Dictionary:
 	return {}
 
 
-## Not bought yet, its parent bought, its unit hired and the Findings there.
+## Not bought yet, its parent bought, its unit hired, its `card` (if any) stamped and the Findings there.
 static func can_buy_research(save: SaveGame, id: String) -> bool:
 	var node := research_node(id)
 	return not node.is_empty() and not save.unit_research.has(id) \
 			and (node.parent == "" or save.unit_research.has(node.parent)) \
+			and (node.get("card", "") == "" or save.stamped.has(node.card)) \
 			and unit_unlocked(save, node.unit) and save.findings >= int(node.findings)
 
 
