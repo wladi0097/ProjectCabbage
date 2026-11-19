@@ -573,20 +573,20 @@ func test_the_weights_leave_the_sheet_before_it_rolls_and_end_on_the_new_sheets_
 		assert_bool(paper.has_point(Vector2(corners[i].x, corners[i].z))).is_true()
 
 
-func test_the_next_sheet_takes_the_mouse_well_within_half_a_second_of_the_switch() -> void:
+func test_the_next_sheet_takes_the_mouse_about_half_a_second_after_the_switch() -> void:
 	var table := _table_with_world()
 	table.show_sheet(&"world")
 	var time := 0.0
 	while table.swapping and time < 5.0:
 		table._swap_tween.custom_step(0.01)
 		time += 0.01
-	assert_float(time).is_between(0.25, 0.4)
+	assert_float(time).is_between(0.4, 0.55)
 	assert_float(table.sheet_of(&"world").open).is_equal(1.0)  # Usable means lying open.
 
 
 func test_the_switch_blocks_the_mouse_no_longer_than_its_motion_and_the_motion_stays_short() -> void:
 	assert_float(MapTable.USABLE_AT).is_less_equal(MapTable.swap_time())
-	assert_float(MapTable.swap_time()).is_between(0.4, 0.75)
+	assert_float(MapTable.swap_time()).is_between(0.6, 1.0)
 
 
 func test_a_crowded_sheets_things_still_pop_up_within_the_short_wave() -> void:

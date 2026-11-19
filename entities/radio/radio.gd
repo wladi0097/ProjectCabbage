@@ -5,7 +5,10 @@ extends Node3D
 ## Radio bus (old-set filter, switchable in the settings). The top key plays or stops it (fading,
 ## save.radio_on), the bottom key skips to the next song (save.songs_skipped). A song crossfades
 ## into the next one at its end and on a skip. The amber window shows the track number, dim while
-## stopped. Bought and stopped, the silence is counted (save.radio_silent).
+## stopped. Bought and stopped, the silence is counted (save.radio_silent). While a war is on it fades
+## out and pauses (the fight has its own songs) and picks the song up again afterwards, only if it was on.
+
+const War := preload("res://entities/map_table/war_sheet.gd")
 
 const MUSIC_DIR := "res://assets/audio/music/radio/"
 const EXTENSIONS: PackedStringArray = ["ogg", "mp3", "wav"]
@@ -62,7 +65,8 @@ func _process(delta: float) -> void:
 			_drop()
 		return
 	save.radio_silent = silent_after(save.radio_silent, delta, bought(save), save.radio_on)
-	_level = move_toward(_level, 1.0 if save.radio_on else 0.0, delta / FADE)
+	var on := playing(save.radio_on, War.at_war)
+	_level = move_toward(_level, 1.0 if on else 0.0, delta / FADE)
 	_mix = move_toward(_mix, 1.0, delta / CROSSFADE)
 	# Faded out: pause, so play picks the song up where it stopped.
 	for player in _players:
@@ -71,11 +75,16 @@ func _process(delta: float) -> void:
 	var old := _players[1 - _cur]
 	if _mix >= 1.0 and old.playing:
 		old.stop()
-	if save.radio_on and song.stream != null and _mix >= 1.0 \
+	if on and song.stream != null and _mix >= 1.0 \
 			and (not song.playing or song.get_playback_position() >= song.stream.get_length() - CROSSFADE):
 		_change(next_track(save.radio_track, _tracks.size()))
 	song.volume_db = linear_to_db(maxf(fade_gain(_mix) * _level, QUIET))
 	old.volume_db = linear_to_db(maxf(fade_gain(1.0 - _mix) * _level, QUIET))
+
+
+## Whether the radio is heard: switched on and no war on (a war only pauses it, never switches it on).
+static func playing(on: bool, at_war: bool) -> bool:
+	return on and not at_war
 
 
 static func bought(save: SaveGame) -> bool:

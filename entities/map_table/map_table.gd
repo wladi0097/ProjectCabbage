@@ -67,33 +67,36 @@ const PAN_TIME := 1.1
 ## The work light is fully up from this much of the pan on (and starts to dim there on the way home).
 const LIGHT_FULL := 0.6
 
+## Stretches the whole sheet swap (every step below): 1 is the fast 2026-11-17 cut (usable after
+## 0.35 s), larger is calmer.
+const SWAP_PACE := 1.4
 const WEIGHTS_OFF_AT := 0.0
-const WEIGHT_HOP_TIME := 0.1
-const WEIGHT_STAGGER := 0.015
-const TUCK_TIME := 0.05
-const TUCK_STAGGER := 0.004
-const CURL_TIME := 0.07
-const ROLL_UP_AT := 0.05
-const ROLL_UP_TIME := 0.13
-const FETCH_AT := 0.1
-const STOW_AT := 0.15
-const FLIGHT_TIME := 0.1
+const WEIGHT_HOP_TIME := 0.1 * SWAP_PACE
+const WEIGHT_STAGGER := 0.015 * SWAP_PACE
+const TUCK_TIME := 0.05 * SWAP_PACE
+const TUCK_STAGGER := 0.004 * SWAP_PACE
+const CURL_TIME := 0.07 * SWAP_PACE
+const ROLL_UP_AT := 0.05 * SWAP_PACE
+const ROLL_UP_TIME := 0.13 * SWAP_PACE
+const FETCH_AT := 0.1 * SWAP_PACE
+const STOW_AT := 0.15 * SWAP_PACE
+const FLIGHT_TIME := 0.1 * SWAP_PACE
 const LAND_AT := FETCH_AT + FLIGHT_TIME
-const SWAP_BOUNCE_TIME := 0.07
-const UNROLL_AT := LAND_AT + 0.01
-const UNROLL_TIME := 0.14
+const SWAP_BOUNCE_TIME := 0.07 * SWAP_PACE
+const UNROLL_AT := LAND_AT + 0.01 * SWAP_PACE
+const UNROLL_TIME := 0.14 * SWAP_PACE
 ## From here the new sheet lies open and takes the mouse (`swapping` ends); the weights' squash, the
 ## sheet's settle and the things' pop play on while it is already in use.
 const USABLE_AT := UNROLL_AT + UNROLL_TIME
-const WEIGHTS_ON_AT := USABLE_AT - 0.04
-const WEIGHT_DROP_TIME := 0.07
-const WEIGHT_DROP_STAGGER := 0.012
-const SWAP_SETTLE_TIME := 0.18
-const POP_AT := WEIGHTS_ON_AT + 0.04
-const POP_TIME := 0.12
-const POP_STAGGER := 0.01
+const WEIGHTS_ON_AT := USABLE_AT - 0.04 * SWAP_PACE
+const WEIGHT_DROP_TIME := 0.07 * SWAP_PACE
+const WEIGHT_DROP_STAGGER := 0.012 * SWAP_PACE
+const SWAP_SETTLE_TIME := 0.18 * SWAP_PACE
+const POP_AT := WEIGHTS_ON_AT + 0.04 * SWAP_PACE
+const POP_TIME := 0.12 * SWAP_PACE
+const POP_STAGGER := 0.01 * SWAP_PACE
 ## The things' wave never spreads over more than this (s), however many stand on the sheet.
-const POP_SPREAD := 0.12
+const POP_SPREAD := 0.12 * SWAP_PACE
 ## The bounce and the settle of a roll arriving in the holder, and of the tally landing.
 const BOUNCE_TIME := 0.14
 const SETTLE_TIME := 0.3

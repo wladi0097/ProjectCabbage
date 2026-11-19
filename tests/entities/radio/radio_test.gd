@@ -39,3 +39,10 @@ func test_silence_is_only_counted_while_the_radio_is_bought_and_stopped() -> voi
 	assert_float(Radio.silent_after(1.0, 0.5, true, false)).is_equal_approx(1.5, 0.0001)
 	assert_float(Radio.silent_after(1.0, 0.5, true, true)).is_equal(1.0)
 	assert_float(Radio.silent_after(1.0, 0.5, false, false)).is_equal(1.0)
+
+
+func test_a_war_pauses_the_radio_and_only_a_radio_left_on_plays_again_after_it() -> void:
+	assert_bool(Radio.playing(true, true)).is_false()  # Paused while the war is on.
+	assert_bool(Radio.playing(true, false)).is_true()  # On before: back after.
+	assert_bool(Radio.playing(false, false)).is_false()  # Off before: stays off.
+	assert_bool(Radio.playing(false, true)).is_false()
