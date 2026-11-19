@@ -1251,6 +1251,33 @@ func test_the_stamp_tag_tells_the_player_to_pull_the_handle() -> void:
 	assert_str((desk._tag as Label3D).text).is_equal("PULL TO STAMP")
 
 
+func test_the_stamp_tag_stays_on_a_16_by_9_screen_in_german_and_english() -> void:
+	# 16:9 is the narrowest view (FramedCamera keeps that width on narrower screens). The tag is a
+	# billboard and the world camera has no yaw, so its text runs along world X.
+	var state := (load("res://worlds/MainStoryWorld.tscn") as PackedScene).get_state()
+	var view := Transform3D.IDENTITY
+	var fov := 0.0
+	for n in state.get_node_count():
+		if state.get_node_name(n) == "Camera3D":
+			for p in state.get_node_property_count(n):
+				match state.get_node_property_name(n, p):
+					"transform": view = state.get_node_property_value(n, p)
+					"fov": fov = state.get_node_property_value(n, p)
+	var half_width := tan(deg_to_rad(fov) / 2.0) * 16.0 / 9.0
+	var desk := _first_desk(UpgradeDesk.TRAY_COINS)
+	var tag := desk._tag as Label3D
+	var was := TranslationServer.get_locale()
+	for lang in ["en", "de"]:
+		TranslationServer.set_locale(lang)
+		var width := (tag.font.get_string_size(TranslationServer.translate(tag.text), HORIZONTAL_ALIGNMENT_LEFT, -1,
+				tag.font_size).x + tag.outline_size) * tag.pixel_size
+		var right := tag.global_position.x - width * (tag.horizontal_alignment / 2.0) + width
+		for x in [right - width, right]:
+			var seen := view.affine_inverse() * Vector3(x, tag.global_position.y, tag.global_position.z)
+			assert_float(absf(seen.x / -seen.z)).override_failure_message("%s tag edge off screen" % lang).is_less(half_width)
+	TranslationServer.set_locale(was)
+
+
 const CHAPTER_3 := ["market_intelligence", "cash_holding", "big_ideas", "archive_capacity", "map_readout", "condense", "structured_farm", "negotiation", "rejected_goods", "research_light", "bribery", "home_review", "war_mode", "world_map", "no_taxes", "sea_lanes", "route_planning", "unit_charge", "bigger_armies", "tactics", "unit_senior", "unit_pult", "retreat", "unit_courier", "stars", "annexed_grid", "farm_shortcut", "coin_merge", "token_merge"]
 ## Chapter 3's chain as it is dealt: each entry arrives once the one before it is stamped, a group all at once.
 const CHAPTER_3_DEALS := [["market_intelligence"], ["cash_holding", "big_ideas", "archive_capacity"], ["condense", "structured_farm"],

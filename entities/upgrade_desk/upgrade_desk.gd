@@ -856,6 +856,8 @@ static func migrate(save: SaveGame) -> void:
 		migrate_schedule(save)
 		if not save.farms_owned.is_empty() or save.map_sheet != "" or not save.haggles.is_empty():
 			save.field_line_answered = true  # Been to the map before the line rang: it stays quiet.
+	if save.migration < 10:
+		save.consultant_ceiling = 0  # Most likely left by a hand price (old Consultant.adopt): none again.
 	save.migration = SaveGame.MIGRATION
 	save.sale_price = mini(save.sale_price, PriceSlate.max_price(save.marketing))
 

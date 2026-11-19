@@ -8,9 +8,9 @@ extends Node3D
 ## by the slate for the next tap. On target it withdraws off screen.
 ## Its mandate (save.consultant_bounce, consultant_floor, consultant_ceiling) is the player's word:
 ## it holds the whole-dollar price whose refusals at the street's current mood come nearest the share
-## allowed, within the floor and ceiling (and squeeze_cap). The player outranks it: a price chalked by
-## hand becomes the mandate (adopt), so it never fights a press or a held arrow and keeps the player's
-## refusal share as the mood moves.
+## allowed, within the floor and ceiling (and squeeze_cap, which the mandate sheet names when it bites).
+## The player outranks it: a price chalked by hand becomes the mandate (adopt), so it never fights a
+## press or a held arrow and keeps the player's refusal share as the mood moves.
 ## A light switch on the slate's frame (there once the card is stamped) opens the mandate sheet
 ## (mandate_sheet.tscn); its lamp shows whether the consultant is on duty (save.consultant_on).
 
@@ -161,14 +161,17 @@ static func step_bounce(allowed: float, dir: int) -> float:
 
 
 ## The player chalked the price by hand: it becomes the mandate. The refusals allowed are the share
-## refused at that price at the current mood; the floor and ceiling widen to take it in, and a price
-## under the dearest that sells every cabbage becomes the ceiling (else a share of 0 would raise it).
+## refused at that price at the current mood; the floor widens down to take it in, and a price over the
+## ceiling lifts the ceiling off (none). A hand price never becomes a ceiling: a ceiling in dollars
+## goes stale as marketing raises the street's prices, and would hold the consultant under it for good.
+## (A price under the full-sale price adopts 0% refused, so it goes back up to the dearest that sells
+## every cabbage; to hold a lower price, take the consultant off duty.)
 static func adopt(save: SaveGame) -> void:
 	var price := save.sale_price
 	save.consultant_bounce = 100.0 * bounce(price, Slate.ref_price(save.marketing, Slate.street_mood(save)))
 	save.consultant_floor = mini(save.consultant_floor, price)
-	if price > ceiling_of(save) or target_price(save) > price:
-		save.consultant_ceiling = price
+	if price > ceiling_of(save):
+		save.consultant_ceiling = 0
 
 
 ## The floor after a click `dir`: $1 a click, from the slate's lowest price up to the ceiling.

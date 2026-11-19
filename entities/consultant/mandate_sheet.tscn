@@ -174,6 +174,14 @@ focus_mode = 0
 mouse_default_cursor_shape = 2
 text = ">"
 
+[node name="SqueezeNote" type="Label" parent="Sheet/Paper/Stack" unique_id=2100400041]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"MandateSmall"
+text = "Held at %s or under by the wholesalers' squeeze: the crate's unit cost."
+autowrap_mode = 3
+
 [node name="Rule2" type="HSeparator" parent="Sheet/Paper/Stack" unique_id=2100400029]
 layout_mode = 2
 

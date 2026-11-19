@@ -272,3 +272,30 @@ func test_with_the_thinning_cap_at_eight_two_more_harvest_minis_go_out_but_not_a
 		drop._thin_wait = 0.0
 		drop._process(0.01)
 	assert_int(MiniDrop.minis_out(_minis_sent(), true)).is_equal(8)
+
+
+## A tube lever label's box in the lever's plane, as (RIGHT, ARM) metres from the pivot.
+func _label_box(label: Label3D) -> Rect2:
+	var text := TranslationServer.translate(label.text)
+	var size := Vector2(label.font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.font_size).x,
+			label.font_size) * label.pixel_size
+	var d := label.position - MiniDrop.PIVOT
+	return Rect2(Vector2(d.dot(MiniDrop.RIGHT), d.dot(MiniDrop.ARM)) - size / 2.0, size)
+
+
+func test_the_tube_lever_labels_never_touch_each_other_or_the_knob_at_any_position_in_german_or_english() -> void:
+	const KNOB_BALL := 0.025  # The knob's drawn radius (m), from the model.
+	var drop: MiniDrop = auto_free(SCENE.instantiate())
+	var was := TranslationServer.get_locale()
+	for lang in ["en", "de"]:
+		TranslationServer.set_locale(lang)
+		var boxes: Array[Rect2] = []
+		for path in ["Tube/Sales", "Tube/Split", "Tube/Research"]:
+			boxes.append(_label_box(drop.get_node(path)))
+		for i in boxes.size():
+			for j in range(i + 1, boxes.size()):
+				assert_bool(boxes[i].intersects(boxes[j])).override_failure_message("%s: labels %d and %d overlap" % [lang, i, j]).is_false()
+			# The knob sweeps a disc round the pivot (plate included): every label stays outside it.
+			var closest := Vector2(clampf(0.0, boxes[i].position.x, boxes[i].end.x), clampf(0.0, boxes[i].position.y, boxes[i].end.y))
+			assert_float(closest.length()).override_failure_message("%s: label %d in the knob's sweep" % [lang, i]).is_greater(MiniDrop.KNOB.length() + KNOB_BALL)
+	TranslationServer.set_locale(was)

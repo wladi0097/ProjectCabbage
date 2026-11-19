@@ -81,6 +81,21 @@ func test_the_mandate_shows_the_price_and_the_refusals_right_now() -> void:
 	assert_str((sheet.get_node("%Ceiling") as Label).text).is_equal(tr("NONE"))
 
 
+func test_the_mandate_names_the_squeeze_when_it_holds_the_consultant_under_the_ceiling() -> void:
+	var sheet := _sheet()
+	var save := SaveManager.save
+	var note: Label = sheet.get_node("%SqueezeNote")
+	sheet.open()
+	assert_bool(note.visible).is_false()
+
+	save.supply_shock = true
+	save.stamped.append("family_farm")
+	sheet.open()
+	assert_bool(note.visible).is_true()
+	# The crate unit costs 125% of the $4.50 full-sale price: $5.62, so $5 at most.
+	assert_str(note.text).contains("$5")
+
+
 func test_the_mandates_next_move_shows_the_way_with_reads_the_room_and_the_time_with_the_timetable() -> void:
 	var sheet := _sheet()
 	var row: Control = sheet.get_node("%ForecastRow")

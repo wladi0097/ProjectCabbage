@@ -1230,6 +1230,79 @@ func test_a_negotiation_in_progress_survives_closing_the_deed_and_a_reload() -> 
 	assert_int((loaded.get_node("Deed") as FarmDeed).negotiation.count).is_equal(0)  # Nothing lies on a fresh offer.
 
 
+## Player report 2026-11-19: leaving the letter halfway and coming back must not cost an offer.
+func test_leaving_a_negotiation_halfway_and_coming_back_costs_no_offer() -> void:
+	# Every way off the letter: BACK TO THE DEED, a click beside the papers, the sheet rolled up
+	# (another sheet chosen), each with bundles still lying unsent on the offer.
+	for way: String in ["return", "click_away", "rolled_up"]:
+		SaveManager.save = _haggling()
+		var sheet := _register()
+		sheet.press(&"K-2")
+		_lay_bundles(sheet, 1)
+		sheet.press(FarmRegister.SEND)
+		_play_out(sheet)  # One real offer on file.
+		var price: int = FarmRegister.price(SaveManager.save, &"K-2").coins
+		var stock := SaveManager.save.stock
+		sheet.press(FarmRegister.HAGGLE)
+		_lay_bundles(sheet, 3)
+		match way:
+			"return":
+				sheet.press(FarmRegister.RETURN)
+			"click_away":
+				sheet.press(&"")
+			"rolled_up":
+				sheet.open = 0.5
+				sheet._process(0.0)
+		sheet.open = 1.0
+		if sheet.deed_site() == &"":
+			sheet.press(&"K-2")
+		sheet.press(FarmRegister.HAGGLE)
+		assert_int(FarmRegister.offers(SaveManager.save, &"K-2").size()).override_failure_message(way).is_equal(1)
+		assert_int(FarmRegister.offers_left(SaveManager.save, &"K-2")).override_failure_message(way).is_equal(FarmRegister.ROUNDS - 1)
+		assert_str(_record(sheet, "Pile/Head").text).override_failure_message(way).is_equal("OFFER 2 OF 5")
+		assert_int(FarmRegister.price(SaveManager.save, &"K-2").coins).override_failure_message(way).is_equal(price)
+		assert_int(SaveManager.save.stock).override_failure_message(way).is_equal(stock)  # The unsent bundles were never paid.
+		assert_int((sheet.get_node("Deed") as FarmDeed).negotiation.count).override_failure_message(way).is_equal(0)  # Back in the crate.
+
+
+func test_quitting_halfway_through_a_negotiation_and_reloading_costs_no_offer() -> void:
+	SaveManager.save = _haggling()
+	var sheet := _register()
+	sheet.press(&"K-2")
+	sheet.press(FarmRegister.HAGGLE)
+	_lay_bundles(sheet, 1)
+	sheet.press(FarmRegister.SEND)
+	_play_out(sheet)
+	_lay_bundles(sheet, 4)  # Laid on the offer, never sent: then the game is closed.
+	var path := "user://haggle_quit_test.tres"
+	assert_int(ResourceSaver.save(SaveManager.save, path)).is_equal(OK)
+	var stock := SaveManager.save.stock
+	var price: int = FarmRegister.price(SaveManager.save, &"K-2").coins
+	SaveManager.save = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	assert_int(FarmRegister.offers_left(SaveManager.save, &"K-2")).is_equal(FarmRegister.ROUNDS - 1)
+	assert_int(SaveManager.save.stock).is_equal(stock)
+	assert_int(FarmRegister.price(SaveManager.save, &"K-2").coins).is_equal(price)
+	var loaded := _register()
+	loaded.press(&"K-2")
+	loaded.press(FarmRegister.HAGGLE)
+	assert_str(_record(loaded, "Pile/Head").text).is_equal("OFFER 2 OF 5")
+
+
+func test_an_offer_counts_only_once_it_is_sent_and_then_exactly_one() -> void:
+	SaveManager.save = _haggling()
+	var sheet := _register()
+	sheet.press(&"K-2")
+	sheet.press(FarmRegister.HAGGLE)
+	assert_int(FarmRegister.offers_left(SaveManager.save, &"K-2")).is_equal(FarmRegister.ROUNDS)  # Opening the letter is free.
+	_lay_bundles(sheet, 2)
+	assert_int(FarmRegister.offers_left(SaveManager.save, &"K-2")).is_equal(FarmRegister.ROUNDS)  # So is laying bundles on it.
+	sheet.press(FarmRegister.SEND)
+	assert_int(FarmRegister.offers_left(SaveManager.save, &"K-2")).is_equal(FarmRegister.ROUNDS - 1)
+	_play_out(sheet)
+	assert_str(_record(sheet, "Pile/Head").text).is_equal("OFFER 2 OF 5")
+
+
 func test_half_of_a_missed_offer_comes_back_once_rejected_goods_are_recovered() -> void:
 	var save := _haggling()
 	save.stamped.append("rejected_goods")

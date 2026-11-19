@@ -13,6 +13,8 @@ const Slate := preload("res://entities/price_slate/price_slate.gd")
 const WAYS := {1: "UP IN %s", -1: "DOWN IN %s", 0: "NO MOVE IN %s"}
 const WAYS_ONLY := {1: "UP", -1: "DOWN", 0: "NO MOVE"}
 const TIME_ONLY := "IN %s"
+## Under the ceiling row while the wholesalers' squeeze caps the consultant (Consultant.squeeze_cap).
+const SQUEEZE_NOTE := "Held at %s or under by the wholesalers' squeeze: the crate's unit cost."
 
 @onready var _duty: CheckBox = %Duty
 
@@ -72,6 +74,10 @@ func _show(save: SaveGame) -> void:
 	%Bounce.text = "%d%%" % roundi(save.consultant_bounce)
 	%Floor.text = "$" + Num.text(save.consultant_floor)
 	%Ceiling.text = tr("NONE") if save.consultant_ceiling <= 0 else "$" + Num.text(save.consultant_ceiling)
+	# The squeeze caps the consultant under the ceiling set: the sheet says so, not a silent limit.
+	var cap := Consultant.squeeze_cap(save)
+	%SqueezeNote.visible = cap < Consultant.ceiling_of(save)
+	%SqueezeNote.text = tr(SQUEEZE_NOTE) % ("$" + Num.text(cap))
 	%Price.text = "$" + Num.text(save.sale_price)
 	%Refused.text = "%d%%" % roundi(100.0 * (1.0 - Slate.acceptance(save)))
 	var line := forecast_line(save)

@@ -208,24 +208,26 @@ func test_the_consultant_keeps_the_players_price_at_an_unchanged_mood() -> void:
 	assert_int(SaveManager.save.sale_price).is_equal(6)
 	assert_int(consultant._phase).is_equal(Consultant.Phase.AWAY)
 
-	# Even under the full-sale price, where every cabbage sells: that price becomes the ceiling.
+	# Under the full-sale price no cabbage is refused: 0% allowed, so it goes back up to the dearest
+	# price that sells every cabbage ($4) and no hidden ceiling is left behind.
 	_press(consultant, 2)
 	_run(consultant, 20.0)
-	assert_int(SaveManager.save.sale_price).is_equal(2)
-	assert_int(SaveManager.save.consultant_ceiling).is_equal(2)
+	assert_int(SaveManager.save.sale_price).is_equal(4)
+	assert_int(SaveManager.save.consultant_ceiling).is_equal(0)
 
 
-func test_a_price_outside_the_mandates_limits_widens_them() -> void:
+func test_a_price_over_the_ceiling_lifts_it_and_one_under_the_floor_lowers_it() -> void:
 	var save := _street(1.5, 1.0)
 	save.consultant_floor = 5
 	save.consultant_ceiling = 7
 	save.sale_price = 9
 	Consultant.adopt(save)
-	assert_int(save.consultant_ceiling).is_equal(9)
+	assert_int(save.consultant_ceiling).is_equal(0)
 	save.sale_price = 3
 	Consultant.adopt(save)
 	assert_int(save.consultant_floor).is_equal(3)
-	assert_int(Consultant.target_price(save)).is_equal(3)
+	# $3 sells every cabbage (0% refused), so it aims at the dearest price that still does.
+	assert_int(Consultant.target_price(save)).is_equal(4)
 
 
 func test_after_a_hand_change_the_consultant_follows_the_mood_with_the_players_share() -> void:
@@ -238,6 +240,61 @@ func test_after_a_hand_change_the_consultant_follows_the_mood_with_the_players_s
 	save.demand_mood = 0.8
 	assert_int(Consultant.target_price(save)).is_equal(5)
 	assert_float(save.consultant_bounce).is_equal_approx(43.75, 0.001)
+
+
+## Player report 2026-11-19: "won't go above 50, set higher it drops back; 3% set but the gauge sits at
+## 100%". A street at marketing 20 (full-sale price $60), where a hand price once left a $50 ceiling.
+func _report_street() -> SaveGame:
+	var save := _street(20.0, 1.0)
+	save.stamped.append(Consultant.CARD)
+	save.consultant_bounce = 3.0
+	return save
+
+
+func test_a_hand_price_under_the_full_sale_price_never_becomes_a_ceiling() -> void:
+	var save := _street(15.0, 1.0)  # Earlier: $45 full-sale price, the player chalks $40.
+	save.sale_price = 40
+	Consultant.adopt(save)
+	assert_int(save.consultant_ceiling).is_equal(0)
+	save.marketing = 20.0  # Slogans later, with 3% allowed: $61 refuses 3.2%, the street's gauge drops off full.
+	save.consultant_bounce = 3.0
+	save.sale_price = Consultant.target_price(save)
+	assert_int(save.sale_price).is_equal(61)
+	assert_float(Slate.acceptance(save)).is_less(1.0)
+
+
+func test_raising_the_price_by_hand_over_an_old_ceiling_lifts_it_so_the_consultant_follows_the_street_up() -> void:
+	var save := _report_street()
+	save.consultant_ceiling = 50
+	save.sale_price = 62
+	Consultant.adopt(save)
+	assert_int(save.consultant_ceiling).is_equal(0)
+	assert_int(Consultant.target_price(save)).is_equal(62)  # Never pulled back under the player's price.
+	save.demand_mood = 1.2  # A better street: the player's 6.4% refusals now sit near $74.
+	assert_int(Consultant.target_price(save)).is_greater(70)
+
+
+func test_an_old_saves_stale_consultant_ceiling_is_cleared_once_on_load() -> void:
+	var save := SaveGame.new()
+	save.migration = 9
+	save.consultant_ceiling = 50
+	UpgradeDesk.migrate(save)
+	assert_int(save.consultant_ceiling).is_equal(0)
+	save.consultant_ceiling = 40  # Set on the sheet afterwards: a later load keeps it.
+	UpgradeDesk.migrate(save)
+	assert_int(save.consultant_ceiling).is_equal(40)
+
+
+func test_with_three_percent_allowed_the_consultant_lifts_the_price_until_about_three_percent_are_refused() -> void:
+	var consultant := _desk()
+	var save := SaveManager.save
+	save.marketing = 20.0
+	save.sale_price = 50
+	save.consultant_bounce = 3.0
+	save.tree_bought.append(Consultant.SMART)
+	_run(consultant, 7.0)
+	assert_int(save.sale_price).is_equal(61)
+	assert_float(1.0 - Slate.acceptance(save)).is_between(0.02, 0.04)
 
 
 func test_holding_an_arrow_is_never_fought() -> void:

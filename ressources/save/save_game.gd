@@ -375,7 +375,7 @@ extends Resource
 ## Saves from before that kept it here; loading one fills this, and SaveManager moves it to the file.
 var playtest_log: Array[Dictionary] = []
 
-const MIGRATION := 9
+const MIGRATION := 10
 ## The save field that caps each capped one (room, earn).
 const LIMITS := {&"coins": &"coin_limit", &"findings": &"findings_limit"}
 

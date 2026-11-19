@@ -1282,6 +1282,36 @@ func test_the_camera_glides_in_on_the_negotiation_letter_without_rolling_and_bac
 	assert_bool(_camera.transform.is_equal_approx(map_view)).is_true()
 
 
+## Player report 2026-11-19: back to the desk halfway through a negotiation and back to the map.
+func test_leaving_the_map_table_halfway_through_a_negotiation_keeps_it_as_it_was_and_costs_no_offer() -> void:
+	SaveManager.save.coins = 1000000
+	SaveManager.save.storage_cap = 5000
+	SaveManager.save.stock = 5000
+	SaveManager.save.stamped.append("negotiation")
+	SaveManager.save.farms_owned = PackedStringArray(["K-1"])
+	var table := _table()
+	table.go_to_map()
+	table._pan_tween.custom_step(10.0)
+	var country := table.sheet_of(HOME) as FarmRegister
+	var letter := (country.get_node("Deed") as FarmDeed).negotiation
+	country.press(&"K-2")
+	country.press(FarmRegister.HAGGLE)
+	for i in 2:
+		country.press(FarmRegister.CRATE)
+		country.release(FarmRegister.CRATE)
+	table.back_to_desk()
+	table._pan_tween.custom_step(10.0)
+	country._process(0.0)
+	table.go_to_map()
+	table._pan_tween.custom_step(10.0)
+	country._process(0.0)
+	assert_int(FarmRegister.offers_left(SaveManager.save, &"K-2")).is_equal(FarmRegister.ROUNDS)
+	assert_int(SaveManager.save.stock).is_equal(5000)
+	assert_str(country.deed_site()).is_equal(&"K-2")  # Still lying there, the letter open, the bundles on it.
+	assert_bool((country.get_node("Deed") as FarmDeed).haggling).is_true()
+	assert_int(letter.count).is_equal(2)
+
+
 func test_before_the_holdings_indicator_the_buttons_stand_alone() -> void:
 	SaveManager.save.stamped.append(MapTable.SHORTCUT_CARD)
 	var table := _table()
