@@ -4,7 +4,10 @@
 #   $1 / $5 / $10 (ring of 12 dots), $50 (raised octagon), $100 (reeded rim, double ring, dark inlay),
 #   $500 (pale centre in a dark outer band broken by 8 bars: the $100 turned inside out),
 #   $1K (14-lobed scalloped seal on a dark field), $5K (square seal on a dark field),
-#   $10K (double reeded rim, two rings, whole field dark: pale metal lines on black).
+#   $10K (double reeded rim, two rings, whole field dark: pale metal lines on black),
+#   and a third block for CRITICAL MASS (2026-11-19), every field dark: $50K (hexagon seal),
+#   $100K (triple ring), $500K (24 rays in the band), $1M (double square, turned), $10M (notched
+#   gear rim), $100M (12-sided seal, reeded), $1B (three trefoil blades in the band).
 # Worn brass: raised bits bright and smooth, recesses dark and rough.
 # The first five faces keep their old grain and layout (only the numerals were re-centred,
 # 2026-11-13), the high ones are a second block.
@@ -43,6 +46,39 @@ def height(num):
     elif num == '5K':                              # square seal, its corners near the rim
         q = R * 0.57
         d.rectangle((c - q, c - q, c + q, c + q), outline=240, width=int(R * 0.09))
+    elif num == '50K':                             # hexagon seal, reeded rim
+        reeds(0.88, 0.99, 60)
+        pts = [(c + np.cos(a) * R * 0.78, c + np.sin(a) * R * 0.78) for a in np.arange(6) * np.pi / 3]
+        d.polygon(pts, outline=240, width=int(R * 0.08))
+    elif num == '100K':                            # three rings
+        circ(R * 0.84, outline=240, width=int(R * 0.04))
+        circ(R * 0.75, outline=240, width=int(R * 0.04))
+        circ(R * 0.66, outline=240, width=int(R * 0.04))
+    elif num == '500K':                            # 24 rays across the band
+        circ(R * 0.68, outline=240, width=int(R * 0.05))
+        reeds(0.71, 0.86, 24, fill=235, w=0.05)
+    elif num == '1M':                              # two squares, one turned: an 8-point seal
+        for turn in (0, np.pi / 4):
+            pts = [(c + np.cos(a + turn) * R * 0.8, c + np.sin(a + turn) * R * 0.8) for a in np.arange(4) * np.pi / 2 + np.pi / 4]
+            d.polygon(pts, outline=240, width=int(R * 0.06))
+    elif num == '10M':                             # notched gear rim
+        for k in range(16):
+            a = (k + 0.5) * 2 * np.pi / 16
+            x, y = c + np.cos(a) * R * 0.93, c + np.sin(a) * R * 0.93
+            d.ellipse((x - R * 0.06, y - R * 0.06, x + R * 0.06, y + R * 0.06), fill=105)
+        circ(R * 0.76, outline=240, width=int(R * 0.07))
+    elif num == '100M':                            # 12-sided seal, reeded rim
+        reeds(0.88, 0.99, 72)
+        pts = [(c + np.cos(a) * R * 0.78, c + np.sin(a) * R * 0.78) for a in np.arange(12) * np.pi / 6]
+        d.polygon(pts, outline=240, width=int(R * 0.06))
+        circ(R * 0.66, outline=240, width=int(R * 0.04))
+    elif num == '1B':                              # three blades in the band between two rings
+        for k in range(3):
+            a0 = k * 120 - 90 - 30
+            d.pieslice((c - R * 0.8, c - R * 0.8, c + R * 0.8, c + R * 0.8), a0, a0 + 60, fill=235)
+        circ(R * 0.7, fill=105)
+        circ(R * 0.86, outline=240, width=int(R * 0.04))
+        circ(R * 0.66, outline=240, width=int(R * 0.04))
     elif num == '10K':                             # double reeded rim, two rings
         reeds(0.88, 0.99, 60)
         circ(R * 0.82, outline=240, width=int(R * 0.05))
@@ -53,7 +89,8 @@ def height(num):
             x, y = c + np.cos(a) * R * 0.71, c + np.sin(a) * R * 0.71
             d.ellipse((x - R * 0.05, y - R * 0.05, x + R * 0.05, y + R * 0.05), fill=235)
     # Stamp: the heavy serif numeral, raised, centred in the dot ring.
-    size = {'500': 0.58, '1K': 0.86, '5K': 0.64, '10K': 0.56}.get(num, {1: 1.35, 2: 0.95, 3: 0.68}[len(num)])
+    size = {'500': 0.58, '1K': 0.86, '5K': 0.64, '10K': 0.56, '50K': 0.54, '100K': 0.42, '500K': 0.4,
+            '1M': 0.7, '10M': 0.5, '100M': 0.38, '1B': 0.74}.get(num) or {1: 1.35, 2: 0.95, 3: 0.68}[len(num)]
     font = ImageFont.truetype('C:/Windows/Fonts/georgiab.ttf', int(R * size))
     # Optically centred (2026-11-13), not by the font's anchor: across by the ink box, up and down by
     # the ink's centroid (stroke included). Georgia's old-style figures hang below the line, so anchor
@@ -111,7 +148,17 @@ for i, num in enumerate(HIGH):
     fld = np.clip((0.6 - h2[:, sl]) / 0.2, 0, 1)
     alb2[:, sl] *= (1 - depth * zone * fld)[..., None]
 
-Image.fromarray(((np.hstack((n, n2)) * 0.5 + 0.5) * 255).astype(np.uint8)).save(OUT + "/coin_normal.png")
-Image.fromarray((np.clip(np.hstack((alb, alb2)), 0, 1) * 255).astype(np.uint8)).save(OUT + "/coin_albedo.png")
-orm = np.dstack((np.hstack((ao, ao2)), np.hstack((rough, rough2)), np.ones((N, 9 * N))))
+TOP = ('50K', '100K', '500K', '1M', '10M', '100M', '1B')
+h3, n3, alb3, ao3, rough3 = block(TOP, 5)
+rough3 += 0.18
+for i, num in enumerate(TOP):
+    sl = slice(i * N, (i + 1) * N)
+    fld = np.clip((0.6 - h3[:, sl]) / 0.2, 0, 1)
+    alb3[:, sl] *= (1 - 0.8 * fld)[..., None]
+
+n, alb, ao, rough = np.hstack((n, n2, n3)), np.hstack((alb, alb2, alb3)), np.hstack((ao, ao2, ao3)), np.hstack((rough, rough2, rough3))
+FACES = len(LOW) + len(HIGH) + len(TOP)
+Image.fromarray(((n * 0.5 + 0.5) * 255).astype(np.uint8)).save(OUT + "/coin_normal.png")
+Image.fromarray((np.clip(alb, 0, 1) * 255).astype(np.uint8)).save(OUT + "/coin_albedo.png")
+orm = np.dstack((ao, rough, np.ones((N, FACES * N))))
 Image.fromarray((orm * 255).astype(np.uint8)).save(OUT + "/coin_orm.png")
