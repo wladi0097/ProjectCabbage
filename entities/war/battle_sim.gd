@@ -74,7 +74,7 @@ static func parse_plan(text: String) -> Array:
 ## events, oldest first: {t, what ("died", "down"), kind (unit id or building kind), index,
 ## cell: Vector2i, by (a dead unit's: the building kind it was hitting, "" walking), hp (a dead
 ## unit's hp the step before: a charge that blew up at full health has its max_hp here)}.
-## `research`: depot node ids bought; `k`: defences k times as strong (building hp x k, unit hp / k
+## `research`: depot node ids bought (unit research and GENERAL ids such as war_drill_n); `k`: defences k times as strong (building hp x k, unit hp / k
 ## for the towers' damage x k: tools/pace.py's strength model); `seconds`: the time limit.
 static func run(layout: Array, grid_size: Vector2i, plan: Array, research := PackedStringArray(),
 		k := 1.0, seconds := WarRules.BASE_FIGHT) -> Dictionary:
@@ -84,6 +84,7 @@ static func run(layout: Array, grid_size: Vector2i, plan: Array, research := Pac
 		b.max_hp *= k
 	var save := SaveGame.new()
 	save.unit_research = research
+	save.tree_bought = research
 	var drops := []  # [at, unit, stats, pos], in plan order
 	for entry: Dictionary in plan:
 		var stats := WarRules.unit_stats(save, entry.unit)
@@ -171,26 +172,31 @@ const PLAYSTYLES := {
 const DEPTH := {senior_asset = 1.2, courier = 0.5, field_associate = 0.0, restructuring_charge = -1.0, pult_crew = -1.2}
 ## Cells between figures of one row.
 const ROW_GAP := 0.5
-## Research levels: none, the first node of every tree, every node.
-const LEVELS: Array[String] = ["none", "some", "full"]
+## Research levels: none, the first node of every tree, every node of chapter 3, and nuclear:
+## chapter 4's too (the CIVIL UNREST `card` nodes and the DRILL chain).
+const LEVELS: Array[String] = ["none", "some", "full", "nuclear"]
 
 
 ## The depot nodes of research level `level` (LEVELS).
 static func research_for(level: String) -> PackedStringArray:
 	var out := PackedStringArray()
 	for node in WarRules.RESEARCH:
-		if level == "full" or (level == "some" and node.parent == ""):
+		if level == "nuclear" or (level == "full" and not node.has("card")) or (level == "some" and node.parent == ""):
 			out.append(node.id)
+	if level == "nuclear":
+		out.append_array(["war_drill_1", "war_drill_2", "war_drill_3"])
 	return out
 
 
 ## The army cap that goes with a research level: the base; BIGGER ARMIES and one war_cap node;
-## everything.
+## chapter 3's three; nuclear: all five.
 static func cap_for(level: String) -> int:
 	var save := SaveGame.new()
 	if level != "none":
 		save.stamped = PackedStringArray(["bigger_armies"])
 		save.tree_bought = PackedStringArray(["war_cap_1"] if level == "some" else ["war_cap_1", "war_cap_2", "war_cap_3"])
+		if level == "nuclear":
+			save.tree_bought.append_array(["war_cap_4", "war_cap_5"])
 	return WarRules.army_cap(save)
 
 
@@ -395,6 +401,8 @@ static func assess(layout: Array, grid: Vector2i, options := {}) -> Dictionary:
 	for node in WarRules.RESEARCH:
 		if node.unit == "field_associate" and node.stat in ["hp", "damage"] and opts.research.has(node.id):
 			r *= float(node.step)
+	for id: String in opts.research:
+		r *= WarRules.DRILL_STEP if id.begins_with("war_drill_") else 1.0
 	var price := float(WarRules.unit_cabbage_price("field_associate"))
 	var associates: Array = won.filter(func(e: Dictionary) -> bool: return e.style == "associates")
 	return {styles = won + lost, best = best, cap = opts.cap, level = level,

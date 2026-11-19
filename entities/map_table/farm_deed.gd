@@ -57,6 +57,8 @@ const SMALL_PRINT := "The seller confirms that the transfer is voluntary."
 const FORMS := {
 	&"deed": {form = "FORM 3-D  DEED OF TRANSFER", head = "PURCHASE PRICE", note = SMALL_PRINT, seal = "ACQUIRED", strip = "NOT FOR SALE"},
 	&"war": {form = "FORM 9-W  DECLARATION OF WAR", head = "COST OF WAR", note = "The owner's signature is not required.", seal = "WAR", strip = "NOT FOR SALE"},
+	# A bandit camp (BanditCamp, laid on the world sheet): not a war, a recovery of company property.
+	&"camp": {form = "FORM 9-R  RECOVERY OPERATION", head = "COST OF OPERATION", note = "The occupants' signature is not required.", seal = "AUTHORISED", strip = "NOT FOR SALE"},
 }
 ## The owner's five moods as stamped (FarmRegister.Mood, worst first), by what is offered: cabbages
 ## from stock, or coins in an envelope.

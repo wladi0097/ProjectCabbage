@@ -117,15 +117,17 @@ static func clock(seconds: float) -> String:
 
 ## Fills the form for the war on `farm` (called `called`; "": the site only) that cost `coins` and
 ## came to `report` (summary).
-func fill(farm: StringName, called: String, coins: int, report: Dictionary) -> void:
+## `camp`: a bandit camp's lines in place of the farm's (WarSheet.camp_lines: site, outcome, remark).
+func fill(farm: StringName, called: String, coins: int, report: Dictionary, camp := {}) -> void:
 	($Page/Form/Title as Label).text = called if called != "" else FarmDeed.code(farm)
-	($Page/Form/Site as Label).text = tr("FARM SITE %s") % FarmDeed.code(farm)
-	($Page/Form/Outcome as Label).text = tr("VICTORY" if report.won else ("WITHDRAWN" if report.retreat else "ACQUISITION UNSUCCESSFUL"))
+	($Page/Form/Site as Label).text = camp.get("site", tr("FARM SITE %s") % FarmDeed.code(farm))
+	var outcome: String = "WITHDRAWN" if report.retreat else camp.get("outcome", "VICTORY" if report.won else "ACQUISITION UNSUCCESSFUL")
+	($Page/Form/Outcome as Label).text = tr(outcome)
 	($Page/Form/Time as Label).text = tr("%s of %s") % [clock(report.seconds), clock(report.limit)]
 	($Page/Form/Cabbages as Label).text = Num.text(report.cabbages)
 	($Page/Form/Coins as Label).text = FarmDeed.amount_text("coins", coins)
 	($Page/Form/Defences as Label).text = tr("%d of %d") % [report.defences.x, report.defences.y]
-	($Page/Form/Remark as Label).text = tr(remark(report, farm))
+	($Page/Form/Remark as Label).text = camp.get("remark", tr(remark(report, farm)))
 	($Page/Form/Grade/Word as Label).text = tr(report.grade)
 	for old in _staff.get_children():
 		if old != _row:

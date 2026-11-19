@@ -93,6 +93,34 @@ var _open_ink: Color
 
 @onready var _refuse_sound: SoundCue = $Flash/Refuse
 
+## CHAPTER 4'S BANDIT CAMPS (BanditCamp): the camp standing is a red marker (`Camp`, its UNREST LEVEL
+## printed beside it) at a point inside its country's outline drawn from its seed (camp_pixel). The
+## country is only where it stands: the hint, the paper and the fight never name it. A click on the
+## marker lays the RECOVERY OPERATION (`Deed`, FarmDeed lettered as &"camp") beside it, as a country's
+## sheet lays a declaration of war: its fee, its level, ASSESSED RESISTANCE, the staff rows ([-] n [+])
+## and the stamp box; the stamp declares it (BanditCamp.declare) and asks for the war sheet
+## (sheet_wanted WAR, BanditCamp.SITE) with the staff sent (`committed`). A click anywhere else puts
+## the paper away; a camp gone (the clock ran out) takes its paper with it.
+const CAMP := &"camp"
+## The marker takes the mouse this close to its pin (px).
+const CAMP_HIT := 90.0
+const CAMP_LIFT := 1.25
+## The staff the last operation stamped here sent (unit id -> count), for the war sheet (MapTable).
+var committed := {}
+var _take := {}
+var _deed_army := {}
+var _deed_lacks := {}
+var _deed_corner := Vector2.ZERO
+## The camp whose paper lies on the sheet (0: none), and the camp the marker shows.
+var _deed_camp := 0
+var _shown_camp := -1
+var _hot_box := &""
+var _dealing: Tween
+
+@onready var _camp: Node3D = $Camp
+@onready var _camp_level: Label3D = $Camp/Level
+@onready var _deed: FarmDeed = $Deed
+
 
 func _ready() -> void:
 	super()
@@ -107,8 +135,15 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if SaveManager.save.farms_owned.size() != _shown:
+	var save := SaveManager.save
+	if save.farms_owned.size() != _shown:
 		refresh()
+	if save.bandit_camp != _shown_camp:
+		_show_camp()
+	if _deed_camp != 0 and (open < 1.0 or _deed_camp != save.bandit_camp):
+		_drop_deed()  # Rolled up, or the camp is gone: its paper goes at once.
+	elif _deed_camp != 0 and _dealing == null and (FarmRegister.lacks(save, BanditCamp.bill(save), _out()) != _deed_lacks or save.army != _deed_army):
+		_print_deed()
 
 
 ## The ids of `country`'s farms in save.farms_owned: the home country's are "K-1".."K-8", any
@@ -260,6 +295,18 @@ func refresh() -> void:
 
 
 func spot_at(pixel: Vector2) -> StringName:
+	if _deed_camp != 0:
+		var on := (lifted(pixel, FarmRegister.DEED_LIFT) - _deed_corner) / FarmDeed.WAR_SCALE
+		if FarmDeed.on_paper(on):  # The paper covers what lies under it; only its boxes are spots.
+			if _dealing != null:
+				return &""
+			if FarmRegister.has_staff(SaveManager.save):
+				var staff := FarmDeed.staff_box_at(on, Depot.units(SaveManager.save))
+				if staff != &"":
+					return staff
+			return FarmRegister.STAMP if FarmDeed.in_stamp_box(on) else &""
+	if _camp.visible and pixel.distance_to(camp_pixel(SaveManager.save.bandit_camp)) <= CAMP_HIT:
+		return CAMP
 	for country in _sites:
 		if Geometry2D.is_point_in_polygon(pixel, _outline(country).points):
 			return country
@@ -278,10 +325,25 @@ func spot_box(spot: StringName) -> Rect2:
 
 
 func hint(spot: StringName) -> String:
-	return hint_text(SaveManager.save, spot, tr(_sites[spot].title)) if _sites.has(spot) else ""
+	if spot == CAMP and _deed_camp == 0:
+		return camp_hint(SaveManager.save)
+	return hint_text(SaveManager.save, spot, tr(_sites[spot].title)) if _sites.has(spot) and _deed_camp == 0 else ""
+
+
+## The hint slip on the camp's marker: its level, what it is, and what a click does. Never its country.
+static func camp_hint(save: SaveGame) -> String:
+	return "%s. %s. %s" % [TranslationServer.translate(BanditCamp.LEVEL_TEXT) % BanditCamp.level(save),
+			TranslationServer.translate(BanditCamp.NAME).capitalize(), TranslationServer.translate("Click for the recovery operation.")]
 
 
 func hover(spot: StringName) -> void:
+	var box := spot if spot == FarmRegister.STAMP or _staff_spot(spot) else &""
+	if box != _hot_box:
+		_hot_box = box
+		_deed.hot(box)
+	var grow := CAMP_LIFT if spot == CAMP else 1.0
+	if not is_equal_approx(_camp.scale.x, grow):
+		create_tween().tween_property(_camp, "scale", Vector3.ONE * grow, FarmRegister.HOVER_TIME)
 	if not _sites.has(spot):
 		spot = &""
 	if spot == _hot:
@@ -301,6 +363,20 @@ func hover(spot: StringName) -> void:
 ## A click on a country opens its own sheet (MapTable hears `sheet_wanted`); on a closed one
 ## (closed) the refusal's clunk, and nothing opens.
 func press(spot: StringName) -> void:
+	if _dealing != null:
+		return
+	if spot == FarmRegister.STAMP and _deed_camp != 0:
+		_stamp_deed()
+		return
+	if _staff_spot(spot) and _deed_camp != 0:
+		_choose(spot)
+		return
+	if spot == CAMP:
+		_lay_out()
+		return
+	if _deed_camp != 0:
+		_put_away()  # A click anywhere else puts the paper away.
+		return
 	if not _sites.has(spot):
 		return
 	if closed(SaveManager.save, spot) != "":
@@ -343,3 +419,170 @@ func _layer(country: StringName) -> TextureRect:
 
 func _outline(country: StringName) -> Line2D:
 	return get_node("Page/Sheet/Outlines/%s" % country) as Line2D
+
+
+## Where camp `camp` (its seed) stands on the art (px): a point inside its country's outline, drawn
+## from the seed, so it stays put across reloads; its country's holding point if none is found.
+func camp_pixel(camp: int) -> Vector2:
+	var country := BanditCamp.country_of(camp)
+	var ring := _outline(country).points
+	var box := Rect2(ring[0], Vector2.ZERO)
+	for p in ring:
+		box = box.expand(p)
+	var draw := RandomNumberGenerator.new()
+	draw.seed = camp
+	for i in 64:
+		var p := box.position + Vector2(draw.randf(), draw.randf()) * box.size
+		if Geometry2D.is_point_in_polygon(p, ring) and _near_border(p, ring) > CAMP_HIT:
+			return p
+	return _pixel(country)
+
+
+## How far `p` lies from the nearest corner of `ring` (px): a camp's pin keeps off the coast.
+static func _near_border(p: Vector2, ring: PackedVector2Array) -> float:
+	var best := INF
+	for q in ring:
+		best = minf(best, p.distance_to(q))
+	return best
+
+
+## The marker as the save has it: shown on its camp's point with its level, or hidden.
+func _show_camp() -> void:
+	var save := SaveManager.save
+	_shown_camp = save.bandit_camp
+	_camp.visible = BanditCamp.is_open(save)
+	if _camp.visible:
+		var at := camp_pixel(save.bandit_camp)
+		_camp.position = Vector3(at.x / PIXELS_PER_METRE - SIZE.x / 2.0, 0.0, at.y / PIXELS_PER_METRE)
+		_camp_level.text = tr(BanditCamp.LEVEL_TEXT) % BanditCamp.level(save)
+	reprint()
+
+
+## Sheet pixel `pixel` moved to the pixel the mouse is on of a paper lying `height` m over the sheet
+## (FarmRegister.lifted: the camera looks down at an angle).
+func lifted(pixel: Vector2, height: float) -> Vector2:
+	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+	if camera == null:
+		return pixel
+	var screen := camera.unproject_position(point_at(pixel))
+	var up := global_basis.y
+	var hit: Variant = Plane(up.normalized(), point_at(pixel) + up * height).intersects_ray(camera.project_ray_origin(screen), camera.project_ray_normal(screen))
+	return pixel_at(hit) if hit != null else pixel
+
+
+## The operation's paper is out or being stamped: the table does not roll the sheet up under it.
+func busy() -> bool:
+	return _dealing != null
+
+
+## Whether `spot` is one of the paper's [-] / [+] boxes.
+static func _staff_spot(spot: StringName) -> bool:
+	return String(spot).begins_with(FarmDeed.STAFF_LESS) or String(spot).begins_with(FarmDeed.STAFF_MORE)
+
+
+## Lays the RECOVERY OPERATION beside the camp's marker: it slides in from beyond the sheet's edge.
+func _lay_out() -> void:
+	var save := SaveManager.save
+	_deed_camp = save.bandit_camp
+	_deed.scale = Vector3.ONE * FarmDeed.WAR_SCALE
+	var at := camp_pixel(_deed_camp)
+	_deed_corner = FarmRegister.deed_corner(at, FarmDeed.WAR_SCALE)
+	_take = save.army.duplicate()  # Everybody ready goes, unless told otherwise.
+	_print_deed()
+	var to := _deed_at()
+	_deed.slide(to + Vector3.RIGHT * FarmRegister.deed_side(at, FarmDeed.WAR_SCALE) * FarmRegister.DEED_FROM / PIXELS_PER_METRE, to, FarmRegister.DEED_SLIDE_TIME)
+
+
+## Prints the paper as the save has it: the camp, its level and briefing with what it pays, the fee
+## and what is short of it, the resistance, the staff rows.
+func _print_deed() -> void:
+	var save := SaveManager.save
+	var bill := BanditCamp.bill(save)
+	_deed_lacks = FarmRegister.lacks(save, bill, _out())
+	_deed.fill(tr(BanditCamp.NAME), BanditCamp.SITE, bill, _deed_lacks)
+	_deed.letter(&"camp")
+	var paid := BanditCamp.reward(save)
+	var briefing := tr(BanditCamp.BRIEFING) + " " + tr("On recovery: %s, %s Findings, %s cabbages.") % [
+			"$" + Num.text(paid.coins), Num.text(paid.findings), Num.text(paid.stock)]
+	_deed.print_site({site_name = tr(BanditCamp.LEVEL_TEXT) % BanditCamp.level(save), briefing = briefing})
+	_deed_army = save.army.duplicate()
+	var rows := []
+	for unit in Depot.units(save):
+		var have := int(save.army.get(unit, 0))
+		_take[unit] = clampi(int(_take.get(unit, have)), 0, have)
+		rows.append({unit = unit, name = tr(DepotSheet.NAMES[unit]), have = have, take = _take[unit]})
+	_deed.print_staff(rows)
+	_deed.print_resistance(BanditCamp.difficulty(save, WarRules.army_cap(save)))
+	_deed.hot(_hot_box)
+
+
+## A click on a [-] or [+]: one figure of that type fewer or more, as far as it goes.
+func _choose(spot: StringName) -> void:
+	var more := String(spot).begins_with(FarmDeed.STAFF_MORE)
+	var unit := String(spot).trim_prefix(FarmDeed.STAFF_MORE if more else FarmDeed.STAFF_LESS)
+	var to := clampi(int(_take.get(unit, 0)) + (1 if more else -1), 0, int(SaveManager.save.army.get(unit, 0)))
+	if to == int(_take.get(unit, 0)):
+		return
+	_take[unit] = to
+	_deed.count_tick()
+	_print_deed()
+
+
+## The stamp: the operation is declared (BanditCamp.declare: the fee paid, the staff sent) and the
+## war sheet asked for; refused (the clunk, what is short blinks), nothing changes.
+func _stamp_deed() -> void:
+	var save := SaveManager.save
+	var chosen := {}
+	for unit in Depot.units(save):
+		if int(_take.get(unit, 0)) > 0:
+			chosen[unit] = int(_take[unit])
+	var fee := save.bandit_fee
+	if not BanditCamp.declare(save, chosen, _out()):
+		_deed.blink(chosen.is_empty())
+		return
+	committed = chosen
+	SaveManager.log_event("camp_declared", str(BanditCamp.level(save)), fee, "coins")
+	SaveManager.autosave()
+	_deed_army = save.army.duplicate()  # The rows keep what was sent until it leaves.
+	_deed.strike(FarmRegister.STAMP_DROP_TIME)
+	_dealing = create_tween()
+	_dealing.tween_interval(FarmRegister.STAMP_DROP_TIME)
+	_dealing.tween_callback(_deed.imprint)
+	_dealing.tween_interval(FarmRegister.HIT_PAUSE)
+	_dealing.tween_callback(_deed.lift_stamp.bind(FarmRegister.STAMP_LIFT_TIME))
+	_dealing.tween_interval(FarmRegister.WAR_AFTER)
+	_dealing.tween_callback(_go_to_war)
+
+
+func _go_to_war() -> void:
+	_dealing = null
+	_deed_camp = 0
+	_deed.hide()
+	sheet_wanted.emit(&"war", BanditCamp.SITE)
+
+
+## The paper slides off the sheet the way it came, unstamped.
+func _put_away() -> void:
+	var from := _deed_at()
+	_deed.slide(from, from + Vector3.RIGHT * FarmRegister.deed_side(camp_pixel(_deed_camp), FarmDeed.WAR_SCALE) * FarmRegister.DEED_FROM / PIXELS_PER_METRE, FarmRegister.DEED_SLIDE_TIME, true)
+	_deed_camp = 0
+
+
+## The paper is gone at once (the sheet is rolled up under it, or the camp went).
+func _drop_deed() -> void:
+	if _dealing != null:
+		_dealing.kill()
+		_dealing = null
+	_deed.hide()
+	_deed_camp = 0
+
+
+## Where the laid-out paper's origin (the middle of its top edge) lies on the sheet.
+func _deed_at() -> Vector3:
+	return Vector3((_deed_corner.x + FarmDeed.SIZE.x * FarmDeed.PIXELS_PER_METRE * FarmDeed.WAR_SCALE / 2.0) / PIXELS_PER_METRE - SIZE.x / 2.0,
+			FarmRegister.DEED_LIFT, _deed_corner.y / PIXELS_PER_METRE)
+
+
+## The stock cabbages out of the chute: they cannot pay (UpgradeDesk.units_out).
+func _out() -> Vector2i:
+	return UpgradeDesk.units_out(get_tree().get_nodes_in_group(&"cabbages")) if is_inside_tree() else Vector2i.ZERO

@@ -107,7 +107,7 @@ const SHOCK_AFTER_FARM := 40
 ## never want (the behaviour memos, the no-effect ledger; in chapter 3, long after the tray ran dry,
 ## the handling schedule, the map table's holdings indicator and the farm shortcut; the comforts: the
 ## rotten shield and the two merging cards). Nothing else needs any of them.
-const DRY_LEFT := ["golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger", "hand_schedule", "map_readout", "farm_shortcut", "rotten_shield", "coin_merge", "token_merge", "research_light", "annexed_grid"]
+const DRY_LEFT := ["golden_lamp", "mat_allowance", "spoilage_memo", "lab_priority", "stats_ledger", "hand_schedule", "map_readout", "farm_shortcut", "rotten_shield", "coin_merge", "token_merge", "research_light", "annexed_grid", "civil_unrest"]
 const Demo := preload("res://globalScripts/demo.gd")
 
 

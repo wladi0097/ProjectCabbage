@@ -251,3 +251,25 @@ func test_a_drop_due_after_the_time_limit_does_not_keep_a_wiped_army_in_the_figh
 			BattleSim.parse_plan("fa; fa t999"), PackedStringArray(), 50.0)
 	assert_int(r.end).is_equal(WarFight.End.WIPED)
 	assert_int(r.refused).is_equal(1)
+
+
+func test_drill_nodes_in_the_research_list_make_the_army_hit_harder() -> void:
+	var layout := BattleSim.parse_layout("farmhouse@14,4; zone@10,4")
+	var plan := BattleSim.parse_plan("fa")
+	var plain := BattleSim.run(layout, Vector2i(18, 10), plan, PackedStringArray(), 100.0, 20.0)
+	var drilled := BattleSim.run(layout, Vector2i(18, 10), plan, PackedStringArray(["war_drill_1", "war_drill_2", "war_drill_3"]), 100.0, 20.0)
+	assert_float(float(plain.buildings[0].dealt)).is_greater(0.0)
+	assert_float(float(drilled.buildings[0].dealt)).is_equal_approx(float(plain.buildings[0].dealt) * pow(WarRules.DRILL_STEP, 3), 0.01)
+
+
+func test_full_research_is_chapter_3s_and_nuclear_adds_civil_unrest_and_the_drill() -> void:
+	var full := BattleSim.research_for("full")
+	var nuclear := BattleSim.research_for("nuclear")
+	for node in WarRules.RESEARCH:
+		assert_bool(full.has(node.id)).override_failure_message(node.id).is_equal(not node.has("card"))
+		assert_bool(nuclear.has(node.id)).override_failure_message(node.id).is_true()
+	for id: String in ["war_drill_1", "war_drill_2", "war_drill_3"]:
+		assert_bool(nuclear.has(id)).is_true()
+		assert_bool(full.has(id)).is_false()
+	assert_int(BattleSim.cap_for("full")).is_equal(11)
+	assert_int(BattleSim.cap_for("nuclear")).is_equal(15)

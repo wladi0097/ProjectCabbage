@@ -62,6 +62,7 @@ const Events := preload("res://globalScripts/game_events.gd")
 const Tally := preload("res://entities/map_table/props/map_tally.gd")
 const World := preload("res://entities/map_table/world_register.gd")
 const War := preload("res://entities/map_table/war_sheet.gd")
+const Clock := preload("res://entities/map_table/props/unrest_clock.gd")
 
 const PAN_TIME := 1.1
 ## The work light is fully up from this much of the pan on (and starts to dim there on the way home).
@@ -122,6 +123,8 @@ const FARM := &"farm"
 const SHORTCUT_CARD := "farm_shortcut"
 ## What the mouse is on when it is on the roll in the holder (pick).
 const HOLDER := &"holder"
+## What the mouse is on when it is on the unrest clock's RESURVEY button (`UnrestClock`, BanditCamp).
+const RESURVEY := &"resurvey"
 ## The world sheet's and the war sheet's ids (MapSheet.id); a country's sheet has its country's id.
 const WORLD := &"world"
 const WAR := &"war"
@@ -197,6 +200,8 @@ var _weight_rest: Array[Vector3] = []
 @onready var _war: War = $Sheets/War
 @onready var _depot_sheet: DepotSheet = $Sheets/Depot
 @onready var _depot: Depot = $Depot
+## The bandit camps' countdown (props/unrest_clock), top middle above the sheet once their card is stamped.
+@onready var _clock: Clock = $UnrestClock
 ## TO DESK and TO FARM: standing loose, and on the tally's console.
 @onready var _loose: Array[Node3D] = [$DeskButton, $FarmButton]
 @onready var _docked: Array[Node3D] = [$Tally/Console/DeskButton, $Tally/Console/FarmButton]
@@ -251,6 +256,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	WarRules.tick_training(SaveManager.save, delta)  # The depot trains its staff wherever the player is.
+	BanditCamp.tick(SaveManager.save, delta, War.at_war and _war.farm == BanditCamp.SITE)  # The camps' clock runs wherever the player is.
 	visible = unlocked(SaveManager.save)
 	_show_buttons()
 	_cursor.visible = _view > 0.0
@@ -320,6 +326,9 @@ func _input(event: InputEvent) -> void:
 			show_sheet(_held.id)  # Back up one level.
 		elif _hovered == DEPOT:
 			open_depot()
+		elif _hovered == RESURVEY:
+			_clock.resurvey()
+			_hint.text = _resurvey_hint()
 		else:
 			# A spot on the open sheet (a farm site, its deed's stamp box), or a click on nothing,
 			# which the sheet hears too (it puts a farm's deed away).
@@ -397,7 +406,7 @@ func on_table(id: StringName) -> bool:
 ## sheet for a country once it is unlocked, none (&"") at the top level.
 func parent_id(id: StringName) -> StringName:
 	if id == WAR:
-		return World.country_of(_war.farm)
+		return WORLD if _war.farm == BanditCamp.SITE else World.country_of(_war.farm)
 	if id == DEPOT:
 		return _depot_from
 	return WORLD if id != WORLD and sheet_unlocked(WORLD, SaveManager.save) else &""
@@ -496,6 +505,11 @@ func _depot_hint() -> String:
 	return tr("Back to the map") if shown == DEPOT else tr("Personnel depot")
 
 
+## The hint slip on RESURVEY: what it does and what it costs now.
+func _resurvey_hint() -> String:
+	return tr("Resurvey: a new camp at the same level, and the clock starts again. %s.") % ("$" + Num.text(BanditCamp.resurvey_price(SaveManager.save)))
+
+
 ## The sheets alive: the world sheet, the war sheet and the country sheet loaded, if any.
 func sheets() -> Array[MapSheet]:
 	var out: Array[MapSheet] = []
@@ -541,8 +555,9 @@ func _on_wants(id: StringName, farm: StringName) -> void:
 	if shown == WAR and SaveManager.save.farms_owned.has(farm):
 		_won = farm
 		(_sheet_for(id) as FarmRegister).expect(farm)
-	var register := sheet_of(shown) as FarmRegister
-	show_sheet(id, farm, register.committed if id == WAR and register != null else {})
+	var from := sheet_of(shown)  # A country's register, or the world sheet (a camp's operation), hands over the staff sent.
+	var sent: Variant = from.get(&"committed") if id == WAR and from != null else null
+	show_sheet(id, farm, sent if sent is Dictionary else {})
 
 
 ## A sheet that left the table: out of sight, and a country's sheet is freed.
@@ -565,6 +580,8 @@ func pick(from: Vector3, dir: Vector3) -> StringName:
 		return HOLDER
 	if _depot.hit(from, dir):
 		return DEPOT
+	if _clock.can_press() and FarmTv.on_glass(FarmTv.rect_uv(_clock.plate().global_transform, BACK_HALF, from, dir)):
+		return RESURVEY
 	return sheet_of(shown).spot_at(sheet_pixel(from, dir))
 
 
@@ -754,6 +771,8 @@ func _hover(what: StringName) -> void:
 		_hint.text = _held.hint_title()
 	elif what == DEPOT:
 		_hint.text = _depot_hint()
+	elif what == RESURVEY:
+		_hint.text = _resurvey_hint()
 	elif what != &"":
 		_hint.text = sheet_of(shown).hint(what)
 		if shown == WORLD:
@@ -771,7 +790,7 @@ func _hover(what: StringName) -> void:
 
 ## Whether the mouse is on a spot of the open sheet (not the plate, not the roll in the holder).
 func _on_spot() -> bool:
-	return not _hovered in [&"", BACK, FARM, HOLDER, DEPOT]
+	return not _hovered in [&"", BACK, FARM, HOLDER, DEPOT, RESURVEY]
 
 
 ## Where a hint slip `slip` big lies beside `spot` (on screen, px): to its right, else to its left,

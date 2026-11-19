@@ -1,0 +1,88 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/map_table/props/unrest_clock.gd" id="1_clock"]
+[ext_resource type="FontVariation" path="res://assets/fonts/readout_font.tres" id="2_readout"]
+[ext_resource type="FontFile" path="res://assets/fonts/Oswald.ttf" id="3_stencil"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/desk_button.tscn" id="4_button"]
+[ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="5_cue"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/deed_refuse_1.wav" id="6_refuse"]
+
+[sub_resource type="StandardMaterial3D" id="Gunmetal"]
+albedo_color = Color(0.2, 0.22, 0.215, 1)
+metallic = 0.6
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="Plate"]
+material = SubResource("Gunmetal")
+size = Vector3(0.6, 0.025, 0.17)
+
+[sub_resource type="StandardMaterial3D" id="Smoked"]
+shading_mode = 0
+albedo_color = Color(0.022, 0.034, 0.03, 1)
+
+[sub_resource type="BoxMesh" id="GlassMesh"]
+material = SubResource("Smoked")
+size = Vector3(0.27, 0.004, 0.075)
+
+[node name="UnrestClock" type="Node3D"]
+visible = false
+script = ExtResource("1_clock")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.0125, 0)
+gi_mode = 0
+mesh = SubResource("Plate")
+
+[node name="Caption" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -0.165, 0.0255, -0.058)
+pixel_size = 0.00042
+modulate = Color(0.66, 0.7, 0.68, 1)
+text = "NEXT CAMP IN"
+font = ExtResource("3_stencil")
+font_size = 96
+outline_size = 0
+horizontal_alignment = 0
+
+[node name="Glass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, 0.027, 0.02)
+gi_mode = 0
+mesh = SubResource("GlassMesh")
+
+[node name="Ghost" type="Label3D" parent="Glass"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.0025, 0)
+pixel_size = 0.0006
+modulate = Color(0.62, 0.86, 0.68, 0.015)
+shaded = false
+auto_translate_mode = 2
+text = "~~:~~"
+font = ExtResource("2_readout")
+font_size = 96
+outline_size = 0
+
+[node name="Ink" type="Label3D" parent="Glass"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.003, 0)
+render_priority = 1
+pixel_size = 0.0006
+modulate = Color(0.62, 0.86, 0.68, 1)
+outline_modulate = Color(0.62, 0.86, 0.68, 0.2)
+shaded = false
+auto_translate_mode = 2
+text = "10:00"
+font = ExtResource("2_readout")
+font_size = 96
+outline_size = 10
+
+[node name="Resurvey" parent="." instance=ExtResource("4_button")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.025, 0.02)
+visible = false
+
+[node name="Stencil" parent="Resurvey" index="2"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.0185, 0.062)
+pixel_size = 0.00036
+horizontal_alignment = 1
+text = "RESURVEY"
+
+[node name="Denied" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("6_refuse")
+bus = &"SFX"
+script = ExtResource("5_cue")

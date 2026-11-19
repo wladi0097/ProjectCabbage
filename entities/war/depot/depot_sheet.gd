@@ -56,6 +56,12 @@ const FIGURE_LEAN := 0.15
 const FIGURE_TIME := 0.18
 ## The research tree's zoom on the sheet: every branch in its box, its nodes read from the map camera.
 const TREE_ZOOM := 1.25
+## With chapter 4's CIVIL UNREST card the tree is four rows deeper (DepotResearch `card` nodes): it
+## zooms out to this and its hub moves up to UNREST_HUB (the tree's hub_at), so it all stays in the box.
+## ponytail: titles print at 18 px instead of 24 then (0.964 keeps a side's titles clear of the node
+## two rows up); a taller research box would win the size back.
+const UNREST_ZOOM := 0.964
+const UNREST_HUB := Vector2(0.5, 0.253)
 ## Each unit's name as printed, and each target rule (WarRules.BASE_STATS `target`) in words.
 const NAMES := {field_associate = "FIELD ASSOCIATE", restructuring_charge = "RESTRUCTURING CHARGE",
 		senior_asset = "SENIOR ASSET", pult_crew = "CABBAGE-PULT CREW", courier = "EXPRESS COURIER"}
@@ -138,6 +144,7 @@ var _tree_in: UpgradeTree
 @onready var _staff: Label = $Page/Sheet/Staff
 @onready var _sheet_root: Control = $Page/Sheet
 @onready var _tree: UpgradeTree = $Page/Sheet/Tree
+@onready var _hub: Vector2 = _tree.hub_at
 @onready var _denied_sound: SoundCue = $Denied
 @onready var _research_sound: SoundCue = $Research
 @onready var _hire_sound: SoundCue = $Hire
@@ -258,6 +265,11 @@ func refresh() -> void:
 	var save := SaveManager.save
 	var out := _out()
 	_printed = _state(save, out)
+	var unrest := save.stamped.has(DepotResearch.UNREST_CARD)
+	var zoom := UNREST_ZOOM if unrest else TREE_ZOOM
+	if not is_equal_approx(_tree.zoom_home, zoom):  # The card came (or a save without it loaded): a new home view.
+		_tree.hub_at = UNREST_HUB if unrest else _hub
+		_tree.home(zoom, 0.0)
 	var shown := Depot.units(save)
 	_staff.text = tr("STAFF %d / %d") % [WarRules.army_size(save), WarRules.army_cap(save)]
 	fit(_staff)

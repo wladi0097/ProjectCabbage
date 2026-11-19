@@ -94,7 +94,7 @@ const LOST_AFTER := 1.8
 ## Seconds the fight's song takes to fade out once the fight ends.
 const MUSIC_FADE := 1.5
 ## The table's nodes that go away while the fight is on (the way out and the currency column).
-const EXITS: Array[String] = ["DeskButton", "FarmButton", "Tally", "Depot"]
+const EXITS: Array[String] = ["DeskButton", "FarmButton", "Tally", "Depot", "UnrestClock"]
 const AWAY_TIME := 0.2
 ## The running clock ticks aloud from this many seconds left.
 const TICK_FROM := 10
@@ -170,6 +170,9 @@ var _ducked := 0.0
 var _noting := false
 var _note_fade: Tween
 var _on_file := false
+## A bandit camp fight (farm BanditCamp.SITE): its defences' buff (hp, and the damage they deal: unit
+## hp is divided by it as each figure is committed). 1 for a war on a farm.
+var _buff := 1.0
 
 @onready var _board: Node3D = $Things/Board
 @onready var _map: WarMap = $Things/Board/Map
@@ -312,7 +315,12 @@ static func tally(save: SaveGame, site: StringName, report: Dictionary) -> void:
 func begin(farm_id: StringName, chosen: Dictionary) -> void:
 	farm = farm_id
 	fight = null
-	_lay_map(WarMap.scene_for(farm, SaveManager.save))
+	var camp := farm == BanditCamp.SITE
+	if camp:
+		_lay_camp(BanditCamp.map_for(SaveManager.save))
+	else:
+		_lay_map(WarMap.scene_for(farm, SaveManager.save))
+	_buff = BanditCamp.buff(SaveManager.save) if camp else 1.0
 	_view.setup(_map)
 	_imprint.hide()
 	_report.put_away()
@@ -320,7 +328,7 @@ func begin(farm_id: StringName, chosen: Dictionary) -> void:
 	_unhover()
 	_took = false
 	_put_papers_away()
-	var map_id := WarMap.map_id(farm, SaveManager.save)
+	var map_id := "" if camp else WarMap.map_id(farm, SaveManager.save)
 	_print_title(map_id)
 	var units: Array[String] = []
 	for unit: String in WarRules.UNITS:  # Depot order.
@@ -331,6 +339,9 @@ func begin(farm_id: StringName, chosen: Dictionary) -> void:
 		return
 	var save := SaveManager.save
 	fight = WarFight.new(_map.layout(), _map.grid_size, WarRules.fight_seconds(save), WarRules.can_place_mid_round(save))
+	for b in fight.buildings:  # A camp's defences: stronger by its buff (1 on a farm).
+		b.hp *= _buff
+		b.max_hp *= _buff
 	for k in units.size():
 		var holder := FightView.figure(units[k])
 		_view.figures.add_child(holder)
@@ -340,9 +351,11 @@ func begin(farm_id: StringName, chosen: Dictionary) -> void:
 	_control.show()
 	create_tween().tween_property(_control, "scale", Vector3.ONE, AWAY_TIME * 2.0).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_show_control()
-	var new := WarMap.debuts(map_id)
+	var new: Array[String] = []
+	if not camp:
+		new = WarMap.debuts(map_id)
 	debut = new[0] if not new.is_empty() else ""  # ponytail: one slip a map; the plan has one debut per map.
-	staging = WarMap.is_final(map_id)
+	staging = not camp and WarMap.is_final(map_id)
 	_laying = create_tween()
 	_laying.tween_interval(MapTable.swap_time())  # Once the sheet lies open.
 	if staging:
@@ -357,10 +370,11 @@ func begin(farm_id: StringName, chosen: Dictionary) -> void:
 ## The title block: the site's code and name and its place in the campaign (map `map_id`).
 func _print_title(map_id: String) -> void:
 	var box := "Page/Sheet/TitleBlock/Box/"
-	(get_node(box + "Code") as Label).text = tr("SITE %s") % FarmDeed.code(map_id)
-	(get_node(box + "Site") as Label).text = _map.site_name
+	var camp := farm == BanditCamp.SITE  # No farm, no country: the camp and its level.
+	(get_node(box + "Code") as Label).text = tr(BanditCamp.LEVEL_TEXT) % BanditCamp.level(SaveManager.save) if camp else tr("SITE %s") % FarmDeed.code(map_id)
+	(get_node(box + "Site") as Label).text = tr(_map.site_name)
 	(get_node(box + "Site") as Label).visible = _map.site_name != ""
-	(get_node(box + "Sheet") as Label).text = tr("SHEET %d OF %d") % [WarMap.sheet_number(map_id), WarMap.campaign().size()]
+	(get_node(box + "Sheet") as Label).text = tr("UNSCHEDULED") if camp else tr("SHEET %d OF %d") % [WarMap.sheet_number(map_id), WarMap.campaign().size()]
 
 
 ## FINAL ACQUISITION filed: it slides away, the farmhouse drops onto the paper with a beat and
@@ -680,7 +694,7 @@ func abort() -> bool:
 		holder.queue_free()
 	save.war_pending = {}
 	save.war_fee = 0
-	SaveManager.log_event("war_aborted", farm, FarmRegister.refund(save, farm), "coins")
+	SaveManager.log_event("war_aborted", farm, BanditCamp.refund(save) if farm == BanditCamp.SITE else FarmRegister.refund(save, farm), "coins")
 	SaveManager.autosave()
 	_retreat_sound.cue(global_position)
 	_leave()
@@ -786,7 +800,9 @@ func _unhover() -> void:
 ## Puts figure `holder` into the fight at cell-space point `at` (it leaves save.war_pending: committed).
 func _commit(holder: Node3D, at: Vector2) -> bool:
 	var unit: String = holder.get_meta(&"unit")
-	if not fight.place_at(unit, WarRules.unit_stats(SaveManager.save, unit), at):
+	var stats := WarRules.unit_stats(SaveManager.save, unit)
+	stats.hp = float(stats.hp) / _buff  # A camp's defences hit _buff times as hard.
+	if not fight.place_at(unit, stats, at):
 		return false
 	var pending := SaveManager.save.war_pending
 	if int(pending.get(unit, 0)) > 1:
@@ -908,14 +924,26 @@ func _lay_map(path: String) -> void:
 	_board.add_child(_map)
 
 
+## The camp's map `map` (BanditCamp.map_for) lies on the board, in place of whatever lay there.
+func _lay_camp(map: WarMap) -> void:
+	if _map != null:
+		_view.clear()
+		_map.free()
+	_map = map
+	_map.name = &"Map"
+	_board.add_child(_map)
+
+
 ## The fight is over: who comes home goes back into save.army, the stamp, and the sheet leaves.
 func _end() -> void:
 	if _held != null:
 		drop(pixel_of(_held_from))
 	var save := SaveManager.save
-	var coins := int(FarmRegister.war_bill(save, farm).get("coins", 0))  # What it cost (before the farm is ours).
+	var camp := farm == BanditCamp.SITE
+	var coins := save.bandit_fee if camp else int(FarmRegister.war_bill(save, farm).get("coins", 0))  # What it cost (before the farm is ours).
 	var report := WarReport.summary(fight)
-	save.war_grades[farm] = report.grade
+	if not camp:
+		save.war_grades[farm] = report.grade
 	var home: Dictionary = fight.kept.duplicate()
 	for holder in figures():
 		var unit: String = holder.get_meta(&"unit")
@@ -927,13 +955,21 @@ func _end() -> void:
 	save.war_pending = {}
 	save.war_fee = 0
 	var won := fight.state == WarFight.State.WON
-	if won:
+	var paid := {}
+	if camp:
+		if won:
+			paid = BanditCamp.win(save)
+		else:
+			BanditCamp.lose(save)
+		SaveManager.log_event("camp_won" if won else "camp_lost", str(BanditCamp.level(save)), int(paid.get("coins", 0)), "coins")
+	elif won:
 		win(save, farm)
 		SaveManager.log_event("war_won", farm)
 		FarmRegister.lamp_held = true  # The Field Line's lamp waits for the farm's moment on its country's sheet.
 	else:
 		SaveManager.log_event("war_lost", farm)
-	tally(save, farm, report)
+	if not camp:
+		tally(save, farm, report)
 	SaveManager.autosave()
 	(_won_sound if won else _lost_sound).cue(global_position)
 	_fade_music()
@@ -941,10 +977,23 @@ func _end() -> void:
 	_unhover()
 	_show_control()
 	reprint()
-	_report.fill(farm, _site_title(), coins, report)
+	if camp:
+		_report.fill(farm, tr(BanditCamp.NAME), coins, report, camp_lines(paid, won))
+	else:
+		_report.fill(farm, _site_title(), coins, report)
 	_dealing = create_tween()
 	_dealing.tween_interval(LEAVE_AFTER if won else LOST_AFTER)
 	_dealing.tween_callback(_report.lay.bind(_report_rest))
+
+
+## What a camp's after-action report prints in place of a farm's site, outcome and remark: {site,
+## outcome (a key), remark (text)}, the reward `paid` ({coins, findings, stock}) on a win.
+static func camp_lines(paid: Dictionary, won: bool) -> Dictionary:
+	var remark := TranslationServer.translate("The camp remains. Its occupants have been asked to leave in writing.")
+	if won:
+		remark = TranslationServer.translate("Recovered: %s, %s Findings and %s cabbages.") % ["$" + Num.text(int(paid.get("coins", 0))),
+				Num.text(int(paid.get("findings", 0))), Num.text(int(paid.get("stock", 0)))]
+	return {site = TranslationServer.translate("RECOVERY OPERATION"), outcome = "PROPERTY RECOVERED" if won else "RECOVERY UNSUCCESSFUL", remark = remark}
 
 
 ## The farm's name, from its country's sheet on the table ("": no table).
@@ -988,7 +1037,7 @@ func _leave() -> void:
 	_took = false
 	_bring_back()
 	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
-	sheet_wanted.emit(World.country_of(farm), farm)
+	sheet_wanted.emit(&"world" if farm == BanditCamp.SITE else World.country_of(farm), farm)
 
 
 ## Whether the mouse is the sheet's: the fight is on, this sheet lies open at the map, nothing over it.

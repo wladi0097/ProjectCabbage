@@ -1066,3 +1066,53 @@ func test_an_exemplary_win_is_counted() -> void:
 	report.grade = WarReport.EXEMPLARY
 	WarSheet.tally(save, &"K-7", report)
 	assert_int(save.wars_exemplary).is_equal(1)
+
+
+## A save in chapter 4 with a bandit camp standing (no farm war under way).
+func _camp() -> SaveGame:
+	var save := _at_war()
+	save.stamped.append(BanditCamp.CARD)
+	BanditCamp.tick(save, 0.016)
+	save.bandit_fee = 1000
+	return save
+
+
+func test_a_camp_fight_lays_the_camps_map_with_its_defences_buffed_and_no_farm_named() -> void:
+	SaveManager.save = _camp()
+	var sheet := _sheet({field_associate = 3}, BanditCamp.SITE)
+	var buff := BanditCamp.buff(SaveManager.save)
+	var plain := WarFight.new(sheet._map.layout(), sheet._map.grid_size, 90.0)
+	for i in plain.buildings.size():
+		assert_float(sheet.fight.buildings[i].max_hp).is_equal_approx(plain.buildings[i].max_hp * buff, 0.01)
+	var box := "Page/Sheet/TitleBlock/Box/"
+	assert_str((sheet.get_node(box + "Code") as Label).text).is_equal("UNREST LEVEL 1")
+	assert_str((sheet.get_node(box + "Site") as Label).text).is_equal("BANDIT CAMP")
+	assert_str(sheet.debut).is_empty()
+	assert_bool(sheet.staging).is_false()
+
+
+func test_a_camp_fights_staff_take_the_buffed_defences_harder_hits() -> void:
+	SaveManager.save = _camp()
+	var sheet := _sheet({field_associate = 3}, BanditCamp.SITE)
+	assert_bool(sheet.place(FA, 0)).is_true()
+	assert_bool(sheet.start_fight()).is_true()
+	var full: float = WarRules.unit_stats(SaveManager.save, FA).hp
+	assert_float(sheet.fight.units[0].max_hp).is_equal_approx(full / BanditCamp.buff(SaveManager.save), 0.01)
+
+
+func test_a_farm_war_in_chapter_4_is_not_buffed() -> void:
+	var save := _at_war()
+	save.stamped.append(BanditCamp.CARD)
+	SaveManager.save = save
+	var sheet := _sheet()
+	var plain := WarFight.new(sheet._map.layout(), sheet._map.grid_size, 90.0)
+	for i in plain.buildings.size():
+		assert_float(sheet.fight.buildings[i].max_hp).is_equal(plain.buildings[i].max_hp)
+
+
+func test_a_camps_report_prints_the_recovery_and_what_it_paid_never_a_farm() -> void:
+	var won: Dictionary = WarSheet.camp_lines({coins = 1500000000, findings = 3000000, stock = 250000}, true)
+	assert_str(won.site).is_equal("RECOVERY OPERATION")
+	assert_str(won.outcome).is_equal("PROPERTY RECOVERED")
+	assert_str(won.remark).starts_with("Recovered: $")
+	assert_str(WarSheet.camp_lines({}, false).outcome).is_equal("RECOVERY UNSUCCESSFUL")

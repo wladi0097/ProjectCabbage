@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://entities/map_table/world_register.gd" id="4_register"]
 [ext_resource type="Shader" path="res://assets/shaders/country_spread.gdshader" id="6_spread"]
 [ext_resource type="PackedScene" path="res://entities/map_table/map_flash.tscn" id="5_flash"]
+[ext_resource type="PackedScene" path="res://entities/map_table/farm_deed.tscn" id="7_deed"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/bandit_marker.tscn" id="8_camp"]
 
 [sub_resource type="ShaderMaterial" id="Spread_kohlmark"]
 shader = ExtResource("6_spread")
@@ -1142,4 +1144,10 @@ site = &"endmark"
 title = "Endmark Isle"
 
 [node name="Flash" parent="." instance=ExtResource("5_flash")]
+visible = false
+
+[node name="Camp" parent="." instance=ExtResource("8_camp")]
+visible = false
+
+[node name="Deed" parent="." instance=ExtResource("7_deed")]
 visible = false
