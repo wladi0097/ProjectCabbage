@@ -24,7 +24,7 @@ boot_splash/minimum_display_time=2000
 
 [audio]
 
-buses/default_bus_layout="uid://lnkxrysmtwnw"
+buses/default_bus_layout="res://ressources/default_bus_layout.tres"
 
 [autoload]
 
