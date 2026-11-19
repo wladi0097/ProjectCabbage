@@ -43,6 +43,7 @@ https://ambientcg.com/
 Oswald by Vernon Adams, Kalapi Gajjar, Cyreal
 Nunito Sans by Vernon Adams, Jacques Le Bailly
 Noto Sans JP, KR and SC by Google and Adobe
+DSEG14 by Keshikan
 Licensed under the SIL Open Font License 1.1
 https://openfontlicense.org
 

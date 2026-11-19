@@ -216,3 +216,32 @@ func test_no_limit_climbs_past_what_its_counters_drums_can_show() -> void:
 		for node: Dictionary in Projector.NODES + FarmTree.NODES:
 			top += node.get("add", {}).get(limit, 0)
 		assert_int(top).override_failure_message("%s: %d on %d drums" % [path, top, machine.drums]).is_less(int(pow(10.0, machine.drums)))
+
+
+func test_after_print_larger_numbers_both_counters_show_a_green_readout_over_the_drums() -> void:
+	for path: String in COUNTERS:
+		var machine := _counter(path)
+		assert_bool((machine.get_node("Readout") as Node3D).visible).is_false()
+		SaveManager.save.stamped.append(DigitalReadout.CARD)
+		machine._process(0.0)
+		assert_bool((machine.get_node("Readout") as Node3D).visible).is_true()
+		SaveManager.save.stamped = PackedStringArray()
+
+
+func test_the_coin_readout_prints_past_what_nine_drums_hold() -> void:
+	SaveManager.save.stamped.append(DigitalReadout.CARD)
+	SaveManager.save.coin_limit = 9000000000000
+	var machine := _counter(COUNTERS[0])
+	SaveManager.save.coins = 4500000000
+	machine._shown = 4500000000.0
+	machine._process(0.0)
+	assert_str((machine.get_node("Readout/Figures/Ink") as Label3D).text).is_equal("$4.5B")
+
+
+func test_a_full_purse_still_reads_full_in_red_beside_the_digital_readout() -> void:
+	SaveManager.save.stamped.append(DigitalReadout.CARD)
+	for path: String in COUNTERS:
+		var machine := _counter(path)
+		_fill(machine)
+		assert_bool((machine.get_node("Full") as Label3D).visible).is_true()
+		assert_bool((machine.get_node("Readout") as Node3D).visible).is_true()

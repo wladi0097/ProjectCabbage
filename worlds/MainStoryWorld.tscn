@@ -32,6 +32,7 @@
 [ext_resource type="PackedScene" path="res://entities/farm_tv/farm_tv.tscn" id="farm_tv_1"]
 [ext_resource type="Script" uid="uid://dxyunm1sh0a2w" path="res://worlds/components/field_exchange.gd" id="field_exchange_1"]
 [ext_resource type="PackedScene" path="res://entities/field_line/field_line.tscn" id="field_line_1"]
+[ext_resource type="PackedScene" path="res://entities/components/digital_readout.tscn" id="digital_readout_1"]
 [ext_resource type="PackedScene" path="res://entities/hand_schedule/hand_schedule.tscn" id="hand_schedule_1"]
 [ext_resource type="PackedScene" uid="uid://cbkjwrhjqpbe6" path="res://entities/map_table/map_table.tscn" id="map_table_1"]
 [ext_resource type="PackedScene" path="res://entities/consultant/consultant.tscn" id="mgr_consultant"]
@@ -352,6 +353,16 @@ max_polyphony = 2
 bus = &"SFX"
 script = ExtResource("13_cue")
 min_interval = 0.03
+
+[node name="Readout" parent="CabbageFeeder" instance=ExtResource("digital_readout_1")]
+transform = Transform3D(0.9062, -0.3367, -0.2558, 0.4122, 0.8383, 0.3568, 0.0943, -0.4287, 0.8985, 0.1978, -0.1169, 0.3275)
+cells = 8
+
+[node name="Glass" parent="CabbageFeeder/Readout" index="0"]
+transform = Transform3D(0.27, 0, 0, 0, 0.047, 0.0137, 0, -0.0171, 0.0376, 0.004, -0.004, -0.008)
+
+[node name="Figures" parent="CabbageFeeder/Readout" index="1"]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0.1165, 0.003, 0.0113)
 
 [node name="SupplyConsole" parent="." unique_id=895053093 node_paths=PackedStringArray("coins") instance=ExtResource("14_console")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.772, 1)
@@ -714,3 +725,5 @@ ambience = NodePath("../Ambience")
 [connection signal="landed" from="Coins" to="Coins/Land" method="cue"]
 [connection signal="refused" from="Coins" to="Coins/Return" method="cue"]
 [connection signal="refused" from="Coins" to="TallyMachine" method="refuse"]
+
+[editable path="CabbageFeeder/Readout"]

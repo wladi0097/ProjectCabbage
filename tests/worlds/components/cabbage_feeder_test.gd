@@ -325,3 +325,12 @@ func test_no_cabbage_comes_down_the_chute_once_the_gun_is_bought_even_after_a_re
 	# A reload mid-ending reads the same stamp: still shut.
 	var reloaded := save.duplicate(true) as SaveGame
 	assert_bool(Feeder.chute_shut(reloaded)).is_true()
+
+
+func test_the_chute_drums_have_a_digital_readout_over_them_in_the_world_scene() -> void:
+	var state := (load("res://worlds/MainStoryWorld.tscn") as PackedScene).get_state()
+	var found := false
+	for i in state.get_node_count():
+		if str(state.get_node_path(i)) == "./CabbageFeeder/Readout":
+			found = state.get_node_instance(i) == load("res://entities/components/digital_readout.tscn")
+	assert_bool(found).is_true()

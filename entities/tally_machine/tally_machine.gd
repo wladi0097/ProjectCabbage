@@ -12,6 +12,8 @@ extends Node3D
 ## (refuse: CoinPile.refused, QaBay._eject). The buzzer sounds once as it becomes full, never while
 ## it stays full, and at most once in QUIET seconds. The limits end under what the drums show
 ## (the ARCHIVE ladder at ¶900,000 for six drums; the suite holds them together).
+## Once PRINT LARGER NUMBERS is stamped a green digital readout covers the drums ($Readout,
+## DigitalReadout): it prints the rolling value in Num.text's short form, past what the drums hold.
 
 ## Once per frame in which the ones drum passed a whole number (the tick sound hooks in here).
 signal ticked
@@ -41,6 +43,7 @@ var _bones := PackedInt32Array()
 @onready var _limit: Label3D = $Limit
 @onready var _full: Label3D = $Full
 @onready var _buzzer: SoundCue = $Refuse
+@onready var _readout: DigitalReadout = $Readout
 ## FULL shows; seconds until the buzzer may sound again.
 var _is_full := false
 var _quiet := 0.0
@@ -66,6 +69,7 @@ func _process(delta: float) -> void:
 	_limit.visible = not _is_full
 	_full.visible = _is_full
 	var target := float(save.get(field))
+	_readout.show_value(floori(_shown))
 	if _shown == target:
 		return
 	var before := floori(_shown)

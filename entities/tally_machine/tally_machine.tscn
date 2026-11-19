@@ -11,6 +11,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/effects/limit_full.wav" id="sfx_limit_full"]
 
 [ext_resource type="Material" path="res://assets/materials/machine_metal.tres" id="5_metal"]
+[ext_resource type="PackedScene" path="res://entities/components/digital_readout.tscn" id="6_readout"]
 
 [sub_resource type="BoxMesh" id="Mesh_limit_rim"]
 material = ExtResource("5_metal")
@@ -93,3 +94,16 @@ stream = SubResource("Rand_refuse")
 volume_db = -8.0
 bus = &"SFX"
 script = ExtResource("3_cue")
+
+[node name="Readout" parent="." instance=ExtResource("6_readout")]
+transform = Transform3D(1, 0, 0, 0, 0.766, 0.6428, 0, -0.6428, 0.766, 0, 0.1221, 0.0843)
+mark = "$"
+cells = 14
+
+[node name="Glass" parent="Readout" index="0"]
+transform = Transform3D(0.445, 0, 0, 0, 0.05, 0, 0, 0, 0.04, 0, 0, -0.01)
+
+[node name="Figures" parent="Readout" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0, 0.0105)
+
+[editable path="Readout"]
