@@ -67,10 +67,10 @@ func test_the_interception_rate_is_rounded_and_zero_before_the_first_sale() -> v
 	assert_str(_summary(save, 0)["INTERCEPTION RATE"]).is_equal("67%")
 
 
-func test_a_huge_fortune_is_counted_in_millions() -> void:
+func test_a_huge_fortune_is_counted_in_billions() -> void:
 	var save := SaveGame.new()
 	save.coins = 2000000000
-	assert_str(_summary(save, 0)["COINS ON HAND"]).is_equal("$2000M")
+	assert_str(_summary(save, 0)["COINS ON HAND"]).is_equal("$2B")
 
 
 func test_requisitions_list_every_card_and_node_bought_newest_first_with_its_title_time_and_price() -> void:

@@ -41,6 +41,14 @@ const RING_RATTLE := 18.0
 const RING_RISE := 0.25
 const RING_SWING := 0.5
 
+## The count window (its number and farm sign) prints in the desk readouts' green
+## (DigitalReadout.INK) instead of its amber: the game's say (PRINT LARGER NUMBERS is stamped).
+var digital := false:
+	set(value):
+		digital = value
+		if _count:
+			_count.modulate = DigitalReadout.INK if value else _amber
+			_sign.modulate = _count.modulate
 ## The handset rattles for attention (ring_offset); a lift stops it.
 var ringing := false
 var _ring_time := 0.0
@@ -65,6 +73,8 @@ var _relay: Tween
 @onready var _receiver := _skeleton.find_bone("Receiver")
 @onready var _lamps: MeshInstance3D = $Model/Lamps
 @onready var _count: Label3D = $Count
+@onready var _amber := _count.modulate
+@onready var _sign: Sprite3D = $FarmSign
 @onready var _handset: Interactable = $Model/Armature/Skeleton3D/ReceiverMount/Handset/Interactable
 ## The whole box answers the hand as the handset does: a click anywhere on the phone lifts it.
 @onready var _box: Interactable = $Body/Interactable

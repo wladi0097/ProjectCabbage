@@ -15,6 +15,8 @@ extends Node3D
 ## A window whose number is at its limit (coins and Findings: SaveGame.room is 0, nothing more comes
 ## in) prints it in FULL_INK, the desk counters' FULL red, and flicks over as it turns; under the
 ## limit again it flicks back to its own colour.
+## Once PRINT LARGER NUMBERS is stamped every window prints in the desk readouts' green
+## (DigitalReadout.INK) instead of its own colour, flicking over as it changes; FULL_INK still wins.
 
 const Events := preload("res://globalScripts/game_events.gd")
 
@@ -39,6 +41,8 @@ var _flicks: Array[Tween] = [null, null, null, null]
 var _flicked_at: Array[float] = [-REST, -REST, -REST, -REST]
 ## Which windows print in FULL_INK right now.
 var _full: Array[bool] = [false, false, false, false]
+## The windows print in DigitalReadout.INK (the card is stamped).
+var _digital := false
 
 @onready var _windows: Array[Label3D] = [$Windows/Coins, $Windows/Cabbages, $Windows/Findings, $Windows/Farms]
 @onready var _tick: SoundCue = $Tick
@@ -76,8 +80,10 @@ static func at_limit(save: SaveGame) -> Array[bool]:
 func show_save(save: SaveGame, animate := true) -> void:
 	var texts := readout(save)
 	var full := at_limit(save)
+	var retint := DigitalReadout.on(save) != _digital
+	_digital = DigitalReadout.on(save)
 	for i in _windows.size():
-		var turned := full[i] != _full[i]
+		var turned := full[i] != _full[i] or retint
 		_full[i] = full[i]
 		if turned:
 			_windows[i].modulate = _ink(i)
@@ -99,7 +105,9 @@ func flicking(i: int) -> bool:
 
 ## Window `i`'s ink right now: its own, or FULL_INK at its limit.
 func _ink(i: int) -> Color:
-	return FULL_INK if _full[i] else _inks[i]
+	if _full[i]:
+		return FULL_INK
+	return DigitalReadout.INK if _digital else _inks[i]
 
 
 func _now() -> float:

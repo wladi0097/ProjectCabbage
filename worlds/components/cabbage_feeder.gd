@@ -51,6 +51,8 @@ var _research_share := research_share(SaveManager.save)
 var _research_due := false
 
 @onready var _skeleton: Skeleton3D = $Model/Armature/Skeleton3D
+## The green readout over the drums once PRINT LARGER NUMBERS is stamped (DigitalReadout).
+@onready var _readout: DigitalReadout = $Readout
 
 
 func _ready() -> void:
@@ -62,6 +64,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var target := float(SaveManager.save.stock)
+	_readout.show_value(floori(_shown))
 	if _shown != target:
 		var before := floori(_shown)
 		_shown = move_toward(_shown, target, (ROLL_RATE + absf(target - _shown) * CATCH_UP) * delta)
