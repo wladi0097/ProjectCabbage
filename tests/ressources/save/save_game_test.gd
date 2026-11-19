@@ -246,15 +246,24 @@ func test_the_cash_limit_card_multiplies_the_limit_by_five_and_the_archive_card_
 
 
 ## Every step that raises `limit` ("coin_limit", "findings_limit"), in the order it is bought: the desk
-## card, then the tree's chain. Each as [id, price, the node or card].
+## card, then the tree's chain, chapter 4's (CAPITAL after the card print_numbers, DECAY ARCHIVE) last.
+## Each as [id, price, the node or card].
 func _limit_steps(limit: String) -> Array:
 	var coins := limit == "coin_limit"
 	var card := UpgradeDesk.card_data("cash_holding" if coins else "archive_capacity")
 	var out := [[card.id, card.price, card]]
 	for node: Dictionary in Projector.NODES:
 		if node.get("add", {}).has(limit):
+			if node.id == "capital_1":
+				var numbers := UpgradeDesk.card_data("print_numbers")
+				out.append([numbers.id, numbers.price, numbers])
 			out.append([node.id, node.price, node])
 	return out
+
+
+## Whether limit step `id` is chapter 4's (print_numbers, CAPITAL, DECAY ARCHIVE).
+func _nuclear_step(id: String) -> bool:
+	return id == "print_numbers" or id.begins_with("capital_") or id.begins_with("decay_archive_")
 
 
 ## Buys every step of `limit` on a new save, calling `each` (step, limit before, limit after); returns the save.
@@ -276,16 +285,17 @@ func test_every_limit_step_costs_no_more_than_the_limit_before_it_and_at_least_d
 	for limit: String in ["coin_limit", "findings_limit"]:
 		var currency := "coins" if limit == "coin_limit" else "findings"
 		var steps := _limit_steps(limit)
-		assert_int(steps.size()).override_failure_message(limit).is_equal(6)  # The card, then five steps.
+		assert_int(steps.filter(func(step: Array) -> bool: return not _nuclear_step(step[0])).size()).override_failure_message(limit).is_equal(6)  # The card, then five steps.
 		_climb(limit, func(step: Array, was: int, now: int) -> void:
 			assert_int(step[1]).override_failure_message("%s costs more than the limit before it" % step[0]).is_less_equal(was)
-			var least := 1.5 if step[0] in ["archive_4", "archive_5"] else 2.0
+			# Chapter 4's DECAY ARCHIVE climbs from ¶900K to ¶10M in five steps: half as much again or more.
+			var least := 1.5 if step[0] in ["archive_4", "archive_5"] or step[0].begins_with("decay_archive_") else 2.0
 			assert_float(float(now)).override_failure_message("%s does not raise the limit %s times" % [step[0], least]).is_greater_equal(was * least))
 		# Paid in the currency it raises, each tree step hanging under the one before.
 		assert_array(UpgradeDesk.costs(steps[0][2]).keys()).is_equal([currency])
 		for i in range(1, steps.size()):
 			assert_str(UpgradeTree.currency_of(steps[i][2])).override_failure_message(steps[i][0]).is_equal(currency)
-			if i > 1:
+			if i > 1 and steps[i][2].has("parent") and steps[i - 1][2].has("parent"):
 				assert_str(steps[i][2].parent).override_failure_message(steps[i][0]).is_equal(steps[i - 1][0])
 
 
@@ -418,6 +428,8 @@ func test_every_farm_of_the_world_can_be_owned_and_the_last_card_is_reachable_un
 	assert_array(order.slice(0, 4)).is_equal(["K-6", "K-7", "K-8", "no_taxes"])  # The country, then its first law.
 	# An optional card queued behind the chain (GameEvents.DRY_LEFT) may still be bought after it.
 	var chain := order.filter(func(id: Variant) -> bool: return not str(id) in UpgradeDesk.Events.DRY_LEFT)
+	assert_str(chain[-1]).is_equal("star_programme")  # Chapter 4's nuclear hour follows stars under the same limits.
+	chain = chain.slice(0, chain.find("stars") + 1)
 	assert_str(chain[-1]).is_equal("stars")
 	assert_str(chain[-2]).is_equal("endmark-1")  # The final island falls last.
 	# Nothing across the water before the sea lanes.

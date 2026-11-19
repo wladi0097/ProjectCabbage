@@ -189,15 +189,16 @@ const TRACTOR_SPRITES: Array[Texture2D] = [preload("res://assets/sprites/farm/tr
 const WORKER_PIXEL := 3.0
 const TRACTOR_PIXEL := 5.0
 const WALK_STEP := 16.0
-## Worker slots of each kind (hands and tractors, up to 5 each): a hut per hand in the yard's top
-## right, three in a row and the other two under them (HUT_SPRITE, HUT_LIT while its hand is in, at
-## HUT_PIXEL: 80 px, a tractor's size), a parking bay (BAY px, open to the field) per tractor in two
-## columns down its left side. The AUTO SEED switch (the scene's AutoSeed, a lever sprite per state) sits under the huts.
-const SLOTS := 5
+## Worker slots of each kind (hands and tractors, up to 8 each since chapter 4's NUCLEAR FAMILY): a
+## hut per hand in the yard's top right, rows of three, three and two (HUT_SPRITE, HUT_LIT while its
+## hand is in, at HUT_PIXEL: 80 px, a tractor's size), a parking bay (BAY px, open to the field) per
+## tractor in two columns of four down its left side. The AUTO SEED switch (the scene's AutoSeed, a
+## lever sprite per state) sits under the huts.
+const SLOTS := 8
 const HUT_SPRITE: Texture2D = preload("res://assets/sprites/farm/hut.svg")
 const HUT_LIT: Texture2D = preload("res://assets/sprites/farm/hut_lit.svg")
 const HUT_PIXEL := 5.0
-const BAY := Vector2(96, 96)
+const BAY := Vector2(96, 86)
 ## Unbought huts and bays: drawn at this alpha.
 const FAINT := 0.2
 ## A farm hand's target while it goes to the seed crate (squares are 0 and up, -1 is none).
@@ -396,9 +397,8 @@ static func feeds(save: SaveGame) -> bool:
 
 
 static func grow_time(save: SaveGame) -> float:
-	if save.farm_bought.has("greenhouse"):
-		return 15.0
-	return 20.0 if save.farm_bought.has("fertiliser") else GROW_TIME
+	var base := 15.0 if save.farm_bought.has("greenhouse") else 20.0 if save.farm_bought.has("fertiliser") else GROW_TIME
+	return base * save.farm_grow_mult
 
 
 static func yield_of(save: SaveGame) -> int:
@@ -746,15 +746,16 @@ static func home(tractor: bool, n: int) -> Vector2:
 	return hut_rect(n).position + Vector2(10, 12.5) * HUT_PIXEL
 
 
-## Tractor `n`'s parking bay down the yard's left side under its YARD heading: bays 0-2 stacked in
-## the first column, 3 and 4 in the second.
+## Tractor `n`'s parking bay down the yard's left side under its YARD heading: bays 0-3 stacked in
+## the first column, 4-7 in the second.
 static func bay_rect(n: int) -> Rect2:
-	return Rect2(YARD.position + Vector2(10 + floori(n / 3.0) * (BAY.x + 6), 34 + n % 3 * (BAY.y + 6)), BAY)
+	return Rect2(YARD.position + Vector2(10 + floori(n / 4.0) * (BAY.x + 6), 34 + n % 4 * (BAY.y + 4)), BAY)
 
 
-## Farm hand `n`'s hut in the yard's top right: huts 0-2 in a row, 3 and 4 centred under them.
+## Farm hand `n`'s hut in the yard's top right: huts 0-2 in a row, 3-5 under them, 6 and 7 centred
+## under those.
 static func hut_rect(n: int) -> Rect2:
-	var at := Vector2(220 + n * 88, 30) if n < 3 else Vector2(264 + (n - 3) * 88, 114)
+	var at := Vector2(220 + n % 3 * 88, 26 + floori(n / 3.0) * 82) if n < 6 else Vector2(264 + (n - 6) * 88, 190)
 	return Rect2(YARD.position + at, HUT_SPRITE.get_size() * HUT_PIXEL)
 
 

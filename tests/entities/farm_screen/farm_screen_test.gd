@@ -790,18 +790,25 @@ func test_each_tractor_waits_in_its_own_parking_bay_down_the_yards_left_side() -
 			assert_bool(bay.intersects(FarmScreen.bay_rect(other))).override_failure_message("bay %d" % n).is_false()
 
 
-func test_the_yard_has_room_for_five_farm_hands_and_five_tractors_and_all_ten_go_to_work() -> void:
-	assert_int(FarmScreen.SLOTS).is_equal(5)
+func test_the_yard_has_room_for_eight_farm_hands_and_eight_tractors_and_all_sixteen_go_to_work() -> void:
+	assert_int(FarmScreen.SLOTS).is_equal(8)
 	var save := _farm()
-	save.farm_hands = 5
-	save.farm_tractors = 5
+	save.farm_hands = 8
+	save.farm_tractors = 8
 	var workers: Array[FarmScreen.Worker] = []
 	FarmScreen.sync_workers(workers, save)
-	assert_int(workers.size()).is_equal(10)
+	assert_int(workers.size()).is_equal(16)
 	var homes := {}
 	for w in workers:
 		homes[FarmScreen.home(w.tractor, w.slot)] = true
-	assert_int(homes.size()).is_equal(10)  # Each in its own hut or bay.
+	assert_int(homes.size()).is_equal(16)  # Each in its own hut or bay.
+
+
+func test_accelerated_ripening_shortens_every_squares_ripening_time() -> void:
+	var save := _farm()
+	save.farm_bought.append("greenhouse")
+	save.farm_grow_mult = 0.75
+	assert_float(FarmScreen.grow_time(save)).is_equal_approx(11.25, 0.0001)
 
 
 func test_each_farm_hand_lives_in_its_own_tractor_sized_hut_in_the_yards_top_right() -> void:

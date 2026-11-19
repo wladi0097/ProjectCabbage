@@ -1,16 +1,17 @@
 class_name AlphaEnd
 extends Control
-## The alpha's end: when chapter 3's last card is stamped (GameEvents.chapter_3_done: "stars", which
-## needs every farm) a big memo over a dimmed screen thanks the player, once per save
-## (save.alpha_end, set on closing). Closed by its button or Esc; the game keeps running behind it.
-## The demo has its own end (BossReport.DEMO_END).
+## The alpha's end: when the last card built so far is stamped (CARD: chapter 4's nuclear hour ends
+## with the CABBAGE STAR PROGRAMME; the flagship that follows is not built yet) a big memo over a
+## dimmed screen thanks the player, once per save (save.alpha_end, set on closing). Closed by its
+## button or Esc; the game keeps running behind it. The demo has its own end (BossReport.DEMO_END).
 
 const Events := preload("res://globalScripts/game_events.gd")
+const CARD := "star_programme"
 
 
 ## Whether the popup comes now for `save`.
 static func due(save: SaveGame) -> bool:
-	return not Events.Demo.active() and not save.alpha_end and Events.chapter_3_done(save)
+	return not Events.Demo.active() and not save.alpha_end and save.stamped.has(CARD)
 
 
 func open() -> void:

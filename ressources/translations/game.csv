@@ -1908,10 +1908,6 @@ The supply console is removed for good: no more crates. A field line takes its p
 The supply console is removed for good: no more crates. A field line takes its place: its lamps count the farms you own, of 24. Lift the handset to go to the map table.","Wir kaufen keine Kohlköpfe mehr. Wir kaufen, was man über jene weiß, die sie anbauen.
 Das Bestellpult wird endgültig entfernt: keine Kisten mehr. An seine Stelle tritt eine Feldleitung: Ihre Lampen zählen die Höfe, die Ihnen gehören, von 24. Heben Sie den Hörer ab, um zum Kartentisch zu gelangen."
 WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS,WE OWN THE WORLD. WE MUST CONTINUE IN THE STARS,DIE WELT GEHÖRT UNS. WEITER GEHT ES IN DEN STERNEN
-"There is nothing left to buy down here.
-The field line counts the farms. Stamped, the board looks up.","There is nothing left to buy down here.
-The field line counts the farms. Stamped, the board looks up.","Hier unten gibt es nichts mehr zu kaufen.
-Die Feldleitung zählt die Höfe. Gestempelt, blickt der Vorstand nach oben."
 ACQUIRED,ACQUIRED,ERWORBEN
 NOT FOR SALE,NOT FOR SALE,UNVERKÄUFLICH
 %s cabbages,%s cabbages,%s Kohlköpfe
@@ -3323,3 +3319,587 @@ It is the size of one cabbage. Physics has been asked for comment.,It is the siz
 "LEGAL TENDER, CONSOLIDATED","LEGAL TENDER, CONSOLIDATED","GESETZLICHES ZAHLUNGSMITTEL, KONSOLIDIERT"
 Have the coins on the desk merge up to $10K.,Have the coins on the desk merge up to $10K.,Die Münzen auf dem Tisch bis zu $10K verschmelzen lassen.
 Accounts has requested a larger wallet.,Accounts has requested a larger wallet.,Die Buchhaltung hat eine größere Geldbörse beantragt.
+BULLION ELEVATOR,BULLION ELEVATOR,GOLDAUFZUG
+"The vault now has floors. The floors have vaults.
+You can hold up to $100M instead of $40M.","The vault now has floors. The floors have vaults.
+You can hold up to $100M instead of $40M.","Der Tresor hat jetzt Stockwerke. Die Stockwerke haben Tresore.
+Sie können bis zu $100M halten statt $40M."
+CLEARING HOUSE,CLEARING HOUSE,CLEARINGSTELLE
+"Money is cleared here. Nobody clears the money.
+You can hold up to $200M instead of $100M.","Money is cleared here. Nobody clears the money.
+You can hold up to $200M instead of $100M.","Hier wird Geld verrechnet. Niemand verrechnet das Geld.
+Sie können bis zu $200M halten statt $100M."
+SOVEREIGN WEALTH FUND,SOVEREIGN WEALTH FUND,STAATSFONDS
+"The sovereign was consulted. The sovereign is a subsidiary.
+You can hold up to $400M instead of $200M.","The sovereign was consulted. The sovereign is a subsidiary.
+You can hold up to $400M instead of $200M.","Der Staat wurde gefragt. Der Staat ist eine Tochtergesellschaft.
+Sie können bis zu $400M halten statt $200M."
+BEDROCK RESERVE,BEDROCK RESERVE,FELSRESERVE
+"Bored into the bedrock. The bedrock was invoiced.
+You can hold up to $1B instead of $400M.","Bored into the bedrock. The bedrock was invoiced.
+You can hold up to $1B instead of $400M.","In den Fels gebohrt. Der Fels hat eine Rechnung bekommen.
+Sie können bis zu $1B halten statt $400M."
+OFFSHORE HOLDING,OFFSHORE HOLDING,OFFSHORE-BETEILIGUNG
+"The island has one resident. He is a ledger.
+You can hold up to $2B instead of $1B.","The island has one resident. He is a ledger.
+You can hold up to $2B instead of $1B.","Die Insel hat einen Einwohner. Er ist ein Hauptbuch.
+Sie können bis zu $2B halten statt $1B."
+CENTRAL BANK OF CABBAGE,CENTRAL BANK OF CABBAGE,ZENTRALBANK DES KOHLS
+"The currency is backed by cabbages. The cabbages are backed by us.
+You can hold up to $5B instead of $2B.","The currency is backed by cabbages. The cabbages are backed by us.
+You can hold up to $5B instead of $2B.","Die Währung ist durch Kohl gedeckt. Der Kohl ist durch uns gedeckt.
+Sie können bis zu $5B halten statt $2B."
+THE LAST RESERVE,THE LAST RESERVE,DIE LETZTE RESERVE
+"There is no reserve after this one. It says so on the door.
+You can hold up to $10B instead of $5B.","There is no reserve after this one. It says so on the door.
+You can hold up to $10B instead of $5B.","Nach dieser gibt es keine Reserve mehr. Es steht an der Tür.
+Sie können bis zu $10B halten statt $5B."
+SHIELDED CABINET,SHIELDED CABINET,ABGESCHIRMTER SCHRANK
+"Findings are kept behind lead. They keep longer.
+You can hold up to ¶1.5M instead of ¶900K.","Findings are kept behind lead. They keep longer.
+You can hold up to ¶1.5M instead of ¶900K.","Befunde werden hinter Blei gelagert. Sie halten länger.
+Sie können bis zu ¶1.5M halten statt ¶900K."
+DECAY VAULT,DECAY VAULT,ZERFALLSTRESOR
+"Old Findings decay into new ones. On paper nothing is lost.
+You can hold up to ¶2.5M instead of ¶1.5M.","Old Findings decay into new ones. On paper nothing is lost.
+You can hold up to ¶2.5M instead of ¶1.5M.","Alte Befunde zerfallen in neue. Auf dem Papier geht nichts verloren.
+Sie können bis zu ¶2.5M halten statt ¶1.5M."
+DEEP REPOSITORY,DEEP REPOSITORY,TIEFENLAGER
+"Buried a kilometre down. Filed alphabetically.
+You can hold up to ¶4M instead of ¶2.5M.","Buried a kilometre down. Filed alphabetically.
+You can hold up to ¶4M instead of ¶2.5M.","Einen Kilometer tief vergraben. Alphabetisch abgelegt.
+Sie können bis zu ¶4M halten statt ¶2.5M."
+GEOLOGICAL ARCHIVE,GEOLOGICAL ARCHIVE,GEOLOGISCHES ARCHIV
+"Kept for ten thousand years. Retrieval takes one working day.
+You can hold up to ¶6.5M instead of ¶4M.","Kept for ten thousand years. Retrieval takes one working day.
+You can hold up to ¶6.5M instead of ¶4M.","Zehntausend Jahre aufbewahrt. Die Ausgabe dauert einen Werktag.
+Sie können bis zu ¶6.5M halten statt ¶4M."
+PERMANENT RECORD,PERMANENT RECORD,DAUERAKTE
+"The records will outlast the company. The company has noted this.
+You can hold up to ¶10M instead of ¶6.5M.","The records will outlast the company. The company has noted this.
+You can hold up to ¶10M instead of ¶6.5M.","Die Akten werden die Firma überdauern. Die Firma hat das vermerkt.
+Sie können bis zu ¶10M halten statt ¶6.5M."
+LEAD-LINED HANGAR,LEAD-LINED HANGAR,BLEIVERKLEIDETER HANGAR
+"The hangar hums at night. The cabbages are fine.
+Storage holds 2M cabbages instead of 999.999.","The hangar hums at night. The cabbages are fine.
+Storage holds 2M cabbages instead of 999.999.","Der Hangar summt nachts. Den Kohlköpfen geht es gut.
+Das Lager fasst 2M Kohlköpfe statt 999.999."
+DECOMMISSIONED REACTOR HALL,DECOMMISSIONED REACTOR HALL,STILLGELEGTE REAKTORHALLE
+"The reactor was removed. The hall was kept for its walls.
+Storage holds 4M cabbages instead of 2M.","The reactor was removed. The hall was kept for its walls.
+Storage holds 4M cabbages instead of 2M.","Der Reaktor wurde entfernt. Die Halle blieb wegen ihrer Wände.
+Das Lager fasst 4M Kohlköpfe statt 2M."
+SPENT-FUEL POOL,SPENT-FUEL POOL,ABKLINGBECKEN
+"Drained, scrubbed and restocked with cabbages.
+Storage holds 7M cabbages instead of 4M.","Drained, scrubbed and restocked with cabbages.
+Storage holds 7M cabbages instead of 4M.","Geleert, geschrubbt und mit Kohlköpfen neu befüllt.
+Das Lager fasst 7M Kohlköpfe statt 4M."
+EXCLUSION ZONE,EXCLUSION ZONE,SPERRZONE
+"Nobody lives within thirty kilometres. The cabbages do.
+Storage holds 10M cabbages instead of 7M.","Nobody lives within thirty kilometres. The cabbages do.
+Storage holds 10M cabbages instead of 7M.","Im Umkreis von dreißig Kilometern wohnt niemand. Die Kohlköpfe schon.
+Das Lager fasst 10M Kohlköpfe statt 7M."
+CONDENSE X,CONDENSE X,VERDICHTEN X
+"The centrifuge found more room inside the cabbage.
+A condensed cabbage holds 48 cabbages, not 32:
+it takes 48 from stock and counts as 48.","The centrifuge found more room inside the cabbage.
+A condensed cabbage holds 48 cabbages, not 32:
+it takes 48 from stock and counts as 48.","Die Zentrifuge hat im Kohlkopf mehr Platz gefunden.
+Ein verdichteter Kohlkopf fasst 48 statt 32:
+Er nimmt 48 aus dem Lager und zählt als 48."
+CONDENSE XI,CONDENSE XI,VERDICHTEN XI
+"It no longer rolls. It is rolled.
+A condensed cabbage holds 64 cabbages, not 48:
+it takes 64 from stock and counts as 64.","It no longer rolls. It is rolled.
+A condensed cabbage holds 64 cabbages, not 48:
+it takes 64 from stock and counts as 64.","Er rollt nicht mehr. Er wird gerollt.
+Ein verdichteter Kohlkopf fasst 64 statt 48:
+Er nimmt 64 aus dem Lager und zählt als 64."
+CONDENSE XII,CONDENSE XII,VERDICHTEN XII
+"Ninety-six to a cabbage. The desk was not rated for it.
+A condensed cabbage holds 96 cabbages, not 64:
+it takes 96 from stock and counts as 96.","Ninety-six to a cabbage. The desk was not rated for it.
+A condensed cabbage holds 96 cabbages, not 64:
+it takes 96 from stock and counts as 96.","Sechsundneunzig in einem Kohlkopf. Der Schreibtisch ist dafür nicht zugelassen.
+Ein verdichteter Kohlkopf fasst 96 statt 64:
+Er nimmt 96 aus dem Lager und zählt als 96."
+HEAVY COINAGE,HEAVY COINAGE,SCHWERE MÜNZEN
+"Coins are now weighed, not counted.
+Coins on the desk merge on up to the $100K coin,
+not only to $10K.","Coins are now weighed, not counted.
+Coins on the desk merge on up to the $100K coin,
+not only to $10K.","Münzen werden jetzt gewogen, nicht gezählt.
+Münzen auf dem Schreibtisch verschmelzen bis zur
+$100K-Münze, nicht nur bis $10K."
+CRITICAL DENOMINATION,CRITICAL DENOMINATION,KRITISCHER NENNWERT
+"A coin this large needs a permit to roll.
+Coins on the desk merge on up to the $500K coin,
+not only to $100K.","A coin this large needs a permit to roll.
+Coins on the desk merge on up to the $500K coin,
+not only to $100K.","Eine so große Münze braucht eine Rollgenehmigung.
+Münzen auf dem Schreibtisch verschmelzen bis zur
+$500K-Münze, nicht nur bis $100K."
+MILLION PIECE,MILLION PIECE,MILLIONENSTÜCK
+"Minted once. Then minted again.
+Coins on the desk merge on up to the $1M coin,
+not only to $500K.","Minted once. Then minted again.
+Coins on the desk merge on up to the $1M coin,
+not only to $500K.","Einmal geprägt. Dann noch einmal geprägt.
+Münzen auf dem Schreibtisch verschmelzen bis zur
+$1M-Münze, nicht nur bis $500K."
+REACTOR-GRADE COINAGE,REACTOR-GRADE COINAGE,REAKTORMÜNZEN
+"Ten million in one coin. The coin is warm.
+Coins on the desk merge on up to the $10M coin,
+not only to $1M.","Ten million in one coin. The coin is warm.
+Coins on the desk merge on up to the $10M coin,
+not only to $1M.","Zehn Millionen in einer Münze. Die Münze ist warm.
+Münzen auf dem Schreibtisch verschmelzen bis zur
+$10M-Münze, nicht nur bis $1M."
+SOVEREIGN MASS,SOVEREIGN MASS,SOUVERÄNE MASSE
+"The coin bends the desk slightly.
+Coins on the desk merge on up to the $100M coin,
+not only to $10M.","The coin bends the desk slightly.
+Coins on the desk merge on up to the $100M coin,
+not only to $10M.","Die Münze biegt den Schreibtisch leicht durch.
+Münzen auf dem Schreibtisch verschmelzen bis zur
+$100M-Münze, nicht nur bis $10M."
+THE BILLION,THE BILLION,DIE MILLIARDE
+"One coin, one billion. It is kept face down.
+Coins on the desk merge on up to the $1B coin,
+not only to $100M.","One coin, one billion. It is kept face down.
+Coins on the desk merge on up to the $1B coin,
+not only to $100M.","Eine Münze, eine Milliarde. Sie liegt mit der Bildseite nach unten.
+Münzen auf dem Schreibtisch verschmelzen bis zur
+$1B-Münze, nicht nur bis $100M."
+CHAIN MERGERS,CHAIN MERGERS,KETTENFUSIONEN
+"Each merger triggers the next. Legal is watching.
+Coins and tokens on the desk merge every 0.12 s,
+not every 0.25 s.","Each merger triggers the next. Legal is watching.
+Coins and tokens on the desk merge every 0.12 s,
+not every 0.25 s.","Jede Fusion löst die nächste aus. Die Rechtsabteilung sieht zu.
+Münzen und Marken auf dem Schreibtisch
+verschmelzen alle 0,12 s, nicht alle 0,25 s."
+SPONTANEOUS MERGERS,SPONTANEOUS MERGERS,SPONTANE FUSIONEN
+"Coins now merge without being asked.
+Coins and tokens on the desk merge every 0.06 s,
+not every 0.12 s.","Coins now merge without being asked.
+Coins and tokens on the desk merge every 0.06 s,
+not every 0.12 s.","Münzen verschmelzen jetzt ungefragt.
+Münzen und Marken auf dem Schreibtisch
+verschmelzen alle 0,06 s, nicht alle 0,12 s."
+NUCLEAR,NUCLEAR,NUKLEAR
+"Splitting things is a growth strategy.
+The street's price, Findings per cabbage, research and golden cabbages, and your own handling.","Splitting things is a growth strategy.
+The street's price, Findings per cabbage, research and golden cabbages, and your own handling.","Spalten ist eine Wachstumsstrategie.
+Der Preis der Straße, Befunde pro Kohlkopf, Forschungs- und Goldkohl und Ihre eigene Arbeit."
+FISSION PRICING I,FISSION PRICING I,SPALTPREISE I
+"Every price is split in two. Both halves are charged.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Every price is split in two. Both halves are charged.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Jeder Preis wird in zwei geteilt. Beide Hälften werden berechnet.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+FISSION PRICING II,FISSION PRICING II,SPALTPREISE II
+"The street's resistance was measured, then moderated.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","The street's resistance was measured, then moderated.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Der Widerstand der Straße wurde gemessen und dann gedämpft.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+FISSION PRICING III,FISSION PRICING III,SPALTPREISE III
+"Prices now decay upwards.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Prices now decay upwards.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Preise zerfallen jetzt nach oben.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+FISSION PRICING IV,FISSION PRICING IV,SPALTPREISE IV
+"Each cabbage carries a hazard surcharge. The hazard is the price.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Each cabbage carries a hazard surcharge. The hazard is the price.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Jeder Kohlkopf trägt einen Gefahrenzuschlag. Die Gefahr ist der Preis.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+FISSION PRICING V,FISSION PRICING V,SPALTPREISE V
+"The rods are in. The price is critical.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","The rods are in. The price is critical.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Die Stäbe sind drin. Der Preis ist kritisch.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+FISSION PRICING VI,FISSION PRICING VI,SPALTPREISE VI
+"Demand has been enriched.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Demand has been enriched.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Die Nachfrage wurde angereichert.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+FISSION PRICING VII,FISSION PRICING VII,SPALTPREISE VII
+"The street was told the price glows. The street paid.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","The street was told the price glows. The street paid.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Der Straße wurde gesagt, der Preis leuchte. Die Straße hat gezahlt.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+FISSION PRICING VIII,FISSION PRICING VIII,SPALTPREISE VIII
+"Pricing has reached meltdown. Accounts call it a milestone.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Pricing has reached meltdown. Accounts call it a milestone.
+The street now pays 33% more without refusing.
+Raise your price on the slate to cash in.","Die Preise haben die Kernschmelze erreicht. Die Buchhaltung nennt es einen Meilenstein.
+Die Straße zahlt jetzt 33% mehr, ohne abzulehnen.
+Erhöhen Sie Ihren Preis an der Tafel."
+ISOTOPE ANALYSIS I,ISOTOPE ANALYSIS I,ISOTOPENANALYSE I
+"Every cabbage is checked for isotopes. Every cabbage has some.
+Each analysed cabbage gives a third more Findings.","Every cabbage is checked for isotopes. Every cabbage has some.
+Each analysed cabbage gives a third more Findings.","Jeder Kohlkopf wird auf Isotope geprüft. Jeder Kohlkopf hat welche.
+Jeder geprüfte Kohlkopf bringt ein Drittel mehr Befunde."
+ISOTOPE ANALYSIS II,ISOTOPE ANALYSIS II,ISOTOPENANALYSE II
+"The counter clicks. Each click is a Finding.
+Each analysed cabbage gives a third more Findings.","The counter clicks. Each click is a Finding.
+Each analysed cabbage gives a third more Findings.","Der Zähler klickt. Jedes Klicken ist ein Befund.
+Jeder geprüfte Kohlkopf bringt ein Drittel mehr Befunde."
+ISOTOPE ANALYSIS III,ISOTOPE ANALYSIS III,ISOTOPENANALYSE III
+"Samples are now dated in half-lives.
+Each analysed cabbage gives a third more Findings.","Samples are now dated in half-lives.
+Each analysed cabbage gives a third more Findings.","Proben werden jetzt in Halbwertszeiten datiert.
+Jeder geprüfte Kohlkopf bringt ein Drittel mehr Befunde."
+ISOTOPE ANALYSIS IV,ISOTOPE ANALYSIS IV,ISOTOPENANALYSE IV
+"A heavier cabbage is a more informative cabbage.
+Each analysed cabbage gives a third more Findings.","A heavier cabbage is a more informative cabbage.
+Each analysed cabbage gives a third more Findings.","Ein schwererer Kohlkopf ist ein aufschlussreicherer Kohlkopf.
+Jeder geprüfte Kohlkopf bringt ein Drittel mehr Befunde."
+ISOTOPE ANALYSIS V,ISOTOPE ANALYSIS V,ISOTOPENANALYSE V
+"Findings are now detected from the corridor.
+Each analysed cabbage gives a third more Findings.","Findings are now detected from the corridor.
+Each analysed cabbage gives a third more Findings.","Befunde werden jetzt schon vom Flur aus gemessen.
+Jeder geprüfte Kohlkopf bringt ein Drittel mehr Befunde."
+ISOTOPE ANALYSIS VI,ISOTOPE ANALYSIS VI,ISOTOPENANALYSE VI
+"The lab coats are lead. The Findings are heavier.
+Each analysed cabbage gives a third more Findings.","The lab coats are lead. The Findings are heavier.
+Each analysed cabbage gives a third more Findings.","Die Laborkittel sind aus Blei. Die Befunde wiegen schwerer.
+Jeder geprüfte Kohlkopf bringt ein Drittel mehr Befunde."
+ISOTOPE ANALYSIS VII,ISOTOPE ANALYSIS VII,ISOTOPENANALYSE VII
+"The cabbage is studied until it reacts.
+Each analysed cabbage gives a third more Findings.","The cabbage is studied until it reacts.
+Each analysed cabbage gives a third more Findings.","Der Kohlkopf wird untersucht, bis er reagiert.
+Jeder geprüfte Kohlkopf bringt ein Drittel mehr Befunde."
+ISOTOPE ANALYSIS VIII,ISOTOPE ANALYSIS VIII,ISOTOPENANALYSE VIII
+"Nothing in the cabbage goes unanalysed. Some of it goes on glowing.
+Each analysed cabbage gives a third more Findings.","Nothing in the cabbage goes unanalysed. Some of it goes on glowing.
+Each analysed cabbage gives a third more Findings.","Nichts am Kohlkopf bleibt ungeprüft. Manches davon leuchtet weiter.
+Jeder geprüfte Kohlkopf bringt ein Drittel mehr Befunde."
+CHAIN REACTION I,CHAIN REACTION I,KETTENREAKTION I
+"One research cabbage informs the next.
+Blue research cabbages give 27× the Findings, not 20×.","One research cabbage informs the next.
+Blue research cabbages give 27× the Findings, not 20×.","Ein Forschungskohlkopf unterrichtet den nächsten.
+Blaue Forschungskohlköpfe: 27× Befunde, nicht 20×."
+CHAIN REACTION II,CHAIN REACTION II,KETTENREAKTION II
+"Each Finding now triggers two more.
+Blue research cabbages give 36× the Findings, not 27×.","Each Finding now triggers two more.
+Blue research cabbages give 36× the Findings, not 27×.","Jeder Befund löst jetzt zwei weitere aus.
+Blaue Forschungskohlköpfe: 36× Befunde, nicht 27×."
+CHAIN REACTION III,CHAIN REACTION III,KETTENREAKTION III
+"The lab has stopped counting and started multiplying.
+Blue research cabbages give 48× the Findings, not 36×.","The lab has stopped counting and started multiplying.
+Blue research cabbages give 48× the Findings, not 36×.","Das Labor hat aufgehört zu zählen und angefangen zu multiplizieren.
+Blaue Forschungskohlköpfe: 48× Befunde, nicht 36×."
+CHAIN REACTION IV,CHAIN REACTION IV,KETTENREAKTION IV
+"Containment is now a reporting line.
+Blue research cabbages give 64× the Findings, not 48×.","Containment is now a reporting line.
+Blue research cabbages give 64× the Findings, not 48×.","Eindämmung ist jetzt eine Berichtslinie.
+Blaue Forschungskohlköpfe: 64× Befunde, nicht 48×."
+CHAIN REACTION V,CHAIN REACTION V,KETTENREAKTION V
+"The reaction is self-sustaining. So is the department.
+Blue research cabbages give 85× the Findings, not 64×.","The reaction is self-sustaining. So is the department.
+Blue research cabbages give 85× the Findings, not 64×.","Die Reaktion erhält sich selbst. Die Abteilung auch.
+Blaue Forschungskohlköpfe: 85× Befunde, nicht 64×."
+DECAY PREMIUM: SALE I,DECAY PREMIUM: SALE I,ZERFALLSPRÄMIE: VERKAUF I
+"Golden cabbages are now sold as slow-release.
+A golden cabbage sold pays 27× your price, not 20×.","Golden cabbages are now sold as slow-release.
+A golden cabbage sold pays 27× your price, not 20×.","Goldene Kohlköpfe werden jetzt als Depotware verkauft.
+Ein verkaufter goldener Kohlkopf bringt das 27-Fache Ihres Preises, nicht das 20-Fache."
+DECAY PREMIUM: SALE II,DECAY PREMIUM: SALE II,ZERFALLSPRÄMIE: VERKAUF II
+"The street is told the glow is the gold.
+A golden cabbage sold pays 36× your price, not 27×.","The street is told the glow is the gold.
+A golden cabbage sold pays 36× your price, not 27×.","Der Straße wird gesagt, das Leuchten sei das Gold.
+Ein verkaufter goldener Kohlkopf bringt das 36-Fache Ihres Preises, nicht das 27-Fache."
+DECAY PREMIUM: SALE III,DECAY PREMIUM: SALE III,ZERFALLSPRÄMIE: VERKAUF III
+"Each golden cabbage comes with a certificate of decay.
+A golden cabbage sold pays 50× your price, not 36×.","Each golden cabbage comes with a certificate of decay.
+A golden cabbage sold pays 50× your price, not 36×.","Jeder goldene Kohlkopf kommt mit einer Zerfallsbescheinigung.
+Ein verkaufter goldener Kohlkopf bringt das 50-Fache Ihres Preises, nicht das 36-Fache."
+DECAY PREMIUM: LAB I,DECAY PREMIUM: LAB I,ZERFALLSPRÄMIE: LABOR I
+"Golden cabbages are tested for their half-life. The test bills by the hour.
+A golden cabbage in the research lab gives 32×
+the Findings, not 25×.","Golden cabbages are tested for their half-life. The test bills by the hour.
+A golden cabbage in the research lab gives 32×
+the Findings, not 25×.","Goldene Kohlköpfe werden auf ihre Halbwertszeit geprüft. Die Prüfung rechnet stundenweise ab.
+Ein goldener Kohlkopf im Forschungslabor bringt das 32-Fache an Befunden, nicht das 25-Fache."
+DECAY PREMIUM: LAB II,DECAY PREMIUM: LAB II,ZERFALLSPRÄMIE: LABOR II
+"The gold decays into something more valuable. Research is pleased.
+A golden cabbage in the research lab gives 40×
+the Findings, not 32×.","The gold decays into something more valuable. Research is pleased.
+A golden cabbage in the research lab gives 40×
+the Findings, not 32×.","Das Gold zerfällt in etwas Wertvolleres. Die Forschung ist zufrieden.
+Ein goldener Kohlkopf im Forschungslabor bringt das 40-Fache an Befunden, nicht das 32-Fache."
+DECAY PREMIUM: LAB III,DECAY PREMIUM: LAB III,ZERFALLSPRÄMIE: LABOR III
+"Each golden cabbage is now a reference isotope.
+A golden cabbage in the research lab gives 50×
+the Findings, not 40×.","Each golden cabbage is now a reference isotope.
+A golden cabbage in the research lab gives 50×
+the Findings, not 40×.","Jeder goldene Kohlkopf ist jetzt ein Referenzisotop.
+Ein goldener Kohlkopf im Forschungslabor bringt das 50-Fache an Befunden, nicht das 40-Fache."
+HANDLED WITH TONGS,HANDLED WITH TONGS,MIT DER ZANGE ANGEFASST
+"A manager's cabbage is no longer touched by hand.
+Cabbages you sell yourself pay 2.4× your price, not
+1.6×, and those you flick into the research lab give
+2.4× the Findings, not 1.6×.","A manager's cabbage is no longer touched by hand.
+Cabbages you sell yourself pay 2.4× your price, not
+1.6×, and those you flick into the research lab give
+2.4× the Findings, not 1.6×.","Der Kohlkopf eines Managers wird nicht mehr mit der Hand berührt.
+Kohlköpfe, die Sie selbst verkaufen, bringen das 2,4-Fache Ihres Preises statt das 1,6-Fache, und die, die Sie selbst ins Forschungslabor schnippen, das 2,4-Fache an Befunden statt das 1,6-Fache."
+LEAD GLOVES,LEAD GLOVES,BLEIHANDSCHUHE
+"Heavier gloves, heavier sales.
+Cabbages you sell yourself pay 3.6× your price, not
+2.4×, and those you flick into the research lab give
+3.6× the Findings, not 2.4×.","Heavier gloves, heavier sales.
+Cabbages you sell yourself pay 3.6× your price, not
+2.4×, and those you flick into the research lab give
+3.6× the Findings, not 2.4×.","Schwerere Handschuhe, schwerere Verkäufe.
+Kohlköpfe, die Sie selbst verkaufen, bringen das 3,6-Fache Ihres Preises statt das 2,4-Fache, und die, die Sie selbst ins Forschungslabor schnippen, das 3,6-Fache an Befunden statt das 2,4-Fache."
+REMOTE MANIPULATORS,REMOTE MANIPULATORS,FERNMANIPULATOREN
+"You now sell from behind a window, through two arms.
+Cabbages you sell yourself pay 5.4× your price, not
+3.6×, and those you flick into the research lab give
+5.4× the Findings, not 3.6×.","You now sell from behind a window, through two arms.
+Cabbages you sell yourself pay 5.4× your price, not
+3.6×, and those you flick into the research lab give
+5.4× the Findings, not 3.6×.","Sie verkaufen jetzt hinter einer Scheibe, mit zwei Greifarmen.
+Kohlköpfe, die Sie selbst verkaufen, bringen das 5,4-Fache Ihres Preises statt das 3,6-Fache, und die, die Sie selbst ins Forschungslabor schnippen, das 5,4-Fache an Befunden statt das 3,6-Fache."
+HOT CELL,HOT CELL,HEISSE ZELLE
+"Your desk has been sealed. You are inside it.
+Cabbages you sell yourself pay 8.1× your price, not
+5.4×, and those you flick into the research lab give
+8.1× the Findings, not 5.4×.","Your desk has been sealed. You are inside it.
+Cabbages you sell yourself pay 8.1× your price, not
+5.4×, and those you flick into the research lab give
+8.1× the Findings, not 5.4×.","Ihr Schreibtisch wurde versiegelt. Sie sitzen darin.
+Kohlköpfe, die Sie selbst verkaufen, bringen das 8,1-Fache Ihres Preises statt das 5,4-Fache, und die, die Sie selbst ins Forschungslabor schnippen, das 8,1-Fache an Befunden statt das 5,4-Fache."
+ENRICHED SOIL I,ENRICHED SOIL I,BODENKUR I
+"The soil is enriched. The enrichment is not disclosed.
+Every farm square harvests 40× a plain square's cabbages, not 30×.","The soil is enriched. The enrichment is not disclosed.
+Every farm square harvests 40× a plain square's cabbages, not 30×.","Der Boden ist angereichert. Womit, wird nicht offengelegt.
+Jedes Hoffeld erntet 40× die Kohlköpfe eines einfachen Feldes, nicht 30×."
+ENRICHED SOIL II,ENRICHED SOIL II,BODENKUR II
+"Topsoil is now graded by isotope.
+Every farm square harvests 53× a plain square's cabbages, not 40×.","Topsoil is now graded by isotope.
+Every farm square harvests 53× a plain square's cabbages, not 40×.","Mutterboden wird jetzt nach Isotop sortiert.
+Jedes Hoffeld erntet 53× die Kohlköpfe eines einfachen Feldes, nicht 40×."
+ENRICHED SOIL III,ENRICHED SOIL III,BODENKUR III
+"The worms have been reassigned.
+Every farm square harvests 70× a plain square's cabbages, not 53×.","The worms have been reassigned.
+Every farm square harvests 70× a plain square's cabbages, not 53×.","Die Würmer wurden versetzt.
+Jedes Hoffeld erntet 70× die Kohlköpfe eines einfachen Feldes, nicht 53×."
+ENRICHED SOIL IV,ENRICHED SOIL IV,BODENKUR IV
+"The ground is warm in winter. Nobody asks why.
+Every farm square harvests 93× a plain square's cabbages, not 70×.","The ground is warm in winter. Nobody asks why.
+Every farm square harvests 93× a plain square's cabbages, not 70×.","Der Boden ist im Winter warm. Niemand fragt, warum.
+Jedes Hoffeld erntet 93× die Kohlköpfe eines einfachen Feldes, nicht 70×."
+ENRICHED SOIL V,ENRICHED SOIL V,BODENKUR V
+"Fertile is no longer a description. It is a target.
+Every farm square harvests 124× a plain square's cabbages, not 93×.","Fertile is no longer a description. It is a target.
+Every farm square harvests 124× a plain square's cabbages, not 93×.","Fruchtbar ist keine Beschreibung mehr. Es ist ein Ziel.
+Jedes Hoffeld erntet 124× die Kohlköpfe eines einfachen Feldes, nicht 93×."
+ENRICHED SOIL VI,ENRICHED SOIL VI,BODENKUR VI
+"The furrows glow at dusk. Yields are up.
+Every farm square harvests 165× a plain square's cabbages, not 124×.","The furrows glow at dusk. Yields are up.
+Every farm square harvests 165× a plain square's cabbages, not 124×.","Die Furchen leuchten in der Dämmerung. Die Erträge steigen.
+Jedes Hoffeld erntet 165× die Kohlköpfe eines einfachen Feldes, nicht 124×."
+ENRICHED SOIL VII,ENRICHED SOIL VII,BODENKUR VII
+"The field now has a half-life. It is long enough.
+Every farm square harvests 220× a plain square's cabbages, not 165×.","The field now has a half-life. It is long enough.
+Every farm square harvests 220× a plain square's cabbages, not 165×.","Das Feld hat jetzt eine Halbwertszeit. Sie ist lang genug.
+Jedes Hoffeld erntet 220× die Kohlköpfe eines einfachen Feldes, nicht 165×."
+ENRICHED SOIL VIII,ENRICHED SOIL VIII,BODENKUR VIII
+"The soil is now mostly product.
+Every farm square harvests 293× a plain square's cabbages, not 220×.","The soil is now mostly product.
+Every farm square harvests 293× a plain square's cabbages, not 220×.","Der Boden besteht jetzt größtenteils aus Produkt.
+Jedes Hoffeld erntet 293× die Kohlköpfe eines einfachen Feldes, nicht 220×."
+ACCELERATED RIPENING I,ACCELERATED RIPENING I,SCHNELLREIFE I
+"The cabbages have been told they are late.
+Squares ripen in 11.3 s instead of 15 s.","The cabbages have been told they are late.
+Squares ripen in 11.3 s instead of 15 s.","Den Kohlköpfen wurde gesagt, sie seien spät dran.
+Felder reifen in 11,3 s statt 15 s."
+ACCELERATED RIPENING II,ACCELERATED RIPENING II,SCHNELLREIFE II
+"The grow lamps are now reactor lamps.
+Squares ripen in 8.4 s instead of 11.3 s.","The grow lamps are now reactor lamps.
+Squares ripen in 8.4 s instead of 11.3 s.","Die Pflanzenlampen sind jetzt Reaktorlampen.
+Felder reifen in 8,4 s statt 11,3 s."
+ACCELERATED RIPENING III,ACCELERATED RIPENING III,SCHNELLREIFE III
+"The seasons are now scheduled weekly.
+Squares ripen in 6.3 s instead of 8.4 s.","The seasons are now scheduled weekly.
+Squares ripen in 6.3 s instead of 8.4 s.","Die Jahreszeiten werden jetzt wöchentlich geplant.
+Felder reifen in 6,3 s statt 8,4 s."
+ACCELERATED RIPENING IV,ACCELERATED RIPENING IV,SCHNELLREIFE IV
+"Ripening has been moved to a faster process.
+Squares ripen in 4.7 s instead of 6.3 s.","Ripening has been moved to a faster process.
+Squares ripen in 4.7 s instead of 6.3 s.","Das Reifen wurde in einen schnelleren Prozess verlegt.
+Felder reifen in 4,7 s statt 6,3 s."
+ACCELERATED RIPENING V,ACCELERATED RIPENING V,SCHNELLREIFE V
+"A cabbage now ripens in the time it takes to sign for it.
+Squares ripen in 3.6 s instead of 4.7 s.","A cabbage now ripens in the time it takes to sign for it.
+Squares ripen in 3.6 s instead of 4.7 s.","Ein Kohlkopf reift jetzt in der Zeit, die man zum Unterschreiben braucht.
+Felder reifen in 3,6 s statt 4,7 s."
+MUTATION I,MUTATION I,MUTATION I
+"Some seeds come out different. Different sells.
+1 square in 8 grows golden, not 1 in 10.","Some seeds come out different. Different sells.
+1 square in 8 grows golden, not 1 in 10.","Manche Samen kommen anders heraus. Anders verkauft sich.
+1 von 8 Feldern wächst golden, nicht 1 von 10."
+MUTATION II,MUTATION II,MUTATION II
+"The difference has been made standard.
+About 1 square in 6 grows golden, not 1 in 8.","The difference has been made standard.
+About 1 square in 6 grows golden, not 1 in 8.","Der Unterschied wurde zum Standard erklärt.
+Etwa 1 von 6 Feldern wächst golden, nicht 1 von 8."
+MUTATION III,MUTATION III,MUTATION III
+"Mutation is now a line item.
+1 square in 5 grows golden, not about 1 in 6.","Mutation is now a line item.
+1 square in 5 grows golden, not about 1 in 6.","Mutation ist jetzt ein Haushaltsposten.
+1 von 5 Feldern wächst golden, nicht etwa 1 von 6."
+MUTATION IV,MUTATION IV,MUTATION IV
+"The seed has stopped asking what it is.
+1 square in 4 grows golden, not 1 in 5.","The seed has stopped asking what it is.
+1 square in 4 grows golden, not 1 in 5.","Der Samen fragt nicht mehr, was er ist.
+1 von 4 Feldern wächst golden, nicht 1 von 5."
+REACTOR STRIDE I,REACTOR STRIDE I,REAKTORSCHRITT I
+"The boots now have a core.
+Farm hands walk 40% faster.","The boots now have a core.
+Farm hands walk 40% faster.","Die Stiefel haben jetzt einen Kern.
+Knechte gehen 40% schneller."
+REACTOR STRIDE II,REACTOR STRIDE II,REAKTORSCHRITT II
+"Walking is now a powered activity.
+Farm hands walk 40% faster.","Walking is now a powered activity.
+Farm hands walk 40% faster.","Gehen ist jetzt eine angetriebene Tätigkeit.
+Knechte gehen 40% schneller."
+REACTOR STRIDE III,REACTOR STRIDE III,REAKTORSCHRITT III
+"Each step is logged as output.
+Farm hands walk 40% faster.","Each step is logged as output.
+Farm hands walk 40% faster.","Jeder Schritt wird als Leistung verbucht.
+Knechte gehen 40% schneller."
+REACTOR STRIDE IV,REACTOR STRIDE IV,REAKTORSCHRITT IV
+"The farm hands no longer feel their legs. This is recorded as efficiency.
+Farm hands walk 40% faster.","The farm hands no longer feel their legs. This is recorded as efficiency.
+Farm hands walk 40% faster.","Die Knechte spüren ihre Beine nicht mehr. Das wird als Effizienz verbucht.
+Knechte gehen 40% schneller."
+REACTOR DRIVE I,REACTOR DRIVE I,REAKTORANTRIEB I
+"The diesel was replaced. So was the exhaust.
+Tractors drive 40% faster.","The diesel was replaced. So was the exhaust.
+Tractors drive 40% faster.","Der Diesel wurde ersetzt. Der Auspuff auch.
+Traktoren fahren 40% schneller."
+REACTOR DRIVE II,REACTOR DRIVE II,REAKTORANTRIEB II
+"The governor was removed again. It came back on its own.
+Tractors drive 40% faster.","The governor was removed again. It came back on its own.
+Tractors drive 40% faster.","Die Drossel wurde wieder ausgebaut. Sie kam von selbst zurück.
+Traktoren fahren 40% schneller."
+REACTOR DRIVE III,REACTOR DRIVE III,REAKTORANTRIEB III
+"Top speed is now a reactor setting.
+Tractors drive 40% faster.","Top speed is now a reactor setting.
+Tractors drive 40% faster.","Die Höchstgeschwindigkeit ist jetzt eine Reaktoreinstellung.
+Traktoren fahren 40% schneller."
+REACTOR DRIVE IV,REACTOR DRIVE IV,REAKTORANTRIEB IV
+"The tractors are now faster than the roads.
+Tractors drive 40% faster.","The tractors are now faster than the roads.
+Tractors drive 40% faster.","Die Traktoren sind jetzt schneller als die Straßen.
+Traktoren fahren 40% schneller."
+SIXTH FARM HAND,SIXTH FARM HAND,SECHSTER KNECHT
+"Each hut comes with a dosimeter. Rent is waived.
+One more farm hand plants empty squares: 5 to 6 hands.","Each hut comes with a dosimeter. Rent is waived.
+One more farm hand plants empty squares: 5 to 6 hands.","Zu jeder Hütte gehört ein Dosimeter. Die Miete entfällt.
+Ein Knecht mehr bepflanzt leere Felder: 5 auf 6 Knechte."
+SEVENTH FARM HAND,SEVENTH FARM HAND,SIEBTER KNECHT
+"The sixth hand's family has been hired.
+One more farm hand plants empty squares: 6 to 7 hands.","The sixth hand's family has been hired.
+One more farm hand plants empty squares: 6 to 7 hands.","Die Familie des sechsten Knechts wurde eingestellt.
+Ein Knecht mehr bepflanzt leere Felder: 6 auf 7 Knechte."
+EIGHTH FARM HAND,EIGHTH FARM HAND,ACHTER KNECHT
+"The eighth hut was built from the seventh's paperwork.
+One more farm hand plants empty squares: 7 to 8 hands.","The eighth hut was built from the seventh's paperwork.
+One more farm hand plants empty squares: 7 to 8 hands.","Die achte Hütte wurde aus den Unterlagen der siebten gebaut.
+Ein Knecht mehr bepflanzt leere Felder: 7 auf 8 Knechte."
+SIXTH TRACTOR,SIXTH TRACTOR,SECHSTER TRAKTOR
+"Reactor-powered, leased, and insured against itself.
+One more tractor harvests ripe squares: 5 to 6 tractors.","Reactor-powered, leased, and insured against itself.
+One more tractor harvests ripe squares: 5 to 6 tractors.","Reaktorbetrieben, geleast und gegen sich selbst versichert.
+Ein Traktor mehr erntet reife Felder: 5 auf 6 Traktoren."
+SEVENTH TRACTOR,SEVENTH TRACTOR,SIEBTER TRAKTOR
+"The fleet clause now has a fleet clause.
+One more tractor harvests ripe squares: 6 to 7 tractors.","The fleet clause now has a fleet clause.
+One more tractor harvests ripe squares: 6 to 7 tractors.","Die Flottenklausel hat jetzt eine Flottenklausel.
+Ein Traktor mehr erntet reife Felder: 6 auf 7 Traktoren."
+EIGHTH TRACTOR,EIGHTH TRACTOR,ACHTER TRAKTOR
+"Eight tractors. The gate was widened by a tractor.
+One more tractor harvests ripe squares: 7 to 8 tractors.","Eight tractors. The gate was widened by a tractor.
+One more tractor harvests ripe squares: 7 to 8 tractors.","Acht Traktoren. Das Tor wurde von einem Traktor verbreitert.
+Ein Traktor mehr erntet reife Felder: 7 auf 8 Traktoren."
+"There is nothing left to buy down here.
+The field line counts the farms. Stamped, the board looks up, and the next forms on the desk are nuclear.","There is nothing left to buy down here.
+The field line counts the farms. Stamped, the board looks up, and the next forms on the desk are nuclear.","Hier unten gibt es nichts mehr zu kaufen.
+Die Feldleitung zählt die Höfe. Gestempelt, blickt der Vorstand nach oben, und die nächsten Formulare auf dem Schreibtisch sind nuklear."
+PRINT LARGER NUMBERS,PRINT LARGER NUMBERS,GRÖSSERE ZAHLEN DRUCKEN
+"The drums have run out of digits. Accounts have asked for more digits.
+Every counter on the desk becomes a digital readout that prints large sums short (4.5B). You can hold up to $40M instead of $16M. More on the projector.","The drums have run out of digits. Accounts have asked for more digits.
+Every counter on the desk becomes a digital readout that prints large sums short (4.5B). You can hold up to $40M instead of $16M. More on the projector.","Den Zählwerken sind die Ziffern ausgegangen. Die Buchhaltung hat mehr Ziffern beantragt.
+Jeder Zähler auf dem Schreibtisch wird zu einer Digitalanzeige, die große Summen kurz druckt (4.5B). Sie können bis zu $40M halten statt $16M. Mehr am Projektor."
+NUCLEAR RESEARCH,NUCLEAR RESEARCH,NUKLEARFORSCHUNG
+"Fission is a growth sector. The board has approved one.
+NUCLEAR opens on the projector: the street's price and the Findings per cabbage. ENRICHED SOIL opens on the farm tree.","Fission is a growth sector. The board has approved one.
+NUCLEAR opens on the projector: the street's price and the Findings per cabbage. ENRICHED SOIL opens on the farm tree.","Kernspaltung ist eine Wachstumsbranche. Der Vorstand hat eine genehmigt.
+Am Projektor öffnet NUKLEAR: der Preis der Straße und die Befunde pro Kohlkopf. Auf dem Hofbaum öffnet BODENKUR."
+HALF-LIFE ACCOUNTING,HALF-LIFE ACCOUNTING,HALBWERTSZEIT-BUCHHALTUNG
+"Assets that decay slowly are booked as permanent.
+CHAIN REACTION (research cabbages), the DECAY ARCHIVE (Findings limit) and DECAY PREMIUM: LAB (golden cabbages in the research lab) open on the projector.","Assets that decay slowly are booked as permanent.
+CHAIN REACTION (research cabbages), the DECAY ARCHIVE (Findings limit) and DECAY PREMIUM: LAB (golden cabbages in the research lab) open on the projector.","Vermögen, das langsam zerfällt, wird als dauerhaft verbucht.
+Am Projektor öffnen KETTENREAKTION (Forschungskohlköpfe), das ZERFALLSARCHIV (Befundgrenze) und ZERFALLSPRÄMIE: LABOR (goldene Kohlköpfe im Forschungslabor)."
+CRITICAL MASS,CRITICAL MASS,KRITISCHE MASSE
+"Enough money in one place starts a reaction.
+Seven larger coins are minted, $50K to $1B: payouts come in fewer, heavier coins. Merges past the $10K coin open on the projector.","Enough money in one place starts a reaction.
+Seven larger coins are minted, $50K to $1B: payouts come in fewer, heavier coins. Merges past the $10K coin open on the projector.","Genug Geld an einem Ort löst eine Reaktion aus.
+Sieben größere Münzen werden geprägt, $50K bis $1B: Auszahlungen kommen in weniger, schwereren Münzen. Am Projektor öffnen Verschmelzungen über die $10K-Münze hinaus."
+ISOTOPE-ENRICHED SEED,ISOTOPE-ENRICHED SEED,ISOTOPENSAATGUT
+"The seed has been improved at the atomic level. The packet has not.
+ACCELERATED RIPENING (squares ripen sooner) and MUTATION (more golden squares) open on the farm tree.","The seed has been improved at the atomic level. The packet has not.
+ACCELERATED RIPENING (squares ripen sooner) and MUTATION (more golden squares) open on the farm tree.","Der Samen wurde auf atomarer Ebene verbessert. Die Tüte nicht.
+Auf dem Hofbaum öffnen SCHNELLREIFE (Felder reifen früher) und MUTATION (mehr goldene Felder)."
+LEAD-LINED STORAGE,LEAD-LINED STORAGE,BLEIVERKLEIDETE LAGER
+"The warehouses glow faintly. Stock levels are unaffected.
+LEAD LINING takes storage past 999.999 cabbages, and DECAY PREMIUM: SALE raises what golden cabbages sell for. Both on the projector.","The warehouses glow faintly. Stock levels are unaffected.
+LEAD LINING takes storage past 999.999 cabbages, and DECAY PREMIUM: SALE raises what golden cabbages sell for. Both on the projector.","Die Lagerhallen leuchten schwach. Der Bestand ist davon nicht betroffen.
+BLEIVERKLEIDUNG bringt das Lager über 999.999 Kohlköpfe, und ZERFALLSPRÄMIE: VERKAUF erhöht, was goldene Kohlköpfe einbringen. Beides am Projektor."
+REACTOR-POWERED MACHINERY,REACTOR-POWERED MACHINERY,REAKTORBETRIEBENE MASCHINEN
+"Every tractor now has a reactor. Every reactor has a logbook.
+REACTOR DRIVES (faster farm hands and tractors) open on the farm tree, HANDLED WITH TONGS (your own sales and research) on the projector.","Every tractor now has a reactor. Every reactor has a logbook.
+REACTOR DRIVES (faster farm hands and tractors) open on the farm tree, HANDLED WITH TONGS (your own sales and research) on the projector.","Jeder Traktor hat jetzt einen Reaktor. Jeder Reaktor hat ein Fahrtenbuch.
+Auf dem Hofbaum öffnen REAKTORANTRIEBE (schnellere Knechte und Traktoren), am Projektor MIT DER ZANGE ANGEFASST (Ihre eigenen Verkäufe und Ihre eigene Forschung)."
+ENRICHMENT CASCADE,ENRICHMENT CASCADE,ANREICHERUNGSKASKADE
+"The compactor is now fed through a cascade of centrifuges. The cabbages spin.
+CONDENSE X, XI and XII open on the projector: 48, 64 and 96 to a cabbage.","The compactor is now fed through a cascade of centrifuges. The cabbages spin.
+CONDENSE X, XI and XII open on the projector: 48, 64 and 96 to a cabbage.","Der Verdichter wird jetzt über eine Kaskade von Zentrifugen beschickt. Die Kohlköpfe drehen sich.
+Am Projektor öffnen VERDICHTEN X, XI und XII: 48, 64 und 96 in einem Kohlkopf."
+NUCLEAR FAMILY,NUCLEAR FAMILY,KERNFAMILIE
+"Staff housing has been moved next to the cooling towers. Families are welcome.
+A sixth, seventh and eighth farm hand and tractor open on the farm tree, with a hut and a parking bay each in the yard.","Staff housing has been moved next to the cooling towers. Families are welcome.
+A sixth, seventh and eighth farm hand and tractor open on the farm tree, with a hut and a parking bay each in the yard.","Die Personalunterkünfte wurden neben die Kühltürme verlegt. Familien sind willkommen.
+Auf dem Hofbaum öffnen ein sechster, siebter und achter Knecht und Traktor, mit je einer Hütte und einem Stellplatz im Hof."
+CABBAGE STAR PROGRAMME,CABBAGE STAR PROGRAMME,KOHL-STERNENPROGRAMM
+"The planet is fully booked. The board has looked up.
+Stamped, the programme begins. Its first vessel is still on the drawing board.","The planet is fully booked. The board has looked up.
+Stamped, the programme begins. Its first vessel is still on the drawing board.","Der Planet ist ausgebucht. Der Vorstand hat nach oben geblickt.
+Gestempelt, beginnt das Programm. Sein erstes Schiff ist noch auf dem Reißbrett."
+The star programme is still under review. You will be notified in writing.,The star programme is still under review. You will be notified in writing.,Das Sternenprogramm befindet sich noch in Prüfung. Sie werden schriftlich benachrichtigt.
