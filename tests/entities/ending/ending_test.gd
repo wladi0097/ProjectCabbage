@@ -721,3 +721,13 @@ func test_the_coffee_cups_are_left_alone() -> void:
 func test_the_walls_go_with_their_window_and_pictures_as_one_item() -> void:
 	assert_array(Ending.STEPS[4].as_one).contains([&"ending_walls", &"ending_table"])
 
+
+func test_the_tv_is_replaced_by_a_still_cabbage() -> void:
+	var state := (load(WORLD) as PackedScene).get_state()
+	var still := false
+	for i in state.get_node_count():
+		if str(state.get_node_path(i, true)).trim_prefix("./") == "FarmTv/Corner/Tv" and state.get_node_name(i) == &"Convertible":
+			for k in state.get_node_property_count(i):
+				if state.get_node_property_name(i, k) == &"replace_static":
+					still = state.get_node_property_value(i, k)
+	assert_bool(still).is_true()

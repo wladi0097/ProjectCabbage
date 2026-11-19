@@ -556,6 +556,7 @@ script = ExtResource("18_debug")
 
 [node name="Convertible" type="Node" parent="FarmTv/Corner/Tv" groups=["ending_tv"]]
 script = ExtResource("ending_conv")
+replace_static = true
 
 [node name="Convertible" type="Node" parent="MapTable/Tally" groups=["ending_map"]]
 script = ExtResource("ending_conv")

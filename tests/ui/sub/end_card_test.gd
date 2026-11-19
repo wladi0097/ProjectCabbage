@@ -7,9 +7,9 @@ func after_test() -> void:
 	Engine.time_scale = 1.0
 
 
-func test_the_end_card_lets_the_logo_sink_in_for_seconds_before_the_credits_roll_slowly() -> void:
+func test_the_end_card_holds_the_logo_five_seconds_before_the_credits_roll_slowly() -> void:
 	var at := EndCard.timeline()
-	assert_float(at.scroll - at.logo_full).is_between(7.0, 8.0)
+	assert_float(at.scroll - at.logo_full).is_equal_approx(5.0, 0.001)  # The logo holds 5 s.
 	assert_float(EndCard.SPEED).is_between(25.0, 40.0)
 	assert_float(at.thud).is_less(at.logo_in)
 	assert_float(at.thud).is_greater(0.0)

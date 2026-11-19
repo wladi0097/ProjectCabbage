@@ -174,3 +174,15 @@ func test_a_dropped_cabbage_only_hops_gently_whatever_its_size() -> void:
 	assert_float(fastest_sideways).is_less(0.5)
 	assert_float(fastest).is_less(5.0)
 
+
+func test_a_static_stand_in_takes_the_objects_place_half_its_size_without_physics() -> void:
+	var convertible := thing(Convertible.Mode.POP)
+	convertible.replace_static = true
+	convertible.convert()
+	assert_array(cabbages()).is_empty()  # No physics cabbage.
+	var stand_in := _drops.get_node_or_null("StandInCabbage") as MeshInstance3D
+	assert_object(stand_in).is_not_null()
+	assert_float(stand_in.global_position.distance_to(Vector3(1.0, 0.5, -2.0))).is_less(0.01)
+	var width := (stand_in.global_transform * stand_in.get_aabb()).size.x
+	assert_float(width).is_equal_approx(0.6 * convertible.replace_size, 0.06)  # Half the 0.6 m object.
+	assert_bool(convertible.get_parent().visible).is_false()

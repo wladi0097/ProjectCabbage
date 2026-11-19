@@ -33,6 +33,10 @@ const RIPPLE_SPEED := 2.5
 const RIPPLE_MIN := 0.6
 
 @export var mode := Mode.POP
+## POP only: instead of a physics cabbage, a still one (just its mesh: no body, never vanishes) takes
+## the object's place, centred where it stood, its width replace_size of the object's biggest side.
+@export var replace_static := false
+@export var replace_size := 0.5
 ## Where the leaves and the dropped cabbage go (null: the current scene, else the tree root).
 var drop_parent: Node
 var is_converted := false
@@ -111,6 +115,11 @@ func _pop() -> void:
 	burst.set(&"size", size)
 	world.add_child(burst)
 	burst.global_position = centre
+	if replace_static:
+		_stand_in(world, centre, box.size * parent.global_basis.get_scale())
+		parent.visible = false
+		_set_shapes_disabled(parent, true)
+		return
 	var cabbage := CABBAGE.instantiate() as Cabbage
 	world.add_child(cabbage)
 	cabbage.resize(size)
@@ -120,6 +129,21 @@ func _pop() -> void:
 	cabbage.linear_velocity = Vector3.UP * HOP  # The same gentle hop at any size.
 	parent.visible = false
 	_set_shapes_disabled(parent, true)
+
+
+## The still cabbage in an object's place (replace_static): the cabbage's own mesh, at `centre`,
+## replace_size of the object's biggest side (`size`) wide.
+func _stand_in(world: Node, centre: Vector3, size: Vector3) -> MeshInstance3D:
+	var source := CABBAGE.instantiate()
+	var mesh := (source.get_node(^"Mesh") as MeshInstance3D).duplicate() as MeshInstance3D
+	mesh.mesh = Cabbage.MESHES[randi() % Cabbage.MESHES.size()]  # The cabbage picks its own in _ready.
+	source.free()
+	mesh.name = &"StandInCabbage"
+	var side := maxf(size.x, maxf(size.y, size.z))
+	var factor := side * replace_size / CABBAGE_WIDTH
+	world.add_child(mesh)
+	mesh.global_transform = Transform3D(mesh.transform.basis.scaled(Vector3.ONE * factor), centre)
+	return mesh
 
 
 func _ripple(point: Vector3) -> void:
