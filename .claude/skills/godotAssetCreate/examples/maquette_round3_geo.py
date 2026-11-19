@@ -351,51 +351,93 @@ def silo_turret():
     return finish_maquette("SiloTurret", bm, SLOTS3)
 
 
-def petal(rng, w0, length, ink_from=None):
-    """A torn card petal: a tapered sheet from its hinge (local y 0) out along +y, jagged at the tip."""
-    pts = [(-w0 / 2, 0.0), (w0 / 2, 0.0)]
-    tip = []
-    for k in range(5):
-        u = 1 - k / 4
-        tip.append(((u - 0.5) * w0 * 0.5, length * rng.uniform(0.7, 1.0) * (1 - abs(u - 0.5) * 0.4)))
-    poly = [pts[0], pts[1]] + tip
+def ragged_tube(r, z0, heights, a0, a1, thick):
+    """An open-topped piece of rolled card tube from angle a0 to a1 (degrees), its torn top at
+    heights[i] above z0 per step: card skin outside and in, core on the torn rim and the ends."""
     part = bmesh.new()
-    top = [part.verts.new((x, y, T * 0.6)) for x, y in poly]
-    bot = [part.verts.new((x, y, 0.0)) for x, y in poly]
-    part.faces.new(top).material_index = C
-    part.faces.new(list(reversed(bot))).material_index = C
-    n = len(poly)
+    n = len(heights) - 1
+    rows = []
+    for i, h in enumerate(heights):
+        a = math.radians(a0 + (a1 - a0) * i / n)
+        c, s = math.cos(a), math.sin(a)
+        rows.append([part.verts.new((c * rr, s * rr, z)) for rr, z in ((r, z0), (r, z0 + h), (r - thick, z0 + h), (r - thick, z0))])
     for i in range(n):
-        part.faces.new((top[(i + 1) % n], top[i], bot[i], bot[(i + 1) % n])).material_index = E
+        p, q = rows[i], rows[i + 1]
+        for k, mat in ((0, C), (1, E), (2, C), (3, E)):   # outside, torn rim, inside, bottom
+            part.faces.new((p[k], q[k], q[(k + 1) % 4], p[(k + 1) % 4])).material_index = mat
+    part.faces.new(rows[0]).material_index = E
+    part.faces.new(list(reversed(rows[-1]))).material_index = E
     bmesh.ops.recalc_face_normals(part, faces=part.faces)
-    if ink_from is not None:   # a scrap of the hazard band printed on it
-        a, b = ink_from
-        ink = slab((-w0 * 0.42, a, T * 0.6), (w0 * 0.42 * 0.8, b, T * 0.6 + 0.0006), N, N)
-        me = bpy.data.meshes.new("tmp"); ink.to_mesh(me); ink.free(); part.from_mesh(me); bpy.data.meshes.remove(me)
+    return part
+
+
+def hazard_arc(r0, r1, deg, n, thick):
+    """A broken length of the eaves rim lying flat: an annulus piece centred on +X, its top printed
+    with alternating ink / card wedges like the standing silo's rim, cut edges round it."""
+    part = bmesh.new()
+    for k in range(n):
+        a, b = [math.radians(-deg / 2 + deg * (k + j) / n) for j in (0, 1)]
+        vs = [part.verts.new((math.cos(t) * rr, math.sin(t) * rr, z))
+              for z in (0.0, thick) for t, rr in ((a, r0), (a, r1), (b, r1), (b, r0))]
+        bot, top = vs[:4], vs[4:]
+        part.faces.new(top).material_index = N if k % 2 == 0 else C
+        part.faces.new(list(reversed(bot))).material_index = E
+        for i in range(4):
+            part.faces.new((bot[i], bot[(i + 1) % 4], top[(i + 1) % 4], top[i])).material_index = E
+    bmesh.ops.recalc_face_normals(part, faces=part.faces)
+    return part
+
+
+def roof_piece(deg, rng, n):
+    """A broken wedge of the shallow roof, flat card (shade) with its printed eaves rim along the arc."""
+    r = SR * 0.86
+    poly = [(rng.uniform(0.004, 0.012), rng.uniform(-0.004, 0.004))]
+    poly += [(math.cos(t) * r, math.sin(t) * r) for t in [math.radians(-deg / 2 + deg * k / n) for k in range(n + 1)]]
+    side = len(poly)
+    poly.insert(side, (r * 0.5 * math.cos(math.radians(deg / 2)) + rng.uniform(-0.006, 0.006),
+                       r * 0.5 * math.sin(math.radians(deg / 2)) + rng.uniform(0.0, 0.008)))   # torn sides
+    poly.insert(1, (r * 0.5 * math.cos(math.radians(deg / 2)) + rng.uniform(-0.006, 0.006),
+                    -r * 0.5 * math.sin(math.radians(deg / 2)) - rng.uniform(0.0, 0.008)))
+    part = card_sheet(poly, 0.004, S, E)
+    put(part, hazard_arc(r - 0.011, r + 0.001, deg, max(3, n), 0.0045), at(0, 0, 0.0))
     return part
 
 
 def silo_rubble():
+    """Read from above as a burst silo, not a ring: the tube split open on its south-east side, a ragged
+    horseshoe of wall still standing, three big sheets of it peeled out flat through the gap, the roof
+    broken into wedges (their hazard rim with them), one fallen inside, one over the wall, a loose
+    length of rim and the head on its side (a fallen ladder was too fussy at 720p). Nothing repeats round the circle (a ring
+    of even petals read as a saw blade)."""
     rng = random.Random(27)
     bm = bmesh.new()
     put(bm, slab((-HALF, -HALF, 0), (HALF, HALF, PL), G, G))
     put(bm, cyl(SR + 0.012, SR + 0.012, PL, S0, 32, G, G))
-    stub = cyl(SR, SR, S0, S0 + 0.026, 32, C)                                # what stands of the tube
-    put(bm, stub)
-    put(bm, cyl(SR + 0.0025, SR + 0.0025, S0 + 0.012, S0 + 0.016, 32, N, N))
-    n = 11
-    for k in range(n):                 # the tube burst open: torn petals folded out flat-ish round the stub
-        a = (k + rng.uniform(-0.15, 0.15)) / n * math.tau
-        w0 = math.tau * SR / n * 0.95
-        ink = (0.016, 0.024) if k % 2 == 0 else None
-        p = petal(rng, w0 * rng.uniform(0.8, 1.05), rng.uniform(0.026, 0.056), ink)
-        hinge = SR + 0.002
-        put(bm, p, at(math.cos(a) * hinge, math.sin(a) * hinge, S0 + 0.024) @ rot("Z", math.degrees(a) - 90)
-            @ rot("X", -rng.uniform(16, 40)))
-    roof = cyl(SR * 0.7, 0.03, 0.0, 0.018, 20, S)                           # the roof cone, dented, lying inside
-    bmesh.ops.scale(roof, vec=(1.0, 0.7, 0.6), verts=roof.verts)
-    put(bm, roof, at(-0.01, 0.015, S0 + 0.006) @ rot("Y", 12) @ rot("Z", 30))
-    silo_head(bm, at(0.02, -0.03, S0 + 0.018) @ rot("Z", 200) @ rot("Y", 80))
+    gap = -40.0                                                              # the burst faces south-east
+    a0, a1 = gap + 70, gap + 360 - 70
+    steps = 18
+    heights = []
+    for i in range(steps + 1):                                                # tallest at the back, torn low at the gap
+        u = i / steps
+        heights.append(0.008 + 0.042 * math.sin(math.pi * u) ** 0.8 + rng.uniform(-0.007, 0.007))
+    put(bm, ragged_tube(SR, S0, heights, a0, a1, 0.006))
+    # three wall sheets peeled out flat through the gap, each a different size and angle
+    for a, w, length, lift, ink in ((gap - 52, 0.085, 0.058, 7, None), (gap - 4, 0.1, 0.07, 4, (0.046, 0.057)),
+                                    (gap + 44, 0.075, 0.056, 11, (0.04, 0.05))):
+        poly = [(-w / 2, 0.0), (w / 2, 0.0)] + [(w / 2 - w * k / 4 + rng.uniform(-0.006, 0.006),
+                                                  length * rng.uniform(0.75, 1.05)) for k in range(5)]
+        sheet = card_sheet(poly, 0.004, C, E)
+        if ink:   # a strip of the printed hazard band, torn with the sheet
+            put(sheet, slab((-w * 0.42, ink[0], 0.004), (w * 0.3, ink[1], 0.0046), N, N))
+        put(bm, sheet, at(math.cos(math.radians(a)) * (SR - 0.004), math.sin(math.radians(a)) * (SR - 0.004), S0 + 0.001)
+            @ rot("Z", a - 90) @ rot("X", lift))
+    # the roof broken in wedges: one fallen in, its rim propped on the wall; one slid off north-west
+    put(bm, roof_piece(110, rng, 6), at(0.035, -0.012, S0 + 0.003) @ rot("Z", 172) @ rot("Y", -7))
+    put(bm, roof_piece(70, rng, 4), at(-0.064, 0.064, S0 + 0.002) @ rot("Z", 135) @ rot("Y", 6))
+    # a loose length of rim on the plate, north-east
+    put(bm, hazard_arc(SR, SR + 0.012, 46, 4, 0.004), at(0.1, 0.11, PL) @ rot("Z", -20) @ at(-SR - 0.006, 0, 0))
+    # the head on its side in the south-west corner
+    silo_head(bm, at(-0.1, -0.1, PL + 0.018) @ rot("Z", 200) @ rot("Y", 80))
     return finish_maquette("SiloRubble", bm, SLOTS3)
 
 

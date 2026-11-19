@@ -5,6 +5,9 @@
 [ext_resource type="Script" path="res://entities/map_table/war_sheet.gd" id="4_register"]
 [ext_resource type="Script" path="res://entities/components/sound_cue.gd" id="sfx_cue"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_refuse_1.wav" id="sfx_refuse"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/war/deuces.ogg" id="war_song_1"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/war/faster_does_it.ogg" id="war_song_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/war/rollin_at_5.ogg" id="war_song_3"]
 [ext_resource type="PackedScene" path="res://entities/war/maps/test_map.tscn" id="5_map"]
 [ext_resource type="Script" path="res://entities/war/fight/fight_view.gd" id="6_view"]
 [ext_resource type="PackedScene" path="res://entities/war/fight/war_control.tscn" id="8_control"]
@@ -51,6 +54,14 @@
 [ext_resource type="PackedScene" path="res://ui/elements/paper_note.tscn" id="13_note"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_1.wav" id="sfx_deed_stamp_1"]
 [ext_resource type="AudioStream" path="res://assets/audio/effects/deed_stamp_2.wav" id="sfx_deed_stamp_2"]
+
+[sub_resource type="AudioStreamRandomizer" id="WarSongs"]
+playback_mode = 0
+random_pitch = 1.0
+streams_count = 3
+stream_0/stream = ExtResource("war_song_1")
+stream_1/stream = ExtResource("war_song_2")
+stream_2/stream = ExtResource("war_song_3")
 
 [sub_resource type="BoxShape3D" id="FloorBox"]
 size = Vector3(3.2, 0.02, 1.8)
@@ -477,6 +488,10 @@ bus = &"War"
 script = ExtResource("sfx_cue")
 min_interval = 0.08
 max_instances = 2
+
+[node name="Music" type="AudioStreamPlayer" parent="."]
+stream = SubResource("WarSongs")
+bus = &"WarMusic"
 
 [node name="Won" type="AudioStreamPlayer3D" parent="."]
 stream = SubResource("Rand_root_Won")

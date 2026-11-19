@@ -319,6 +319,29 @@ func test_no_report_after_an_abort_before_start() -> void:
 	assert_dict(save.war_grades).is_empty()
 
 
+func test_a_song_starts_with_start_and_never_the_same_one_twice_in_a_row() -> void:
+	var sheet := _sheet()
+	var music: AudioStreamPlayer = sheet.get_node("Music")
+	assert_bool(music.playing).is_false()  # Planning is quiet.
+	sheet.place(FA, 0)
+	sheet.start_fight()
+	assert_bool(music.playing).is_true()
+	assert_str(music.bus).is_equal("WarMusic")  # Not ducked with the desk's music.
+	var songs := music.stream as AudioStreamRandomizer
+	assert_int(songs.streams_count).is_equal(3)
+	assert_int(songs.playback_mode).is_equal(AudioStreamRandomizer.PLAYBACK_RANDOM_NO_REPEATS)
+
+
+func test_the_song_fades_out_when_the_fight_ends() -> void:
+	var sheet := _sheet()
+	var music: AudioStreamPlayer = sheet.get_node("Music")
+	sheet.place(FA, 0)
+	sheet.start_fight()
+	_fight_for(sheet, WarRules.fight_seconds(SaveManager.save))
+	sheet._music_fade.custom_step(WarSheet.MUSIC_FADE + 0.01)
+	assert_bool(music.playing).is_false()
+
+
 func test_the_report_is_filed_only_once_its_grade_is_on_it_and_the_grade_is_kept() -> void:
 	var sheet := _sheet({field_associate = 2})
 	for i in 2:

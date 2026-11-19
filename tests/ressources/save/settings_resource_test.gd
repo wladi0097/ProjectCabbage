@@ -40,3 +40,17 @@ func test_the_war_sounds_follow_the_sfx_slider_and_mute() -> void:
 	settings.sfx_muted = false
 	assert_float(AudioServer.get_bus_volume_db(war)).is_equal_approx(0.0, 0.01)
 	assert_bool(AudioServer.is_bus_mute(war)).is_false()
+
+
+func test_the_fights_music_follows_the_music_slider_and_mute() -> void:
+	var war_music := AudioServer.get_bus_index("WarMusic")
+	assert_int(war_music).is_greater(0)
+	var settings := SettingsResource.new()
+	settings.music_volume = 0.5
+	settings.music_muted = true
+	assert_float(AudioServer.get_bus_volume_db(war_music)).is_equal_approx(linear_to_db(0.5), 0.01)
+	assert_bool(AudioServer.is_bus_mute(war_music)).is_true()
+	settings.music_volume = 1.0
+	settings.music_muted = false
+	assert_float(AudioServer.get_bus_volume_db(war_music)).is_equal_approx(0.0, 0.01)
+	assert_bool(AudioServer.is_bus_mute(war_music)).is_false()

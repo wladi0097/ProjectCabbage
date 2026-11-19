@@ -210,25 +210,68 @@ def farmhouse():
     return finish_maquette("Farmhouse", bm, SLOTS)
 
 
+def card_sheet(poly, thick, skin, edge):
+    """A flat card or board piece: polygon [(x, y)] given a thickness (skin top and bottom, core round
+    the rim). Concave outlines are fine (Blender tessellates them)."""
+    part = bmesh.new()
+    top = [part.verts.new((x, y, thick)) for x, y in poly]
+    bot = [part.verts.new((x, y, 0.0)) for x, y in poly]
+    part.faces.new(top).material_index = skin
+    part.faces.new(list(reversed(bot))).material_index = skin
+    n = len(poly)
+    for i in range(n):
+        part.faces.new((top[(i + 1) % n], top[i], bot[i], bot[(i + 1) % n])).material_index = edge
+    bmesh.ops.recalc_face_normals(part, faces=part.faces)
+    return part
+
+
+def torn_rect(w, length, rng, start=False, end=True, teeth=4, depth=0.012):
+    """A board outline x 0..w, y 0..length whose snapped ends (start: y 0, end: y length) are zigzag."""
+    def zig(y, sign, reverse):
+        xs = [w * (k + 0.5) / teeth for k in range(teeth)]
+        pts = [(x + rng.uniform(-0.2, 0.2) * w / teeth, y + sign * rng.uniform(0.15, 1.0) * depth) for x in xs]
+        return list(reversed(pts)) if reverse else pts
+    poly = [(0.0, 0.0)] + (zig(0.0, -1, False) if start else []) + [(w, 0.0), (w, length)]
+    poly += (zig(length, 1, True) if end else []) + [(0.0, length)]
+    return poly
+
+
 def farmhouse_rubble():
+    """Read from above as a collapsed card house: the two roof boards down on the plate along the old
+    ridge (one snapped in two), a wall lying flat with its windows punched through, the lean-to roof
+    askew, broken planks across the heap and the silo tube crushed. No conical scraps (they read as rocks)."""
     rng = random.Random(7)
     bm = bmesh.new()
     put(bm, slab((-HALF, -HALF, 0), (HALF, HALF, PL), G, G))
     z0 = PL
-    # the walls folded flat: a big crumpled sheet over the old block, smaller torn pieces around it
-    for (x, y), r, cr, rz in (((-0.055, 0.015), 0.07, 0.018, 10), ((0.015, -0.08), 0.05, 0.014, -25),
-                              ((-0.105, -0.1), 0.035, 0.01, 40), ((0.085, -0.065), 0.04, 0.012, 75),
-                              ((-0.11, 0.105), 0.032, 0.008, -60), ((0.035, 0.11), 0.03, 0.008, 15)):
-        put(bm, scrap(r, cr, 0.004, rng, C, E), at(x, y, z0) @ rot("Z", rz))
-    # the two roof boards fallen in, one propped on the heap, one flat and buckled
-    put(bm, slab((-0.07, -0.045, 0), (0.07, 0.045, T), S, E), at(-0.045, 0.05, z0 + 0.018) @ rot("Z", 8) @ rot("X", 9) @ rot("Y", -5))
-    put(bm, scrap(0.052, 0.022, T, rng, S, E, 8), at(-0.02, -0.04, z0 + 0.004) @ rot("Z", -30))
-    # the silo: crushed flat and rolled over on its side, its cone cap knocked off
+    # the walls lying flat under the roof edges: a heap of card the boards rest on
+    put(bm, card_sheet(torn_rect(0.16, 0.05, rng, end=True), T, C, E), at(-0.135, 0.045, z0) @ rot("Z", -4))
+    holed(bm, -0.065, 0.06, 0.0, 0.068, [(-0.045, -0.015, 0.02, 0.05), (0.01, 0.04, 0.02, 0.05)],
+          at(0.085, -0.07, z0 + 0.0) @ rot("Z", -14) @ rot("X", 90))           # the lean-to's wall, windows and all
+    # the main roof: the west board whole, sloping up to where the ridge was; the east one snapped in two
+    put(bm, card_sheet(torn_rect(0.085, 0.215, rng, end=True), T, S, E), at(-0.14, -0.075, z0 + 0.001) @ rot("Y", -11))
+    put(bm, card_sheet([(-x, y) for x, y in torn_rect(0.08, 0.11, rng, end=True)], T, S, E),
+        at(0.028, -0.078, z0 + 0.001) @ rot("Z", 5) @ rot("Y", 9))
+    put(bm, card_sheet([(-x, y) for x, y in torn_rect(0.08, 0.095, rng, start=True, end=False)], T, S, E),
+        at(0.03, 0.05, z0 + 0.002) @ rot("Z", -9) @ rot("Y", 15) @ rot("X", -6))
+    # the lean-to roof (pale card) slid off east, half over its fallen wall
+    put(bm, card_sheet(torn_rect(0.1, 0.075, rng, start=True, end=False, teeth=3), T, C, E),
+        at(0.05, -0.05, z0 + 0.008) @ rot("Z", -8) @ rot("X", 7))
+    # broken planks (roof battens, wall strips) across the heap, some propped up on it
+    for (x, y, z), length, w, rz, tilt, mat in (((-0.07, -0.03, 0.012), 0.1, 0.014, 62, 14, C),
+                                                 ((-0.02, 0.09, 0.014), 0.06, 0.012, 118, 10, C),
+                                                 ((-0.148, -0.03, 0.0), 0.075, 0.012, 88, 0, C),
+                                                 ((-0.005, -0.055, 0.004), 0.07, 0.013, -32, 7, S),
+                                                 ((-0.115, 0.108, 0.012), 0.055, 0.011, 12, 9, C),
+                                                 ((0.1, -0.145, 0.0), 0.05, 0.012, 168, 0, S)):
+        plank = card_sheet([(py, -px + w / 2) for px, py in torn_rect(w, length, rng, start=True, end=True, teeth=2, depth=0.007)],
+                           0.004, mat, E)
+        put(bm, plank, at(x, y, z0 + z) @ rot("Z", rz) @ rot("Y", -tilt))
+    # the silo: crushed flat and rolled over on its side (its cap gone)
     x, y, r, h = SILO
     tube = cyl(r, r, -0.07, 0.07, 20, C)
     bmesh.ops.scale(tube, vec=(0.45, 1.0, 1.0), verts=tube.verts)
-    put(bm, tube, at(0.07, 0.075, z0 + r * 0.45) @ rot("Z", -12) @ rot("Y", 90))
-    put(bm, cyl(r + 0.004, 0.006, 0, 0.025, 20, S), at(0.105, -0.1, z0 + 0.006) @ rot("Y", 20) @ rot("X", -8))
+    put(bm, tube, at(0.07, 0.085, z0 + r * 0.45) @ rot("Z", -12) @ rot("Y", 90))
     return finish_maquette("FarmhouseRubble", bm, SLOTS[:4])
 
 

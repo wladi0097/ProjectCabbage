@@ -89,6 +89,8 @@ const GLOW_HOT := 1.0
 ## From the end's stamp until the after-action report slides in (s): a win, a loss.
 const LEAVE_AFTER := 0.7
 const LOST_AFTER := 1.8
+## Seconds the fight's song takes to fade out once the fight ends.
+const MUSIC_FADE := 1.5
 ## The table's nodes that go away while the fight is on (the way out and the currency column).
 const EXITS: Array[String] = ["DeskButton", "FarmButton", "Tally", "Depot"]
 const AWAY_TIME := 0.2
@@ -159,6 +161,7 @@ var _path_spot := Vector2.INF
 var _path_wait := 0.0
 var _laying: Tween
 var _roll_at: Transform3D
+var _music_fade: Tween
 ## How far the duck is in (0..1).
 var _ducked := 0.0
 ## The debut slip's card is up, and its fade; the mouse is on the report's FILE REPORT.
@@ -176,6 +179,8 @@ var _on_file := false
 @onready var _pick_up_sound: SoundCue = $PickUp
 @onready var _set_down_sound: SoundCue = $SetDown
 @onready var _start_sound: SoundCue = $Start
+## The fight's song: one of three (never the same twice in a row) from START until the fight ends.
+@onready var _music: AudioStreamPlayer = $Music
 @onready var _tick_sound: SoundCue = $Tick
 @onready var _retreat_sound: SoundCue = $Retreat
 @onready var _denied_sound: SoundCue = $Denied
@@ -625,6 +630,10 @@ func start_fight() -> bool:
 		fight.reserve = left()
 	SaveManager.autosave()  # The placed ones are committed: a game closed now does not give them back.
 	_start_sound.cue(global_position)
+	if _music_fade != null:
+		_music_fade.kill()
+	_music.volume_db = 0.0
+	_music.play()
 	_slip.file()  # The debut slip goes; the paper's ink is rubbed out.
 	_ringed = -1
 	_path_spot = Vector2.INF
@@ -905,6 +914,7 @@ func _end() -> void:
 		SaveManager.log_event("war_lost", farm)
 	SaveManager.autosave()
 	(_won_sound if won else _lost_sound).cue(global_position)
+	_fade_music()
 	_imprint.visible = fight.end == WarFight.End.RETREAT  # A win or a loss is stamped on the report alone.
 	_unhover()
 	_show_control()
@@ -933,7 +943,16 @@ func _exit_tree() -> void:
 		FarmRegister.lamp_held = false  # An end cut off (the scene left) holds no lamp.
 
 
+## The song fades out over MUSIC_FADE s under the win or loss stamp.
+func _fade_music() -> void:
+	if _music.playing:
+		_music_fade = create_tween()
+		_music_fade.tween_property(_music, "volume_db", -60.0, MUSIC_FADE)
+		_music_fade.tween_callback(_music.stop)
+
+
 func _leave() -> void:
+	_music.stop()
 	_dealing = null
 	fight = null
 	_held = null

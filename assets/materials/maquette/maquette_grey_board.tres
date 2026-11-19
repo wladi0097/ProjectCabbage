@@ -14,3 +14,4 @@ shader_parameter/fibre_scale = 420.0
 shader_parameter/mottle = 0.04
 shader_parameter/grain = 0.0
 shader_parameter/grain_scale = 220.0
+shader_parameter/side_lift = 0.6

@@ -555,3 +555,4 @@ pc_damage_0
 cr_speed_0
 cr_hp_0
 radius
+volume_db

@@ -104,12 +104,14 @@ enum ShadowQuality { LOW, MEDIUM, HIGH }
 @export var music_volume := 1.0:
 	set(volume):
 		music_volume = volume
-		AudioServer.set_bus_volume_db(AudioServer.get_bus_index('Music'), linear_to_db(volume))
+		for bus in ['Music', 'WarMusic']:  # The fight's music (WarMusic, kept clear of the war duck) follows the music slider.
+			AudioServer.set_bus_volume_db(AudioServer.get_bus_index(bus), linear_to_db(volume))
 
 @export var music_muted := false:
 	set(is_muted):
 		music_muted = is_muted
-		AudioServer.set_bus_mute(AudioServer.get_bus_index('Music'), is_muted)
+		for bus in ['Music', 'WarMusic']:
+			AudioServer.set_bus_mute(AudioServer.get_bus_index(bus), is_muted)
 
 @export var sfx_volume := 1.0:
 	set(volume):

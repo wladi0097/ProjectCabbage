@@ -38,22 +38,18 @@ Material Symbols by Google (Apache License 2.0)
 ZapSplat (zapsplat.com)
 Licensed under the ZapSplat Premium licence (paid; no attribution required)
 
-ElevenLabs
-
 # ---- Music
-"Study And Relax" Kevin MacLeod (incompetech.com)
-Licensed under Creative Commons: By Attribution 4.0 License
-http://creativecommons.org/licenses/by/4.0/
-
-"Hard Boiled" Kevin MacLeod (incompetech.com)
-Licensed under Creative Commons: By Attribution 4.0 License
-http://creativecommons.org/licenses/by/4.0/
-
-"Jazz Brunch" Kevin MacLeod (incompetech.com)
-Licensed under Creative Commons: By Attribution 4.0 License
-http://creativecommons.org/licenses/by/4.0/
-
-"Backbay Lounge" Kevin MacLeod (incompetech.com)
+"Study And Relax"
+"Hard Boiled"
+"Jazz Brunch"
+"Backbay Lounge"
+"Apero Hour"
+"Poppers and Prosecco"
+"Smooth Lovin"
+"Rollin at 5"
+"Faster Does It"
+"Deuces"
+Kevin MacLeod (incompetech.com)
 Licensed under Creative Commons: By Attribution 4.0 License
 http://creativecommons.org/licenses/by/4.0/
 

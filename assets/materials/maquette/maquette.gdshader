@@ -13,6 +13,7 @@ uniform float mottle : hint_range(0.0, 0.3) = 0.025; // soft cloudiness of press
 uniform float grain : hint_range(0.0, 0.6) = 0.0; // balsa streaks running along UV.x
 uniform float grain_scale = 220.0; // streaks per metre across the grain
 uniform float end_grain : hint_range(0.0, 0.6) = 0.0; // how much darker a stick's sawn end is (|UV.y| > 50)
+uniform float side_lift : hint_range(0.0, 2.0) = 0.0; // self-light on walls (not tops), so dark board sides in the lamp's shade keep their colour
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -45,6 +46,8 @@ void fragment() {
 		shade += grain * near_grain * ((g - 0.5) * 1.6 - smoothstep(0.74, 0.9, g) * 0.9);
 	}
 	ALBEDO = albedo * clamp(1.0 + shade, 0.0, 1.5);
+	float side = 1.0 - abs((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).y);
+	EMISSION = ALBEDO * side_lift * side;
 	ROUGHNESS = clamp(roughness + shade * 0.5, 0.0, 1.0);
 	METALLIC = metallic;
 	SPECULAR = specular;
