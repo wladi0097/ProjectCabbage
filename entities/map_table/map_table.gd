@@ -125,6 +125,8 @@ const SHORTCUT_CARD := "farm_shortcut"
 const HOLDER := &"holder"
 ## What the mouse is on when it is on the unrest clock's RESURVEY button (`UnrestClock`, BanditCamp).
 const RESURVEY := &"resurvey"
+## What the mouse is on when it is on the unrest clock's face (its hint slip: Clock.hint_for).
+const CLOCK := &"clock"
 ## The world sheet's and the war sheet's ids (MapSheet.id); a country's sheet has its country's id.
 const WORLD := &"world"
 const WAR := &"war"
@@ -133,6 +135,7 @@ const DEPOT := &"depot"
 ## The desk card (UpgradeDesk.CARDS) that brings the world sheet.
 const WORLD_CARD := "world_map"
 ## A country's sheet: loaded when it is opened.
+const HandScript := preload("res://globalScripts/hand.gd")
 const COUNTRY_SCENE := "res://entities/map_table/countries/%s.tscn"
 ## A roll's arrival in the holder: it comes down from this far off the saddle (m: up, and from the
 ## wall's side; where a sheet that is not in the holder comes from and goes to in a swap as well),
@@ -173,6 +176,10 @@ var _hovered := &""
 var _tally_here := false
 ## Where the mouse is at the map (px): the hint slip hangs below it.
 var _mouse_at := Vector2.ZERO
+## The spot the hint slip waits on and how long it still waits (as the desk's tooltips: at once the
+## first time a spot is hovered, then after Hand.TOOLTIP_DELAY; hint_wait).
+var _hint_for := ""
+var _hint_wait := 0.0
 ## 0 on the desk, 1 at the map.
 var _view := 0.0
 var _at_map := false
@@ -200,8 +207,8 @@ var _weight_rest: Array[Vector3] = []
 @onready var _war: War = $Sheets/War
 @onready var _depot_sheet: DepotSheet = $Sheets/Depot
 @onready var _depot: Depot = $Depot
-## The bandit camps' countdown (props/unrest_clock), top middle above the sheet once their card is stamped.
-@onready var _clock: Clock = $UnrestClock
+## The bandit camps' countdown (props/unrest_clock), on the world sheet over its survey pole once their card is stamped.
+@onready var _clock: Clock = $Sheets/World/UnrestClock
 ## TO DESK and TO FARM: standing loose, and on the tally's console.
 @onready var _loose: Array[Node3D] = [$DeskButton, $FarmButton]
 @onready var _docked: Array[Node3D] = [$Tally/Console/DeskButton, $Tally/Console/FarmButton]
@@ -254,6 +261,12 @@ func _ready() -> void:
 	_set_view(0.0)
 
 
+## Seconds the hint slip for spot `key` waits under the mouse: none the first time it is hovered,
+## then the desk tooltips' delay, so passing over the table does not flash slips.
+static func hint_wait(save: SaveGame, key: String) -> float:
+	return HandScript.tooltip_delay(save.tooltips_seen.has(key))
+
+
 func _process(delta: float) -> void:
 	WarRules.tick_training(SaveManager.save, delta)  # The depot trains its staff wherever the player is.
 	BanditCamp.tick(SaveManager.save, delta, War.at_war and _war.farm == BanditCamp.SITE)  # The camps' clock runs wherever the player is.
@@ -270,8 +283,17 @@ func _process(delta: float) -> void:
 			_depot.drop()
 	if not Depot.unlocked(SaveManager.save):
 		_depot.hide()
-	_hint.visible = FarmTv.hint_shown(_hovered != &"", BossReport.up)
+	var key := "map:%s:%s" % [shown, _hovered]
+	if key != _hint_for:
+		_hint_for = key
+		_hint_wait = hint_wait(SaveManager.save, key)
+	_hint_wait -= delta
+	_hint.visible = FarmTv.hint_shown(_hovered != &"", BossReport.up) and _hint_wait <= 0.0
+	if _hint.visible and not SaveManager.save.tooltips_seen.has(key):
+		SaveManager.save.tooltips_seen.append(key)
 	if _hint.visible:
+		if _hovered == CLOCK:
+			_hint.text = Clock.hint_for(SaveManager.save)  # The count runs on under the mouse.
 		var spot := _on_spot()
 		_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if spot else TextServer.AUTOWRAP_OFF
 		var window := get_viewport().get_visible_rect().grow(-HINT_MARGIN)
@@ -329,6 +351,8 @@ func _input(event: InputEvent) -> void:
 		elif _hovered == RESURVEY:
 			_clock.resurvey()
 			_hint.text = _resurvey_hint()
+		elif _hovered == CLOCK:
+			pass  # The clock only tells the time.
 		else:
 			# A spot on the open sheet (a farm site, its deed's stamp box), or a click on nothing,
 			# which the sheet hears too (it puts a farm's deed away).
@@ -530,7 +554,7 @@ func sheet_of(id: StringName) -> MapSheet:
 ## Starts loading country `id`'s sheet in the background (the mouse is on it on the world sheet),
 ## so opening it does not stall.
 func warm(id: StringName) -> void:
-	if sheet_of(id) == null and ResourceLoader.load_threaded_get_status(COUNTRY_SCENE % id) == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+	if sheet_of(id) == null and ResourceLoader.exists(COUNTRY_SCENE % id) and ResourceLoader.load_threaded_get_status(COUNTRY_SCENE % id) == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 		ResourceLoader.load_threaded_request(COUNTRY_SCENE % id)
 
 
@@ -582,6 +606,8 @@ func pick(from: Vector3, dir: Vector3) -> StringName:
 		return DEPOT
 	if _clock.can_press() and FarmTv.on_glass(FarmTv.rect_uv(_clock.plate().global_transform, BACK_HALF, from, dir)):
 		return RESURVEY
+	if _clock.is_visible_in_tree() and FarmTv.on_glass(FarmTv.rect_uv(_clock.face().global_transform, Clock.FACE_HALF, from, dir)):
+		return CLOCK
 	return sheet_of(shown).spot_at(sheet_pixel(from, dir))
 
 
@@ -773,13 +799,15 @@ func _hover(what: StringName) -> void:
 		_hint.text = _depot_hint()
 	elif what == RESURVEY:
 		_hint.text = _resurvey_hint()
+	elif what == CLOCK:
+		_hint.text = Clock.hint_for(SaveManager.save)
 	elif what != &"":
 		_hint.text = sheet_of(shown).hint(what)
 		if shown == WORLD:
 			warm(what)  # The mouse is on a country: its sheet may be asked for next.
 	sheet_of(shown).hover(what)  # A spot on the open sheet lifts; anything else lets it down.
 	_depot.hover(what == DEPOT)
-	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND if what != &"" else DisplayServer.CURSOR_ARROW)
+	DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND if what not in [&"", CLOCK] else DisplayServer.CURSOR_ARROW)
 	if swapping or _held == null or _arrive_tween != null:
 		return  # The rolls are flying, or the holder is empty: nothing is lifted.
 	if _hover_tween != null:
@@ -790,7 +818,7 @@ func _hover(what: StringName) -> void:
 
 ## Whether the mouse is on a spot of the open sheet (not the plate, not the roll in the holder).
 func _on_spot() -> bool:
-	return not _hovered in [&"", BACK, FARM, HOLDER, DEPOT, RESURVEY]
+	return not _hovered in [&"", BACK, FARM, HOLDER, DEPOT, RESURVEY, CLOCK]
 
 
 ## Where a hint slip `slip` big lies beside `spot` (on screen, px): to its right, else to its left,

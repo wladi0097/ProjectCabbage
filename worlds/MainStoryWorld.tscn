@@ -82,6 +82,7 @@
 [ext_resource type="PackedScene" path="res://ui/elements/boss_card/boss_card.tscn" id="ending_cards"]
 [ext_resource type="PackedScene" path="res://ui/sub/end_card.tscn" id="ending_end"]
 [ext_resource type="Script" path="res://entities/components/convertible.gd" id="ending_conv"]
+[ext_resource type="PackedScene" path="res://entities/telescope/telescope.tscn" id="telescope_1"]
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.45, 0.58, 0.75, 1)
 sky_horizon_color = Color(0.75, 0.72, 0.68, 1)
@@ -536,6 +537,9 @@ map = NodePath("../MapTable")
 
 [node name="ChuteLever" parent="." unique_id=1873302957 instance=ExtResource("chute_lever_1")]
 transform = Transform3D(0.9834, 0, -0.1815, 0, 1, 0, 0.1815, 0, 0.9834, 1.599, 0.964, 0.446)
+
+[node name="Telescope" parent="." instance=ExtResource("telescope_1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.07, -0.905)
 
 [node name="BossReport" parent="." unique_id=1550714243 node_paths=PackedStringArray("memo") instance=ExtResource("boss_report_1")]
 memo = NodePath("../MilestoneMemo")

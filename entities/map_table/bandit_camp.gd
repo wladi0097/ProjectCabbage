@@ -3,7 +3,7 @@ extends RefCounted
 ## Chapter 4's bandit camps (research/gameplan.md "Chapter 4: bandit camps"): once the optional card
 ## CARD is stamped, camps of former staff squat on company land, one at a time, each a red marker on
 ## a country of the world sheet (WorldRegister) with its UNREST LEVEL. The first comes at once; the
-## clock (UnrestClock, on the map table) then runs EVERY s, and when it runs out the camp standing,
+## clock (UnrestClock, on the world sheet) then runs EVERY s, and when it runs out the camp standing,
 ## taken or not, is gone and the next one comes: never a backlog. Clicking a camp lays a RECOVERY
 ## OPERATION on the world sheet (the war's declaration, no country named); its stamp sends the staff
 ## chosen to a fight on the war sheet like any war (WarSheet, the same write-off rule). Lost, the camp

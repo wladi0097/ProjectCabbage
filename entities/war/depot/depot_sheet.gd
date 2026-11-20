@@ -24,9 +24,8 @@ extends MapSheet
 ## - the small trash circle left of the button (spot "dismiss:<unit>"): held UpgradeTree.HOLD_TIME s
 ##   (it fills oxblood), it dismisses one figure (WarRules.dismiss: a ready one, else the newest
 ##   trainee; no refund). Faint while there is nobody to dismiss.
-## The mouse on a column (its figure, name or plates: spot "figure:<unit>") fades in its personnel
-## file mid-screen (`Note`, PaperNote like the war sheet's debut card: card()):
-## what the unit does and how best to use it.
+## The mouse on a column (its figure, name or plates: spot "figure:<unit>") shows its personnel file
+## in the table's hint slip beside the column (file_text): what the unit does and how best to use it.
 ## Below the columns, the one DEVELOPMENT PROGRAMME, beside the title block of the same height (bottom
 ## right: PERSONNEL DEPOT, the form line, the FILED stamp, STAFF n / cap): the shared upgrade tree
 ## (UpgradeTree, `Tree`, rules DepotResearch: an org chart, the hub on top, a department per hired
@@ -76,8 +75,6 @@ const TRAINEE := "trainee:"
 const DISMISS := "dismiss:"
 ## The trash circle with nobody to dismiss is printed this faint.
 const DISMISS_FAINT := 0.3
-## The personnel file fades in and out this fast (s), like the war sheet's debut card.
-const NOTE_FADE := 0.15
 ## Each unit's personnel file (card): a flavour line, then what it does and how best to use it
 ## (WarRules.BASE_STATS, WarFight; the counters of research/war-balance.md).
 const FILES := {
@@ -135,9 +132,6 @@ var _note_ink := Color.BLACK
 ## The unit whose trash circle is held ("": none), and for how long (s).
 var _holding := ""
 var _held_for := 0.0
-## The unit whose personnel file is out ("": none).
-var _noting := ""
-var _note_fade: Tween
 ## The research tree when the mouse is in it (null: not).
 var _tree_in: UpgradeTree
 
@@ -152,8 +146,6 @@ var _tree_in: UpgradeTree
 @onready var _land_sound: SoundCue = $Land
 @onready var _hop_sound: SoundCue = $Hop
 @onready var _dismiss_sound: SoundCue = $Dismiss
-@onready var _note: Control = $Note/Center
-@onready var _note_paper: PaperNote = $Note/Center/Paper
 
 
 func _ready() -> void:
@@ -192,7 +184,6 @@ func _notification(what: int) -> void:
 	elif what == NOTIFICATION_VISIBILITY_CHANGED and is_node_ready():
 		_unblink()  # A blink, a hold or a file cut off by the sheet going away leaves nothing behind.
 		_let_go()
-		_show_note("")
 		if not visible:  # Put away (kept): the page stops printing every frame.
 			_page.render_target_update_mode = SubViewport.UPDATE_DISABLED
 			return
@@ -354,12 +345,11 @@ func dismiss(unit: String) -> bool:
 	return true
 
 
-## The personnel file of `unit` (PaperNote, like a form's in the tray): its name, its flavour line and
-## how best to use it, translated.
-static func card(unit: String) -> Dictionary:
+## The personnel file of `unit` as its hint slip prints it: its name, its flavour line and how best
+## to use it, translated.
+static func file_text(unit: String) -> String:
 	var said: Array = FILES[unit]
-	return {form = "PERSONNEL FILE", title = NAMES[unit],
-			body = TranslationServer.translate(said[0]) + "\n" + TranslationServer.translate(said[1])}
+	return "%s. %s %s" % [TranslationServer.translate(NAMES[unit]), TranslationServer.translate(said[0]), TranslationServer.translate(said[1])]
 
 
 func spot_at(pixel: Vector2) -> StringName:
@@ -386,6 +376,8 @@ func hint(spot: StringName) -> String:
 	var what := String(spot)
 	if what.begins_with(NEWS):
 		return tr(NEWS_HINT)
+	if what.begins_with(FIGURE):
+		return file_text(what.trim_prefix(FIGURE))
 	if what.begins_with(TRAINEE):
 		var queue := training_of(save, what.trim_prefix(TRAINEE)).size()
 		var soon := tr("IN TRAINING. Available for deployment in %d s.") % ceili(ready_in(save, what.trim_prefix(TRAINEE)))
@@ -412,13 +404,16 @@ func hint(spot: StringName) -> String:
 
 ## What spot `spot` covers of the art (px), for the hint slip to lie beside it (MapTable.beside): a
 ## HIRE AND TRAIN button with its price, refusal note and the trainee's bar under it (the slip never
-## hides them), or a column's ¶ mark.
+## hides them), a column's ¶ mark, or a whole column for its personnel file.
 func spot_box(spot: StringName) -> Rect2:
 	var what := String(spot)
 	if what.begins_with(NEWS):
 		return _art_rect(_columns[what.trim_prefix(NEWS)].get_node("News"))
 	if what.begins_with(DISMISS):
 		return _art_rect(_columns[what.trim_prefix(DISMISS)].get_node("Dismiss"))
+	if what.begins_with(FIGURE):
+		var file := _columns[what.trim_prefix(FIGURE)]
+		return Rect2(file.position, file.size)  # The slip lies beside the column, never over the screen.
 	if what.begins_with(TRAINEE):
 		var bar := _columns[what.trim_prefix(TRAINEE)]
 		var figure := _trainee_box(what.trim_prefix(TRAINEE))
@@ -453,7 +448,6 @@ func hover(spot: StringName) -> void:
 		_turn(String(spot).trim_prefix(FIGURE), true)
 	if spot != StringName(DISMISS + _holding):
 		_let_go()  # The mouse slid off the trash circle: the hold is off.
-	_show_note(String(spot).trim_prefix(FIGURE) if String(spot).begins_with(FIGURE) else "")
 	reprint()
 
 
@@ -482,19 +476,6 @@ func _let_go() -> void:
 		(_columns[_holding].get_node("Dismiss/Fill") as Control).scale = Vector2.ZERO
 	_holding = ""
 	_held_for = 0.0
-
-
-## `unit`'s personnel file fades in ("": the one out fades away).
-func _show_note(unit: String) -> void:
-	if unit == _noting:
-		return
-	_noting = unit
-	if unit != "":
-		_note_paper.set_card(card(unit))
-	if _note_fade != null:
-		_note_fade.kill()
-	_note_fade = create_tween()
-	_note_fade.tween_property(_note, "modulate:a", 1.0 if unit != "" else 0.0, NOTE_FADE)
 
 
 ## The map table's mouse at art pixel `pixel`: taken (true) while it is over a research tree (or a

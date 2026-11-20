@@ -224,6 +224,31 @@ func _condensed_sale(units: int, golden := false) -> Array:
 	return [coins.paid[0] if coins.paid.size() == 1 else -1, save]
 
 
+## Every engine error while it is added (OS.add_logger): gdUnit doesn't report those.
+class ErrorLog extends Logger:
+	var errors: Array[String] = []
+
+	func _log_error(_function: String, _file: String, _line: int, code: String, rationale: String,
+			_editor_notify: bool, _error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
+		errors.append(code + " " + rationale)
+
+
+func test_a_refused_cabbage_freed_while_away_leaves_nothing_behind_that_runs_on_it() -> void:
+	var window: SaleWindow = auto_free(SaleWindow.new())
+	add_child(window)
+	var cabbage: Cabbage = preload("res://entities/cabbage/cabbage.tscn").instantiate()
+	add_child(cabbage)
+	window._send_back(cabbage, 0.1, true)
+	var errors := ErrorLog.new()
+	OS.add_logger(errors)
+	cabbage.free()
+
+	await get_tree().create_timer(0.3).timeout
+	OS.remove_logger(errors)
+
+	assert_array(errors.errors.filter(func(e: String) -> bool: return e.contains("Lambda"))).is_empty()
+
+
 func test_a_condensed_cabbage_sells_as_two_cabbages_two_sold_two_paid_two_off_the_stock() -> void:
 	var sale := _condensed_sale(2)
 	var save: SaveGame = sale[1]

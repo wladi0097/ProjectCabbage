@@ -429,7 +429,7 @@ func test_every_farm_of_the_world_can_be_owned_and_the_last_card_is_reachable_un
 	assert_array(order.slice(0, 4)).is_equal(["K-6", "K-7", "K-8", "no_taxes"])  # The country, then its first law.
 	# An optional card queued behind the chain (GameEvents.DRY_LEFT) may still be bought after it.
 	var chain := order.filter(func(id: Variant) -> bool: return not str(id) in UpgradeDesk.Events.DRY_LEFT)
-	assert_str(chain[-1]).is_equal("star_programme")  # Chapter 4's nuclear hour follows stars under the same limits.
+	assert_str(chain[-1]).is_equal("degenerate_matter")  # Chapter 4's nuclear tree follows stars under the same limits; its last join comes last.
 	chain = chain.slice(0, chain.find("stars") + 1)
 	assert_str(chain[-1]).is_equal("stars")
 	assert_str(chain[-2]).is_equal("endmark-1")  # The final island falls last.

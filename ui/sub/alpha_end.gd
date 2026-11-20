@@ -6,6 +6,8 @@ extends Control
 ## button or Esc; the game keeps running behind it. The demo has its own end (BossReport.DEMO_END).
 
 const Events := preload("res://globalScripts/game_events.gd")
+## Unreachable for now: the CABBAGE STAR PROGRAMME card was dropped (2026-11-20, chapter 4 goes on
+## from the TELESCOPE), so no desk card deals it. Point CARD at chapter 4's new last card when it exists.
 const CARD := "star_programme"
 
 

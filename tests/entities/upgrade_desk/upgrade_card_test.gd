@@ -123,12 +123,12 @@ func test_a_short_title_keeps_the_full_size_and_a_long_word_prints_smaller() -> 
 
 
 func test_a_stage_changing_card_is_an_oxblood_priority_form_and_the_rest_plain_stock() -> void:
-	for id: String in ["family_farm", "consolidation", "stars", "star_programme"]:  # Only what changes the chapter: the farm, and each chapter's last card.
+	for id: String in ["family_farm", "consolidation", "stars"]:  # Only what changes the chapter: the farm, and each chapter's last card.
 		var card := UpgradeDesk.card_data(id)
 		assert_object(UpgradeCard.paper_tint(card)).override_failure_message(id).is_equal(UpgradeCard.PRIORITY_TINT)
 		assert_str(UpgradeCard.form_of(card)).override_failure_message(id).is_equal("FORM 0-P  PRIORITY ACQUISITION")
 	for card: Dictionary in UpgradeDesk.CARDS:
-		if card.id not in ["family_farm", "consolidation", "stars", "star_programme"]:
+		if card.id not in ["family_farm", "consolidation", "stars"]:
 			assert_object(UpgradeCard.paper_tint(card)).override_failure_message(card.id).is_equal(Color.WHITE)
 
 

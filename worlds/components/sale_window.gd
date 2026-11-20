@@ -227,16 +227,16 @@ static func count_seller(save: SaveGame, lobbed: bool, units := 1) -> void:
 
 ## After `wait` seconds the street throws `cabbage` back in through the window (`refused`: emits thrown_back).
 func _send_back(cabbage: Cabbage, wait: float, refused_unit := false) -> void:
-	get_tree().create_timer(wait, false).timeout.connect(func() -> void:
-		if not is_instance_valid(cabbage):
-			return
+	# The cabbage's own tween: a cabbage freed while away takes it along (a tree timer's lambda would
+	# still run, with the freed capture, an engine error).
+	cabbage.create_tween().tween_callback(func() -> void:
 		var x := clampf(cabbage.global_position.x, _gap_x.x, _gap_x.y)
 		var from := Vector3(x, REFUSE_FROM.x, REFUSE_FROM.y)
 		var to := REFUSE_TO.position + REFUSE_TO.size * Vector3(randf(), 0.0, randf())
 		cabbage.throw_in(from, Feeder.ballistic_velocity(from, to, REFUSE_TIME), CLEAR_TIME, REFUSE_TIME)
 		$Refuse.cue(from)
 		if refused_unit:
-			thrown_back.emit(cabbage))
+			thrown_back.emit(cabbage)).set_delay(wait)
 
 
 func _buys(chance: float) -> bool:

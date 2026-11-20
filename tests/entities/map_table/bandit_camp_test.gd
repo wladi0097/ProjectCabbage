@@ -203,9 +203,8 @@ func test_a_resurvey_keeps_the_level_draws_a_new_camp_and_starts_the_clock_over(
 	assert_float(BanditCamp.countdown(save)).is_equal_approx(BanditCamp.EVERY, 0.01)
 
 
-func test_the_camp_card_is_optional_and_the_star_programme_does_not_need_it() -> void:
+func test_the_camp_card_is_optional_and_no_card_needs_it() -> void:
 	assert_array(UpgradeDesk.Events.DRY_LEFT).contains([BanditCamp.CARD])
-	assert_array(UpgradeDesk.card_data("star_programme").needs).not_contains([BanditCamp.CARD])
 	assert_array(UpgradeDesk.card_data(BanditCamp.CARD).needs).is_equal(["half_life"])
 	for card: Dictionary in UpgradeDesk.CARDS:
 		assert_array(card.get("needs", [])).override_failure_message(card.id).not_contains([BanditCamp.CARD])

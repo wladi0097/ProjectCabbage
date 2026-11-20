@@ -140,6 +140,7 @@ func _process(_delta: float) -> void:
 		refresh()
 	if save.bandit_camp != _shown_camp:
 		_show_camp()
+	_camp.visible = BanditCamp.is_open(save) and open >= 1.0  # Only on the sheet lying open: never through the roll or the depot.
 	if _deed_camp != 0 and (open < 1.0 or _deed_camp != save.bandit_camp):
 		_drop_deed()  # Rolled up, or the camp is gone: its paper goes at once.
 	elif _deed_camp != 0 and _dealing == null and (FarmRegister.lacks(save, BanditCamp.bill(save), _out()) != _deed_lacks or save.army != _deed_army):
@@ -307,6 +308,8 @@ func spot_at(pixel: Vector2) -> StringName:
 			return FarmRegister.STAMP if FarmDeed.in_stamp_box(on) else &""
 	if _camp.visible and pixel.distance_to(camp_pixel(SaveManager.save.bandit_camp)) <= CAMP_HIT:
 		return CAMP
+	if BanditCamp.active(SaveManager.save):
+		return &""  # With the camps out the countries are done with: only the camp's marker opens anything.
 	for country in _sites:
 		if Geometry2D.is_point_in_polygon(pixel, _outline(country).points):
 			return country
@@ -450,8 +453,7 @@ static func _near_border(p: Vector2, ring: PackedVector2Array) -> float:
 func _show_camp() -> void:
 	var save := SaveManager.save
 	_shown_camp = save.bandit_camp
-	_camp.visible = BanditCamp.is_open(save)
-	if _camp.visible:
+	if BanditCamp.is_open(save):
 		var at := camp_pixel(save.bandit_camp)
 		_camp.position = Vector3(at.x / PIXELS_PER_METRE - SIZE.x / 2.0, 0.0, at.y / PIXELS_PER_METRE)
 		_camp_level.text = tr(BanditCamp.LEVEL_TEXT) % BanditCamp.level(save)

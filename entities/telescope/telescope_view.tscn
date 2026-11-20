@@ -1,0 +1,78 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/telescope/telescope_view.gd" id="1_script"]
+[ext_resource type="Theme" path="res://entities/consultant/mandate_theme.tres" id="2_theme"]
+
+[sub_resource type="Shader" id="Eyepiece"]
+code = "shader_type canvas_item;
+// The eyepiece: a round field of cold night sky with faint stars and a survey reticle, black around it.
+uniform float radius = 0.42;      // of the view's height
+uniform vec3 sky = vec3(0.035, 0.045, 0.045);
+uniform vec3 ink = vec3(0.42, 0.47, 0.45);
+
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+void fragment() {
+	vec2 view_size = 1.0 / SCREEN_PIXEL_SIZE;
+	vec2 px = FRAGCOORD.xy;
+	vec2 c = (px - view_size * 0.5) / view_size.y;
+	float r = length(c);
+	float edge = radius;
+	vec3 col = sky * (1.0 - 0.6 * smoothstep(0.0, edge, r));
+	vec2 cell = floor(c * 160.0);
+	float star = step(0.9965, hash(cell)) * hash(cell + 3.1);
+	col += vec3(0.55, 0.6, 0.6) * star * 0.5;
+	float line = 0.0012;
+	float cross = (1.0 - smoothstep(line, line * 2.0, abs(c.x))) + (1.0 - smoothstep(line, line * 2.0, abs(c.y)));
+	cross *= step(0.02, r) * step(r, edge * 0.92);
+	float ring = 1.0 - smoothstep(line, line * 2.0, abs(r - edge * 0.5));
+	col = mix(col, ink, clamp(cross + ring * 0.6, 0.0, 1.0) * 0.5);
+	float inside = 1.0 - smoothstep(edge - 0.006, edge, r);
+	COLOR = vec4(col * inside, 1.0);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="EyepieceMat"]
+shader = SubResource("Eyepiece")
+
+[node name="TelescopeView" type="CanvasLayer"]
+layer = 2
+
+[node name="View" type="Control" parent="." groups=["blocks_hand"]]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Eyepiece" type="ColorRect" parent="View"]
+material = SubResource("EyepieceMat")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Back" type="Button" parent="View"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 48)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -80.0
+offset_right = 192.0
+offset_bottom = -32.0
+grow_vertical = 0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.78, 0.8, 0.76, 1)
+theme_override_colors/font_hover_color = Color(0.13, 0.14, 0.14, 1)
+theme_override_font_sizes/font_size = 22
+text = "TO DESK"

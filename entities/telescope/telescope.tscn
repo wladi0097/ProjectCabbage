@@ -1,0 +1,70 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/telescope/telescope.gd" id="1_script"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/telescope_mount.res" id="2_mount"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/telescope_tube.res" id="3_tube"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/Props/telescope_lens.res" id="4_lens"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/chute_lever_land.wav" id="5_land"]
+[ext_resource type="Script" path="res://entities/components/interactable.gd" id="6_interactable"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/card_hover_1.wav" id="7_hover"]
+[ext_resource type="AudioStream" path="res://assets/audio/effects/tv_remote_click_1.wav" id="8_click"]
+[ext_resource type="PackedScene" path="res://entities/telescope/telescope_view.tscn" id="9_view"]
+
+[sub_resource type="StandardMaterial3D" id="Lens"]
+albedo_color = Color(0.08, 0.1, 0.11, 1)
+metallic = 0.4
+metallic_specular = 0.9
+roughness = 0.05
+emission_enabled = true
+emission = Color(0.32, 0.38, 0.4, 1)
+emission_energy_multiplier = 0.15
+
+[sub_resource type="BoxShape3D" id="Reach"]
+size = Vector3(0.22, 0.24, 0.42)
+
+[node name="Telescope" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Mount" type="MeshInstance3D" parent="."]
+gi_mode = 0
+mesh = ExtResource("2_mount")
+
+[node name="Tube" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.970296, -0.241922, 0, 0.241922, 0.970296, 0, -0.109192, 0.09703)
+
+[node name="Barrel" type="MeshInstance3D" parent="Tube"]
+gi_mode = 0
+mesh = ExtResource("3_tube")
+
+[node name="Lens" type="MeshInstance3D" parent="Tube"]
+gi_mode = 0
+mesh = ExtResource("4_lens")
+surface_material_override/0 = SubResource("Lens")
+
+[node name="Hit" type="StaticBody3D" parent="Tube"]
+collision_layer = 8
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Tube/Hit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0.08)
+shape = SubResource("Reach")
+
+[node name="Interactable" type="Node" parent="Tube/Hit"]
+script = ExtResource("6_interactable")
+tooltip = "Survey telescope. Click to look at everything the company does not own yet."
+pressable = true
+
+[node name="Land" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("5_land")
+bus = &"SFX"
+
+[node name="Hover" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("7_hover")
+volume_db = -8.0
+bus = &"SFX"
+
+[node name="Click" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_click")
+bus = &"SFX"
+
+[node name="View" parent="." instance=ExtResource("9_view")]

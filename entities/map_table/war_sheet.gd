@@ -94,7 +94,7 @@ const LOST_AFTER := 1.8
 ## Seconds the fight's song takes to fade out once the fight ends.
 const MUSIC_FADE := 1.5
 ## The table's nodes that go away while the fight is on (the way out and the currency column).
-const EXITS: Array[String] = ["DeskButton", "FarmButton", "Tally", "Depot", "UnrestClock"]
+const EXITS: Array[String] = ["DeskButton", "FarmButton", "Tally", "Depot"]
 const AWAY_TIME := 0.2
 ## The running clock ticks aloud from this many seconds left.
 const TICK_FROM := 10

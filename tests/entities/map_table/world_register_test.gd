@@ -444,6 +444,46 @@ func test_a_camp_shows_its_marker_with_its_level_inside_its_country() -> void:
 	assert_str(sheet.spot_at(at)).is_equal("camp")
 
 
+func test_countries_cannot_be_declared_on_once_the_rebels_are_out() -> void:
+	SaveManager.save = _camp_save()
+	var sheet := _sheet()
+	sheet._process(0.0)
+	var camp := BanditCamp.country_of(SaveManager.save.bandit_camp)
+	var wanted: Array = []
+	sheet.sheet_wanted.connect(func(id: StringName, _farm: StringName) -> void: wanted.append(id))
+	for country: StringName in WorldRegister.COUNTRIES:
+		var token := sheet._pixel(country)
+		if country == camp and token.distance_to(sheet.camp_pixel(SaveManager.save.bandit_camp)) <= WorldRegister.CAMP_HIT:
+			continue  # The marker itself stands on that token.
+		var spot := sheet.spot_at(token)
+		assert_str(spot).override_failure_message(country).is_empty()
+		sheet.press(spot)
+	assert_array(wanted).is_empty()
+	assert_str(sheet.spot_at(sheet.camp_pixel(SaveManager.save.bandit_camp))).is_equal("camp")  # Only the camp opens.
+
+
+func test_the_camp_and_its_clock_show_only_while_the_world_sheet_lies_open() -> void:
+	SaveManager.save = _camp_save()
+	var sheet := _sheet()
+	var clock: Node3D = sheet.get_node("UnrestClock")
+	sheet._process(0.0)
+	clock._process(0.0)
+	assert_bool((sheet.get_node("Camp") as Node3D).visible).is_true()
+	assert_bool(clock.visible).is_true()
+	sheet.open = 0.0  # Rolled up in the holder, the depot's sheet lying open instead.
+	sheet._process(0.0)
+	clock._process(0.0)
+	assert_bool((sheet.get_node("Camp") as Node3D).visible).is_false()
+	assert_bool(clock.visible).is_false()
+	assert_str(sheet.spot_at(sheet.camp_pixel(SaveManager.save.bandit_camp))).is_empty()
+
+
+func test_the_clock_lies_over_the_survey_pole_at_the_top_middle_of_the_world_sheet() -> void:
+	var sheet := _sheet()
+	var clock: Node3D = sheet.get_node("UnrestClock")
+	assert_float(sheet.pixel_at(clock.global_position).distance_to(Vector2(1600.0, 190.0))).is_less(40.0)
+
+
 func test_no_camp_no_marker() -> void:
 	var sheet := _sheet()
 	sheet._process(0.0)

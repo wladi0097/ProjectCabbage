@@ -1577,7 +1577,7 @@ func test_the_stars_card_reaches_the_tray_only_once_the_first_law_and_the_sea_la
 
 func test_only_chapter_changing_cards_are_priority_forms() -> void:
 	for card: Dictionary in UpgradeDesk.CARDS:
-		assert_bool(card.get("priority", false)).override_failure_message(card.id).is_equal(card.id in ["family_farm", "consolidation", "stars", "star_programme"])
+		assert_bool(card.get("priority", false)).override_failure_message(card.id).is_equal(card.id in ["family_farm", "consolidation", "stars"])
 
 
 func test_sea_lanes_needs_almost_all_farms_of_the_starting_continent() -> void:
@@ -2183,19 +2183,61 @@ func test_the_research_light_card_is_an_optional_findings_card_dealt_with_briber
 
 # ---- Chapter 4, part 0: NUCLEAR ----
 
-const NUCLEAR := ["print_numbers", "nuclear_research", "half_life", "critical_mass", "isotope_seed", "lead_storage",
-		"reactor_machinery", "enrichment_cascade", "pressure_vessel", "nuclear_family", "degenerate_matter", "star_programme"]
+const NUCLEAR := ["print_numbers", "nuclear_research", "telescope", "half_life", "critical_mass", "isotope_seed", "lead_storage",
+		"reactor_machinery", "enrichment_cascade", "pressure_vessel", "nuclear_family", "degenerate_matter"]
+## Chapter 4's small tree (2026-11-20): what each card needs.
+const NUCLEAR_TREE := {print_numbers = ["stars"], nuclear_research = ["print_numbers"], telescope = ["nuclear_research"],
+		half_life = ["nuclear_research"], critical_mass = ["half_life"], isotope_seed = ["half_life"], lead_storage = ["isotope_seed"],
+		reactor_machinery = ["critical_mass", "lead_storage"], enrichment_cascade = ["reactor_machinery"],
+		pressure_vessel = ["enrichment_cascade"], nuclear_family = ["reactor_machinery"], degenerate_matter = ["pressure_vessel", "nuclear_family"]}
 
 
-func test_the_nuclear_hours_twelve_cards_follow_the_stars_card_one_after_the_other() -> void:
-	var previous := "stars"
-	for id: String in NUCLEAR:
-		assert_array(UpgradeDesk.card_data(id).needs).override_failure_message(id).is_equal([previous])
-		previous = id
+## Every card `id` waits for, all the way up its `needs`.
+func _ancestors(id: String) -> Array:
+	var out := []
+	for need: String in UpgradeDesk.card_data(id).get("needs", []):
+		out.append(need)
+		out.append_array(_ancestors(need))
+	return out
+
+
+func test_the_nuclear_cards_grow_as_a_small_tree_from_the_stars_card() -> void:
+	for id: String in NUCLEAR_TREE:
+		assert_array(UpgradeDesk.card_data(id).needs).override_failure_message(id).is_equal(NUCLEAR_TREE[id])
+	assert_array(NUCLEAR_TREE.keys()).contains_exactly_in_any_order(NUCLEAR)
+	# Every card is dealt once its needs are stamped, whatever branch the player takes first.
 	var stamped := _all_ids().filter(func(id: String) -> bool: return id not in NUCLEAR)
 	for id: String in NUCLEAR:
 		assert_bool(id in _next(stamped, 99)).override_failure_message(id).is_true()
 		stamped.append(id)
+
+
+func test_the_telescope_comes_with_nuclear_research() -> void:
+	var stamped := _all_ids().filter(func(id: String) -> bool: return id not in NUCLEAR)
+	stamped.append_array(["print_numbers"])
+	assert_bool("telescope" in _next(stamped, 99)).is_false()
+	stamped.append("nuclear_research")
+	assert_bool("telescope" in _next(stamped, 99)).is_true()
+	var german := _german()
+	var card := UpgradeDesk.card_data("telescope")
+	for text: String in [card.title, card.body]:
+		assert_bool(german.has(text)).override_failure_message("no German for " + text).is_true()
+
+
+func test_after_nuclear_research_two_or_three_nuclear_forms_lie_in_the_tray_at_once() -> void:
+	var stamped := _all_ids().filter(func(id: String) -> bool: return id not in NUCLEAR)
+	stamped.append_array(["print_numbers", "nuclear_research"])
+	assert_array(_next(stamped)).contains(["telescope", "half_life"])
+	stamped.append_array(["telescope", "half_life"])
+	assert_array(_next(stamped)).contains(["critical_mass", "isotope_seed"])
+	stamped.append_array(["critical_mass", "isotope_seed", "lead_storage", "reactor_machinery"])
+	assert_array(_next(stamped)).contains(["enrichment_cascade", "nuclear_family"])
+
+
+func test_the_telescope_is_a_quick_buy_cheaper_than_nuclear_research() -> void:
+	var card := UpgradeDesk.card_data("telescope")
+	assert_int(card.price).is_less(UpgradeDesk.card_data("nuclear_research").price)
+	assert_int(UpgradeDesk.costs(card).size()).is_equal(1)
 
 
 func test_printing_larger_numbers_lets_the_purse_hold_two_and_a_half_times_as_much() -> void:
@@ -2208,20 +2250,22 @@ func test_printing_larger_numbers_lets_the_purse_hold_two_and_a_half_times_as_mu
 func test_each_nuclear_card_fits_the_limits_the_cards_and_nodes_before_it_give() -> void:
 	# Coins: $16M until print_numbers, $40M from it; Findings: chapter 3's ¶900K before the decay archive (half_life).
 	assert_int(UpgradeDesk.card_data("print_numbers").price).is_less_equal(16000000)
-	assert_int(UpgradeDesk.card_data("nuclear_research").price).is_less_equal(40000000)
-	for id: String in ["nuclear_research", "half_life"]:
-		assert_int(UpgradeDesk.card_data(id).also.findings).override_failure_message(id).is_less(900000)
+	for id: String in ["nuclear_research", "telescope"]:
+		assert_int(UpgradeDesk.card_data(id).price).override_failure_message(id).is_less_equal(40000000)
+	for id: String in ["nuclear_research", "telescope", "half_life"]:
+		assert_int(UpgradeDesk.card_data(id).get("also", {}).get("findings", 0)).override_failure_message(id).is_less(900000)
 	for id: String in NUCLEAR.slice(1):
 		var bill := UpgradeDesk.costs(UpgradeDesk.card_data(id))
 		assert_int(bill.get("findings", 0)).override_failure_message(id).is_less(10000000)
-		assert_int(bill.get("stock", 0)).override_failure_message(id).is_less(999999 if NUCLEAR.find(id) <= NUCLEAR.find("lead_storage") else 10000000)
+		# More than 999,999 cabbages only behind LEAD-LINED STORAGE (its LEAD LINING takes the store past that).
+		var lined := "lead_storage" in _ancestors(id)
+		assert_int(bill.get("stock", 0)).override_failure_message(id).is_less(10000000 if lined else 999999)
 
 
-func test_the_star_programme_is_a_priority_form_dearer_than_every_nuclear_card_before_it() -> void:
-	var last := UpgradeDesk.card_data("star_programme")
-	assert_bool(last.get("priority", false)).is_true()
-	for id: String in NUCLEAR.slice(0, -1):
-		assert_int(UpgradeDesk.card_data(id).price).override_failure_message(id).is_less(last.price)
+func test_no_nuclear_card_is_a_priority_form_while_chapter_4_has_no_end_card() -> void:
+	for id: String in NUCLEAR:
+		assert_bool(UpgradeDesk.card_data(id).get("priority", false)).override_failure_message(id).is_false()
+	assert_dict(UpgradeDesk.card_data("star_programme")).is_empty()
 
 
 ## Whether projector node `id` (or one above it) waits for a chapter 4 card.

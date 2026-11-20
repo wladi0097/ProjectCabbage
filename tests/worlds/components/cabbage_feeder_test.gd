@@ -169,6 +169,27 @@ func test_a_cabbage_freed_while_rolling_down_the_ramp_is_simply_not_launched() -
 	assert_bool(grip.enabled).override_failure_message("nothing is launched").is_false()
 
 
+## Every engine error while it is added (OS.add_logger): gdUnit doesn't report those.
+class ErrorLog extends Logger:
+	var errors: Array[String] = []
+
+	func _log_error(_function: String, _file: String, _line: int, code: String, rationale: String,
+			_editor_notify: bool, _error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
+		errors.append(code + " " + rationale)
+
+
+func test_a_cabbage_freed_in_mid_air_leaves_nothing_behind_that_runs_on_it() -> void:
+	var cabbage := _fling_one(true)
+	var errors := ErrorLog.new()
+	OS.add_logger(errors)
+	cabbage.free()
+
+	await get_tree().create_timer(Feeder.ENTER_TIME + 0.1).timeout
+	OS.remove_logger(errors)
+
+	assert_array(errors.errors.filter(func(e: String) -> bool: return e.contains("Lambda"))).is_empty()
+
+
 func test_a_research_unit_owed_by_a_purchase_lands_without_being_a_catch_or_a_miss() -> void:
 	assert_bool(_fling_one(false).in_flight).is_false()
 

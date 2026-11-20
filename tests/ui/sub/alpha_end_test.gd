@@ -25,7 +25,7 @@ func _capstone_stamped() -> SaveGame:
 	return save
 
 
-func test_the_alpha_end_comes_only_after_the_star_programme_card_not_after_the_stars_card() -> void:
+func test_the_alpha_end_comes_only_after_its_card_not_after_the_stars_card() -> void:
 	var save := SaveGame.new()
 	save.stamped = PackedStringArray(["family_farm", "consolidation", "market_intelligence"])
 	assert_bool(Report.Events.chapter_3(save)).is_true()
@@ -55,12 +55,13 @@ func test_the_demo_never_shows_the_alpha_popup() -> void:
 	assert_bool(AlphaEnd.due(_capstone_stamped())).is_false()
 
 
-func test_the_stars_card_needs_every_farm_in_the_game_and_the_star_programme_ends_the_chain_after_it() -> void:
+func test_the_stars_card_needs_every_farm_in_the_game() -> void:
 	var card := UpgradeDesk.card_data("stars")
 	assert_int(card.farms).is_equal(Report.Events.FARMS)
 	assert_int(Report.Events.FARMS).is_equal(FieldLine.LAMPS)
 	assert_bool(card.get("priority", false)).is_true()
-	# The chain's last card, but for optional cards (nothing waits for them), which may queue behind it.
-	var chain := UpgradeDesk.CARDS.filter(func(c: Dictionary) -> bool: return not c.id in UpgradeDesk.Events.DRY_LEFT)
-	assert_str(chain[-1].id).is_equal(AlphaEnd.CARD)
-	assert_bool(chain[-1].get("priority", false)).is_true()
+
+
+## Chapter 4 has no end card for now (it goes on from the telescope): no desk card deals the popup.
+func test_no_desk_card_deals_the_alpha_end_while_chapter_4_goes_on_from_the_telescope() -> void:
+	assert_dict(UpgradeDesk.card_data(AlphaEnd.CARD)).is_empty()

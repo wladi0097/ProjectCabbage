@@ -3862,6 +3862,12 @@ NUCLEAR RESEARCH,NUCLEAR RESEARCH,NUKLEARFORSCHUNG
 NUCLEAR opens on the projector: the street's price and the Findings per cabbage. ENRICHED SOIL opens on the farm tree.","Fission is a growth sector. The board has approved one.
 NUCLEAR opens on the projector: the street's price and the Findings per cabbage. ENRICHED SOIL opens on the farm tree.","Kernspaltung ist eine Wachstumsbranche. Der Vorstand hat eine genehmigt.
 Am Projektor öffnet NUKLEAR: der Preis der Straße und die Befunde pro Kohlkopf. Auf dem Hofbaum öffnet BODENKUR."
+TELESCOPE,TELESCOPE,TELESKOP
+"The board would like to know what else is out there, and who owns it.
+A survey telescope is clamped to the window. It is pointed at everything we do not own yet.","The board would like to know what else is out there, and who owns it.
+A survey telescope is clamped to the window. It is pointed at everything we do not own yet.","Der Vorstand möchte wissen, was es da draußen noch gibt und wem es gehört.
+Am Fenster wird ein Vermessungsteleskop festgeklemmt. Es zeigt auf alles, was uns noch nicht gehört."
+Survey telescope. Click to look at everything the company does not own yet.,Survey telescope. Click to look at everything the company does not own yet.,"Vermessungsteleskop. Klicken, um sich alles anzusehen, was der Firma noch nicht gehört."
 HALF-LIFE ACCOUNTING,HALF-LIFE ACCOUNTING,HALBWERTSZEIT-BUCHHALTUNG
 "Assets that decay slowly are booked as permanent.
 CHAIN REACTION (research cabbages), the DECAY ARCHIVE (Findings limit) and DECAY PREMIUM: LAB (golden cabbages in the research lab) open on the projector.","Assets that decay slowly are booked as permanent.
@@ -3897,11 +3903,6 @@ NUCLEAR FAMILY,NUCLEAR FAMILY,KERNFAMILIE
 A sixth, seventh and eighth farm hand and tractor open on the farm tree, with a hut and a parking bay each in the yard.","Staff housing has been moved next to the cooling towers. Families are welcome.
 A sixth, seventh and eighth farm hand and tractor open on the farm tree, with a hut and a parking bay each in the yard.","Die Personalunterkünfte wurden neben die Kühltürme verlegt. Familien sind willkommen.
 Auf dem Hofbaum öffnen ein sechster, siebter und achter Knecht und Traktor, mit je einer Hütte und einem Stellplatz im Hof."
-CABBAGE STAR PROGRAMME,CABBAGE STAR PROGRAMME,KOHL-STERNENPROGRAMM
-"The planet is fully booked. The board has looked up.
-Stamped, the programme begins. Its first vessel is still on the drawing board.","The planet is fully booked. The board has looked up.
-Stamped, the programme begins. Its first vessel is still on the drawing board.","Der Planet ist ausgebucht. Der Vorstand hat nach oben geblickt.
-Gestempelt, beginnt das Programm. Sein erstes Schiff ist noch auf dem Reißbrett."
 The star programme is still under review. You will be notified in writing.,The star programme is still under review. You will be notified in writing.,Das Sternenprogramm befindet sich noch in Prüfung. Sie werden schriftlich benachrichtigt.
 CONDENSE XIII,CONDENSE XIII,VERDICHTEN XIII
 "The vessel holds. The cabbage is less sure.
@@ -4715,11 +4716,11 @@ ZERO TOLERANCE,ZERO TOLERANCE,NULLTOLERANZ
 All staff hit another 15% harder.","Tolerance was reviewed and found to be zero.
 All staff hit another 15% harder.","Die Toleranz wurde geprüft und als null befunden.
 Alle Mitarbeiter treffen weitere 15 % härter."
-CIVIL UNREST: RECOVERY OF COMPANY PROPERTY,CIVIL UNREST: RECOVERY OF COMPANY PROPERTY,UNRUHEN: FIRMENEIGENTUM ZURÜCKHOLEN
-"Some former staff no longer accept that the world belongs to the company. It does.
-A camp of them appears on the world map now and a new one every 10 minutes. A camp left standing is gone when the next one arrives. Clear it with a recovery operation and the company takes back five minutes of its output in coins, Findings and cabbages. Each camp cleared makes the next one harder.","Some former staff no longer accept that the world belongs to the company. It does.
-A camp of them appears on the world map now and a new one every 10 minutes. A camp left standing is gone when the next one arrives. Clear it with a recovery operation and the company takes back five minutes of its output in coins, Findings and cabbages. Each camp cleared makes the next one harder.","Einige ehemalige Mitarbeiter akzeptieren nicht mehr, dass die Welt der Firma gehört. Sie tut es.
-Jetzt erscheint ein Lager von ihnen auf der Weltkarte und alle 10 Minuten ein neues. Ein stehengelassenes Lager ist weg, wenn das nächste kommt. Räumen Sie es mit einer Rückführungsmaßnahme, und die Firma holt sich fünf Minuten ihres Ertrags an Münzen, Befunden und Kohlköpfen zurück. Jedes geräumte Lager macht das nächste härter."
+CIVIL UNREST,CIVIL UNREST,UNRUHEN
+"Former staff have rebelled and set up camp on company land. The world map now shows where.
+We go and take back what is ours.","Former staff have rebelled and set up camp on company land. The world map now shows where.
+We go and take back what is ours.","Ehemalige Mitarbeiter rebellieren und zelten auf Firmenland. Die Weltkarte zeigt jetzt, wo.
+Wir holen uns zurück, was uns gehört."
 BANDIT CAMP,BANDIT CAMP,BANDITENLAGER
 Former staff are camping on company land. Both remain company property.,Former staff are camping on company land. Both remain company property.,Ex-Mitarbeiter zelten auf Firmenland. Beides ist Firmeneigentum.
 UNREST LEVEL %d,UNREST LEVEL %d,UNRUHESTUFE %d
@@ -4735,12 +4736,12 @@ PROPERTY RECOVERED,PROPERTY RECOVERED,EIGENTUM ZURÜCKGEFÜHRT
 RECOVERY UNSUCCESSFUL,RECOVERY UNSUCCESSFUL,RÜCKFÜHRUNG ERFOLGLOS
 "Recovered: %s, %s Findings and %s cabbages.","Recovered: %s, %s Findings and %s cabbages.","Zurückgeführt: %s, %s Befunde und %s Kohlköpfe."
 The camp remains. Its occupants have been asked to leave in writing.,The camp remains. Its occupants have been asked to leave in writing.,Das Lager bleibt. Die Besetzer wurden schriftlich zum Verlassen aufgefordert.
-"CAMP STANDS, LEVEL %d. GONE IN","CAMP STANDS, LEVEL %d. GONE IN","LAGER STEHT, STUFE %d. WEG IN"
-NEXT CAMP IN,NEXT CAMP IN,NÄCHSTES LAGER IN
+"Rebel camp, level %d. It leaves in %s. Click the camp to take back what is ours.","Rebel camp, level %d. It leaves in %s. Click the camp to take back what is ours.","Rebellenlager, Stufe %d. Es zieht ab in %s. Lager anklicken und zurückholen, was uns gehört."
+Next rebel camp in %s.,Next rebel camp in %s.,Nächstes Rebellenlager in %s.
 RESURVEY,RESURVEY,NEU VERMESSEN
 "Resurvey: a new camp at the same level, and the clock starts again. %s.","Resurvey: a new camp at the same level, and the clock starts again. %s.","Neu vermessen: ein neues Lager derselben Stufe, und die Uhr beginnt von vorn. %s."
 REVISED SITE SURVEY,REVISED SITE SURVEY,NEUVERMESSUNG
 "The camp was surveyed again. It had moved.
-The unrest clock gets a RESURVEY button: a new camp at the same level, for a minute of coins.","The camp was surveyed again. It had moved.
-The unrest clock gets a RESURVEY button: a new camp at the same level, for a minute of coins.","Das Lager wurde neu vermessen. Es war umgezogen.
-Die Unruheuhr bekommt einen Knopf NEU VERMESSEN: ein neues Lager derselben Stufe, für eine Minute Münzen."
+The camp clock on the map gets a RESURVEY button: a new camp at the same level, for a minute of coins.","The camp was surveyed again. It had moved.
+The camp clock on the map gets a RESURVEY button: a new camp at the same level, for a minute of coins.","Das Lager wurde neu vermessen. Es war umgezogen.
+Die Lageruhr auf der Karte bekommt einen Knopf NEU VERMESSEN: ein neues Lager derselben Stufe, für eine Minute Münzen."

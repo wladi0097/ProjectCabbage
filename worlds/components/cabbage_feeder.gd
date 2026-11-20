@@ -230,9 +230,10 @@ func _fling(body: Variant, part: Variant, catchable := true) -> void:
 	var target := landing_area.position + Vector3(randf(), 0.0, randf()) * landing_area.size
 	cabbage.linear_velocity = ballistic_velocity(global_position, target, FLIGHT_TIME)
 	cabbage.angular_velocity = Vector3(randf_range(-4, 4), randf_range(-4, 4), randf_range(-4, 4))
-	get_tree().create_timer(ENTER_TIME, true, true).timeout.connect(func() -> void:
-		if is_instance_valid(cabbage):
-			cabbage.collision_mask |= PLAY_AREA_LAYER)
+	# The cabbage's own tween: freed with it (sold, reload), it never runs. A tree timer's lambda
+	# would still run, with the freed capture, an engine error.
+	cabbage.create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS) \
+			.tween_callback(func() -> void: cabbage.collision_mask |= PLAY_AREA_LAYER).set_delay(ENTER_TIME)
 
 
 ## The launch velocity that lands a body thrown from `from` on `to` after `time` under the project's gravity.

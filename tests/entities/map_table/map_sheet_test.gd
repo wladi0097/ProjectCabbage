@@ -106,10 +106,12 @@ func test_the_lettering_is_printed_on_the_paper_so_it_rolls_up_with_it() -> void
 		if id != "war":  # The war sheet is all battlefield: no lettering on its paper.
 			assert_int(_labels(sheet).size()).override_failure_message(id).is_greater(20)
 		# The only lettering off the paper is the name tag on its roll (and the war's control box, a desk prop,
-		# and the world sheet's bandit camp marker, a pin stuck in it with its paper tag).
+		# the world sheet's bandit camp marker, a pin stuck in it with its paper tag, and its unrest clock lying on it).
 		var off_paper := sheet.find_children("*", "Label3D", true, false).filter(func(l: Node) -> bool:
-			return not (sheet.has_node("Control") and sheet.get_node("Control").is_ancestor_of(l)) \
-					and not (sheet.has_node("Camp") and sheet.get_node("Camp").is_ancestor_of(l)))
+			for prop: String in ["Control", "Camp", "UnrestClock"]:
+				if sheet.has_node(prop) and sheet.get_node(prop).is_ancestor_of(l):
+					return false
+			return true)
 		assert_array(off_paper).is_equal([sheet.get_node("Core/Tag/Name")])
 		var paper: ShaderMaterial = sheet.get_node("Paper").material_override
 		assert_object(paper.get_shader_parameter("sheet_tex")).is_not_null()

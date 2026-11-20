@@ -1458,3 +1458,10 @@ func test_the_depot_hire_hint_lies_beside_the_hovered_columns_button_on_the_left
 		assert_bool(slip.intersects(box)).override_failure_message(unit + ": covers its button").is_false()
 		assert_bool(slip.grow(MapTable.HINT_GAP + 2.0).intersects(box)).override_failure_message(unit + ": not beside it").is_true()
 
+
+
+func test_a_hint_slip_on_the_table_shows_at_once_the_first_time_then_only_after_a_short_hover() -> void:
+	var save := SaveGame.new()
+	assert_float(MapTable.hint_wait(save, "map:world:depot_col_0")).is_equal(0.0)
+	save.tooltips_seen.append("map:world:depot_col_0")
+	assert_float(MapTable.hint_wait(save, "map:world:depot_col_0")).is_greater(0.0)

@@ -659,18 +659,14 @@ func test_the_trash_circle_is_faint_and_dismisses_nobody_while_there_is_nobody_t
 	assert_float((sheet._columns["field_associate"].get_node("Dismiss") as Control).modulate.a).is_equal(1.0)
 
 
-func test_hovering_a_unit_fades_in_its_personnel_file_and_leaving_fades_it_out() -> void:
+func test_hovering_a_unit_shows_its_personnel_file_as_a_plain_hint_slip_beside_its_column() -> void:
 	var sheet := _sheet()
 	var plate := sheet._art_rect(sheet._columns["field_associate"].get_node("Hp")).get_center()
-	assert_str(sheet.spot_at(plate)).is_equal(&"figure:field_associate")  # The column counts, not just the figure.
-	sheet.hover(sheet.spot_at(plate))
-	sheet._note_fade.custom_step(1.0)
-	assert_float(sheet._note.modulate.a).is_equal(1.0)
-	assert_str(sheet._note_paper._title).is_equal("FIELD ASSOCIATE")
-	assert_str(sheet.hint(sheet.spot_at(plate))).is_empty()  # The file, no hint slip.
-	sheet.hover(&"")
-	sheet._note_fade.custom_step(1.0)
-	assert_float(sheet._note.modulate.a).is_equal(0.0)
+	var spot := sheet.spot_at(plate)
+	assert_str(spot).is_equal(&"figure:field_associate")  # The column counts, not just the figure.
+	assert_str(sheet.hint(spot)).starts_with("FIELD ASSOCIATE. ").contains(DepotSheet.FILES["field_associate"][0])
+	assert_bool(sheet.spot_box(spot).has_point(plate)).is_true()  # The slip lies beside the column.
+	assert_object(sheet.get_node_or_null("Note")).is_null()  # No paper card over the screen.
 
 
 func test_every_personnel_file_has_english_and_german_text_and_never_says_units() -> void:
@@ -682,7 +678,7 @@ func test_every_personnel_file_has_english_and_german_text_and_never_says_units(
 			german[row[0]] = true
 	for unit in Depot.IN_SERVICE:
 		var said: Array = DepotSheet.FILES[unit]
-		for text: String in said + [DepotSheet.NAMES[unit], "PERSONNEL FILE"]:
+		for text: String in said + [DepotSheet.NAMES[unit]]:
 			assert_bool(german.has(text)).override_failure_message("%s: no German for %s" % [unit, text]).is_true()
 			assert_bool(text.to_lower().contains("units")).override_failure_message("%s says units" % unit).is_false()
 

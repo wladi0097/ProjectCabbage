@@ -105,7 +105,7 @@ const GENERAL := [
 	# clock started over, for a minute of coins each time).
 	{id = "war_resurvey", parent = "war_retreat_5", at = Vector2(1.85, -0.062), icon = "lens", price = 300000000,
 		card = "civil_unrest", title = "REVISED SITE SURVEY",
-		body = "The camp was surveyed again. It had moved.\nThe unrest clock gets a RESURVEY button: a new camp at the same level, for a minute of coins."},
+		body = "The camp was surveyed again. It had moved.\nThe camp clock on the map gets a RESURVEY button: a new camp at the same level, for a minute of coins."},
 ]
 ## Every unit's research: a chain of five (nine with CIVIL UNREST) down its department's slot, zigzagging left and right a
 ## row apart (same-side nodes two rows apart, so no title meets the node above it); the root hangs

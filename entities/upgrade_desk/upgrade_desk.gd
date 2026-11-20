@@ -388,10 +388,12 @@ Express couriers join the personnel depot. They ride fast, hop any fence and lea
 		body = "There is nothing left to buy down here.
 The field line counts the farms. Stamped, the board looks up, and the next forms on the desk are nuclear."},
 	# ---- Chapter 4, part 0: NUCLEAR (research/gameplan.md, decided 2026-11-19). The hour after
-	# `stars`, before the flagship: ten cards, one after the other by `needs`, each opening projector
-	# and farm tree chains (needs = [this card] there). Paid in coins and Findings like the war phase's
-	# cards. Prices paced in tools/pace.py (`python tools/pace.py ch4`): ~60 min from stars to the
-	# programme card, ~100 purchases. ----
+	# `stars`: a small tree by `needs` (2026-11-20), each card opening projector and farm tree chains
+	# (needs = [this card] there). After NUCLEAR RESEARCH it branches (TELESCOPE | HALF-LIFE, then
+	# CRITICAL MASS | ISOTOPE SEED -> LEAD STORAGE), joins at REACTOR, branches again (CASCADE ->
+	# PRESSURE VESSEL | NUCLEAR FAMILY) and joins at DEGENERATE MATTER, so two or three forms are on
+	# offer at once. Chapter 4 goes on from the TELESCOPE (no end card for now). Paid in coins and
+	# Findings like the war phase's cards. Prices paced in tools/pace.py (`python tools/pace.py ch4`). ----
 	# Every mechanical number display turns into a green digital readout (entities/tally_machine/ and
 	# the other counters read save.stamped), and the purse holds NUMBERS_RAISE times as much (apply).
 	{id = "print_numbers", price = 14000000, title = "PRINT LARGER NUMBERS", needs = ["stars"],
@@ -400,6 +402,12 @@ Every counter on the desk becomes a digital readout that prints large sums short
 	{id = "nuclear_research", price = 15000000, also = {findings = 180000}, title = "NUCLEAR RESEARCH", needs = ["print_numbers"],
 		body = "Fission is a growth sector. The board has approved one.
 NUCLEAR opens on the projector: the street's price and the Findings per cabbage. ENRICHED SOIL opens on the farm tree."},
+	# A quick buy beside HALF-LIFE (about half a minute of income then). No effect here: the telescope
+	# (entities/telescope/) appears in the window once it is stamped. Its gameplay comes later: chapter
+	# 4 goes on from it.
+	{id = "telescope", price = 6000000, title = "TELESCOPE", needs = ["nuclear_research"],
+		body = "The board would like to know what else is out there, and who owns it.
+A survey telescope is clamped to the window. It is pointed at everything we do not own yet."},
 	{id = "half_life", price = 74000000, also = {findings = 620000}, title = "HALF-LIFE ACCOUNTING", needs = ["nuclear_research"],
 		body = "Assets that decay slowly are booked as permanent.
 CHAIN REACTION (research cabbages), the DECAY ARCHIVE (Findings limit) and DECAY PREMIUM: LAB (golden cabbages in the research lab) open on the projector."},
@@ -407,13 +415,13 @@ CHAIN REACTION (research cabbages), the DECAY ARCHIVE (Findings limit) and DECAY
 	{id = "critical_mass", price = 120000000, also = {findings = 1900000}, title = "CRITICAL MASS", needs = ["half_life"],
 		body = "Enough money in one place starts a reaction.
 Seven larger coins are minted, $50K to $1B: payouts come in fewer, heavier coins. Merges past the $10K coin open on the projector."},
-	{id = "isotope_seed", price = 190000000, also = {findings = 3700000, stock = 150000}, title = "ISOTOPE-ENRICHED SEED", needs = ["critical_mass"],
+	{id = "isotope_seed", price = 190000000, also = {findings = 3700000, stock = 150000}, title = "ISOTOPE-ENRICHED SEED", needs = ["half_life"],
 		body = "The seed has been improved at the atomic level. The packet has not.
 FORCED RIPENING (squares ripen sooner) and MUTATION (more golden squares) open on the farm tree."},
 	{id = "lead_storage", price = 250000000, also = {findings = 4400000, stock = 300000}, title = "LEAD-LINED STORAGE", needs = ["isotope_seed"],
 		body = "The warehouses glow faintly. Stock levels are unaffected.
 LEAD LINING takes storage past 999.999 cabbages, and DECAY PREMIUM: SALE raises what golden cabbages sell for. Both on the projector."},
-	{id = "reactor_machinery", price = 370000000, also = {findings = 5500000, stock = 400000}, title = "REACTOR-POWERED MACHINERY", needs = ["lead_storage"],
+	{id = "reactor_machinery", price = 370000000, also = {findings = 5500000, stock = 400000}, title = "REACTOR-POWERED MACHINERY", needs = ["critical_mass", "lead_storage"],
 		body = "Every tractor now has a reactor. Every reactor has a logbook.
 REACTOR DRIVES (faster farm hands and tractors) open on the farm tree, HANDLED WITH TONGS (your own sales and research) on the projector."},
 	{id = "enrichment_cascade", price = 490000000, also = {findings = 6200000, stock = 600000}, title = "ENRICHMENT CASCADE", needs = ["reactor_machinery"],
@@ -424,25 +432,22 @@ CONDENSE X, XI and XII open on the projector: 48, 64 and 96 to a cabbage."},
 	{id = "pressure_vessel", price = 560000000, also = {findings = 6700000, stock = 1000000}, title = "PRESSURE VESSEL PROTOCOL", needs = ["enrichment_cascade"],
 		body = "The compactor now runs at a pressure the vessel was not rated for. The vessel has been re-rated.
 CONDENSE XIII, XIV and XV open on the projector (128, 192 and 256 to a cabbage), with denser research and golden cabbages and CRITICAL PRICING."},
-	{id = "nuclear_family", price = 470000000, also = {findings = 7400000, stock = 800000}, title = "NUCLEAR FAMILY", needs = ["pressure_vessel"],
+	{id = "nuclear_family", price = 470000000, also = {findings = 7400000, stock = 800000}, title = "NUCLEAR FAMILY", needs = ["reactor_machinery"],
 		body = "Staff housing has been moved next to the cooling towers. Families are welcome.
 A sixth, seventh and eighth farm hand and tractor open on the farm tree, with a hut and a parking bay each in the yard."},
-	{id = "degenerate_matter", price = 1600000000, also = {findings = 7800000, stock = 1500000}, title = "DEGENERATE MATTER POLICY", needs = ["nuclear_family"],
+	# The tree's last join and the nuclear hour's last card for now (the CABBAGE STAR PROGRAMME end
+	# card was dropped 2026-11-20: chapter 4 goes on from the telescope).
+	{id = "degenerate_matter", price = 1600000000, also = {findings = 7800000, stock = 1500000}, title = "DEGENERATE MATTER POLICY", needs = ["pressure_vessel", "nuclear_family"],
 		body = "The atoms in the compactor no longer have room for their own electrons. Facilities has been informed.
 CONDENSE XVI opens on the projector (384 to a cabbage), and ISOMER PREMIUM for golden cabbages."},
-	# The nuclear hour's end (`priority`, like the end of every chapter). The flagship build follows
-	# (not built yet): until then the alpha's end popup comes (ui/sub/alpha_end) once it is stamped.
-	{id = "star_programme", price = 7500000000, also = {findings = 9500000, stock = 1500000}, priority = true, title = "CABBAGE STAR PROGRAMME", needs = ["degenerate_matter"],
-		body = "The planet is fully booked. The board has looked up.
-Stamped, the programme begins. Its first vessel is still on the drawing board."},
 	# Optional (no card needs it; one of GameEvents.DRY_LEFT): chapter 4's bandit camps (BanditCamp,
 	# research/gameplan.md "Chapter 4: bandit camps"), war for those who liked it. Behind the chain's
 	# end in the queue, so it never holds a chain card back. No effect here: BanditCamp reads
 	# save.stamped (the camps, the clock), and the depot's nuclear research shows with it.
 	# Priced in tools/pace.py ch4.
-	{id = "civil_unrest", price = 30000000, also = {findings = 200000}, title = "CIVIL UNREST: RECOVERY OF COMPANY PROPERTY", needs = ["half_life"],
-		body = "Some former staff no longer accept that the world belongs to the company. It does.
-A camp of them appears on the world map now and a new one every 10 minutes. A camp left standing is gone when the next one arrives. Clear it with a recovery operation and the company takes back five minutes of its output in coins, Findings and cabbages. Each camp cleared makes the next one harder."},
+	{id = "civil_unrest", price = 30000000, also = {findings = 200000}, title = "CIVIL UNREST", needs = ["half_life"],
+		body = "Former staff have rebelled and set up camp on company land. The world map now shows where.
+We go and take back what is ours."},
 	# The annexed grid (Projector.GRID_CARD; decision 2026-11-17): the conquered countries' power
 	# is rerouted to the compactor. The projector's
 	# CONDENSE chain stops at V (8 to a cabbage), and at 20 farms this one takes a plain condensed

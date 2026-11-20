@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://entities/map_table/map_flash.tscn" id="5_flash"]
 [ext_resource type="PackedScene" path="res://entities/map_table/farm_deed.tscn" id="7_deed"]
 [ext_resource type="PackedScene" path="res://entities/map_table/props/bandit_marker.tscn" id="8_camp"]
+[ext_resource type="PackedScene" path="res://entities/map_table/props/unrest_clock.tscn" id="9_clock"]
 
 [sub_resource type="ShaderMaterial" id="Spread_kohlmark"]
 shader = ExtResource("6_spread")
@@ -1148,6 +1149,9 @@ visible = false
 
 [node name="Camp" parent="." instance=ExtResource("8_camp")]
 visible = false
+
+[node name="UnrestClock" parent="." instance=ExtResource("9_clock")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.21)
 
 [node name="Deed" parent="." instance=ExtResource("7_deed")]
 visible = false
